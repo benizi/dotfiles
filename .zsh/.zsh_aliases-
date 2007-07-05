@@ -1,0 +1,5 @@
+alias host=hostx
+alias pine='titlep PINE ; rm -f ~/pine-fifo ; alpine -bail -p $PINERC'
+hash -d proj=/home/bhaskell/11-761/proj
+hash -d PROJ=/afs/cs.cmu.edu/user/bhaskell/11761
+hash -d eclipse=/home/bhaskell/eclipse-workspace

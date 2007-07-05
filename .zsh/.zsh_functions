@@ -1,0 +1,5 @@
+function title () { print "\e]2;$1\007" }
+function titlep () { title "$1" ; NOTITLE=1 }
+alias nl='nl -ha -ba -fa -nln'
+function count () { echo $#argv }
+function total-size () { perl -lnwe '$t+=-s;END{1 while $t=~s/(?<=\d)(?=\d\d\d\b)/,/;print$t}' $argv }

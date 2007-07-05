@@ -1,0 +1,1 @@
+export PROMPT='%{%(!.${GOLD}.${BOLD}${BLUE})%}%n@%m %~%(!.#.$)%{${NOCOLOR}%} '

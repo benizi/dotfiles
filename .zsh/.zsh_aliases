@@ -1,0 +1,11 @@
+alias lsl='ls --color=auto -trl'
+alias lsla='ls --color=auto -trlA'
+alias lsld='ls --color=auto -trld'
+alias lslda='ls --color=auto -trldA'
+alias pine='titlep PINE ; alpine -bail -p $PINERC'
+alias mysqle='mysql --defaults-extra-file=/wordnet/wn/2k3/util/mysql.pass'
+alias mysqlh='mysql --defaults-extra-file=/wordnet/wn/2k3/util/mysql.pass.plusHTML'
+alias wget-cookies='wget --load-cookies $MOZ5PROF/cookies.txt'
+alias wget-fakeit="wget -U 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.1) Gecko/20070104 BonEcho/2.0.0.1' --load-cookies \$MOZ5PROF/cookies.txt"
+hash -d afs=/afs/cs.cmu.edu/user/bhaskell/protected
+alias wcc='LC_ALL=C wc'

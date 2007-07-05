@@ -1,0 +1,6 @@
+setopt promptsubst
+export PROMPT='%{%(!.${GOLD}.${BOLD}${GREEN})%}%n@%m %~%(!.#.$)%{${NOCOLOR}%} '
+export PS1
+function precmd () {
+	[[ -z "$NOTITLE" ]] && print -nP '${TITLE}%(!.ROOT - .)%m - %/ %n${STY+ - $$}${ENDTITLE}'
+}

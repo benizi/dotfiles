@@ -1,0 +1,1 @@
+function playit () { for s in $(perl -lwe 'print for 1..$ARGV[0]' $(nosefart -i "$*" | perl -nwe 'print for /Songs:\s(\d+)/')) ; do if ! nosefart -t $s -a 1 "$*" ; then break ; fi ; done; }

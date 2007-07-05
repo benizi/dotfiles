@@ -1,0 +1,7 @@
+for f in .historyfile
+do FILE=~/.backup.$f.`date +%Y.%U`.bz2
+	FILE=$FILE:gs/.././
+	if [ -f ~/$f ]
+	then [[ -f $FILE ]] || bzip2 < ~/$f > $FILE
+	fi
+done
