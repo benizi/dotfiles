@@ -1,8 +1,11 @@
 if [ "$USER" = "bhaskell" ]
 then
-	pushd ~
-	if perl -lwe 'exit(3600 > (stat ".historyfile")[9]-(stat ".svn/entries")[9])'
-	then svn ci .historyfile
+	if ping -c 1 benizi.com >& /dev/null
+	then
+		pushd ~
+		if perl -lwe 'exit(3600 > (stat ".historyfile")[9]-(stat ".svn/entries")[9])'
+		then svn ci -m automatic .historyfile
+		fi
+		popd
 	fi
-	popd
 fi
