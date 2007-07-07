@@ -3,7 +3,7 @@ then
 	if ping -c 1 benizi.com >& /dev/null
 	then
 		pushd ~
-		if perl -lwe 'exit(3600 > (stat ".historyfile")[9]-(stat ".svn/entries")[9])'
+		if perl -lwe 'exit(4*60*60 > (stat ".historyfile")[9]-(stat ".svn/entries")[9] and 1000 > `svn diff .historyfile | LC_ALL=C wc -l`)'
 		then svn ci -m automatic .historyfile
 		fi
 		popd
