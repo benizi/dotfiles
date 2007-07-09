@@ -5,7 +5,7 @@ export WNSEARCHDIR=/wordnet/wn/dict
 export WNSEARCHPATH=$WNSEARCHDIR:/wordnet/wn/2k3/lib/perl/various
 export READNULLCMD=less
 typeset -U path
-set -A path $HOME/Protege $HOME/bin /home/bhaskell/wn/bin $path /usr/kde/3.5/bin /people/bhaskell/bin /sbin /usr/sbin /usr/local/bin /usr/local/sbin /opt/bin
+set -A path /usr/games/bin $HOME/bin /home/bhaskell/wn/bin $path /usr/kde/3.5/bin /people/bhaskell/bin /sbin /usr/sbin /usr/local/bin /usr/local/sbin /opt/bin
 export MANPATH=/usr/share/man:/usr/csl/man:/usr/cogsci/man:/usr/cogsci/X11/man:/usr/dt/man:/usr/openwin/man
 export PINERC='{imap.andrew.cmu.edu/tls/novalidate-cert/user=bhaskell}INBOX.remote_pinerc'
 export CVSROOT=remind.princeton.edu:/usr/local/cvsroot
