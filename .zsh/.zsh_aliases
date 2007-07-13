@@ -1,6 +1,7 @@
 function update_zsh_aliases () {
-	if ! svn status .zsh_aliases 2> /dev/null
+	if which svn >/dev/null 2>/dev/null && ! svn status .zsh_aliases 2> /dev/null
 	then svn export ssh+svn://benizi.com/home/bhaskell/svnrepo/.zsh_aliases ~/.zsh_aliases
+	else (cd ~ && wget -c http://benizi.com/svnrepo/.zsh_aliases)
 	fi
 }
 alias l='ls --color=auto -trl'
