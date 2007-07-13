@@ -7,7 +7,7 @@ export READNULLCMD=less
 typeset -U path
 set -A path /usr/games/bin $HOME/bin /home/bhaskell/wn/bin $path /usr/kde/3.5/bin /people/bhaskell/bin /sbin /usr/sbin /usr/local/bin /usr/local/sbin /opt/bin
 export MANPATH=/usr/share/man:/usr/csl/man:/usr/cogsci/man:/usr/cogsci/X11/man:/usr/dt/man:/usr/openwin/man
-export PINERC='{imap.andrew.cmu.edu/tls/novalidate-cert/user=bhaskell}INBOX.remote_pinerc'
+export PINERC='{cyrus.andrew.cmu.edu/tls/user=bhaskell}INBOX.remote_pinerc'
 export CVSROOT=remind.princeton.edu:/usr/local/cvsroot
 export CVS_RSH=ssh
 export CVS_SERVER=/usr/csl/bin/cvs
