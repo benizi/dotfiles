@@ -3,15 +3,34 @@ use strict;
 use warnings;
 sub symtab ($) { my $st = \%::; $st = $st->{$_."::"} for split /::/, shift; $st}
 my %before; BEGIN { $before{$_}++ for keys %{symtab __PACKAGE__}; }
-use Data::Dumper;
-use URI::Escape qw/uri_unescape uri_escape/;
-use Digest::MD5 qw/md5 md5_hex md5_base64/;
-use Digest::SHA1 qw/sha1 sha1_hex sha1_base64/;
-use MIME::Base64 qw/encode_base64 decode_base64/;
-use File::Basename;
-use File::Find;
-use Storable qw/nstore retrieve/;
-eval "use MyMatrices; 1" and MyMatrices->import;
+sub my_use {
+	my ($mod, @args) = @_;
+	my $fail_ok = 0;
+	my $warn = 1;
+	if ('opt' eq lc $mod) {
+		$warn = 0 if 'OPT' eq $mod;
+		$mod = shift @args;
+		$fail_ok = 1;
+	}
+	if (eval "use $mod; 1") {
+		$mod->import(@args);
+	} else {
+		die "$@" unless $fail_ok;
+		warn "Couldn't load $mod\n" if $warn;
+	}
+}
+sub optuse { my_use opt => @_; }
+sub OPTION { my_use OPT => @_; }
+my_use 'Data::Dumper';
+optuse 'URI::Escape', qw/uri_unescape uri_escape/;
+my_use 'Digest::MD5', qw/md5 md5_hex md5_base64/;
+optuse 'Digest::SHA1', qw/sha1 sha1_hex sha1_base64/;
+my_use 'MIME::Base64', qw/encode_base64 decode_base64/;
+my_use 'File::Basename';
+my_use 'File::Find';
+my_use 'Storable', qw/nstore retrieve/;
+OPTION 'MyMatrices';
+OPTION 'Acme::MetaSyntactic', ':all';
 sub _underscored {
 	my $sub = shift;
 	return sub {
