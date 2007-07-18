@@ -4,7 +4,12 @@ then
 	then
 		pushd ~
 		if perl -lwe 'exit(4*60*60 > (stat ".historyfile")[9]-(stat ".svn/entries")[9] and 1000 > `svn diff .historyfile | LC_ALL=C wc -l`)'
-		then svn ci -m automatic .historyfile
+		then
+			echo -e "SVN checking in .historyfile...\c"
+			if svn ci -m automatic .historyfile >/dev/null 2>/dev/null
+			then echo "Done"
+			else echo "Locked"
+			fi
 		fi
 		popd
 	fi
