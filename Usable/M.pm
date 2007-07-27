@@ -29,6 +29,9 @@ my_use 'MIME::Base64', qw/encode_base64 decode_base64/;
 my_use 'File::Basename';
 my_use 'File::Find';
 my_use 'Storable', qw/nstore retrieve/;
+my_use 'List::Util', qw/min max/;
+optuse 'Date::Manip';
+optuse 'XML::Twig';
 OPTION 'MyMatrices';
 OPTION 'Acme::MetaSyntactic', ':all';
 sub _underscored {
@@ -61,6 +64,7 @@ sub _filesum {
 *md5file = _filesum("Digest::MD5");
 *sha1file = _filesum("Digest::SHA1");
 *base = _underscored(\&basename);
+*dir = _underscored(\&dirname);
 my %not;
 BEGIN { $not{$_}++ for qw/BEGIN import before/; }
 my $_not_re = qr/^_/;
