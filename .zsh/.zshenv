@@ -21,4 +21,5 @@ export MOZ5PROF=/home/bhaskell/.mozilla/firefox/6mbxqig7.default
 export AXIS2_HOME=/home/bhaskell/project/axis2-1.1.1
 export LESS="-R -M --shift 5"
 export LESSOPEN="|lesspipe.sh %s"
+export PAGER=less
 export MATLAB=/home/bhaskell/MATLAB/7.4/lib/matlab7

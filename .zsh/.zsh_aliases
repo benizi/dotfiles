@@ -20,5 +20,5 @@ alias mysqlh='mysql --defaults-extra-file=/wordnet/wn/2k3/util/mysql.pass.plusHT
 alias wget-cookies='wget --load-cookies $MOZ5PROF/cookies.txt'
 alias wget-fakeit="wget -U 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070515 Firefox/2.0.0.4' --load-cookies \$MOZ5PROF/cookies.txt"
 alias wcc='LC_ALL=C wc'
-alias z=' exec zsh -l'
+alias z=' exec zsh'
 hash -d afs=/afs/cs.cmu.edu/user/bhaskell/protected
