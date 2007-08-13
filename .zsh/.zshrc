@@ -8,7 +8,10 @@ export MAILCHECK=0
 for dir in ~/.zsh-scripts ~ ~/.zsh-scripts-
 do if [ ! -d $dir ] ; then continue ; fi
 	setopt nullglob
-	for file in $dir/*zsh_*~*.swp~*.zsh_history ; [[ -r $file ]] && . $file
+	if [ -f $dir/.ZSHFILES ]
+	then for file in $(cat $dir/.ZSHFILES) ; [[ -r $dir/$file ]] && . $dir/$file
+	else for file in $dir/*zsh_*~*.swp~*.zsh_history ; [[ -r $file ]] && . $file
+	fi
 	setopt nonullglob
 done
 [[ -f ~/.zshreminder ]] && cat ~/.zshreminder
