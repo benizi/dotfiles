@@ -1,4 +1,4 @@
-# export DISPLAY=:0
+[ -f .zshenv- ] && source .zshenv-
 export EDITOR=/usr/bin/vim
 export WNHOME=/wordnet/wn
 export WNSEARCHDIR=/wordnet/wn/dict
