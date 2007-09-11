@@ -2,7 +2,7 @@ setopt promptsubst
 export PROMPT='%{%(!.${GOLD}.${BOLD}${GREEN})%}%n@%m %~%(!.#.$)%{${NOCOLOR}%} '
 export PS1
 function preexec () {
-	[[ -z "$NOTITLE" ]] && print -nP '${TITLE}'$1:gs/%/%%/' - %(!.ROOT - .)%m - %/ %n${STY+ - $$}${ENDTITLE}'
+	[[ -z "$NOTITLE" ]] && print -nP '${TITLE}'$1:q' - %(!.ROOT - .)%m - %/ %n${STY+ - $$}${ENDTITLE}'
 }
 function precmd () {
 	[[ -z "$NOTITLE" ]] && print -nP '${TITLE}%(!.ROOT - .)%m - %/ %n${STY+ - $$}${ENDTITLE}'
