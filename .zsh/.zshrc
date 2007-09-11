@@ -4,6 +4,8 @@ setopt auto_cd no_auto_menu
 setopt extended_glob glob_dots
 setopt pushd_silent
 export MAILCHECK=0
+autoload -U compinit
+compinit
 
 for dir in ~/.zsh-scripts ~ ~/.zsh-scripts-
 do if [ ! -d $dir ] ; then continue ; fi
