@@ -1,15 +1,20 @@
 if [ "$USER" = "bhaskell" ]
 then
-	if ping -c 1 benizi.com >& /dev/null
+	pushd ~
+	if perl -lwe 'exit(4*60*60 > (stat ".historyfile")[9]-(stat ".svn/entries")[9] and 1000 > `svn diff .historyfile | LC_ALL=C wc -l`)'
 	then
-		pushd ~
-		if perl -lwe 'exit(4*60*60 > (stat ".historyfile")[9]-(stat ".svn/entries")[9] and 1000 > `svn diff .historyfile | LC_ALL=C wc -l`)' && [ ! -f .svn/lock ]
+		if time-limit ping -c 1 benizi.com >& /dev/null
 		then
-			echo -e "SVN checking in .historyfile...\c"
-			if svn ci -m automatic .historyfile >/dev/null 2>/dev/null
-			then echo "Done"
+			if [ ! -f .svn/lock ]
+			then
+				echo -e "SVN checking in .historyfile...\c"
+				if svn ci -m automatic .historyfile >/dev/null 2>/dev/null
+				then echo "Done"
+				fi
 			fi
+		else
+			echo No network connection to benizi.com
 		fi
-		popd
 	fi
+	popd
 fi
