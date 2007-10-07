@@ -3,3 +3,4 @@ function titlep () { title "$1" ; NOTITLE=1 }
 alias nl='nl -ha -ba -fa -nln'
 function count () { echo $#argv }
 function total-size () { perl -lnwe '$t+=-s;END{$t||=0;1 while $t=~s/(?<=\d)(?=\d\d\d\b)/,/;print$t}' $argv }
+function unmask () { echo "$1" >> /etc/portage/package.keywords }
