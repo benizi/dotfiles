@@ -3,3 +3,5 @@ alias pine='rm -f ~/pine-fifo ; pine -bail -p $PINERC'
 hash -d proj=/home/bhaskell/11-761/proj
 hash -d PROJ=/afs/cs.cmu.edu/user/bhaskell/11761
 hash -d eclipse=/home/bhaskell/eclipse-workspace
+hash -d mozprof=$MOZ5PROF
+hash -d slogger=~mozprof/slogger/archive
