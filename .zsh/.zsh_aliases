@@ -11,6 +11,7 @@ alias la='ls --color=auto -trlA'
 alias lsd='ls --color=auto -trld'
 alias lsda='ls --color=auto -trldA'
 alias lss='ls --color=auto -Srl'
+alias lsr='ls --color=auto -Sl'
 alias pf='ps -ef'
 alias pfg='ps -ef | grep'
 alias lsl=l
