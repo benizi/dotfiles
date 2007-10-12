@@ -1,0 +1,10 @@
+include "%L"
+include ".XCompose-unicode"
+<Multi_key> <a> <a> : "å"
+<Multi_key> <A> <a> : "Å"
+<Multi_key> <A> <A> : "Å"
+<Multi_key> <d> <d> : U2026 # HORIZONTAL ELLIPSIS
+<Multi_key> <E> <T> <A> : U0397 # GREEK CAPITAL LETTER ETA
+<Multi_key> <E> <t> <a> : U0397 # GREEK CAPITAL LETTER ETA
+<Multi_key> <e> <t> <a> : U03B7 # GREEK SMALL LETTER ETA
+<Multi_key> <g> <a> <m> : "γ" U03B3 # GREEK SMALL LETTER GAMMA
