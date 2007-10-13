@@ -3,8 +3,8 @@ export PROMPT='%{%(!.${GOLD}.${BOLD}${GREEN})%}%n@%m %~%(!.#.$)%{${NOCOLOR}%} '
 export PS1
 function preexec () {
 	COMMAND="$1"
-	[[ $SHLVL -gt 1 ]] && [[ -z "$NOTITLE" ]] && print -nP '${TITLE}'$1:q:gs/%/%%/' - %(!.ROOT - .)%m - %~ %n${STY+ - $$}${ENDTITLE}'
+	[[ $SHLVL -gt 1 ]] && [[ -z "$NOTITLE" ]] && print -nP '${TITLE}'$1:q:gs/%/%%/' │ %(!.ROOT │ .)%m │ %~ │ %n${STY+ │ $$}${ENDTITLE}'
 }
 function precmd () {
-	[[ $SHLVL -gt 1 ]] && [[ -z "$NOTITLE" ]] && print -nP '${TITLE}%(!.ROOT - .)%m - %~ %n${STY+ - $$}${ENDTITLE}'
+	[[ $SHLVL -gt 1 ]] && [[ -z "$NOTITLE" ]] && print -nP '${TITLE}%(!.ROOT │ .)%m │ %~ │ %n${STY+ │ $$}${ENDTITLE}'
 }
