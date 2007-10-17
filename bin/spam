@@ -1,0 +1,1 @@
+eval $(perl -lnwe 'BEGIN{$|=1;}@a=!/^(\d+)(?:\.\.|-)(\d+)$/?($_):$1..0+(substr($1,0,length($1)-length($2)).$2);push @A,@a; END { print "ssh elation \x27for l in @A ; echo \$l && ./spamwn \$l\x27"}')
