@@ -1,0 +1,48 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Getopt::Long qw/:config pass_through/;
+my $stdout = $0 =~ /out/ ? 1 : 0;
+my $delete = $0 =~ /del(?:ete)?$/;
+GetOptions( 'stdout!' => \$stdout, ) or die 'options';
+sub readlen { my ($fh, $len) = @_; return '' unless $len; local $/ = \$len; scalar <$fh>; }
+sub uint32 { my $fh = shift; unpack 'V', readlen($fh, 4); }
+my $fh;
+@ARGV or die "Must specify CDB file as first argument\n";
+my $in_cdb = shift;
+(my $tmp_file = $in_cdb) =~ s/\.cdb$/.tmp/i;
+my @cmd = (cdbmake => $in_cdb => $tmp_file);
+my %del;
+if ($delete) { chomp, $del{$_}++ for @ARGV ? (<>) : (<STDIN>) }
+s/([\\\`\'\"\*\?\{\}\<\>])/\\$1/g for @cmd;
+if (!$stdout) {
+	if (open my $tf, '>', $tmp_file) { close $tf } else { unshift @cmd, 'sudo' }
+	open STDOUT, "| @cmd" or die "Couldn't open: | @cmd:$!\n";
+}
+if (-f $in_cdb and -r _) {
+	open $fh, '<', $in_cdb or die "<$in_cdb: $!";
+	
+	my $end = uint32($fh) - 2048;
+	readlen($fh, 2044);
+	my $read = 0;
+	while ($read < $end) {
+		my $klen = uint32($fh);
+		my $dlen = uint32($fh);
+		my $key = readlen($fh, $klen);
+		my $data = readlen($fh, $dlen);
+		$read += 8 + $klen + $dlen;
+		next if $delete and $del{$key};
+		print "+$klen,$dlen:$key\->$data\n";
+	}
+}
+
+if (!$delete) {
+	while (<>) {
+		chomp;
+		my (@kv) = split /\t/, $_, 2;
+		push @kv, '' while @kv < 2;
+		my @l = map length, @kv;
+		print "+", join(',', @l), ":", join('->', @kv), $/;
+	}
+}
+print $/;
