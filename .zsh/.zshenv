@@ -1,4 +1,3 @@
-[ -f .zshenv- ] && source .zshenv-
 export EDITOR=/usr/bin/vim
 export WNHOME=/wordnet/wn
 export WNSEARCHDIR=/wordnet/wn/dict
@@ -25,3 +24,4 @@ export LESSOPEN="|lesspipe.sh %s"
 export PAGER=less
 export MATLAB=/home/bhaskell/MATLAB/7.4/lib/matlab7
 export PYTHONSTARTUP=~/.python/startup
+[ -f .zshenv- ] && source .zshenv-
