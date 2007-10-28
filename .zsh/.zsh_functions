@@ -2,5 +2,7 @@ function title () { print "\e]2;$1\007" }
 function titlep () { title "$1" ; NOTITLE=1 }
 alias nl='nl -ha -ba -fa -nln'
 function count () { echo $#argv }
+function countf () { perl -lwe '$a++for grep-f,@ARGV;print$a' $argv }
+#alias countf="perl -lwe '\$a++for grep-f,@ARGV;print\$a'"
 function total-size () { perl -lnwe '$t+=-s;END{$t||=0;1 while $t=~s/(?<=\d)(?=\d\d\d\b)/,/;print$t}' $argv }
 function unmask () { echo "$1" >> /etc/portage/package.keywords }
