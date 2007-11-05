@@ -5,6 +5,7 @@ function update_zsh_aliases () {
 	else (cd ~ && wget -N http://benizi.com/svnrepo/.zsh_aliases)
 	fi
 }
+alias fcl='fc -l 0 | less'
 alias l='ls --color=auto -trl'
 alias ll='ls --color=auto -trlL'
 alias la='ls --color=auto -trlA'
