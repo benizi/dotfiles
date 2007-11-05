@@ -11,10 +11,12 @@ compinit
 for dir in ~/.zsh-scripts ~ ~/.zsh-scripts-
 do if [ ! -d $dir ] ; then continue ; fi
 	setopt nullglob
-	if [ -f $dir/.ZSHFILES ]
-	then for file in $(cat $dir/.ZSHFILES) ; [[ -r $dir/$file ]] && . $dir/$file
-	else for file in $dir/*zsh_*~*.swp~*.zsh_history ; [[ -r $file ]] && . $file
+	pushd $dir
+	if [ -f .ZSHFILES ]
+	then for file in $(cat .ZSHFILES) ; [[ -r $file ]] && source $file
+	else for file in *zsh_*~*.swp~*.zsh_history ; [[ -r $file ]] && source $file
 	fi
+	popd
 	setopt nonullglob
 done
 [[ -f ~/.zshreminder ]] && cat ~/.zshreminder
