@@ -1,4 +1,5 @@
 bindkey -e
+bindkey "^T" expand-word
 setopt nohup no_notify no_check_jobs
 setopt auto_cd no_auto_menu
 setopt extended_glob glob_dots
