@@ -5,10 +5,18 @@ PSCR=GOLD
 PSCRB=
 export PROMPT='%{%(!.${(P)PSCRB}${(P)PSCR}.${(P)PSCB}${(P)PSC})%}%n@%m %~%(!.#.$)%{${NOCOLOR}%} '
 export PS1
+function fancytitle () {
+	print -nP '${TITLE}$1%(!.ROOT │ .)%m │ %~ │ %n${STY+ │ $$}${ENDTITLE}'
+}
 function preexec () {
-	COMMAND="$1"
-	[[ $SHLVL -gt 1 ]] && [[ -z "$NOTITLE" ]] && print -nP '${TITLE}'$1:q:gs/%/%%/:gs/\$/\\\\\$/' │ %(!.ROOT │ .)%m │ %~ │ %n${STY+ │ $$}${ENDTITLE}'
+	if [ $SHLVL -eq 1 -a "$TERM" = "linux" ] ; then return ; fi
+	[[ -z "$NOTITLE" ]] || return
+	COMMAND="$1 │ "
+	COMMAND=$COMMAND:gs/%/%%/ #:gs/\$/\\\\\$/
+	fancytitle $COMMAND
 }
 function precmd () {
-	[[ $SHLVL -gt 1 ]] && [[ -z "$NOTITLE" ]] && print -nP '${TITLE}%(!.ROOT │ .)%m │ %~ │ %n${STY+ │ $$}${ENDTITLE}'
+	if [ $SHLVL -eq 1 -a "$TERM" = "linux" ] ; then return ; fi
+	[[ -z "$NOTITLE" ]] || return
+	fancytitle ""
 }
