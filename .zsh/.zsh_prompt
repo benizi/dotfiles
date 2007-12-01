@@ -1,9 +1,5 @@
 setopt promptsubst
-PSC=GREEN
-PSCB=
-PSCR=GOLD
-PSCRB=
-export PROMPT='%{%(!.${(P)PSCRB}${(P)PSCR}.${(P)PSCB}${(P)PSC})%}%n@%m %~%(!.#.$)%{${NOCOLOR}%} '
+export PROMPT='%{${PSCOLOR}%(!.${PSCOLORALL-${PSCOLORROOT-$UNDERLINE}}.${PSCOLORALL-$PSCOLORNORM})%}%n@%m %~%(!.#.$)%{${NOCOLOR}%} '
 export PS1
 function fancytitle () {
 	print -nP '${TITLE}$1%(!.ROOT │ .)%m │ %~ │ %n${STY+ │ $$}${ENDTITLE}'
