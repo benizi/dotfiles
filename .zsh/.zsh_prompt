@@ -1,6 +1,6 @@
 setopt promptsubst
 PSC=GREEN
-PSCB=BOLD
+PSCB=
 PSCR=GOLD
 PSCRB=
 export PROMPT='%{%(!.${(P)PSCRB}${(P)PSCR}.${(P)PSCB}${(P)PSC})%}%n@%m %~%(!.#.$)%{${NOCOLOR}%} '
