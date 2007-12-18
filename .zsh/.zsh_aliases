@@ -8,6 +8,7 @@ function update_zsh_aliases () {
 alias fcl='fc -l 0 | less'
 alias l='ls --color=auto -trl'
 alias ll='ls --color=auto -trlL'
+alias lll='ls --color=auto -trl | less'
 alias la='ls --color=auto -trlA'
 alias lsd='ls --color=auto -trld'
 alias lsda='ls --color=auto -trldA'
