@@ -5,9 +5,11 @@ function update_zsh_aliases () {
 	else (cd ~ && wget -N http://benizi.com/svnrepo/.zsh_aliases)
 	fi
 }
-# keep fg and bg out of history
+# keep some builtins out of history
 alias fg=' builtin fg'
 alias bg=' builtin bg'
+alias rehash=' builtin rehash'
+
 alias fcl='fc -l 0 | less'
 alias l='ls --color=auto -trl'
 alias ll='ls --color=auto -trlL'
