@@ -1,0 +1,23 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+my $hgrc = ".hg/hgrc";
+my @lines;
+if (-f $hgrc) {
+	local @ARGV = ($hgrc);
+	chomp(@lines = <>);
+	exit if grep /^username\s*=\s*(?=\S)/, @lines;
+}
+print "Username not set. Email address?\n";
+chomp(my $email = <STDIN>);
+for ($email) {
+	/\@/ or s/(?=>|$)/\@benizi.com/;
+	/^.+<.+\@.+>$/ or $_ = "Benjamin R. Haskell <$_>";
+}
+print "Using: $email\n";
+my ($hasui, $pos) = (0, 0+@lines);
+$lines[$_] eq '[ui]' and ($hasui,$pos) = (1, $_) for 0..$#lines;
+splice @lines, $pos, $hasui, '[ui]', "username = $email";
+open my $f, '>', $hgrc or die "Couldn't output $hgrc: $!";
+print $f map "$_\n", @lines;
+die "Now re-commit\n";
