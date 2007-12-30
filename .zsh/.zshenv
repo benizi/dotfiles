@@ -25,5 +25,5 @@ export PAGER=less
 export MATLAB=/home/bhaskell/MATLAB/7.4/lib/matlab7
 export PYTHONSTARTUP=~/.python/startup
 EXTRAENV=${(%)${:-%N}}
-if [ -l $EXTRAENV ] ; then EXTRAENV=$(readlink $EXTRAENV) ; fi
+[ -L $EXTRAENV ] && EXTRAENV=$(readlink $EXTRAENV)
 [ -f $EXTRAENV- ] && source $EXTRAENV-
