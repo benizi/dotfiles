@@ -1,3 +1,5 @@
+function colormsg () { C=${1-RED} ; shift ; print -l "${(P)C}$*${NOCOLOR}" }
+function error () { colormsg RED $@ }
 function title () { print "\e]2;$1\007" }
 function titlep () { title "$1" ; NOTITLE=1 }
 alias nl='nl -ha -ba -fa -nln'
@@ -11,4 +13,58 @@ function unmask () {
 	then echo Already unmasked
 	else echo "$1" >> $EPPK
 	fi
+}
+function ebuild-to-local () {
+	PACK=$1
+	shift
+	while [ $# -gt 0 ] ; do
+		case $1 in
+			dry|DRY|--dry) DRY=yes ;;
+		esac
+		shift
+	done
+	case $PACK in
+		/usr/portage/*) ;;
+		*/*) PACK=/usr/portage/$PACK ;;
+		*) PACK=(/usr/portage/*/$PACK)
+			[ $#PACK != 1 ] && print -l "Multiple matches:" $PACK && return ;;
+	esac
+	EBUILDS=($PACK/$PACK:t-*.ebuild)
+	while [ $#EBUILDS != 1 ] ; do
+		for i in {1..$#EBUILDS} ; echo $i: $EBUILDS[i]
+		echo 0: cancel
+		read "choice?Choice [$#EBUILDS]: "
+		for l in "$choice" ; case "$l" in # for-case so it can 'break'
+			'') choice=$#EBUILDS ; echo null ;;
+			0) error "cancelled" ; return ;;
+			<->) [ $choice -le $#EBUILDS ] && break ;&
+			*) error "Should be a number from 0-$#EBUILDS" ; continue 2
+		esac
+		EBUILDS=($EBUILDS[choice])
+		echo CHOSE $choice - $EBUILDS
+	done
+	FILES=($EBUILDS $PACK/files/*(N))
+	ECHO=echo
+	[ -z "$DRY" ] && ECHO=''
+	unset allchoice
+	for l in $FILES ; do
+		unset skip
+		if [ -f $l ] ; then
+			while true ; do
+				choice=${allchoice-`read "c?Overwrite $l [y/*y/N/*n/x=exit] ";echo "$c"`}
+				case "$choice" in
+					(#i)\*y*) allchoice=$choice ;&
+					(#i)y*) error overwrote $l ; break ;;
+					(#i)\*n*) allchoice=$choice ;&
+					''|(#i)n*) error skipping $l ; skip=yes ; break ;;
+					ex*|x*) error aborting ; return ;;
+					*) error "Choose from *y/y/*n/n/x" ; unset choice ;;
+				esac
+			done
+		fi
+		[ -z "$skip" ] || continue
+		D=$l:h:s./usr./usr/local
+		[ -d $D ] || $ECHO mkdir -p $D
+		$ECHO cp $l $D/
+	done
 }
