@@ -49,21 +49,22 @@ function ebuild-to-local () {
 	unset allchoice
 	for l in $FILES ; do
 		unset skip
-		if [ -f $l ] ; then
+		LOCAL=$l:s./usr./usr/local
+		D=$LOCAL:h
+		if [ -f $LOCAL ] ; then
 			while true ; do
-				choice=${allchoice-`read "c?Overwrite $l [y/*y/N/*n/x=exit] ";echo "$c"`}
+				choice=${allchoice-`read "c?Overwrite $LOCAL [y/*y/N/*n/x=exit] ";echo "$c"`}
 				case "$choice" in
 					(#i)\*y*) allchoice=$choice ;&
-					(#i)y*) error overwrote $l ; break ;;
+					(#i)y*) error overwrote $LOCAL ; break ;;
 					(#i)\*n*) allchoice=$choice ;&
-					''|(#i)n*) error skipping $l ; skip=yes ; break ;;
+					''|(#i)n*) error skipping $LOCAL ; skip=yes ; break ;;
 					ex*|x*) error aborting ; return ;;
 					*) error "Choose from *y/y/*n/n/x" ; unset choice ;;
 				esac
 			done
 		fi
 		[ -z "$skip" ] || continue
-		D=$l:h:s./usr./usr/local
 		[ -d $D ] || $ECHO mkdir -p $D
 		$ECHO cp $l $D/
 	done
