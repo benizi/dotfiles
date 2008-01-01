@@ -1,0 +1,4 @@
+if [ "x$LOGNAME" = "xbhaskell" ] ; then
+	pgrep gpg-agent > /dev/null || gpg-agent --daemon -s > ~/gpg-script
+	[ -f ~/gpg-script ] && . ~/gpg-script > /dev/null
+fi
