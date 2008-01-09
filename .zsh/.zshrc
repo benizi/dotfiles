@@ -19,4 +19,4 @@ do if [ ! -d $dir ] ; then continue ; fi
 	popd
 	setopt nonullglob
 done
-[[ -f ~/.zshreminder ]] && cat ~/.zshreminder
+for l in '' 's' ; [[ -f ~/.zshreminder$l ]] && cat ~/.zshreminder$l
