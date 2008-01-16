@@ -30,6 +30,9 @@ function ebuild-to-local () {
 			[ $#PACK != 1 ] && print -l "Multiple matches:" $PACK && return ;;
 	esac
 	EBUILDS=($PACK/$PACK:t-*.ebuild)
+	if [ $#EBUILDS = 1 ] ; then
+		echo only choice - $EBUILDS
+	fi
 	while [ $#EBUILDS != 1 ] ; do
 		for i in {1..$#EBUILDS} ; echo $i: $EBUILDS[i]
 		echo 0: cancel
