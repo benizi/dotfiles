@@ -1,1 +1,13 @@
 function playit () { for s in $(perl -lwe 'print for 1..$ARGV[0]' $(nosefart -i "$*" | perl -nwe 'print for /Songs:\s(\d+)/')) ; do if ! nosefart -t $s -a 1 "$*" ; then break ; fi ; done; }
+function wlan-replug () {
+	modprobe --remove ipw2200 ieee80211{,_crypt{_tkip,_ccmp,_wep,}}
+	modprobe ipw2200
+}
+function wlan-linksys () {
+	iwconfig wlan mode monitor
+	iwconfig wlan mode managed
+	iwconfig wlan ap 00:14:bf:28:8a:29
+	iwconfig wlan essid linksys
+}
+function wlan-RESET () { wlan-replug ; wlan-linksys }
+function wlan-scan () { iwlist wlan scan }
