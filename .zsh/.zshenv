@@ -4,7 +4,7 @@ export WNSEARCHDIR=/wordnet/wn/dict
 export WNSEARCHPATH=$WNSEARCHDIR:/wordnet/wn/2k3/lib/perl/various
 export READNULLCMD=less
 typeset -U path
-set -A path /home/benhaskell/bin $HOME/bin/dslinux/bin /usr/games/bin $HOME/bin /home/bhaskell/wn/bin /var/qmail/bin $path /usr/kde/3.5/bin /people/bhaskell/bin /sbin /usr/sbin /usr/local/bin /usr/local/sbin /opt/bin
+set -A path /home/benhaskell/bin $HOME/bin/dslinux/bin /usr/games/bin $HOME/bin /home/bhaskell/wn/bin /var/qmail/bin $path /usr/kde/3.5/bin /people/bhaskell/bin {/usr{/local,},}/{s,}bin /opt/bin
 export PATH
 export MANPATH=/usr/share/man:/usr/csl/man:/usr/cogsci/man:/usr/cogsci/X11/man:/usr/dt/man:/usr/openwin/man
 export PINERC='{dovecot.benizi.com/ssl/user=bhaskell}pinerc'
