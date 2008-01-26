@@ -6,16 +6,19 @@ setopt extended_glob glob_dots
 setopt pushd_silent
 export MAILCHECK=0
 autoload -U compinit
-compinit
+compinit -i
 
 for dir in ~/.zsh-scripts ~ ~/.zsh-scripts-
 do if [ ! -d $dir ] ; then continue ; fi
 	setopt nullglob
 	pushd $dir
-	if [ -f .ZSHFILES ]
-	then for file in $(cat .ZSHFILES) ; [[ -r $file ]] && source $file
-	else for file in *zsh_*~*.swp~*.zsh_history ; [[ -r $file ]] && source $file
+	files=(.zshrc-)
+	if [ -f .ZSHFILES ] ; then
+		files=($files `cat .ZSHFILES`)
+	else
+		files=($files *zsh_*~*.swp~*.zsh_history)
 	fi
+	for file in $files ; [ -r $file ] && source $file
 	popd
 	setopt nonullglob
 done
