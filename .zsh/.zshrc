@@ -6,7 +6,9 @@ setopt extended_glob glob_dots
 setopt pushd_silent
 export MAILCHECK=0
 autoload -U compinit
-compinit -i
+flag=''
+uname | grep CYGWIN >/dev/null 2>/dev/null && flag='-i'
+compinit $flag
 
 for dir in ~/.zsh-scripts ~ ~/.zsh-scripts-
 do if [ ! -d $dir ] ; then continue ; fi
