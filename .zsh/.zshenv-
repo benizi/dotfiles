@@ -1,1 +1,2 @@
 path=( $path ~/obfu /opt/google-web-toolkit )
+export PALUDIS_OPTIONS="--log-level warning --dl-upgrade as-needed --dl-downgrade error --debug-build none"
