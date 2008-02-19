@@ -1,3 +1,4 @@
 if [ "$TERM" = "screen" ] ; then
-	screen -ls
+	S=$(screen -ls | perl -lnwe 'BEGIN{$sty=$ENV{STY}||"ZZZ";} print if /^\s/ and /\S/ and !/\b\Q$sty\E\b/')
+	[ -n "$S" ] && printf 'Other screens:\n%s\n' $S
 fi
