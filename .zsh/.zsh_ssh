@@ -1,8 +1,20 @@
-if [ "x$LOGNAME" = "xbhaskell" ]
-then if ! pgrep ssh-agent > /dev/null
-     then ssh-agent > ~/ssh-script
-          . ~/ssh-script
-          find ~/.ssh -type f -name 'id_*' ! -name '*.pub' | sort | perl -l0pe '' | xargs -0 ssh-add
-     fi
+FORCE=${SSH_FORCE:-false}
+function find_add () {
+	find ~/.ssh -type f -name 'id_*' ! -name '*.pub' \
+	| sort \
+	| perl -l0pe '' \
+	| xargs -0 ssh-add
+}
+if $FORCE || [ "x$LOGNAME" = "xbhaskell" ] ; then
+	if $FORCE || ! pgrep ssh-agent > /dev/null ; then
+		if [ -r ~/ssh-script ] ; then
+			. ~/ssh-script > /dev/null
+		fi
+		if ! [ -n "$SSH_AGENT_PID" ] || ! kill -0 $SSH_AGENT_PID ; then
+			ssh-agent > ~/ssh-script
+		fi
+		. ~/ssh-script
+		return
+	fi
 fi
-[[ -f ~/ssh-script ]] && . ~/ssh-script > /dev/null
+[ -f ~/ssh-script ] && . ~/ssh-script > /dev/null
