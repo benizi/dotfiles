@@ -14,6 +14,7 @@ if $FORCE || [ "x$LOGNAME" = "xbhaskell" ] ; then
 			ssh-agent > ~/ssh-script
 		fi
 		. ~/ssh-script
+		ssh-add -l | grep -q . || find_add
 		return
 	fi
 fi
