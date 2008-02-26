@@ -2,7 +2,7 @@ if [ "x$LOGNAME" = "xbhaskell" ]
 then if ! pgrep ssh-agent > /dev/null
      then ssh-agent > ~/ssh-script
           . ~/ssh-script
-          find ~/.ssh -type f -name 'id_*' ! -name '*.pub' |sort| xargs ssh-add
+          find ~/.ssh -type f -name 'id_*' ! -name '*.pub' | sort | perl -l0pe '' | xargs -0 ssh-add
      fi
 fi
 [[ -f ~/ssh-script ]] && . ~/ssh-script > /dev/null
