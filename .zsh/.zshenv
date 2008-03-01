@@ -4,7 +4,11 @@ export WNSEARCHDIR=/wordnet/wn/dict
 export WNSEARCHPATH=$WNSEARCHDIR:/wordnet/wn/2k3/lib/perl/various
 export READNULLCMD=less
 typeset -U path
-set -A path /home/benhaskell/bin $HOME/bin/dslinux/bin /usr/games/bin $HOME/bin /home/bhaskell/wn/bin /var/qmail/bin /usr/kde/4.0/bin $path /usr/kde/3.5/bin /people/bhaskell/bin {/usr{/local,},}/{s,}bin /opt/bin
+for p in reset /home/benhaskell/bin $HOME/bin/dslinux/bin /usr/games/bin $HOME/bin /home/bhaskell/wn/bin /var/qmail/bin /usr/kde/4.0/bin $path /usr/kde/3.5/bin /people/bhaskell/bin {/usr{/local,},}/{s,}bin /opt/bin ; do
+	if [ "$p" = "reset" ] ; then path=() ; continue ; fi
+	[ ! -d $p ] && continue
+	path=($path $p)
+done
 export PATH
 export MANPATH=/usr/share/man:/usr/csl/man:/usr/cogsci/man:/usr/cogsci/X11/man:/usr/dt/man:/usr/openwin/man
 export PINERC='{dovecot.benizi.com/ssl/user=bhaskell}pinerc'
