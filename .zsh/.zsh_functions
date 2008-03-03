@@ -6,5 +6,6 @@ alias nl='nl -ha -ba -fa -nln'
 function count () { echo $#argv }
 function countf () { perl -lwe '$a++for grep-f,@ARGV;print$a' $argv }
 function with-size () { perl -lpwe '$_=join"\t",-s,$_' }
-function total-size () { with-size | perl -lanwe '$t+=$F[0];END{$t||=0;1 while $t=~s/(?<=\d)(?=\d\d\d\b)/,/;print$t}' }
+function total () { perl -lanwe '$t+=shift@F;END{$t||=0;1 while $t=~s/(?<=\d)(?=\d\d\d\b)/,/;print$t}' }
+function total-size () { with-size | cut -f1 | total }
 function sort-by-size () { with-size | sort -n | cut -f2- }
