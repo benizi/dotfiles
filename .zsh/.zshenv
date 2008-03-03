@@ -10,7 +10,7 @@ for p in reset /home/benhaskell/bin $HOME/bin/dslinux/bin /usr/games/bin $HOME/b
 	path=($path $p)
 done
 export PATH
-export MANPATH=/usr/share/man:/usr/csl/man:/usr/cogsci/man:/usr/cogsci/X11/man:/usr/dt/man:/usr/openwin/man
+export MANPATH=/usr/share/man:/usr/csl/man:/usr/cogsci/man:/usr/cogsci/X11/man:/usr/dt/man:/usr/openwin/man:/usr/man:/usr/local/man
 export PINERC='{dovecot.benizi.com/ssl/user=bhaskell}pinerc'
 export CVSROOT=remind.princeton.edu:/usr/local/cvsroot
 export CVS_RSH=ssh
