@@ -1,15 +1,16 @@
 setopt promptsubst
 export PROMPT='%{${PSCOLOR}%(!.${PSCOLORALL-${PSCOLORROOT-$UNDERLINE}}.${PSCOLORALL-$PSCOLORNORM})%}%n@%m %~%(!.#.$)%{${NOCOLOR}%} '
 export PS1
+TITLESEP='│' # ceçi n'est pas un pipe
+[ -n "$NO_UTF8_TITLE" ] && TITLESEP='|'
 function fancytitle () {
-	local c
-	[ -n "$NO_UTF8_TITLE" ] && c='|' || c='│'
+	local c=$TITLESEP
 	print -nP '${TITLE}$1%(!.ROOT $c .)%m $c %~ $c %n${STY+ $c $$}${ENDTITLE}'
 }
 function preexec () {
 	if [ $SHLVL -eq 1 -a "$TERM" = "linux" ] ; then return ; fi
 	[[ -z "$NOTITLE" ]] || return
-	COMMAND="$1 │ "
+	COMMAND="$1 $TITLESEP "
 	COMMAND=$COMMAND:gs/%/%%/ #:gs/\$/\\\\\$/
 	fancytitle $COMMAND
 }
