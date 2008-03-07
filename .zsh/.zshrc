@@ -8,6 +8,7 @@ export MAILCHECK=0
 autoload -U compinit
 uname | grep -q CYGWIN && export INCYG=true
 if [ -n "$INCYG" ] ; then
+	export NO_UTF8_TITLE=true
 	compinit -i
 	cd
 else
