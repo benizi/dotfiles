@@ -2,7 +2,7 @@ bindkey -e
 bindkey "^T" expand-word
 setopt nohup no_notify no_check_jobs
 setopt auto_cd no_auto_menu
-setopt extended_glob glob_dots hist_subst_pattern
+setopt extended_glob glob_dots hist_subst_pattern 2>/dev/null
 setopt pushd_silent
 export MAILCHECK=0
 autoload -U compinit
