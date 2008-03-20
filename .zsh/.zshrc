@@ -30,3 +30,5 @@ do if [ ! -d $dir ] ; then continue ; fi
 	setopt nonullglob
 done
 for l in '' 's' ; [[ -f ~/.zshreminder$l ]] && cat ~/.zshreminder$l
+screen -ls 2>/dev/null | grep -q Detached && exec screen -rr
+[ -n "$SSH_CLIENT" ] && [ "$TERM" != "screen" ] && exec screen -RR -- zsh -l
