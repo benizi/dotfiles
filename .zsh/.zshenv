@@ -4,7 +4,7 @@ export WNSEARCHDIR=/wordnet/wn/dict
 export WNSEARCHPATH=$WNSEARCHDIR:/wordnet/wn/2k3/lib/perl/various
 export READNULLCMD=less
 typeset -U path
-for p in reset /home/benhaskell/bin $HOME/bin/dslinux/bin /usr/games/bin $HOME/bin /home/bhaskell/wn/bin /var/qmail/bin /usr/kde/4.0/bin $path /usr/kde/3.5/bin /people/bhaskell/bin {/usr{/local,},}/{s,}bin /opt/bin ; do
+for p in reset $HOME/bin /home/benhaskell/bin /home/bhaskell/qmail/bin {/usr{/local,},}/{s,}bin /opt/bin $HOME/bin/dslinux/bin /usr/games/bin /home/bhaskell/wn/bin /var/qmail/bin /usr/kde/4.0/bin $path /usr/kde/3.5/bin /people/bhaskell/bin ; do
 	if [ "$p" = "reset" ] ; then path=() ; continue ; fi
 	[ ! -d $p ] && continue
 	path=($path $p)
@@ -19,7 +19,6 @@ umask 077
 LABPCS=(rapture elation thought dream dictus nym remind wonder felicity bliss serenity)
 export LABPCS
 export WORDCHARS='*?_-.[]~&;!#$%^(){}<>'
-export LOCALDOMAIN=benizi.com
 export PERL5LIB=$HOME/Usable
 export MOZ5PROF=/home/bhaskell/.mozilla/firefox/6mbxqig7.default
 export AXIS2_HOME=/opt/axis2-1.3
