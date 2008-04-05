@@ -17,7 +17,8 @@ sub _fn_or_fh {
 	return sub {
 		my $fnh = shift;
 		my $fh;
-		if (ref $fnh) { $fh = $fnh; } else { open $fh, $mode, $fnh; }
+		if (ref $fnh) { $fh = $fnh }
+		elsif ($mode !~ /</ or -r $fnh) { open $fh, $mode, $fnh }
 		unshift @_, $fh;
 		&$sub;
 	};
@@ -31,12 +32,14 @@ sub _filesum {
 		$obj->hexdigest;
 	}));
 }
-sub read_file {
-	my $fn = shift;
-	open my $fh, '<', $fn or die "<$fn: $!";
-	my $ret = do { undef local $/; <$fh> };
-	close $fh;
-	$ret;
+sub _read_file {
+	return _underscored(_fn_or_fh(sub {
+		my $fh = shift;
+		$fh or return '';
+		my $ret = do { undef local $/; <$fh> };
+		close $fh;
+		$ret;
+	}));
 }
 sub mkdir_p {
 	my $d = shift;
@@ -61,6 +64,32 @@ sub run_cmd {
 	my $ret = system { $cmd[0] } @cmd;
 	!$ret;
 }
+sub map2bits {
+	my ($txt, $bits, $nouse, $all)=@_;
+	$nouse = '' unless defined $nouse;
+	$nouse .= "\\s~\\-" unless $all;
+	my $maxV = (2**$bits)-1;
+	my @charmap = map [], 0..$maxV;
+	push @{$charmap[ord()&$maxV]}, $_ for
+		grep !/[$nouse]/,
+		grep /[[:print:]]/,
+		map chr, 0..0x7f;
+	my @no = grep !@{$charmap[$_]}, 0..$maxV;
+	local $_ = $txt;
+	$_ .= "0" while length()%$bits;
+	my $r = '';
+	for(grep $_, split/(.{$bits})/) {
+		my $val = (eval"0b$_")&$maxV;
+		my $c = $charmap[$val];
+		die "Can't represent [$val] {bits=$bits, max=$maxV} (or @no)\n" if !@$c;
+		$r .= $$c[0];
+		push @$c, shift @$c
+	}
+	$r;
+}
+sub _xml_file { XML::Twig->new->parsefile(shift) }
+*xml_file = _underscored(\&_xml_file);
+my %in_module;
 sub my_use {
 	my ($mod, @args) = @_;
 	my (@exc, @underscore);
@@ -91,6 +120,7 @@ sub my_use {
 			*$old = \&$und;
 			*$und = _underscored(\&$old);
 		}
+		$in_module{$_} = $mod for grep !$not{$_}, keys %new;
 	} else {
 		die "$@" unless $fail_ok;
 		warn "Couldn't load $mod\n" if $warn;
@@ -116,9 +146,11 @@ optuse 'Date::Manip', qr/^Date_/;
 optuse 'XML::Twig';
 OPTION 'MyMatrices';
 OPTION 'Acme::MetaSyntactic', 'batman';
+OPTION 'Statfs';
 my_use 'POSIX', 'strftime';
 *md5file = _filesum("Digest::MD5");
 *sha1file = _filesum("Digest::SHA1");
+*read_file = _read_file;
 *base = _underscored(\&basename);
 *dir = _underscored(\&dirname);
 BEGIN { $not{$_}++ for qw/BEGIN import before/; }
@@ -132,8 +164,10 @@ for (qw/uri_unescape:unuri uri_escape:uri
 sub import {
 	shift;
 	my $verbose = 0;
+	my $help = 0;
 	@_ = grep { not
 		/^v(?:erb(?:ose)?)?$/ ? (++$verbose) :
+		/^h(?:elp?)?((?:die)?)$/ || /^ind(?:ex)?$/ ? ($help=$1?2:1) :
 	0 } @_;
 	my $st = symtab __PACKAGE__;
 	my $new;
@@ -145,13 +179,30 @@ sub import {
 	my $out = symtab caller;
 	my @x = @_ ? (@_) : (keys %$new);
 	$verbose and warn "Exporting: (@x)\n";
+	my %help;
 	for my $fn (@x) {
 		die "$fn is not exported by ".__PACKAGE__."\n" if !$$new{$fn};
-		for ($fn, $alias{$fn} ? @{$alias{$fn}} : ()) {
+		my @also;
+		@also = @{$alias{$fn}} if $alias{$fn};
+		my @as;
+		my %seen;
+		for ($fn, @also) {
+			my $s = ''.$_;
 			do {
-				$$out{$_} = $$new{$fn};
-			} while tr/_//d;
+				push @as, $s unless $seen{$s}++;
+			} while $s =~ tr/_//d;
 		}
+		if ($help) {
+			push @{$help{"From ".($in_module{$fn}||$INC{__PACKAGE__.".pm"})}},
+				[ @as ];
+		}
+		$$out{$_} = $$new{$fn} for @as;
 	}
+	for my $p (sort keys %help) {
+		warn "$p\n";
+		my @f = sort { $$a[0] cmp $$b[0] } @{$help{$p}};
+		warn "$$_[0]", (@$_ > 1) ? " [also as: @$_[1..$#$_]]" : "", "\n" for @f;
+	}
+	exit if $help > 1;
 }
 1;

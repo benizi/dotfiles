@@ -1,0 +1,230 @@
+package SequenceTools;
+use strict;
+use warnings;
+use base 'Exporter';
+our (@EXPORT, @EXPORT_OK, %EXPORT_TAGS);
+BEGIN {
+	my @funcs = qw/&align_seq &split_words/;
+	@EXPORT = @funcs;
+	@EXPORT_OK = @EXPORT;
+	%EXPORT_TAGS = ( ':all' => [ @EXPORT_OK ] );
+}
+use Data::Dumper;
+use List::Util qw/min max/;
+use Getopt::Long qw/:config pass_through/;
+
+my $comparator;
+BEGIN {
+	# use a nice default comparator unless it's unavailable
+	if (eval "use QGram") {
+		QGram->import;
+		$comparator = \&qgram;
+	} else {
+		$comparator = sub { ($_[0] eq $_[1]) ? 1 : 0 };
+	}
+}
+
+my %patterns = (
+	letters => qr//,
+	spaces => qr/\ /,
+	punc => qr/\b|([-;:\"\'\.+*&^%\$\#@!~+=\\\{\}\[\]\(\)])/,
+	words => qr/\b/,
+);
+$patterns{substr $_, 0, 1} = $patterns{$_} for keys %patterns;
+
+my %split;
+GetOptions(
+	'split=s' => \(my $split = ''),
+	map { ($_, \$split{$_}) } keys %patterns,
+) or die 'options';
+$split = $patterns{$_} for grep $split{$_}, keys %split;
+$split = $patterns{$split} if exists $patterns{$split};
+$_ = qr/$_/ for grep !ref, $split;
+
+my @b62cols = split //, 'ARNDCQEGHILKMFPSTWYVBZX';
+my @blosum62 = (
+	4,-1,-2,-2,0,-1,-1,0,-2,-1,-1,-1,-1,-2,-1,1,0,-3,-2,0,-2,-1,0, -1,5,0,-2,-3,1,0,-2,0,-3,-2,2,-1,-3,-2,-1,-1,-3,-2,-3,-1,0,-1, -2,0,6,1,-3,0,0,0,1,-3,-3,0,-2,-3,-2,1,0,-4,-2,-3,3,0,-1, -2,-2,1,6,-3,0,2,-1,-1,-3,-4,-1,-3,-3,-1,0,-1,-4,-3,-3,4,1,-1, 0,-3,-3,-3,9,-3,-4,-3,-3,-1,-1,-3,-1,-2,-3,-1,-1,-2,-2,-1,-3,-3,-2, -1,1,0,0,-3,5,2,-2,0,-3,-2,1,0,-3,-1,0,-1,-2,-1,-2,0,3,-1, -1,0,0,2,-4,2,5,-2,0,-3,-3,1,-2,-3,-1,0,-1,-3,-2,-2,1,4,-1, 0,-2,0,-1,-3,-2,-2,6,-2,-4,-4,-2,-3,-3,-2,0,-2,-2,-3,-3,-1,-2,-1, -2,0,1,-1,-3,0,0,-2,8,-3,-3,-1,-2,-1,-2,-1,-2,-2,2,-3,0,0,-1, -1,-3,-3,-3,-1,-3,-3,-4,-3,4,2,-3,1,0,-3,-2,-1,-3,-1,3,-3,-3,-1, -1,-2,-3,-4,-1,-2,-3,-4,-3,2,4,-2,2,0,-3,-2,-1,-2,-1,1,-4,-3,-1, -1,2,0,-1,-3,1,1,-2,-1,-3,-2,5,-1,-3,-1,0,-1,-3,-2,-2,0,1,-1, -1,-1,-2,-3,-1,0,-2,-3,-2,1,2,-1,5,0,-2,-1,-1,-1,-1,1,-3,-1,-1, -2,-3,-3,-3,-2,-3,-3,-3,-1,0,0,-3,0,6,-4,-2,-2,1,3,-1,-3,-3,-1, -1,-2,-2,-1,-3,-1,-1,-2,-2,-3,-3,-1,-2,-4,7,-1,-1,-4,-3,-2,-2,-1,-2, 1,-1,1,0,-1,0,0,0,-1,-2,-2,0,-1,-2,-1,4,1,-3,-2,-2,0,0,0, 0,-1,0,-1,-1,-1,-1,-2,-2,-1,-1,-1,-1,-2,-1,1,5,-2,-2,0,-1,-1,0, -3,-3,-4,-4,-2,-2,-3,-2,-2,-3,-2,-3,-1,1,-4,-3,-2,11,2,-3,-4,-3,-2, -2,-2,-2,-3,-2,-1,-2,-3,2,-1,-1,-2,-1,3,-3,-2,-2,2,7,-1,-3,-2,-1, 0,-3,-3,-3,-1,-2,-2,-3,-3,3,1,-2,1,-1,-2,-2,0,-3,-1,4,-3,-2,-1, -2,-1,3,4,-3,0,1,-1,0,-3,-4,0,-3,-3,-2,0,-1,-4,-3,-3,4,1,-1, -1,0,0,1,-3,3,4,-2,0,-3,-3,1,-1,-3,-1,0,-1,-3,-2,-2,1,4,-1, 0,-1,-1,-1,-2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-2,0,0,-2,-1,-1,-1,-1,-1,
+);
+my $blosum62 = {};
+for my $i (@b62cols) {
+	for my $j (@b62cols) {
+		$blosum62->{$i.$j} = shift @blosum62;
+	}
+}
+#our $score_matrix = $blosum62;
+#our $min_score = min values %$score_matrix;
+sub nw {
+	my $d = -10;
+	generic(
+		sub {
+			my ($n, $m, $h) = @_;
+			$$h[$_][0] = $d * $_ for 0..$n;
+			$$h[0][$_] = $d * $_ for 0..$m;
+		},
+		sub {
+			my ($i, $j, $k, $t, $ss, $tt, $h) = @_;
+			return $h + 5*qgram($ss,$tt) if $k < 0; #$score_matrix->{$ss.$tt}||$min_score if $k < 0;
+			$h + $d;
+		},
+		sub {
+			my ($i, $j, $n, $m) = @_;
+			[ $i-1, $j-1, -1, '\\' ],
+			[ $i-1, $j, 1, '|' ],
+			[ $i, $j-1, 1, '-' ]
+		},
+		@_
+	);
+}
+sub lev {
+	generic(
+		sub {
+			my ($n, $m, $h) = @_;
+			for my $i (0..$n) { for my $j (0..$m) { $$h[$i][$j] = 0; } }
+		},
+		sub {
+			my ($i, $j, $k, $t, $ss, $tt, $h) = @_;
+			if ($k < 0) {
+				return $h + ($ss eq $tt ? 1 : -1)
+			} else {
+				return $h - $k
+			}
+		},
+		sub {
+			my ($i, $j, $n, $m) = @_;
+			[ $i-1, $j-1, -1, '\\' ],
+#			[ $i, $j, 0, '^' ],
+			[ $i-1, $j, 1, '|' ],
+			[ $i, $j-1, 1, '-' ]
+		},
+		@_
+	);
+}
+sub sw {
+	generic(
+		sub {
+			my ($n, $m, $h) = @_;
+			for my $i (0..$n) {
+				for my $j (0..$m) {
+					$$h[$i][$j] = 0;
+				}
+			}
+		},
+		sub {
+			my ($i, $j, $k, $t, $ss, $tt, $h) = @_;
+			my $r = 0;
+			if ($k < 0) { # sim
+				$r = $h + (qgram($ss,$tt)||(-1/3));
+			} elsif (!$k) {
+				$r = 0;
+			} else {
+				$r = $h - (1 + $k/3);
+			}
+			warn "SCORE($i,$j,$k,$t,$ss,$tt,$h)=$r\n";
+			warn Dumper [$i,$j,$k,$t,$ss,$tt,$h,$r];
+			$r
+		},
+		sub {
+			my ($i, $j, $n, $m) = @_;
+			[ $i-1, $j-1, -1, '\\' ],
+			[ $i, $j, 0, '^' ],
+			map([ $i-$_, $j, $_, '|' ], 1..$i-1),
+			map([ $i, $j-$_, $_, '-' ], 1..$j-1),
+		},
+		@_
+	);
+}
+sub generic {
+	my ($init_h, $score, $candi, $sin, $tin) = @_;
+	my ($s, $t) = map [split $split], $sin, $tin;
+	my ($n, $m) = map 0+@$_, $s, $t;
+	$init_h->($n, $m, \my @h);
+	my @t = map [('^') x ($m+1)], 0..$n;
+	my @i;
+	my $order = '\\^|-';
+	for my $i (1..$n) {
+		for my $j (1..$m) {
+			$i[$i][$j] = [ $i, $j ];
+			my @ijkt = $candi->($i, $j);
+			my @cand = map [
+				@$_[0,1], # i, j
+				$score->(@$_, $$s[$i-1], $$t[$j-1], $h[$$_[0]][$$_[1]]),
+				$$_[3], # type
+			], @ijkt;
+			warn map "$_\n", "comparing($i,$j)", map join(',',@$_), @cand;
+			#my @cand = ( [ $i-1, $j-1, $h[$i-1][$j-1] + $sim, '\\' ] );
+			#push @cand,
+			#	map [ $i-$_, $j,   $h[$i-$_][$j] - (1 + ($_/3)), '|' ], 1..$i-1;
+			#push @cand,
+			#	map [ $i, $j-$_,   $h[$i][$j-$_] - (1 + ($_/3)), '-' ], 1..$j-1;
+			#push @cand, [ $i, $j, 0, '^' ];
+			@cand = sort {
+				$$b[2] <=> $$a[2] # score
+				or index($order,$$b[3]) <=> index($order,$$a[3]) # type
+				or abs($$a[0]-$$a[1]) <=> abs($$b[0]-$$b[1]) # close to diagonal
+				or grep(!$_, @$a[0,1]) <=> grep(!$_, @$b[0,1]) # non-zeros
+				or ($$b[0]+$$b[1]) <=> ($$a[0]+$$a[1]) # sum of indices
+			} @cand;
+			my $best = shift @cand;
+			$i[$i][$j] = [ @$best[0,1] ];
+			$h[$i][$j] = $$best[2];
+			$t[$i][$j] = $$best[3];
+		}
+	}
+	my ($besti, $bestj, $besth) = (0,0,0);
+	for my $i (0..$n) {
+		for my $j (0..$m) {
+			my $h = $h[$i][$j];
+			if ($h > $besth or ($h == $besth and $i+$j > $besti+$bestj)) {
+				($besti, $bestj, $besth) = ($i, $j, $h);
+			}
+		}
+	}
+	my @ind = ([$besti, $bestj]);
+	my @typ;
+	while (1) {
+		my ($li, $lj) = @{$ind[0]};
+		my $back = $t[$li][$lj];
+		unshift @typ, $back;
+		last if $back eq '^';
+		my ($bi, $bj) = @{$i[$li][$lj]};
+		unshift @ind, [$bi, $bj];
+	}
+	for my $i (grep 0, reverse 1..$#ind-1) {
+		next if $ind[$i+1][0]-$ind[$i-1][0] != 1;
+		next if $ind[$i+1][1]-$ind[$i-1][1] != 1;
+		splice @ind, $i, 1;
+		splice @typ, $i-1, 1;
+	}
+	print Dumper $s, $t, $n, $m, \@h;
+	$_ = [map sprintf("%4.1f",$_), @$_] for @h;
+	$h[$$_[0]][$$_[1]] = "\e[31m$h[$$_[0]][$$_[1]]\e[0m" for @ind;
+	$t[$$_[0]][$$_[1]] = "\e[31m$t[$$_[0]][$$_[1]]\e[0m" for @ind;
+	print "         @{[map qq/ {$_}/, @$t]}\n";
+	my @sd = map "{$_}", @$s;
+	unshift @sd, '   ';
+	print "$sd[$_] @{$h[$_]}\n" for 0..$#h;
+	print @{$t[$_]},"\n" for 0..$#t;
+	@$_ = map $_-1, @$_ for @ind;
+	print map "[@$_]", @ind;
+	print "\n@typ\n";
+	my @seq;
+	for my $off (1..$#ind) {
+		my $typ = $typ[$off];
+		my ($si, $ti) = @{$ind[$off]};
+		push @{$seq[0]}, ($typ eq '-') ? '-' : $$s[$si];
+		push @{$seq[1]}, ($typ eq '|') ? '-' : $$t[$ti];
+	}
+	@seq;
+}
+
+if (!caller) {
+	warn "Testing ".__PACKAGE__."\n";
+	while (<>) {
+		chomp;
+		my ($s, $t) = split;
+		print "lev -> @$_\n" for lev($s, $t);
+		print "sw -> @$_\n" for sw($s, $t);
+		print "nw -> @$_\n" for nw($s, $t);
+	}
+}
+1;
