@@ -18,6 +18,7 @@ our $debug = 0;
 my $split;
 sub Split {
     my $t = shift;
+	$split = $t and return if ref $t;
     $t ||= 'l';
     $split = '';
     for (
