@@ -27,6 +27,7 @@ export LESSOPEN="|lesspipe.sh %s"
 export PAGER=less
 export MATLAB=/home/bhaskell/MATLAB/7.4/lib/matlab7
 export PYTHONSTARTUP=~/.python/startup
+export PYTHONPATH=~/py
 EXTRAENV=${(%)${:-%N}}
 [ -L $EXTRAENV ] && EXTRAENV=$(readlink $EXTRAENV)
 [ -f $EXTRAENV- ] && source $EXTRAENV-
