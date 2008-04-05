@@ -165,7 +165,12 @@ sub color_diff {
 	warn "Bad arguments to color_diff\n" and return unless @_==2 or ($refs % 2);
 	return &super_color_diff if $refs;
     my @toprint;
-    my ($A, $B) = map [grep { defined($_) and length } split $split], @_;
+    my ($A, $B) = map [
+		grep { defined($_) and length }
+		((ref($split)||'') eq 'CODE')
+		? $split->($_)
+		: split $split
+	], @_;
     my $diff = Algorithm::Diff->new($A, $B);
     while ($diff->Next) {
         if (my @s = $diff->Same) {
