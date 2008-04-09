@@ -5,7 +5,7 @@ TITLESEP='│' # ceçi n'est pas un pipe
 [ -n "$NO_UTF8_TITLE" ] && TITLESEP='|'
 function fancytitle () {
 	local c=$TITLESEP
-	print -nP '${TITLE}$1%(!.ROOT $c .)%m $c %~ $c %n${STY+ $c $$}${ENDTITLE}'
+	print -nP '${TITLE}$1%(!.ROOT $c .)%m $c %~ $c %n${STY+ $c $STY}${ENDTITLE}'
 }
 function preexec () {
 	if [ $SHLVL -eq 1 -a "$TERM" = "linux" ] ; then return ; fi
