@@ -3,12 +3,13 @@ function error () { colormsg RED $@ }
 function title () { print "\e]2;$1\007" }
 function titlep () { title "$1" ; NOTITLE=1 }
 alias nl='nl -ha -ba -fa -nln'
+function commafy () { perl -lpwe '@F=split/(\s+)/,$_,-1;for(@F){next if/\D/;1 while s/(?<=\d)(?=\d\d\d\b)/,/}$_=join"",@F' }
 function count () { echo $#argv }
 function countf () { perl -lwe '$a++for grep-f,@ARGV;print$a' $argv }
 function with-size () { perl -lpwe '$_=join"\t",-s,$_' }
 function with-time () { perl -lpwe '$_=join"\t",(stat)[9],$_' }
 function with-time-human () { perl -lpwe '$_=join"\t",scalar(localtime((stat)[9])),$_' }
-function total () { perl -lanwe '$t+=shift@F;END{$t||=0;1 while $t=~s/(?<=\d)(?=\d\d\d\b)/,/;print$t}' }
-function total-size () { with-size | cut -f1 | total }
+function total () { perl -lanwe '$t+=shift@F;END{$t||=0;print$t}' }
+function total-size () { with-size | cut -f1 | total | commafy }
 function sort-by-size () { with-size | sort -n | cut -f2- }
 function sort-by-time () { with-time | sort -n | cut -f2- }
