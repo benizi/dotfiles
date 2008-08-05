@@ -3,7 +3,7 @@ function find_add () {
 	find ~/.ssh -type f -name 'id_*' ! -name '*.pub' \
 	| sort \
 	| perl -l0pe '' \
-	| xargs -0 ssh-add
+	| env -u DISPLAY xargs -0 ssh-add
 }
 if $FORCE || [ "x$LOGNAME" = "xbhaskell" ] ; then
 	if $FORCE || ! pgrep ssh-agent > /dev/null ; then
