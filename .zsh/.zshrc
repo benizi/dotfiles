@@ -15,8 +15,14 @@ else
 	compinit
 fi
 
-for dir in ~/.zsh-scripts ~ ~/.zsh-scripts-
-do if [ ! -d $dir ] ; then continue ; fi
+dirs=(~/.zsh-scripts ~ ~/.zsh-scripts-)
+SCRIPT=${(%)${:-%N}}
+if [ -L $SCRIPT ] ; then
+	SCRIPT=$(readlink $SCRIPT)
+	dirs+=($SCRIPT:h)
+fi
+for dir in $dirs ; do
+	[ ! -d $dir ] && continue
 	setopt nullglob
 	pushd $dir
 	files=(.zshrc-)
