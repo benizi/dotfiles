@@ -2,7 +2,11 @@
 " map!  a. hbmmi/\<2h"zdt.@z^Mywmx`mP xi
 set noexpandtab softtabstop=4 tabstop=4 shiftwidth=4
 set list listchars=tab:\ \ ,trail:·
-set background=light
+if exists('$VIM_BACK')
+	exec "set background=" . $VIM_BACK
+else
+	set background=light
+endif
 set binary
 set hidden
 syntax enable
