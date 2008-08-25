@@ -11,8 +11,10 @@ function with-time () { perl -lpwe '$_=join"\t",(stat)[9],$_' }
 function with-time-human () { perl -lpwe '$_=join"\t",scalar(localtime((stat)[9])),$_' }
 function total () { perl -lanwe '$t+=shift@F;END{$t||=0;print$t}' }
 function total-size () { with-size | cut -f1 | total | commafy }
-function sort-by-size () { with-size | sort -n | cut -f2- }
-function sort-by-time () { with-time | sort -n | cut -f2- }
+function sort-with-size () { with-size | sort -n }
+function sort-by-size () { sort-with-size | cut -f2- }
+function sort-with-time () { with-time | sort -n }
+function sort-by-time () { sort-with-time | cut -f2- }
 function factor-pretty () { factor $1 | perl -lanwe '@b=(shift @F); @x=(1); while (@F) { $f = shift @F; if ($f eq $b[-1]) { $x[-1]++; } else { push @b, $f; push @x, 1; } } print join " ", map { $b[$_].($x[$_] eq 1 ? "" : "^$x[$_]") } 0..$#b' }
 function update-zsh () {
 	pushd ~
