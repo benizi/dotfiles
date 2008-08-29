@@ -5,14 +5,12 @@ TITLESEP='│' # ceçi n'est pas un pipe
 [ -n "$NO_UTF8_TITLE" ] && TITLESEP='|'
 function fancytitle () {
 	local c=$TITLESEP
-	print -nP '${TITLE}$1%(!.ROOT $c .)%m $c %~ $c %n${STY+ $c $STY}${ENDTITLE}'
+	printf "${TITLE}%s%s${ENDTITLE}" $1 "$(print -nP '%(!.ROOT $c .)%m $c %~ $c %n${STY+ $c $STY}')"
 }
 function preexec () {
 	if [ $SHLVL -eq 1 -a "$TERM" = "linux" ] ; then return ; fi
 	[[ -z "$NOTITLE" ]] || return
-	COMMAND="$1 $TITLESEP "
-	COMMAND=$COMMAND:gs/%/%%/ #:gs/\$/\\\\\$/
-	fancytitle $COMMAND
+	fancytitle "$1 $TITLESEP "
 }
 function precmd () {
 	if [ $SHLVL -eq 1 -a "$TERM" = "linux" ] ; then return ; fi
