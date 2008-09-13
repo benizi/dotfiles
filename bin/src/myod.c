@@ -98,7 +98,7 @@ int main (int argc, char **argv, char **inenv) {
 	unsigned char c, signbit, buf[MAX_ROW];
 	char *f, *arg, **files, **allargs;
 	int pfd[2];
-	long off = 0;
+	long long off = 0;
 	long long buff;
 	int i, j, k, r, base, found, longf, fd, inbuf=0;
 	int fnum = 0;
@@ -232,7 +232,7 @@ int main (int argc, char **argv, char **inenv) {
 				if (!strcmp(files[fnum],"-")) {
 					fd = 0;
 				} else {
-					fd = open(files[fnum],O_RDONLY);
+					fd = open(files[fnum],O_RDONLY|O_LARGEFILE);
 					if (fd == -1) {
 						perror("open");
 						fprintf(stderr,"while trying to open: %s\n", files[fnum]);
@@ -268,7 +268,7 @@ int main (int argc, char **argv, char **inenv) {
 				if (inbuf < ROW) if (r) continue;
 				r = inbuf;
 				inbuf = 0;
-				printf("%08lx", off);
+				printf("%08llx", off);
 				for (i = 0; i < r; i++) printf(" %02x", buf[i]);
 				for (i = r; i < ROW; i++) if (!notrail) printf(" --");
 				if (!nochars) {
@@ -290,15 +290,15 @@ int main (int argc, char **argv, char **inenv) {
 					printf("%c%c",0xc2,0xab);
 				}
 				printf("\n");
-				if (dec) { printf("%ld\n", off); }
+				if (dec) { printf("%lld\n", off); }
 				if (blk) {
 					printf("block");
 					for (i = 0; blksize[i]; i++) {
 						if (i) printf("   ");
 						if (0) printf("[%d] ", blksize[i]);
 						else printf(" ");
-						printf("%ld", off/blksize[i]);
-						if (off % blksize[i]) printf("(+%ld)",off % blksize[i]);
+						printf("%lld", off/blksize[i]);
+						if (off % blksize[i]) printf("(+%lld)",off % blksize[i]);
 						else printf("=");
 					}
 					printf("\n");
