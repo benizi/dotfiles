@@ -10,6 +10,7 @@ function with-size () { perl -lpwe '$_=join"\t",-s,$_' }
 function with-time () { perl -lpwe '$_=join"\t",(stat)[9],$_' }
 function with-time-human () { perl -lpwe '$_=join"\t",scalar(localtime((stat)[9])),$_' }
 function total () { perl -lanwe '$t+=shift@F;END{$t||=0;print$t}' }
+function running-total () { perl -lapwe '$t+=$F[0];$_="$t\t$_"' }
 function total-size () { with-size | cut -f1 | total | commafy }
 function sort-with-size () { with-size | sort -n }
 function sort-by-size () { sort-with-size | cut -f2- }
