@@ -1,4 +1,4 @@
-if [ "$USER" = "bhaskell" ] ; then
+if false && [ "$USER" = "bhaskell" ] ; then
 	if which flock >/dev/null 2>/dev/null
 	then svn=(flock --timeout=1 ~/.svn-lock svn)
 	else svn=(svn)
