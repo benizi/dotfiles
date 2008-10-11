@@ -29,7 +29,7 @@ lesspipe_file() {
 		*" Zip archive"*)   lesspipe "$1" ".zip" ;;
 		*" LHa"*archive*)   lesspipe "$1" ".lha" ;;
 		*" ELF "*)          readelf -a -- "$1" ;;
-		*": data")          hexdump -C -- "$1" ;;
+		*": data")          myodc "$1" ;;
 		*)                  return 1 ;;
 	esac
 	return 0
