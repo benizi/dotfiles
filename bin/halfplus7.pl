@@ -50,6 +50,7 @@ sub set_bday {
 	$tm7 = DateCalc($tm7, "+14 years");
 	warn "Date should be born after  ", UnixDate($tm7, '%C'), $/;
 	warn "Date should be born before ", UnixDate($hp7, '%C'), $/;
+	warn "You're $sec seconds old\n";
 }
 
 set_bday($in_bday);
