@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 
 int usage (char *progname, char *err) {
 	fprintf(stderr,"Usage: %s progname [arg0name [args]]\n%s%s",
