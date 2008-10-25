@@ -11,6 +11,7 @@ if (-f $hgrc) {
 print "Username not set. Email address?\n";
 chomp(my $email = <STDIN>);
 for ($email) {
+	s/^clarity$/ben\@clarity.princeton.edu/;
 	/\@/ or s/(?=>|$)/\@benizi.com/;
 	/^.+<.+\@.+>$/ or $_ = "Benjamin R. Haskell <$_>";
 }
