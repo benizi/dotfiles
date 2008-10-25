@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-my $notall = 1;
+my $notall = 0;
 my $text = shift || 'x';
 my @attr = 1..7;
 my $attr = @attr;
