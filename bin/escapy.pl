@@ -1,7 +1,7 @@
 #!/usr/bin/perl -l
 use strict;
 use warnings;
-#use bytes;
+use open ':utf8', ':std';
 use MIME::Base64 qw/encode_base64 decode_base64/;
 use Digest::SHA1 qw/sha1_hex sha1_base64/;
 use Digest::MD5 qw/md5_hex md5_base64/;
@@ -10,7 +10,7 @@ use Encode;
 use Getopt::Long;
 Getopt::Long::Configure(qw/pass_through/);
 GetOptions(
-	'latin1|lat1|iso-8859-1!' => \(my $do_latin = 1),
+	'latin1|lat1|iso-8859-1!' => \(my $do_latin = 0),
 	'utf8' => \(my $just_utf8 = 0),
 ) or die 'options';
 $do_latin = 0 if $just_utf8;
@@ -51,6 +51,7 @@ while (<>) {
 			print join "\t", "Base64d", $1, decode_base64($1);
 		}
 		print join "\t", "URI", uri_escape($str);
+		print join "\t", "FullURI", join "", map sprintf("%%%02X",ord), split //, $str;
 #		print join "\t", "URI8", uri_escape_utf8($str);
 #		next if @vals;
 		my $b64 = encode_base64($str);
