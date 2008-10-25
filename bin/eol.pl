@@ -66,4 +66,4 @@ while (<>) {
     s/(?:\x0d(?:\x0a)?)|(?:\x0a(?:\x0d)?)/$out/g;
     print;
 }
-print STDERR "\tDone\n";
+print STDERR "\tDone\n" unless $quiet;
