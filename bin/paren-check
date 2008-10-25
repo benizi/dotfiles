@@ -1,0 +1,11 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+my $s = '';
+my $l = $0 =~ /lin/i;
+while (<>) {
+	$s .= ($l ? $. : '') . $_ for /((?:\/\*|\*\/|[\[\]{}()]))/g;
+	print "$s\n" if $s;
+}
+$_=$s;
+print $_, $/ while s/((?:\d*\(\s*\d*\))|(?:\d*\{\s*\d*\})|(?:\d*\[\s*\d*\])|(?:\d*\/\*[^\/*]*\d*\*\/))/ /;
