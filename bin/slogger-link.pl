@@ -52,15 +52,20 @@ find {
 		if (my @match = grep -f, map "/home/bhaskell/$_/$bn", qw/pics pt/) {
 			pop @match while @match > 1;
 			my @s = map -s, $_, @match;
-			return print "-s($_) != -s(@match)\n" if $s[0]!=$s[1];
-			my $fn = "/home/bhaskell/pics/$_";
-			print "Would link $_\nTo $fn\n" if $debug;
-			if (not $dry) {
-				warn "$_ -> $fn\nError: $!" unless unlink and symlink $fn, $_;
+			if ($s[0]!=$s[1]) {
+				print "-s($_) != -s(@match)\n";
+			} else {
+				my $fn = "/home/bhaskell/pics/$_";
+				print "Would link $_\nTo $fn\n" if $debug;
+				if (not $dry) {
+					warn "$_ -> $fn\nError: $!"
+						unless unlink and symlink $fn, $_;
+				}
 			}
-		} elsif ($all_files) {
+		}
+		if ($all_files) {
 			my $fullfile = "$File::Find::dir/$_";
-			next if $done{$fullfile};
+			return if $done{$fullfile};
 			my $txt = read_file;
 			my $stripped = remove_file_links($_, $txt);
 			my $sha1 = sha1_hex($stripped);
@@ -103,6 +108,6 @@ find {
 		grep { (-d) or ((-f) and $size_limit < -s) }
 		@_;
 	},
-}, $ENV{MOZ5PROF}."/slogger/archive";
+}, $ENV{MOZ5PROF}."/slogger/archive/data";
 __END__
 $pic="/home/bhaskell/pt/".base; (unlink and symlink("/home/bhaskell/pics/".base,$_)) or warn "Error $_:$!\n" if -f $pic'
