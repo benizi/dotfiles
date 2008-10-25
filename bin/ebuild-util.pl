@@ -2,12 +2,13 @@
 use strict;
 use warnings;
 use File::Basename;
+use File::Find;
 use feature ':5.10';
-my @port_dirs = my ($pkg, $portdir, $local, $retired) = qw{
+my @port_dirs = my ($installed, $portdir, $local, $retired) = qw{
 	/var/db/pkg
 	/usr/portage
-	/usr/local/portage
-	/usr/local/retired-portage
+	/var/paludis/repositories/local
+	/var/paludis/repositories/retired
 };
 shift @port_dirs;
 
@@ -17,6 +18,9 @@ GetOptions(
 	'package=s' => \(my $PACK = ''),
 	'dry' => \(my $dry = 0),
 	'verbose+' => \(my $verbose = 0),
+	'user|pu=s' => \(my $pu = 'paludisbuild'),
+	'group|pg=s' => \(my $pg = 'paludisbuild'),
+	'cache!' => \(my $cache_too = 1),
 ) or die 'options';
 $dry and $verbose ||= 1;
 umask 0022;
@@ -64,8 +68,9 @@ sub choose {
 	$_[$choice-1];
 }
 
+my $version_re = qr/((?:cvs\.)?)(\d+)((?:\.\d+)*)([a-z]?)((?:_(?:pre|p|beta|alpha|rc)\d*)*)((?:-r((?:\d+)?))?)$/;
 sub get_package {
-	my ($pkg, $src) = @_;
+	my ($pkg, $versioned) = @_;
 	(my $pkge = $pkg) =~ s/([\$\'\`\s])/\\$1/g;
 	my @pkgs;
 	for my $opt ('-e', '-r') {
@@ -73,16 +78,34 @@ sub get_package {
 		last if @pkgs;
 	}
 	@pkgs = ($pkg) if !@pkgs and $pkg =~ m{/};
-	!@pkgs and error "Nothing matched {$pkg}" and return;
+	if (!@pkgs) {
+		my ($cat, $pack) = split m{/}, $pkg;
+		($cat, $pack) = $pack ? ("\Q$cat\E", $pack) : ('.', $cat);
+		if ($versioned) {
+			find {
+				wanted => sub {
+					return if !-f;
+					return if !/\.ebuild$/;
+					(my $dir = $File::Find::dir) =~ s{^\Q$installed\E/}{};
+					die "No version in $File::Find::dir??\n" unless (my $ver = $dir) =~ s/-$version_re//;
+					push @pkgs, $dir;
+				},
+				preprocess => sub {
+					if ($File::Find::dir eq $installed) {
+						return grep /$cat/, @_;
+					}
+					grep /^$pack/, @_;
+				},
+			}, $installed;
+		}
+		!@pkgs and error "Nothing matched {$pkg}" and return;
+	}
 	choose @pkgs
 }
 
 sub get_ebuild {
 	my ($src, $pkg, $versioned) = @_;
-	my @dirs = glob File::Spec->catfile(
-		$src,
-		$pkg . ($versioned ? '-[0-9]*' : '')
-	);
+	my @dirs = glob File::Spec->catfile($src, $pkg);
 	my @ebuilds = map glob(File::Spec->catfile($_,'*.ebuild')), @dirs;
 	!@ebuilds and error join("\n", "No ebuilds for {$pkg}", map "Looked in $_", (@dirs?@dirs:('nowhere?!'))) and return;
 	choose @ebuilds
@@ -121,22 +144,47 @@ sub interactive_move {
 	}
 }
 sub portage_permissions {
-	for (grep basename($_) ne '.cache',
-		grep -d,
-		map glob(File::Spec->catfile($_,'*')),
-		$local, $retired) {
-		my @cmd = ('chmod', '-R', 'a+rX', $_);
-		$verbose and say "@cmd";
-		$dry or system { $cmd[0] } @cmd;
+	my @pdirs = @_ ? @_ : ($portdir, grep -d, glob "/usr/local/*portage");
+	my $am_root = ($< == 0) ? 1 : 0;
+	my $paludis_u = 0 + getpwnam $pu;
+	my $paludis_g = 0 + getgrnam $pg;
+	my @tochange;
+	find {
+		wanted => sub {
+			my ($perm) =
+				(-f) ? 0664 :
+				(-d) ? 0775 :
+				die "!-f, !-d: $File::Find::name\n";
+			$verbose > 1 and $am_root and say "root: chown/chmod $File::Find::name";
+			$dry and return;
+			push @tochange, $File::Find::name and return if !$am_root;
+			chown $paludis_u, $paludis_g, $_;
+			chmod $perm, $_;
+		},
+		preprocess => sub {
+			grep !/^\.cache$/ || $cache_too,
+			@_
+		},
+	}, @pdirs;
+	if (!$am_root and @tochange) {
+		my @xargs = ("sudo", "xargs", "-0", "--no-run-if-empty");
+		$dry or open my $chown, "| @xargs chown $pu:$pg" or die "| chown: $!";
+		$dry or open my $chmod, "| @xargs chmod a+rX,g+w" or die "| chown: $!";
+		for (@tochange) {
+			$verbose > 1 and say "non-root: chown/chmod $_";
+			$dry and next;
+			print $chown "$_\0";
+			print $chmod "$_\0";
+		}
 	}
 }
 sub ebuild_mover {
 	my ($src, $dst, $versioned, $pack) = @_;
-	return unless $pack = get_package $pack;
+	return unless $pack = get_package $pack, $versioned;
 	return unless my $ebuild = get_ebuild $src, $pack, $versioned;
 	interactive_move $src, $dst, $versioned, $ebuild,
 		grep -f, glob File::Spec->catfile(dirname($ebuild), 'files', '*');
-	portage_permissions
+	portage_permissions $dst
 }
 my @args = (grep($_, $PACK), @ARGV);
 @ARGV = ();
@@ -145,11 +193,15 @@ given (lc basename $0) {
 		say 'unmask'
 	} when ('ebuild-get-package') {
 		@args = ($portdir, @args) if @args < 3;
-		get_package @args
+		get_package @args;
 	} when ('ebuild-to-local') {
-		ebuild_mover $portdir, $local, 0, @args
+		ebuild_mover $portdir, $local, 0, @args;
 	} when ('ebuild-retire') {
-		ebuild_mover $pkg, $retired, 1, @args;
+		ebuild_mover $installed, $retired, 1, @args;
+	} when (/perm/i) {
+		$verbose++ if $verbose;
+		portage_permissions @args;
+		$verbose-- if $verbose;
 	} default {
 		say;
 	}
