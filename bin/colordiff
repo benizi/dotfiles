@@ -1,0 +1,40 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use CGI;
+use Getopt::Long;
+Getopt::Long::Configure(qw/bundling/);
+my ($f, $g);
+my %split;
+my %format;
+GetOptions(
+	'c' => \$format{ignoresame},
+	'n' => \ (my $no_color = 0),
+	'split=s' => \$split{custom},
+	'alllines' => \$format{alllines},
+	's' => \$split{s},
+	'l' => \$split{l},
+	'p' => \$split{p},
+	'w' => \$split{w},
+	'h' => \$format{HTML},
+	'b' => \ (my $background = 0),
+	'd' => \ (my $debug = 0),
+	'<>' => sub {
+		unless (defined($f)) { ($f) = @_; return; }
+		unless (defined($g)) { ($g) = @_; return; }
+		die "too many files";
+	},
+);
+my @split = map /custom/?$split{$_}:$_, grep defined($split{$_}), keys %split;
+my @format = grep $format{$_}, keys %format;
+die "Too many split options specified: @split\n" if @split > 1;
+push @split, 'p';
+#warn "SPLIT(@split) FORMAT(@format)\n";
+die "Usage: $0 [options] file1 file2\n" unless $f and $g;
+
+require ColorDiff;
+ColorDiff->import('color_diff_files',
+	split=>($split[0]),
+	format=>join('-', @format),
+);
+print for color_diff_files($f,$g);
