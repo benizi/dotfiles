@@ -7,7 +7,12 @@ ReadMode 4;
 print "foo\n";
 sub sysy { print "@_\n"; system { $_[0] } @_; }
 while (!defined(ReadKey -1)) {
-	my @cmd = ("wrapdsp", "wavplay", "/home/bhaskell/CTU24.wav");
-	print "Execing\n";
-	sysy(@cmd[1..$#cmd]) and sysy(@cmd) and die "exec\n";
+	for my $wrap ([],['wrapdsp'],['aoss']) {
+		for my $prog (['wavplay'],['aplay'],
+			map ['aplay','-d',$_], qw/jackplug duplexplug output dsp0/) {
+			exit if ReadKey -1;
+			my @cmd = (@$wrap, @$prog, "/home/bhaskell/sounds/CTU24.wav");
+			sysy @cmd and warn "Err: {@cmd} $!";
+		}
+	}
 }
