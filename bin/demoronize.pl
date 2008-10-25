@@ -3,7 +3,12 @@ my $inplace = ($0 =~ /inplace/) ? 1 : 0;
 use strict;
 use warnings;
 use bytes;
-my $debug = 0;
+use Getopt::Long qw/:config pass_through/;
+GetOptions(
+	'debug+' => \(my $debug = 0),
+	'inplace!' => \$inplace,
+	'extra!' => \(my $extra = 1),
+) or die 'options';
 sub debug { $debug and warn @_; 1; }
 sub chrs {
 	local $_ = shift;
@@ -14,6 +19,8 @@ my @wu = map hex,
 	qw/80 20AC 82 201A 83 0192 84 201E 85 2026 86 2020 87 2021 88 02C6 89 2030
 	8A 0160 8B 2039 8C 0152 8E 017D 91 2018 92 2019 93 201C 94 201D 95 2022
 	96 2013 97 2014 98 02DC 99 2122 9A 0161 9B 203A 9C 0153 9E 017E 9F 0178/;
+$extra and push @wu, map hex,
+	qw/13 2013/;
 my %mapn;
 my %mapc;
 my $qr = '';
