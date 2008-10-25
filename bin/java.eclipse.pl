@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use bytes;
 use File::Basename;
+use File::Spec;
 use FindBin qw/$Bin/;
 use XML::Twig;
 use Getopt::Long;
@@ -29,7 +30,7 @@ sub walk_up {
 	for my $d (ref($dirs)?@$dirs:$dirs) {
 		while ($d and $d !~ /^[\/.]$/) {
 			for my $s (ref($stop)?@$stop:$stop) {
-				return $d if -f "$d/$s" or -d "$d/$s";
+				return $d if -e File::Spec->catfile($d, $s);
 			}
 			$d = dirname $d;
 		}
@@ -79,14 +80,14 @@ my @search = ($proj_dir);
 my %searched;
 while (@search) {
 	my $dir = shift @search;
-	my $cp_file = "$dir/.classpath";
+	my $cp_file = File::Spec->catfile($dir,".classpath");
 	verbose 1, "Non-exist? $cp_file" and next unless -f $cp_file;
 	verbose 1, "Already $cp_file" and next if $searched{$cp_file}++;
 	verbose 1, "Searching $cp_file";
 	XML::Twig->new(twig_handlers=>{classpathentry=>sub {
 		my $kind = $_->att('kind')||'';
 		my $path = $_->att('path')||'';
-		-f $path or -d $path or $path =~ s/^(?=\/)/$space_dir/ or $path = "$dir/$path";
+		-f $path or -d $path or $path =~ s/^(?=\/)/$space_dir/ or $path = File::Spec->catfile($dir,$path);
 		verbose 1, "FOUND $kind\n$path";
 		if ($kind eq 'lib' or $kind eq 'output') {
 			push @cp, $path;
@@ -102,11 +103,13 @@ my %seen;
 verbose 1, "1 $_" for @cp;
 # @cp = grep { $a = /\.jar$/i ? !($seen{basename $_}++) : 1; warn "?$a $_\n"; $a } @cp;
 @cp = grep { /\.jar$/i ? !($seen{basename $_}++) : 1 } @cp;
+@cp = grep length, @cp;
 verbose 1, "2 $_" for @cp;
 %seen = ();
 @cp = grep !$seen{$_}++, @cp;
 my $cp = join ':', @cp;
 my @command = ("java", "-cp", $cp, $java_class, @args);
 verbose 1, "$_" for split /:/, $cp;
+verbose 1, "COMMAND\n@command\n";
 exec { $command[0] } @command;
 die "Couldn't execute: @command\n";
