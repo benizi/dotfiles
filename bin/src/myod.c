@@ -18,7 +18,8 @@ typedef struct {
 } outputtype;
 static outputtype output[] = {
 	{ 'b', "binary",               1, 0, 0, 0, NULL,     0, NULL, 0 },
-	{ 'o', "octal bytes",          1, 0, 0, 0, "%03o",   0, NULL, 1 },
+	{ 'o', "octal bytes",          1, 0, 0, 0, "%03o",   0, NULL, 0 },
+	{ '1', "decimal bytes",        1, 0, 0, 0, "%03d",   0, NULL, 1 },
 	{ 's', "short",                2, 1, 0, 0, "%6d",    0, NULL, 0 },
 	{ 'S', "unsigned short",       2, 0, 0, 0, " %5u",   0, NULL, 1 },
 	{ 'n', "network short",        2, 0, 1, 0, " %5u",   0, NULL, 0 },
