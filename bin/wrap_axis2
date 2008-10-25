@@ -1,0 +1,3 @@
+#!/bin/zsh
+export JAVA_HOME=`java-config-2 -O`
+exec $AXIS2_HOME/bin/`basename $0`.sh $argv
