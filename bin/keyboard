@@ -1,0 +1,57 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use feature ':5.10';
+use Getopt::Long qw/:config pass_through/;
+my %opt;
+GetOptions(
+	'model=s' => \$opt{model},
+	'layout=s' => \$opt{layout},
+	'variant=s' => \$opt{variant},
+	'reset=s' => \$opt{reset},
+	'option=s@' => \($opt{options}=[]),
+) or die 'options';
+my %defaults = (
+	'' => {
+		model => 'pc104',
+		layout => 'benizi',
+		variant => 'intl',
+		reset => 1,
+		options => [
+			qw/lv3:ralt_switch altwin:super_win compose:menu/
+#			qw/lv3:ralt_switch compose:menu/
+		],
+	},
+);
+my @defopt = qw/layout variant/;
+for (@defopt) { $opt{$_} //= shift @ARGV if @ARGV; }
+warn "Extra options: (@ARGV)\n" if @ARGV;
+
+my $path = $opt{layout} || '';
+my $sep = '.';
+do {
+	for my $k (keys %{$defaults{''}}) {
+		next unless exists $defaults{$path}{$k};
+		my $v = $defaults{$path}{$k};
+		if ($v and ref($v)~~'ARRAY') {
+			push @{$opt{$k}}, @$v;
+		} else {
+			$opt{$k} //= $v;
+		}
+	}
+} while $path =~ s/^((?:(?!\Q$sep\E).)+)(?=\Q$sep\E|$)//;
+my @cmd = ('setxkbmap');
+push @cmd, "-$_", $opt{$_} for grep length($opt{$_}), qw/model layout variant/;
+push @cmd, -option => '' if $opt{reset};
+push @cmd, -option => $_ for @{$opt{options}};
+exec { $cmd[0] } @cmd;
+__END__
+setxkbmap
+-model pc104
+-layout us
+-variant intl
+-option ''
+-option lv3:ralt_switch
+-option altwin:super_win
+-option ctrl:nocaps
+-option compose:menu
