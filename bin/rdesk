@@ -1,0 +1,73 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use feature ':5.10';
+use Getopt::Long qw/:config pass_through/;
+my %opt;
+GetOptions(
+	'size|dimensions|wh|g=s' => \$opt{graphics},
+	'server=s' => \$opt{server},
+	'username|user|u=s' => \$opt{user},
+	'password|pass|p=s' => \$opt{pass},
+	'defaults=s' => \(my $defaults_from = ''),
+	'dry' => \(my $dry = 0),
+) or die 'options';
+$opt{server} //= shift @ARGV;
+warn "Extra options: (@ARGV)\n" if @ARGV;
+$opt{extra} = [@ARGV];
+
+my %rev_alias;
+my %defaults = (
+	'' => {
+		#graphics => '1024x640',
+		graphics => '1000x700',
+		depth => 16,
+		user => $ENV{LOGNAME},
+	},
+);
+
+for (grep -f, "$ENV{HOME}/.config/rdesk") {
+	next unless open my $f, '<', $_;
+	eval join '', <$f>;
+}
+
+my %alias;
+while (my ($val, $arr) = each %rev_alias) { $alias{$_} = $val for @$arr; }
+
+$_ = $alias{$_ // ''} // $_ for $opt{server}, $defaults_from;
+my $server = $opt{server};
+die "Must specify server\n" unless defined $server;
+for my $try (map $_||'', $defaults_from, $server, ':last') {
+	my ($hier, $is_last) = split /:/, $try, -1;
+	$hier //= '';
+	my @parts = split /\./, $hier;
+	next if !@parts and !$is_last;
+	$is_last and !@parts and @parts = ('');
+	my @keys = map join('.', @parts[0..$_]), reverse 0..$#parts;
+	for my $param (qw/graphics depth user pass extra:@/) {
+		my ($o, $arr) = split /:/, $param;
+		for my $d (map $defaults{$_}||{}, @keys) {
+			last if !$arr and defined $opt{$o};
+			my $val = $$d{$o};
+			next unless defined $val;
+			if ($arr) {
+				push @{$opt{$o}}, @$val;
+			} else {
+				$opt{$o} = $val;
+			}
+		}
+	}
+}
+
+my @rcmd = (
+	rdesktop =>
+	-g => $opt{graphics},
+	-a => $opt{depth},
+	-u => $opt{user},
+	grep(defined($opt{pass}), -p => $opt{pass}),
+	@{$opt{extra}},
+	$opt{server},
+);
+$dry and warn "@rcmd\n" and exit;
+exec { $rcmd[0] } @rcmd;
+die "Couldn't exec(",join(",",@rcmd),")\n";
