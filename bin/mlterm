@@ -1,0 +1,133 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+my %stupid = qw/ch zh cn zh jp ja/;
+my %country = qw/ar EG zh TW en US ja JP el GR/;
+my %font = (
+	ar => 'ae_AlMohanad',
+	en => 'DejaVu Sans Mono',
+	el => 'Courier',
+	zh_TW => '-*-ming for iso10646 -*-*-*-*-*-*-*-*-*-*-iso10646-*',
+	zh_HK => '-*-ar pl kaitim big5-*-*-*-*-*-*-*-100-*-*-iso10646-*',
+);
+my %big = (ar => 30, zh => 22, ja => 22, ko => 22);
+my %vary = (ar => 1);
+
+use Getopt::Long qw/:config pass_through/;
+GetOptions(
+	'lang=s' => \(my $lang = ''),
+	'country=s' => \(my $country = ''),
+	'encoding=s' => \(my $enc = 'UTF-8'),
+	'hans|Hans' => \(my $Hans = 0),
+	'hant|Hant' => \(my $Hant = 0),
+	'font=s' => \(my $font = ''),
+	'fw=i' => \(my $FW = 16),
+	'big=i' => \(my $big = 0),
+	'variable|vary' => \(my $vary = 0),
+	'debug' => \(my $debug = 0),
+	'c|client' => \(my $client = 0),
+	'mlterm=s' => \(my $ml_term = '/usr/bin/mlterm'),
+	'mlclient=s' => \(my $ml_client = '/usr/bin/mlclient'),
+	'dev!' => \(my $dev_versions = 1),
+) or die 'options';
+my $using_dev = 0;
+for (
+	[\$ml_term,"/home/bhaskell/mlterm-dev/mlterm/xwindow/mlterm"],
+	[\$ml_client,"/home/bhaskell/mlterm-dev/mlterm/tool/mlclient/mlclient"],
+	) {
+	my ($ref, $path) = @$_;
+	my $what = $client ? "mlclient" : "mlterm";
+	if (-x $path) {
+		$$ref = $path;
+		warn "Using dev version of $what: $path\n";
+		$using_dev = 1;
+	} else {
+		warn "Dev version of $what NOT FOUND at $path\n";
+	}
+}
+
+if (@ARGV == 1 || $lang) {
+	local $_ = $lang;
+	$_ ||= $ARGV[0];
+	if (/^([a-z]{2})_([A-Z]{2})\.(.*)$/) {
+		($lang, $country, $enc) = ($1, $2, $3);
+		shift;
+	} elsif (/^([a-z]{2})_([A-Z]{2})$/) {
+		($lang, $country) = ($1, $2);
+		shift;
+	} elsif (/^([a-z]{2})$/) {
+		($lang) = ($1);
+		shift;
+	} else {
+		warn "Using $_ as an argument\n";
+	}
+}
+
+$lang = 'zh' if $Hans or $Hant;
+$country = 'TW' if $Hant;
+
+$lang = $stupid{$lang} if $stupid{$lang};
+$lang ||= 'en';
+$country ||= $country{$lang} if $country{$lang};
+$country ||= uc $lang;
+$enc //= 'UTF-8';
+(my $enc_squish = $enc) =~ tr/A-Z\-\./a-z/d;
+$enc = ".$enc" if length $enc;
+
+my $LC = "${lang}_${country}${enc}";
+for my $test ($LC, $lang.'_'.$country, $lang) {
+	$font ||= $font{$test} if $font{$test};
+	$vary = 1 if $vary{$test};
+	$big ||= $big{$test} if $big{$test};
+}
+$FW = $big if $FW < $big;
+
+if ($font) {
+	for (map [$font, "ISO10646_UCS$_"], 2, 4) {
+		my ($font, $cs) = @$_;
+		if ($font !~ /ISO106/
+			and $font !~ /-.*-/
+			and $font !~ /^[A-Z]\w+(?:\s[A-Z]\w+)*$/
+			) {
+			$font .= "-${cs}_1";
+		}
+		for my $ffn (map "$ENV{HOME}/.mlterm/${_}font", '', 'v', 'aa', 'vaa') {
+			open my $ff, '>', $ffn or die "<$ffn: $!";
+			for my $typ (
+				map { $_, $_.'_BOLD' }
+				map { $_, $_.'_BIWIDTH' }
+				$cs
+				) {
+				print $ff "$typ = $font;\n";
+			}
+			close $ff;
+		}
+	}
+}
+{
+	my @tmpl = grep -f, glob "$ENV{HOME}/.mlterm/*.tmpl";
+	while (my $ifn = shift @tmpl) {
+		(my $ofn = $ifn) =~ s/\.tmpl$//;
+		open my $of, '>', $ofn or die ">$ofn: $!";
+		open my $if, '<', $ifn or die "<$ifn: $!";
+		while (<$if>) {
+			s/\$\{(.*?)\}/eval $1/ge;
+			print $of $_;
+		}
+		close $if;
+		close $of;
+	}
+}
+my $mlterm = $client ? $ml_client : $ml_term;
+my @mlterm = $using_dev
+	? ($mlterm, '-D', '--type', 'xft', '-w')
+	: ($mlterm, '-A', '-D', '-w');
+push @mlterm, $FW, @ARGV;
+push @mlterm, '-V' if $vary;
+$ENV{LC_ALL} = $LC;
+$debug and warn "Using font: $font\n" if $font;
+$ENV{MYFONT} = $font if $font;
+$debug and warn "Using LC_ALL=$LC\n";
+$debug and warn "@mlterm\n";
+exec { $mlterm[0] } @mlterm;
+die "Failed to exec mlterm\n@mlterm\n$!";
