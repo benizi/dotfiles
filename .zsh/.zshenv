@@ -18,7 +18,7 @@ LABPCS=(rapture elation thought dream dictus nym remind wonder felicity bliss se
 export LABPCS
 export WORDCHARS='*?_-.[]~&;!#$%^(){}<>'
 export PERL5LIB=$HOME/Usable
-export MOZ5PROF=/home/bhaskell/.mozilla/firefox/6mbxqig7.default
+export MOZ5PROF=/home/bhaskell/.mozilla/firefox/qk8tugb3.default
 export AXIS2_HOME=/opt/axis2-1.3
 export LESS="-R -i -M --shift 5"
 export LESSOPEN="|lesspipe.sh %s"
