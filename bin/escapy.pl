@@ -1,11 +1,12 @@
 #!/usr/bin/perl -l
 use strict;
 use warnings;
-use open ':utf8', ':std';
+#use open ':utf8', ':std';
+use bytes;
 use MIME::Base64 qw/encode_base64 decode_base64/;
 use Digest::SHA1 qw/sha1_hex sha1_base64/;
 use Digest::MD5 qw/md5_hex md5_base64/;
-use URI::Escape qw/uri_escape uri_unescape/;
+use URI::Escape qw/uri_escape_utf8 uri_unescape/;
 use Encode;
 use Getopt::Long;
 Getopt::Long::Configure(qw/pass_through/);
@@ -24,12 +25,8 @@ while (<>) {
 		|[\xe0-\xef][\x80-\xbf]{2}
 		|[\xf0-\xf7][\x80-\xbf]{3}
 		)*$/x) { # is UTF-8
-		@vals = ('UTF-8', $_);
-		unshift @vals, 'Latin1', encode('ISO-8859-1', decode('utf8', $_)) if $do_latin;
-	} else {
-		my $o = $_;
-		$_ = encode('utf8', $o);
-		@vals = ('Latin1', $o, 'utf8', $_);
+		@vals = ('UTF-8', decode_utf8($_));
+		unshift @vals, 'Latin1', encode('ISO-8859-1', decode_utf8($_)) if $do_latin;
 	}
 	{
 		my @new;
@@ -50,7 +47,7 @@ while (<>) {
 		if ($str =~ /([A-Za-z0-9\/\+=]{8,})/) {
 			print join "\t", "Base64d", $1, decode_base64($1);
 		}
-		print join "\t", "URI", uri_escape($str);
+		print join "\t", "URI", uri_escape_utf8($str);
 		print join "\t", "FullURI", join "", map sprintf("%%%02X",ord), split //, $str;
 #		print join "\t", "URI8", uri_escape_utf8($str);
 #		next if @vals;
