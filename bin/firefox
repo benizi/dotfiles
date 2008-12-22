@@ -1,9 +1,14 @@
 #!/bin/zsh
 if [ -n "$0:e" ] ; then args=(-P $0:e) ; else args=() ; fi
 #exec aoss /usr/bin/firefox-bin $argv
-case $1 in
-	http*)	args=($args -remote "openURL($1)") ;;
-esac
+while [ $# -gt 0 ] ; do
+	arg=$1
+	shift
+	case $arg in
+		http*)	args+=(-remote "openURL($arg)") ;;
+		*) args+=($arg) ;;
+	esac
+done
 args=(/opt/firefox/firefox-bin $args)
 logfile=~/firefox-launcher.log
 echo GOT $0 $argv >> $logfile
