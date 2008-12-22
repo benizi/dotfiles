@@ -1,0 +1,18 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Getopt::Long qw/:config pass_through/;
+GetOptions(
+	'timeout=i' => \(my $timeout = 5),
+	'key=s' => \(my $pattern = ''),
+	'negative' => \(my $negative = 0),
+) or die "USAGE: $0 [ --timeout N ] [ --key REGEX ]\n";
+my $GOOD = $negative ? 1 : 0;
+my $BAD = 1 - $GOOD;
+use Term::ReadKey;
+ReadMode 4; END { ReadMode 0; }
+my $k = ReadKey $timeout;
+exit $BAD unless defined $k;
+exit $GOOD if !length $pattern;
+exit $GOOD if $k =~ /$pattern/;
+exit $BAD;
