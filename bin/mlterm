@@ -5,7 +5,7 @@ my %stupid = qw/ch zh cn zh jp ja/;
 my %country = qw/ar EG zh TW en US ja JP el GR/;
 my %font = (
 	ar => 'ae_AlMohanad',
-	en => 'DejaVu Sans Mono',
+	en => 'Lucida Sans Mono',
 	el => 'Courier',
 	zh_TW => '-*-ming for iso10646 -*-*-*-*-*-*-*-*-*-*-iso10646-*',
 	zh_HK => '-*-ar pl kaitim big5-*-*-*-*-*-*-*-100-*-*-iso10646-*',
@@ -31,7 +31,7 @@ GetOptions(
 	'dev!' => \(my $dev_versions = 1),
 ) or die 'options';
 my $using_dev = 0;
-for (
+for (grep $dev_versions,
 	[\$ml_term,"/home/bhaskell/mlterm-dev/mlterm/xwindow/mlterm"],
 	[\$ml_client,"/home/bhaskell/mlterm-dev/mlterm/tool/mlclient/mlclient"],
 	) {
