@@ -58,10 +58,11 @@ static flagtype flags[] = {
 	{ 0, NULL, "Input options", NULL },
 	{ 0, NULL, NULL, NULL }
 };
-static long skip = 0, maxout = 0;
+static long skip = 0, maxout = 0, fakeoff = 0;
 static flagtype intopts[] = {
 	{ 'k', "skip", "S_k_ip to N", &skip },
 	{ 'x', "max", "Ma_x_ output N", &maxout },
+	{ 'f', "fakeoff", "Fake offset", &fakeoff },
 	{ 0, NULL, NULL, NULL }
 };
 int blksize[] = { 512, 256, 128, 64, 32, 0 };
@@ -269,7 +270,7 @@ int main (int argc, char **argv, char **inenv) {
 				if (inbuf < ROW) if (r) continue;
 				r = inbuf;
 				inbuf = 0;
-				printf("%08llx", off);
+				printf("%08llx", off+fakeoff);
 				for (i = 0; i < r; i++) printf(" %02x", buf[i]);
 				for (i = r; i < ROW; i++) if (!notrail) printf(" --");
 				if (!nochars) {
@@ -291,7 +292,7 @@ int main (int argc, char **argv, char **inenv) {
 					printf("%c%c",0xc2,0xab);
 				}
 				printf("\n");
-				if (dec) { printf("%lld\n", off); }
+				if (dec) { printf("%lld\n", off+fakeoff); }
 				if (blk) {
 					printf("block");
 					for (i = 0; blksize[i]; i++) {
