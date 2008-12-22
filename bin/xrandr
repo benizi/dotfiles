@@ -1,0 +1,40 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Getopt::Long qw/:config pass_through/;
+GetOptions(
+	'home' => \(my $home = 0),
+	'work|mr|medrespond' => \(my $medrespond = 0),
+	'dry-run|dry' => \(my $dry = 0),
+) or die 'options';
+my ($this) = join ":", (stat $0)[0,1];
+my @cmd;
+for (split /:/, $ENV{PATH}) {
+	my $xrandr = "$_/xrandr";
+	next unless -f $xrandr;
+	next if join(":", (stat $xrandr)[0,1]) eq $this;
+	push @cmd, $xrandr;
+	last;
+}
+die "Real xrandr not found\n" unless @cmd;
+if ($home or $medrespond) {
+	my ($external_mode, $position) =
+		$home ? ('1280x1024', '--right-of')
+		: $medrespond ? (
+		'1024x768'
+		#'1280x1024'
+		, '--left-of')
+		: die("Shouldn't reach this");
+	push @cmd, qw/--size auto
+		--output LVDS
+		--mode 1280x800
+		--output VGA
+		--mode/, $external_mode,
+		qw/--rate 84.1/,
+		$position,
+		'LVDS';
+}
+push @cmd, @ARGV;
+print "@cmd\n";
+exit if $dry;
+exec { $cmd[0] } @cmd;
