@@ -19,12 +19,19 @@ my $mw = MainWindow->new(-title=>'diskusage');
 	sub restart { exec { $^X } $^X, $0 }
 	sub restart_delay { exec { $^X } $^X, $0, '--delay', 5 }
 }
+my $geometry = '-0+0';
+sub update_geometry { $mw->geometry($geometry) }
+sub toggle_geometry {
+	$geometry = join '', grep $_, reverse split //, $geometry;
+	substr($geometry, 0, 1) =~ tr{-+}{+-};
+	$geometry =~ s/(.)/${1}0/g;
+}
 $mw->bind('<Key-q>', \&cleanup);
 $mw->bind('<Button-1>', \&restart);
-$mw->bind('<Button-2>', \&restart_delay);
+$mw->bind('<Button-2>', sub { toggle_geometry; update_geometry });
 $mw->bind('<Button-3>', \&cleanup);
 $mw->overrideredirect(1);
-$mw->geometry('-1+1');
+update_geometry;
 my $label_text = '';
 my $label = $mw->Label(
 	-font=>[qw/Courier 9/]=>
@@ -35,8 +42,10 @@ sub update {
 	my @parts;
 	my @warn;
 	local $_ = '';
-	for (qw{/ /usr:U /home:H /wordnet:W /var/lib/postgresql:PG}) {
+	for (qw{/ /usr:U /usr/portage/distfiles:D /home:H /wordnet:W /var/lib/postgresql:P /home/bhaskell/photomosaic/perl/raw:R}) {
 		my ($dir, $disp) = /:/ ? (split /:/) : ($_) x 2;
+		my (@devinos) = map { (stat)[0,1] } $dir, "$dir/..";
+		next if $devinos[0] == $devinos[2] and $devinos[1] != $devinos[3];
 		$_ .= "" for $dir,$disp;
 		my $s = statfsM $dir;
 		my $avail = $s->avail;
@@ -44,8 +53,8 @@ sub update {
 		push @parts, sprintf "%2s\0%d\0%d%s",
 			$disp, 100 * (1 - ($avail/$tot)), $avail,
 			(0?sprintf("\n\0%02d", $tot):'');
-
-		push @warn, "LOW DISK SPACE WARNING\n'\U$dir\E' is low! ($avail M left)"
+next if $dir eq '/home' and $avail > 200;#FIXME
+		push @warn, "LOW DISK SPACE!!\n'\U$dir\E' is low!\n($avail M left)"
 			if
 				($avail < 100 and $avail/$tot < .05) or
 				($avail/$tot < .05);
@@ -58,6 +67,7 @@ sub update {
 			my $len = 0;
 			$len += length for @p;
 			$_ = $p[0].(" " x (11-$len)).$p[1];
+			s/^\s//;
 		}
 		$_ = join "\n", @lines;
 	}
