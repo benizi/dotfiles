@@ -11,16 +11,17 @@ GetOptions(
 	'password|pass|p=s' => \$opt{pass},
 	'defaults=s' => \(my $defaults_from = ''),
 	'dry' => \(my $dry = 0),
+	'verbose+' => \(my $verbose = 0),
 ) or die 'options';
 $opt{server} //= shift @ARGV;
+shift @ARGV if @ARGV and $ARGV[0] eq '--';
 warn "Extra options: (@ARGV)\n" if @ARGV;
 $opt{extra} = [@ARGV];
 
 my %rev_alias;
 my %defaults = (
 	'' => {
-		#graphics => '1024x640',
-		graphics => '1000x700',
+		graphics => '1010x740', # approx. full-screen on 1024x768
 		depth => 16,
 		user => $ENV{LOGNAME},
 	},
@@ -33,17 +34,36 @@ for (grep -f, "$ENV{HOME}/.config/rdesk") {
 
 my %alias;
 while (my ($val, $arr) = each %rev_alias) { $alias{$_} = $val for @$arr; }
+die "Must specify server\n" unless defined $opt{server};
 
-$_ = $alias{$_ // ''} // $_ for $opt{server}, $defaults_from;
-my $server = $opt{server};
-die "Must specify server\n" unless defined $server;
-for my $try (map $_||'', $defaults_from, $server, ':last') {
-	my ($hier, $is_last) = split /:/, $try, -1;
-	$hier //= '';
+my $in_server = delete $opt{server};
+for (
+	[ $defaults_from, 1, 0 ],
+	[ $in_server, 0, 0 ],
+	[ '', 0, 1 ],
+	) {
+	my ($hier, $no_server, $is_last) = @$_;
+	while (1) {
+		$hier = $alias{$hier // ''} // $hier // '';
+		my $atts = ($hier =~ s/^([^,]+),(.*)$/$1/) ? $2 : '';
+		last unless $atts;
+		for (grep length, $atts) {
+			while (s/^,?(\w+)=([^,]+)//) {
+				my ($k, $v) = ($1, $2);
+				if ($k eq 'size') {
+					($k, $v) = (graphics =>
+						{qw/small 1010x740 wide 1265x770/}->{$v});
+				}
+				$opt{$k} //= $v;
+			}
+			die "Bad attributes: $atts\n" if length $atts;
+		}
+	}
 	my @parts = split /\./, $hier;
 	next if !@parts and !$is_last;
 	$is_last and !@parts and @parts = ('');
-	my @keys = map join('.', @parts[0..$_]), reverse 0..$#parts;
+	$opt{server} //= $hier unless $no_server;
+	my @keys = map join('.', @parts[$_..$#parts]), 0..$#parts;
 	for my $param (qw/graphics depth user pass extra:@/) {
 		my ($o, $arr) = split /:/, $param;
 		for my $d (map $defaults{$_}||{}, @keys) {
@@ -69,5 +89,6 @@ my @rcmd = (
 	$opt{server},
 );
 $dry and warn "@rcmd\n" and exit;
+$verbose and warn "@rcmd\n";
 exec { $rcmd[0] } @rcmd;
 die "Couldn't exec(",join(",",@rcmd),")\n";
