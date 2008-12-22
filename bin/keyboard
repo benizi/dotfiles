@@ -4,18 +4,21 @@ use warnings;
 use feature ':5.10';
 use Getopt::Long qw/:config pass_through/;
 my %opt;
+my @xkbopts = qw/model layout variant keycodes/;
 GetOptions(
-	'model=s' => \$opt{model},
-	'layout=s' => \$opt{layout},
-	'variant=s' => \$opt{variant},
+	(map {; "$_=s" => \$opt{$_} } @xkbopts),
 	'reset=s' => \$opt{reset},
 	'option=s@' => \($opt{options}=[]),
+	'menu' => \(my $menu = 0),
+	'dry' => \(my $dry_run = 0),
+	'extra=s@' => \my @extra,
 ) or die 'options';
 my %defaults = (
 	'' => {
 		model => 'pc104',
 		layout => 'benizi',
 		variant => 'intl',
+		keycodes => 'evdev',
 		reset => 1,
 		options => [
 			qw/lv3:ralt_switch altwin:super_win compose:menu/
@@ -25,7 +28,8 @@ my %defaults = (
 );
 my @defopt = qw/layout variant/;
 for (@defopt) { $opt{$_} //= shift @ARGV if @ARGV; }
-warn "Extra options: (@ARGV)\n" if @ARGV;
+push @extra, @ARGV if @ARGV;
+warn "Extra options: (@extra)\n" if @extra;
 
 my $path = $opt{layout} || '';
 my $sep = '.';
@@ -40,11 +44,22 @@ do {
 		}
 	}
 } while $path =~ s/^((?:(?!\Q$sep\E).)+)(?=\Q$sep\E|$)//;
+if ($menu) {
+	for ($opt{options}) {
+		@$_ = grep !/^compose:menu/, grep !/^altwin/, @$_;
+		push @$_, 'altwin:menu';
+	}
+}
 my @cmd = ('setxkbmap');
-push @cmd, "-$_", $opt{$_} for grep length($opt{$_}), qw/model layout variant/;
+push @cmd, map {; "-$_" => $opt{$_} } grep length($opt{$_}), @xkbopts;
 push @cmd, -option => '' if $opt{reset};
 push @cmd, -option => $_ for @{$opt{options}};
-exec { $cmd[0] } @cmd;
+push @cmd, @extra;
+if ($dry_run) {
+	print "@cmd\n";
+} else {
+	exec { $cmd[0] } @cmd;
+}
 __END__
 setxkbmap
 -model pc104
