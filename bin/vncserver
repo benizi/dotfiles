@@ -393,12 +393,12 @@ sub GetXDisplayDefaults {
 			my %seen;
 			@fdir = grep -r $$_[1], grep -d $$_[1],
 				grep !$seen{$$_[1]}++, @fdir;
-			my @good = (0,1,4,5,8,9,10,11,12,13,15,16,17);
+			my @good = 0..$#fdir;
 			my %good;
 			$good{$_}++ for @good;
 			0 and warn "Bad fonts:\n", map $$_[0].$/,
 				@fdir[grep !$good{$_}, 0..$#fdir];
-			@fdir=map $$_[0], @fdir[@good];
+			@fdir=map $$_[1], @fdir[@good];
 			$fontPath = join ',', @fdir;
 			last;
 		}
