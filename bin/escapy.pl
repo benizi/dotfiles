@@ -43,6 +43,10 @@ while (<>) {
 		print join "\t", "Octets", sprintf '0x%*v02x', ' 0x', $str;
 		print join "\t", "octets:d", sprintf '%*v03d', ' ', $str;
 		print join "\t", "octets:o", sprintf '\\%*v03o', '\\', $str;
+		print join "\t", "zsh", join '',
+			map /[\x21-\x7e]/ ? $_ : sprintf("%s%03o%s", '$\'\\', ord, "'"),
+			map chr,
+			unpack 'C*', $str;
 		print join "\t", "chars:d", map sprintf("%03d",ord), grep $_, ($str =~ /(\X)/g);
 		if ($str =~ /([A-Za-z0-9\/\+=]{8,})/) {
 			print join "\t", "Base64d", $1, decode_base64($1);
