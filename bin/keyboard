@@ -13,6 +13,7 @@ GetOptions(
 	'dry' => \(my $dry_run = 0),
 	'extra=s@' => \my @extra,
 ) or die 'options';
+sub run_it { if ($dry_run) { print "@_\n"; } else { system { $_[0] } @_; } }
 my %defaults = (
 	'' => {
 		model => 'pc104',
@@ -55,11 +56,8 @@ push @cmd, map {; "-$_" => $opt{$_} } grep length($opt{$_}), @xkbopts;
 push @cmd, -option => '' if $opt{reset};
 push @cmd, -option => $_ for @{$opt{options}};
 push @cmd, @extra;
-if ($dry_run) {
-	print "@cmd\n";
-} else {
-	exec { $cmd[0] } @cmd;
-}
+run_it @cmd;
+run_it 'xmodmap', "$ENV{HOME}/.xmodmap";
 __END__
 setxkbmap
 -model pc104
