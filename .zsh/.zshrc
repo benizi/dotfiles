@@ -6,9 +6,14 @@ setopt extended_glob glob_dots hist_subst_pattern 2>/dev/null
 setopt pushd_silent
 export MAILCHECK=0
 autoload -U compinit
-uname | grep -q CYGWIN && export INCYG=true
+export ZSH_UNAME=$(uname)
+export ZSH_UNAMER=$(uname -r | perl -lpwe 's/^(\d+(?:\.\d+)?)\D.*$/$1/')
+case $ZSH_UNAME in
+	*CYGWIN*) export INCYG=true ;;
+	*FreeBSD*) export INBSD=true ;;
+	*) ;;
+esac
 if [ -n "$INCYG" ] ; then
-	export NO_UTF8_TITLE=true
 	compinit -i
 	cd
 else

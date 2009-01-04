@@ -13,15 +13,17 @@ alias rehash=' builtin rehash'
 alias bash='HISTFILE=~/.bash_history bash'
 
 alias fcl='fc -nidl 0 | less'
-alias l='ls --color=auto -trl'
-alias ll='ls --color=auto -trlL'
-alias lll='ls --color=auto -trl | less'
-alias la='ls --color=auto -trlA'
-alias lsd='ls --color=auto -trld'
-alias lsda='ls --color=auto -trldA'
-alias lso='ls --color=auto -tlA'
-alias lss='ls --color=auto -Srl'
-alias lsr='ls --color=auto -Sl'
+local lscolor
+if [ -n "$INBSD" ] ; then lscolor="ls" ; else lscolor="ls --color=auto" ; fi
+alias l="$lscolor -trl"
+alias ll="$lscolor -trlL"
+alias lll="$lscolor -trl | less"
+alias la="$lscolor -trlA"
+alias lsd="$lscolor -trld"
+alias lsda="$lscolor -trldA"
+alias lso="$lscolor -tlA"
+alias lss="$lscolor -Srl"
+alias lsr="$lscolor -Sl"
 alias pf='ps -ef'
 alias pfg='ps -ef | grep'
 alias lsl=l
@@ -29,9 +31,11 @@ alias pine='titlep PINE ; command alpine -bail -p $PINERC'
 alias alpine='titlep PINE ; alpine-svn -bail -p $PINERC'
 alias mysqle='mysql --defaults-extra-file=/wordnet/wn/2k3/util/mysql.pass'
 alias mysqlh='mysql --defaults-extra-file=/wordnet/wn/2k3/util/mysql.pass.plusHTML'
+alias nacroread='acroread -openInNewWindow'
 alias vi=vim
 alias wget-cookies='wget --load-cookies $MOZ5PROF/cookies.txt'
 alias wget-fakeit="wget -U 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070515 Firefox/2.0.0.4' --load-cookies \$MOZ5PROF/cookies.txt"
 alias wcc='LC_ALL=C wc'
 alias z=' exec zsh'
+alias Z=' exec sudo su bhaskell -'
 hash -d afs=/afs/cs.cmu.edu/user/bhaskell/protected

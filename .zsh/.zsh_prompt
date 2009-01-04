@@ -2,7 +2,7 @@ setopt promptsubst
 export PROMPT='%{${PSCOLOR}%(!.${PSCOLORALL-${PSCOLORROOT-$UNDERLINE}}.${PSCOLORALL-$PSCOLORNORM})%}%n@%m %~%(!.#.$)%{${NOCOLOR}%} '
 export PS1
 TITLESEP='│' # ceçi n'est pas un pipe
-[ -n "$NO_UTF8_TITLE" ] && TITLESEP='|'
+[ -n "$INCYG" ] && TITLESEP='|'
 function fancytitle () {
 	local c=$TITLESEP
 	printf "${TITLE}%s%s${ENDTITLE}" $1 "$(print -nP '%(!.ROOT $c .)%m $c %~ $c %n${STY+ $c $STY}')"
