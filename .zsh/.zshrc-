@@ -1,0 +1,3 @@
+autoload insert-composed-char
+zle -N insert-composed-char
+bindkey "^U" insert-composed-char
