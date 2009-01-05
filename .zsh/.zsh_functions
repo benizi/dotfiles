@@ -21,6 +21,8 @@ function update-zsh () {
 	pushd ~
 	if [ -L .zshrc -o -L .zshenv ] ; then
 		echo "Linked (no-op)"
+	elif hg st -A .zshrc | grep -q . ; then
+		echo "In HG (no-op)"
 	else
 		wget -O - http://benizi.com/zsh.tbz2 | tar -jxvf -
 	fi
