@@ -8,9 +8,10 @@ GetOptions(
 	'patterns=s' => \(my $patterns_file = '$REPO/.hg-tosync'),
 	'debug+' => \$::DEBUG,
 	'outfile=s' => \(my $outfilename = ''),
+	'dry-run' => \(my $dry = 0),
 ) or die 'options';
 s/\$REPO/$repo_dir/g for $patterns_file;
-die "Not to terminal\n" if !(length $outfilename) and -t 1;
+die "Not to terminal\n" if !($dry or length $outfilename) and -t 1;
 $outfilename = '-' unless length $outfilename;
 
 chdir $repo_dir;
@@ -82,6 +83,6 @@ use File::Find;
 		next unless $is_tracked;
 		push @tracked, $_;
 	}
-	open my $out, "| tar -jcvf $outfilename -T -";
-	print $out "$_\n" for @tracked;
+	$dry or open STDOUT, "| tar -jcvf $outfilename -T -";
+	print "$_\n" for @tracked;
 }
