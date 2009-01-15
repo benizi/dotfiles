@@ -2,5 +2,6 @@
 host=localhost
 case $0 in
 	*dell) host=dell.home.local:0 ;;
+	*win) host=acer2k3.benwin.benizi.com:0 ;;
 esac
 DISPLAY=$host exec $argv
