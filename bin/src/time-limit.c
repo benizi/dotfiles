@@ -6,6 +6,47 @@
 #include <unistd.h>
 #include <signal.h>
 
+#define EXIT_SIGNALED 109
+#define EXIT_THISPROG 110
+#define EXIT_EXECVP 3
+
+static double _time_double (struct timeval t) {
+	return t.tv_sec+((double)t.tv_usec/100000);
+}
+
+static unsigned int verbose = 0, numeric_status = 0;
+static int my_exit (int ret) {
+	struct timeval now;
+	if (verbose) {
+		if (numeric_status) {
+			fprintf(stderr,"Exit=%d\n",ret);
+		} else {
+			fprintf(stderr,"Exit=");
+			switch (ret) {
+				case EXIT_SIGNALED:
+					fprintf(stderr,"child signaled");
+					break;
+				case EXIT_THISPROG:
+					fprintf(stderr,"something wrong in this prog");
+					break;
+				case EXIT_EXECVP:
+					fprintf(stderr,"couldn't execvp child");
+					break;
+				default:
+					fprintf(stderr,"code=%d",ret);
+					break;
+			}
+			if (gettimeofday(&now,NULL)) {
+				fprintf(stderr," (error getting time of day)");
+			} else {
+				fprintf(stderr," (@ %f)",_time_double(now));
+			}
+			fprintf(stderr,"\n");
+		}
+	}
+	return ret;
+}
+
 static char *usage = "Usage: %s [options] command [arguments]\n  -t N    wait N seconds\n";
 int main (int argc, char **argv, char **env) {
 	pid_t pid, err = 0;
@@ -13,7 +54,7 @@ int main (int argc, char **argv, char **env) {
 	char f;
 	double diff;
 	struct timeval start, now;
-	unsigned int c = 0, verbose = 0, nonpass = 1, wrap = 0, wait = 1;
+	unsigned int c = 0, nonpass = 1, wrap = 0, wait = 1;
 	if (argc < 2) {
 		fprintf(stderr, usage, argv[0]);
 		return 1;
@@ -23,10 +64,14 @@ int main (int argc, char **argv, char **env) {
 		nonpass++;
 		f = argv[i][1];
 		if (f == '-') f = argv[i][2];
-		if (verbose) fprintf(stderr,"Got flag %c\n",f);
+		if (verbose>1) fprintf(stderr,"Got flag %c\n",f);
 		switch (f) {
 			case 'v':
 				verbose++;
+				break;
+			case 's':
+				if (verbose>1) fprintf(stderr,"Numeric status\n");
+				numeric_status++;
 				break;
 			case 't':
 				if (i+1 >= argc) {
@@ -34,7 +79,7 @@ int main (int argc, char **argv, char **env) {
 					return 2;
 				}
 				wait = atol(argv[++i]);
-				if (verbose) fprintf(stderr,"Wait=%d\n",wait);
+				if (verbose>1) fprintf(stderr,"Wait=%d\n",wait);
 				nonpass++;
 				break;
 			default:
@@ -58,37 +103,35 @@ int main (int argc, char **argv, char **env) {
 		fprintf(stderr, "Couldn't fork\n");
 		return 2;
 	}
-	if (verbose) fprintf(stderr,"Start:%f\n",start.tv_sec+((double)start.tv_usec/100000));
+	if (verbose>1) fprintf(stderr,"Start:%f\n",_time_double(start));
 	if (pid) {
 		while (1) {
 			if (gettimeofday(&now,NULL)) {
 				fprintf(stderr,"Couldn't get time of day\n");
-				return 110;
+				return my_exit(EXIT_THISPROG);
 			}
 			err = waitpid(pid,&status,WNOHANG);
 			if (err && err != pid) {
 				fprintf(stderr, "Waitpid error\n");
-				return 110;
+				return my_exit(EXIT_THISPROG);
 			} else if (err == pid) {
 				if (WIFEXITED(status)) {
-					if (verbose) fprintf(stderr,"Child exited normally\n");
+					if (verbose>1) fprintf(stderr,"Child exited normally\n");
 					err = WEXITSTATUS(status);
 				} else if (WIFSIGNALED(status)) {
-					if (verbose) fprintf(stderr,"Child was signalled\n");
-					err = 109;
+					if (verbose>1) fprintf(stderr,"Child was signalled\n");
+					err = EXIT_SIGNALED;
 				}
-				if (verbose) fprintf(stderr,"Returning %d (status=%d)\n",err,status);
-				return err;
+				if (verbose>1) fprintf(stderr,"Returning %d (status=%d)\n",err,status);
+				return my_exit(err);
 			} else if (c) {
 				if (verbose>1&&c++<2) fprintf(stderr,"Killed but not dead\n");
 			} else {
-				diff =
-					((double)now.tv_sec     + ((double)now.tv_usec  )/1000000)
-					- ((double)start.tv_sec + ((double)start.tv_usec)/1000000);
+				diff = _time_double(now) - _time_double(start);
 				if (diff >= (double)wait && !c++) {
-					if (verbose>1) fprintf(stderr,"now:%f\n",now.tv_sec+((double)now.tv_usec/100000));
+					if (verbose>1) fprintf(stderr,"now:%f\n",_time_double(now));
 					if (verbose>1) fprintf(stderr,"now:%ld.%06ld\n",now.tv_sec,now.tv_usec);
-					if (verbose) fprintf(stderr,"Time limit reached (diff=%f)\n",diff);
+					if (verbose>1) fprintf(stderr,"Time limit reached (diff=%f)\n",diff);
 					kill(pid,9);
 				} else {
 					if (verbose>1) fprintf(stderr,"Diff: %f\n",diff);
@@ -97,13 +140,13 @@ int main (int argc, char **argv, char **env) {
 		}
 	} else {
 		argv+=nonpass;
-		if (verbose) {
+		if (verbose>1) {
 			fprintf(stderr,"About to execvp\n");
 			for (i = 0; i < argc-nonpass; i++)
 				fprintf(stderr,"argv[%d]=<%s>\n",i,argv[i]);
 		}
 		execvp(argv[0], argv);
 		fprintf(stderr, "Couldn't execvp\n");
-		return 3;
+		return my_exit(EXIT_EXECVP);
 	}
 }
