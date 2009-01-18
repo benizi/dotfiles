@@ -1,0 +1,57 @@
+# perl -Mcharnames=:full -CDS -lwe 'sub mk ($) { join " ", map "<$_>", qw/Multi_key/, split //, shift; } for (0x0300..0x0400) { next unless my ($ul, $let) = ((charnames::viacode($_)||"") =~ /^Greek (\S)\S+ letter (\S+)$/i); my ($abbrev) = $let =~ /^(.{1,3})/; $abbrev = lc $abbrev if $ul eq "S"; print mk $abbrev, q/ : "/, chr, q/" # /, sprintf "\\u%04x %s", $_, charnames::viacode($_) }'
+<Multi_key> <A> <L> <P> : "Α" # \u0391 GREEK CAPITAL LETTER ALPHA
+<Multi_key> <B> <E> <T> : "Β" # \u0392 GREEK CAPITAL LETTER BETA
+<Multi_key> <G> <A> <M> : "Γ" # \u0393 GREEK CAPITAL LETTER GAMMA
+<Multi_key> <D> <E> <L> : "Δ" # \u0394 GREEK CAPITAL LETTER DELTA
+<Multi_key> <E> <P> <S> : "Ε" # \u0395 GREEK CAPITAL LETTER EPSILON
+<Multi_key> <Z> <E> <T> : "Ζ" # \u0396 GREEK CAPITAL LETTER ZETA
+<Multi_key> <E> <T> <A> : "Η" # \u0397 GREEK CAPITAL LETTER ETA
+<Multi_key> <T> <H> <E> : "Θ" # \u0398 GREEK CAPITAL LETTER THETA
+<Multi_key> <I> <O> <T> : "Ι" # \u0399 GREEK CAPITAL LETTER IOTA
+<Multi_key> <K> <A> <P> : "Κ" # \u039a GREEK CAPITAL LETTER KAPPA
+<Multi_key> <L> <A> <M> : "Λ" # \u039b GREEK CAPITAL LETTER LAMDA
+<Multi_key> <M> <U> : "Μ" # \u039c GREEK CAPITAL LETTER MU
+<Multi_key> <N> <U> : "Ν" # \u039d GREEK CAPITAL LETTER NU
+<Multi_key> <X> <I> : "Ξ" # \u039e GREEK CAPITAL LETTER XI
+<Multi_key> <O> <M> <I> : "Ο" # \u039f GREEK CAPITAL LETTER OMICRON
+<Multi_key> <P> <I> : "Π" # \u03a0 GREEK CAPITAL LETTER PI
+<Multi_key> <R> <H> <O> : "Ρ" # \u03a1 GREEK CAPITAL LETTER RHO
+<Multi_key> <S> <I> <G> : "Σ" # \u03a3 GREEK CAPITAL LETTER SIGMA
+<Multi_key> <T> <A> <U> : "Τ" # \u03a4 GREEK CAPITAL LETTER TAU
+<Multi_key> <U> <P> <S> : "Υ" # \u03a5 GREEK CAPITAL LETTER UPSILON
+<Multi_key> <P> <H> <I> : "Φ" # \u03a6 GREEK CAPITAL LETTER PHI
+<Multi_key> <C> <H> <I> : "Χ" # \u03a7 GREEK CAPITAL LETTER CHI
+<Multi_key> <P> <S> <I> : "Ψ" # \u03a8 GREEK CAPITAL LETTER PSI
+<Multi_key> <O> <M> <E> : "Ω" # \u03a9 GREEK CAPITAL LETTER OMEGA
+<Multi_key> <a> <l> <p> : "α" # \u03b1 GREEK SMALL LETTER ALPHA
+<Multi_key> <b> <e> <t> : "β" # \u03b2 GREEK SMALL LETTER BETA
+<Multi_key> <g> <a> <m> : "γ" # \u03b3 GREEK SMALL LETTER GAMMA
+<Multi_key> <d> <e> <l> : "δ" # \u03b4 GREEK SMALL LETTER DELTA
+<Multi_key> <e> <p> <s> : "ε" # \u03b5 GREEK SMALL LETTER EPSILON
+<Multi_key> <z> <e> <t> : "ζ" # \u03b6 GREEK SMALL LETTER ZETA
+<Multi_key> <e> <t> <a> : "η" # \u03b7 GREEK SMALL LETTER ETA
+<Multi_key> <t> <h> <e> : "θ" # \u03b8 GREEK SMALL LETTER THETA
+<Multi_key> <i> <o> <t> : "ι" # \u03b9 GREEK SMALL LETTER IOTA
+<Multi_key> <k> <a> <p> : "κ" # \u03ba GREEK SMALL LETTER KAPPA
+<Multi_key> <l> <a> <m> : "λ" # \u03bb GREEK SMALL LETTER LAMDA
+<Multi_key> <m> <u> : "μ" # \u03bc GREEK SMALL LETTER MU
+<Multi_key> <n> <u> : "ν" # \u03bd GREEK SMALL LETTER NU
+<Multi_key> <x> <i> : "ξ" # \u03be GREEK SMALL LETTER XI
+<Multi_key> <o> <m> <i> : "ο" # \u03bf GREEK SMALL LETTER OMICRON
+<Multi_key> <p> <i> : "π" # \u03c0 GREEK SMALL LETTER PI
+<Multi_key> <r> <h> <o> : "ρ" # \u03c1 GREEK SMALL LETTER RHO
+<Multi_key> <s> <i> <g> : "σ" # \u03c3 GREEK SMALL LETTER SIGMA
+<Multi_key> <t> <a> <u> : "τ" # \u03c4 GREEK SMALL LETTER TAU
+<Multi_key> <u> <p> <s> : "υ" # \u03c5 GREEK SMALL LETTER UPSILON
+<Multi_key> <p> <h> <i> : "φ" # \u03c6 GREEK SMALL LETTER PHI
+<Multi_key> <c> <h> <i> : "χ" # \u03c7 GREEK SMALL LETTER CHI
+<Multi_key> <p> <s> <i> : "ψ" # \u03c8 GREEK SMALL LETTER PSI
+<Multi_key> <o> <m> <e> : "ω" # \u03c9 GREEK SMALL LETTER OMEGA
+<Multi_key> <s> <t> <i> : "ϛ" # \u03db GREEK SMALL LETTER STIGMA
+<Multi_key> <d> <i> <g> : "ϝ" # \u03dd GREEK SMALL LETTER DIGAMMA
+<Multi_key> <k> <o> <p> : "ϟ" # \u03df GREEK SMALL LETTER KOPPA
+<Multi_key> <s> <a> <m> : "ϡ" # \u03e1 GREEK SMALL LETTER SAMPI
+<Multi_key> <S> <H> <O> : "Ϸ" # \u03f7 GREEK CAPITAL LETTER SHO
+<Multi_key> <s> <h> <o> : "ϸ" # \u03f8 GREEK SMALL LETTER SHO
+<Multi_key> <S> <A> <N> : "Ϻ" # \u03fa GREEK CAPITAL LETTER SAN
+<Multi_key> <s> <a> <n> : "ϻ" # \u03fb GREEK SMALL LETTER SAN
