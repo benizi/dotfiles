@@ -39,12 +39,26 @@ my $label = $mw->Label(
 	-justify=>right=>
 	-textvariable=>\$label_text
 )->pack;
+{
+	my $last_checked = 0;
+	my @to_check = qw{/ /usr:U /home:H};
+	my $prefs = "$ENV{HOME}/.duprc";
+	sub update_prefs {
+		if (-f $prefs and (stat $prefs)[8] > $last_checked) {
+			local @ARGV = $prefs;
+			chomp(@to_check = <>);
+			$last_checked = time;
+		}
+		@to_check;
+	}
+}
 sub update {
 	my @parts;
 	my @warn;
 	local $_ = '';
-	for (qw{/ /usr:U /usr/portage/distfiles:D /home:H /wordnet:W /var/lib/postgresql:P /home/bhaskell/photomosaic/perl/raw:R}) {
-		my ($dir, $disp) = /:/ ? (split /:/) : ($_) x 2;
+	for (update_prefs) {
+		my $split = qr/[:\t]/;
+		my ($dir, $disp) = /$split/ ? (split /$split/) : ($_) x 2;
 		my (@devinos) = map { (stat)[0,1] } $dir, "$dir/..";
 		next if $devinos[0] == $devinos[2] and $devinos[1] != $devinos[3];
 		$_ .= "" for $dir,$disp;
