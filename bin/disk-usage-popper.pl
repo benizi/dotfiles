@@ -7,6 +7,7 @@ use Statfs;
 use Getopt::Long;
 GetOptions(
 	'delay=i' => \(my $delay_start = 0),
+	'wm' => \(my $no_wm = !length(`pgrep ion3`)),
 ) or die 'options';
 sleep $delay_start;
 my $mw = MainWindow->new(-title=>'diskusage');
@@ -30,7 +31,7 @@ $mw->bind('<Key-q>', \&cleanup);
 $mw->bind('<Button-1>', \&restart);
 $mw->bind('<Button-2>', sub { toggle_geometry; update_geometry });
 $mw->bind('<Button-3>', \&cleanup);
-$mw->overrideredirect(1);
+$mw->overrideredirect(1) if $no_wm;
 update_geometry;
 my $label_text = '';
 my $label = $mw->Label(
