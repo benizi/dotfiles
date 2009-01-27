@@ -4,8 +4,12 @@ export PS1
 TITLESEP='│' # ceçi n'est pas un pipe
 [ -n "$INCYG" ] && TITLESEP='|'
 function fancytitle () {
-	local c=$TITLESEP
-	printf "${TITLE}%s%s${ENDTITLE}" $1 "$(print -nP '%(!.ROOT $c .)%m $c %~ $c %n${STY+ $c $STY}')"
+	local host c=$TITLESEP
+	case "$DISPLAY" in
+		:0*|localhost:*) host="" ;;
+		*) host="%m $c " ;;
+	esac
+	printf "${TITLE}%s%s${ENDTITLE}" $1 "$(print -nP '%(!.ROOT $c .)'"$host"'%~ $c %n${STY+ $c $STY}')"
 }
 function preexec () {
 	if [ $SHLVL -eq 1 -a "$TERM" = "linux" ] ; then return ; fi
