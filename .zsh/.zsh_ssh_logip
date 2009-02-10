@@ -1,0 +1,2 @@
+[ -n "$SSH_CLIENT" ] || return
+date +"%s ${${=SSH_CLIENT}[0]}" >> ~/.ssh/log-of-ips
