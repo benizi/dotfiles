@@ -1,6 +1,16 @@
 setopt promptsubst
-export PROMPT='%{${PSCOLOR}%(!.${PSCOLORALL-${PSCOLORROOT-$UNDERLINE}}.${PSCOLORALL-$PSCOLORNORM})%}%n@%m %~%(!.#.$)%{${NOCOLOR}%} '
-export PS1
+_i_am_admin=false
+if [ -n "$INCYG" -a "$USERNAME" = "Administrator" ] || [ "$UID" = "0" ] ; then
+	_i_am_admin=true
+fi
+if $_i_am_admin ; then
+	_ps_color='${PSCOLORALL-${PSCOLORROOT-$UNDERLINE}}'
+else
+	_ps_color='${PSCOLORALL-$PSCOLORNORM}'
+fi
+$_i_am_admin && _pschar='#' || _pschar='$'
+PROMPT='%{${PSCOLOR}'$_ps_color'%}%n@%m %~'$_pschar'%{$NOCOLOR%} '
+
 TITLESEP='│' # ceçi n'est pas un pipe
 [ -n "$INCYG" ] && TITLESEP='|'
 function fancytitle () {
@@ -9,7 +19,8 @@ function fancytitle () {
 		:0*|localhost:*) host="" ;;
 		*) host="%m $c " ;;
 	esac
-	printf "${TITLE}%s%s${ENDTITLE}" $1 "$(print -nP '%(!.ROOT $c .)'"$host"'%~ $c %n${STY+ $c $STY}')"
+	$_i_am_admin && extra="ROOT $c " || extra=""
+	printf "${TITLE}%s%s${ENDTITLE}" $1 "$(print -nP "$extra$host"'%~ $c %n${STY+ $c $STY}')"
 }
 function preexec () {
 	if [ $SHLVL -eq 1 -a "$TERM" = "linux" ] ; then return ; fi
