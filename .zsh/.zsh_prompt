@@ -22,13 +22,16 @@ function fancytitle () {
 	$_i_am_admin && extra="ROOT $c " || extra=""
 	printf "${TITLE}%s%s${ENDTITLE}" $1 "$(print -nP "$extra$host"'%~ $c %n${STY+ $c $STY}')"
 }
+function term_with_title () {
+	if [ $SHLVL -eq 1 -a "$TERM" = linux ] ; then return 1 ; fi
+	if [ -n "$NOTITLE" ] ; then return 1 ; fi
+	return 0
+}
 function preexec () {
-	if [ $SHLVL -eq 1 -a "$TERM" = "linux" ] ; then return ; fi
-	[[ -z "$NOTITLE" ]] || return
+	term_with_title || return
 	fancytitle "$1 $TITLESEP "
 }
 function precmd () {
-	if [ $SHLVL -eq 1 -a "$TERM" = "linux" ] ; then return ; fi
-	[[ -z "$NOTITLE" ]] || return
+	term_with_title || return
 	fancytitle ""
 }
