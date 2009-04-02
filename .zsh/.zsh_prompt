@@ -1,5 +1,5 @@
 setopt promptsubst
-_i_am_admin=false
+local _i_am_admin=false
 if [ -n "$INCYG" -a "$USERNAME" = "Administrator" ] || [ "$UID" = "0" ] ; then
 	_i_am_admin=true
 fi
@@ -9,7 +9,15 @@ else
 	_ps_color='${PSCOLORALL-$PSCOLORNORM}'
 fi
 $_i_am_admin && _pschar='#' || _pschar='$'
-PROMPT='%{${PSCOLOR}'$_ps_color'%}%n@%m %~'$_pschar'%{$NOCOLOR%} '
+local _screen=""
+if [ -n "$STY" ] ; then
+	_screen="$STY"
+	[[ $_screen =~ ^[0-9]+\\.(.*)$ ]] && _screen="$match[1]"
+	local _host=$(print -P '%m')
+	[[ $_screen =~ ^(.*)\\.$_host$ ]] && _screen="$match[1]"
+	_screen="[$_screen]"
+fi
+PROMPT='%{${PSCOLOR}'$_ps_color'%}%n@%m'$_screen' %~'$_pschar'%{$NOCOLOR%} '
 
 TITLESEP='│' # ceçi n'est pas un pipe
 [ -n "$INCYG" ] && TITLESEP='|'
