@@ -1,0 +1,48 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use FindBin '$Bin';
+use Getopt::Long;
+GetOptions(
+	'dry|dry-run' => \(my $dry = 0),
+	'cmd' => \(my $just_cmd = 0),
+	'inlist' => \(my $in_list = 0),
+	'specs' => \(my $from_specs = 0),
+) or die 'options';
+$dry++ if $just_cmd;
+my @packages;
+while (<>) {
+	chomp;
+	s{\e\[[\d;]+m}{}g;
+	if ($in_list) {
+		push @packages, $_;
+		next;
+	}
+	if ($from_specs) {
+		next unless m{^(?:\*\s*)?([a-z]+-[a-z]+/\w+(?:-\w+)*(?::[^:]+:(?:[\w\-]+)?)?)\s*$};
+		$_ = $1;
+		push @packages, $_;
+		next;
+	}
+	next unless my (@pack) = /^\*\s(\S+)\s*(?::\S+\s*)?\[[RUND]\s(\S+)(?:\s->\s(\S+))?\](?:\s<\w+>)?\s*$/;
+	my $repo = $pack[0] =~ s/(::\S+)$// ? $1 : '';
+	pop @pack unless defined($pack[-1]) and length $pack[-1];
+	my $pack = join '-', @pack[0,-1];
+	$pack .= $repo;
+	print $pack, $/ unless $just_cmd;
+	push @packages, $pack;
+}
+die "No packages to fetch?\n" unless @packages;
+my @cmd = (
+	"paludis",
+	"--dl-deps-default", "discard",
+	"--dl-downgrade", "as-needed",
+	"--install", "--fetch",
+	map "=$_", @packages
+);
+print "@cmd\n" if $just_cmd or !$dry;
+exit if $dry;
+system { $cmd[0] } @cmd;
+my $portage_perm = "portage-permissions";
+-e "$Bin/$_" and $_ = "$Bin/$_" for $portage_perm;
+system { $portage_perm } $portage_perm, '--distfiles';
