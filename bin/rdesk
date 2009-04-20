@@ -9,6 +9,7 @@ GetOptions(
 	'server=s' => \$opt{server},
 	'username|user|u=s' => \$opt{user},
 	'password|pass|p=s' => \$opt{pass},
+	'byip' => \(my $use_ips = 0),
 	'defaults=s' => \(my $defaults_from = ''),
 	'dry' => \(my $dry = 0),
 	'verbose+' => \(my $verbose = 0),
@@ -18,7 +19,7 @@ shift @ARGV if @ARGV and $ARGV[0] eq '--';
 warn "Extra options: (@ARGV)\n" if @ARGV;
 $opt{extra} = [@ARGV];
 
-my %rev_alias;
+my (%rev_alias, %ip);
 my %defaults = (
 	'' => {
 		graphics => '1010x740', # approx. full-screen on 1024x768
@@ -31,6 +32,8 @@ for (grep -f, "$ENV{HOME}/.config/rdesk") {
 	next unless open my $f, '<', $_;
 	eval join '', <$f>;
 }
+
+$use_ips ? s/:.*$// : s/^.*:// for values %ip;
 
 my %alias;
 while (my ($val, $arr) = each %rev_alias) { $alias{$_} = $val for @$arr; }
