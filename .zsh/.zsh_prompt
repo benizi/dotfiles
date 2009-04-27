@@ -23,9 +23,9 @@ TITLESEP='│' # ceçi n'est pas un pipe
 [ -n "$INCYG" ] && TITLESEP='|'
 function fancytitle () {
 	local host c=$TITLESEP
+	host="%m $c "
 	case "$DISPLAY" in
-		:0*|localhost:*) host="" ;;
-		*) host="%m $c " ;;
+		:0*|localhost:*) [ -z "$SSH_CLIENT" ] && host="" ;;
 	esac
 	$_i_am_admin && extra="ROOT $c " || extra=""
 	printf "${TITLE}%s%s${ENDTITLE}" $1 "$(print -nP "$extra$host"'%~ $c %n${STY+ $c $STY}')"
