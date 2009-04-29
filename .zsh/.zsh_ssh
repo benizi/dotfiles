@@ -9,13 +9,14 @@ function ssh_find_add () {
 	| env -u DISPLAY xargs -0 ssh-add
 }
 if $FORCE || [ "x$LOGNAME" = "xbhaskell" ] ; then
-	if $FORCE || ! pgrep ssh-agent > /dev/null ; then
-		if [ -r ~/ssh-script ] ; then
-			. ~/ssh-script > /dev/null
-		fi
-		if ! [ -n "$SSH_AGENT_PID" ] || ! kill -0 $SSH_AGENT_PID 2>/dev/null ; then
-			ssh-agent > ~/ssh-script
-		fi
+	# Windows7 doesn't like 'pgrep'
+	if $FORCE || [ -n "$INWIN7" ] || ! pgrep ssh-agent > /dev/null ; then
+		[ -r ~/ssh-script ] && . ~/ssh-script > /dev/null
+		local _run=false
+		[ -z "$SSH_AGENT_PID" ] && _run=true
+		$_run || kill -0 $SSH_AGENT_PID 2>/dev/null || _run=true
+		$_run || [ -z "$INLIN" ] || grep -q ssh-agent /proc/$SSH_AGENT_PID/cmdline 2>/dev/null || _run=true
+		$_run && ssh-agent > ~/ssh-script
 		. ~/ssh-script
 		ssh-add -l | grep -vq no.identities || ssh_find_add
 		return
