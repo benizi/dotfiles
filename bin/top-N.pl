@@ -7,6 +7,7 @@ use Getopt::Long qw/:config pass_through/;
 my $N = 23;
 GetOptions(
 	'N=i' => \$N,
+	'samedev' => \(my $samedev = 0),
 ) or die 'options';
 my @dirs;
 @ARGV = grep { not
@@ -34,10 +35,13 @@ sub printF {
 	$printedN=@F;
 	print $_+1, ": ",commafy($F[$_][0]),"\t$F[$_][1]\n" for 0..$#F;
 }
+my %okay;
+$okay{$_}++ for map +(stat)[0], @dirs;
 find {
 	wanted => sub {
 		@F = grep { -f $$_[1] } @F if !($c++ % 10000);
 		return unless -f;
+		(!$samedev) or $okay{(stat)[0]} or return;
 		return if -l;
 		return unless @F < $N or $F[0][0] < -s;
 		@F = sort { $$a[0] <=> $$b[0] or $$a[1] cmp $$b[1] } @F, [ -s, $File::Find::dir."/$_" ]; 
@@ -48,9 +52,15 @@ find {
 		my %b;
 		$b{$_}++ for @_;
 		my @r = grep !$exclude{$File::Find::dir."/$_"}, @_;
+		@r = grep -e, @r;
+		my %dev;
+		if ($samedev) {
+			$dev{$_}++ for grep !$okay{(stat "$File::Find::dir/$_")[0]}, @r;
+			@r = grep !$dev{$_}, @r;
+		}
 		my %a;
 		$a{$_}++ for @r;
-		warn "Skipped $_\n" for grep !$a{$_}, keys %b;
+		warn "Skipped $_\n" for grep !$dev{$_}, grep !$a{$_}, keys %b;
 		@r;
 	},
 }, @dirs;
