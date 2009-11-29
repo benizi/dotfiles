@@ -12,6 +12,7 @@ Usage: $0 [options] file(s)
 \tEx: -backup '*.old' saves a backup copy in: FILENAME.old
 \tEx: -backup 'old.*' saves a backup copy in: old.FILENAME
 \t-quiet\tNo informative messages
+\t-noisy\tExtra informative messages
 \t-status N\tPrint status dot every N lines
 USAGE
 
@@ -25,6 +26,7 @@ GetOptions(
 	'delete|D' => \ (my $delete = 0),
 	'bak' => \ (my $bak = 0),
 	'quiet|q' => \ (my $quiet = 0),
+	'noisy' => \ (my $noisy = 0),
 	'status|s=i' => \ (my $status = 1000),
 ) or die $usage;
 
@@ -37,7 +39,7 @@ unless ($mac or $pc or $unix) {
 my $specified = 0;
 $specified += $_ ? 1 : 0 for $mac, $pc, $unix;
 die "Please specify ONE of -pc (-dos / -windows) / -mac / -unix\n$usage" if $specified != 1;
-unless ($quiet) {
+if ($noisy) {
     warn "Outputting PC (DOS/Windows) style endings (\\r\\n = \\x0d\\x0a = [13][10])\n" if $pc;
     warn "Outputting Mac style endings (\\r = \\x0d = [13])\n" if $mac;
     warn "Outputting Unix style endings (\\n = \\x0a = [10])\n" if $unix;
@@ -55,15 +57,15 @@ my $prev = '';
 while (<>) {
     if ($ARGV ne $prev) {
         $. = 1;
-        unless ($quiet) {
+        if ($noisy) {
             print STDERR "\tDone\n" if $prev;
             print STDERR "Processing $ARGV";
         }
         $prev = $ARGV;
     }
-    print STDERR "." unless $. % $status;
+    if ($noisy) { print STDERR "." unless $. % $status; }
     s/^[\x0a\x0d]+(?=[^\x0a\x0d])//;
     s/(?:\x0d(?:\x0a)?)|(?:\x0a(?:\x0d)?)/$out/g;
     print;
 }
-print STDERR "\tDone\n" unless $quiet;
+print STDERR "\tDone\n" if $noisy;
