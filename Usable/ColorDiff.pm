@@ -23,6 +23,7 @@ sub Split {
     $split = '';
     for (
 		[ qr/^l(?:etters?)?$/i, qr// ],
+		[ qr/^U(?:nicode?)?$/i, qr/(\X)/ ],
 		[ qr/^s(?:paces?)?$/i, qr/(\s+)/ ],
 		[ qr/^w(?:ords?)?$/i, qr/\b/ ],
 		[
