@@ -3,10 +3,23 @@ use strict;
 use warnings;
 use Getopt::Long qw/:config pass_through/;
 GetOptions(
-	'home' => \(my $home = 0),
-	'work|mr|medrespond' => \(my $medrespond = 0),
+	'raw' => \(my $no_mods = 0),
 	'dry-run|dry' => \(my $dry = 0),
 ) or die 'options';
+$no_mods or GetOptions(
+	'home' => \(my $home = 0),
+	'work|mr|medrespond' => \(my $medrespond = 0),
+	'single' => \(my $single = 0),
+	'small' => \(my $small = 0),
+	'huge' => \(my $huge = 0),
+	'netbook' => \(my $netbook = `uname -a | grep Atom`),
+	'nolcd' => \(my $no_lcd = 0),
+	'mode=s' => \(my $mode = ''),
+	'restart-enlightenment|re!' => \(my $restart_e = $ENV{E_IPC_SOCKET}?1:0),
+	'matched' => \(my $matched = 0),
+	'dpi=i' => \(my $dpi = 0),
+) or die 'options';
+shift @ARGV if @ARGV and $ARGV[0] eq '--';
 my ($this) = join ":", (stat $0)[0,1];
 my @cmd;
 for (split /:/, $ENV{PATH}) {
@@ -17,24 +30,45 @@ for (split /:/, $ENV{PATH}) {
 	last;
 }
 die "Real xrandr not found\n" unless @cmd;
-if ($home or $medrespond) {
-	my ($external_mode, $position) =
-		$home ? ('1280x1024', '--right-of')
-		: $medrespond ? (
-		'1024x768'
-		#'1280x1024'
-		, '--left-of')
-		: die("Shouldn't reach this");
-	push @cmd, qw/--size auto
-		--output LVDS
-		--mode 1280x800
-		--output VGA
-		--mode/, $external_mode,
-		qw/--rate 84.1/,
-		$position,
-		'LVDS';
+sub do_it {
+	my @cmd = @_;
+	print "@cmd\n";
+	return if $dry;
+	system { $cmd[0] } @cmd;
+}
+do_it @cmd, @ARGV or exit if $no_mods;
+my $changing = ($home or $medrespond or $single);
+if ($changing) {
+	my $rate = $medrespond ? '60' : '84.1';
+	my $lcd = $matched ? '1024x768' : '1280x800';
+	$lcd = '1024x600' if $netbook;
+	$no_lcd ||= $home && $netbook && $huge;
+	$lcd = '' if $no_lcd;
+	my @size_and_lcd = (qw/--size auto/);
+	push @size_and_lcd, qw/--output LVDS --mode/, $lcd if $lcd;
+	my $position = '--left-of';
+	if ($home) {
+		if ($matched || $small) {
+		} elsif ($huge) {
+			$mode ||= '1856x1392';
+		} elsif ($netbook) {
+			$mode ||= '1280x960';
+			$position = '--above';
+			$dpi ||= 100;
+		} else {
+			$mode ||= '1280x960';
+		}
+	} else {
+		$mode ||= '1024x768';
+	}
+	$dpi ||= 90;
+	my @external = (qw/--output VGA/,
+		$single ? (qw/--off/) :
+		('--rate', $rate, '--mode', $mode, $position, qw/LVDS/)
+	);
+	push @cmd, @size_and_lcd, @external, '--dpi', $dpi;
+	push @cmd, qw/--output LVDS --off/ if $no_lcd;
 }
 push @cmd, @ARGV;
-print "@cmd\n";
-exit if $dry;
-exec { $cmd[0] } @cmd;
+do_it @cmd;
+do_it qw/enlightenment_remote -restart/ if $restart_e and $changing;
