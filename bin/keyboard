@@ -12,8 +12,9 @@ GetOptions(
 	'menu' => \(my $menu = 0),
 	'dry' => \(my $dry_run = 0),
 	'extra=s@' => \my @extra,
+	'ion!' => \(my $ion = `pgrep ion3`),
 ) or die 'options';
-sub run_it { if ($dry_run) { print "@_\n"; } else { system { $_[0] } @_; } }
+sub run_it {my@p=map{(length)?$_:"''"}@_;print"@p\n";$dry_run||system{$_[0]}@_}
 my %defaults = (
 	'' => {
 		model => 'pc104',
@@ -21,10 +22,7 @@ my %defaults = (
 		variant => 'intl',
 		keycodes => 'evdev',
 		reset => 1,
-		options => [
-			qw/lv3:ralt_switch altwin:super_win compose:menu/
-#			qw/lv3:ralt_switch compose:menu/
-		],
+		options => [ qw/lv3:ralt_switch altwin:super_win/ ],
 	},
 );
 my @defopt = qw/layout variant/;
@@ -57,7 +55,14 @@ push @cmd, -option => '' if $opt{reset};
 push @cmd, -option => $_ for @{$opt{options}};
 push @cmd, @extra;
 run_it @cmd;
-run_it 'xmodmap', "$ENV{HOME}/.xmodmap";
+my $modmap = "$ENV{HOME}/.xmodmap";
+if (-f $modmap) {
+	run_it xmodmap => $modmap;
+	if ($ion) {
+		run_it xmodmap => -e => 'add mod3 = Super_L';
+		run_it xmodmap => -e => 'remove mod4 = Super_L';
+	}
+}
 __END__
 setxkbmap
 -model pc104
