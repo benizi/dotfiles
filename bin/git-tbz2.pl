@@ -5,7 +5,7 @@ use warnings;
 use Getopt::Long qw/:config pass_through/;
 GetOptions(
 	'repo=s' => \(my $repo_dir = $ENV{HOME}),
-	'patterns=s' => \(my $patterns_file = '$REPO/.hg-tosync'),
+	'patterns=s' => \(my $patterns_file = '$REPO/.git-tosync'),
 	'debug+' => \$::DEBUG,
 	'outfile=s' => \(my $outfilename = ''),
 	'dry-run' => \(my $dry = 0),
@@ -78,7 +78,7 @@ use File::Find;
 	}, $repo_dir;
 	my @tracked;
 	for (@files) {
-		my @lines = readpipe "hg st -ncm $_";
+		my @lines = readpipe "git ls-files";
 		next if -d;
 		my $is_tracked = @lines;
 		next unless $is_tracked;
