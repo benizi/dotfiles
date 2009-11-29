@@ -1,0 +1,85 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use File::Basename;
+use IPC::Run 'run';
+my @cmd = qw{rsync};
+my @opts = qw{-P -a -v};
+my $src = qw{$www/$SITE/};
+my $dest = qw{benizi.com:$SITE/};
+my $www = "$ENV{HOME}/www";
+
+my $perm_only = ((basename $0) eq 'p') ? 1 : 0;
+use Getopt::Long;
+GetOptions(
+	'dry' => \(my $dry = 0),
+	'debug+' => \(my $debug = 0),
+	'site=s@' => \my @site,
+	'all' => \(my $all = $perm_only),
+	'exclude=s' => \(my $exclude = '$www/rsync-exclude.$SITE'),
+	'permissions' => \$perm_only,
+) or die 'options';
+print "\e[31mExtra args: {@ARGV}\e[0m\n" and push @opts, @ARGV if @ARGV;
+unshift @opts, '--dry-run' if $dry;
+unshift @cmd, 'echo' if $debug;
+
+sub get_sites {
+	chdir $www;
+	opendir my($d), '.' or die "<dir($www): $!";
+	my @sites = grep /\w+\.\w+/, grep -d, readdir $d;
+	close $d;
+	@sites;
+}
+
+for my $site (@site ? @site : $all ? (get_sites) : 'benizi.com') {
+	my @ex;
+	if ($exclude =~ /^(.*)\.\$SITE$/) {
+		my $base = $1;
+		my @parts = split /\./, $site;
+		for (0..@parts) {
+			for (join '.', $base, @parts[$_..$#parts]) {
+				$debug and warn "Adding $_\n";
+				push @ex, $_;
+			}
+		}
+	} else {
+		@ex = $exclude;
+	}
+	my @src_dest = ($src, $dest);
+	for (@cmd, @opts, @src_dest, @ex) {
+		s/(^|=)~/$1$ENV{HOME}/g;
+		s/\$SITE/$site/g;
+		s/\$www/$www/g;
+	}
+	@ex = grep -f, @ex;
+	if ($perm_only) {
+		@opts = grep !/^(?:-P|-v|--verbose|--out-format)/, @opts;
+		for my $opt (qw/--dry-run -i --out-format=%n/) {
+			push @opts, $opt unless grep $_ eq $opt, @opts;
+		}
+		splice @src_dest, 1, 1, '/nonexistent/file/';
+	}
+	my @run = (@cmd, (map {('--exclude-from', $_)} @ex), @opts, @src_dest);
+	print "\e[32mSITE = $site\e[0m\n";
+	$debug and print "[$_]=$run[$_]\n" for 0..$#run;
+	chdir $_ or die "chdir $_: $!" for $src_dest[0];
+	if ($perm_only) {
+		run [@run], '>', \my$files, '2>', \my$err;
+		if ($err) { warn "Error for site $site\n$err\n"; next; }
+		my @files = split /\n/, $files;
+		s{\\#([0-7]{3})}{chr ord $1}ge for @files;
+		for (@files) {
+			next unless -e;
+			if ($debug) { print; print$/; }
+			my $mode = (stat)[2] & 07777;
+			my $new = $mode | 0444;
+			-d and $new |= 0111;
+			next if $new == $mode;
+			printf "chmod [%04o->]%04o %s\n", $mode, $new, "$site/$_";
+			next if $dry;
+			chmod $new, $_;
+		}
+		next;
+	}
+	run [@run];
+}
