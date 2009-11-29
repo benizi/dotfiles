@@ -5,10 +5,10 @@ use File::Copy;
 use File::Find;
 use File::Spec;
 use Getopt::Long;
-my $perl_dir = "/root/FAKEROOT-FOR-PERL";
+my $perl_dir = "/root/FAKEROOT";
 GetOptions(
 	'directory=s' => \(my $dir = ''),
-	'perl' => \(my $is_perl = '.'),
+	'perl' => \(my $is_perl = 0),
 	'groupy|groupw|gw!' => \(my $match_group = 0),
 	'uid|user|owner=s' => \(my $owner = ''),
 	'gid|group=s' => \(my $group = ''),
@@ -47,6 +47,9 @@ find sub {
 #		printf "%04o -> %04o %s\n", $this_mode, $new_mode, $abs;
 		chmod $new_mode, $_;
 	} elsif (-l) {
+		my $this_mode = (lstat)[2] & 07777;
+		my $new_mode = match_perms $this_mode;
+		return if $this_mode == $new_mode;
 		warn "No action for link: $abs (".(readlink).")\n";
 	} else {
 		warn "Unknown action for $abs\n";
