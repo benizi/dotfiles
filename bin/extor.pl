@@ -6,6 +6,7 @@ GetOptions(
 	'base=s' => \(my $B),
 	'att|attr=s' => \(my $attr = 'href'),
 	'gi|tag=s' => \(my $gi = 'a'),
+	'print=s' => \(my $print = '$url'),
 ) or die 'options';
 @ARGV = grep { not
 	/^http:/ ? ($B ? (1) : ($B = $_)) :
@@ -18,9 +19,17 @@ use URI::URL;
 
 $p->new(start_h => [
 	sub{
-		my ($this_gi, $att) = @_;
+		my ($this_gi, $att, $text) = @_;
 		return unless lc $this_gi eq lc $gi;
 		return unless exists $$att{$attr};
-		print url($$att{$attr}, $B)->abs
-	}, "tag, attr"]
+		my $toprint = $print;
+		my $sub = {
+			gi => $this_gi,
+			att => $$att{$attr},
+			url => url($$att{$attr}, $B)->abs,
+			text => $text,
+		};
+		$print =~ s{\$$_}{$$sub{$_}}g for keys %$sub;
+		print $print
+	}, "tag, attr, text"]
 )->parse_file($_)for@ARGV;
