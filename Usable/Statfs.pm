@@ -36,14 +36,15 @@ sub statfsM { statfs(@_?(@_,2**20):($_,2**20)) }
 sub statfsK { statfs(@_?(@_,2**10):($_,2**10)) }
 sub statfs {
 	require 'syscall.ph';
+	my $use64 = $Config{use64bitall} ? 0 : 1;
 	my $long = $Config{ivsize} != 4 ? 1 : 0;
 	my ($path, $block) = @_ ? @_ : ($_);
 	return unless grep length, grep defined, $path;
 	$path = sprintf "%s", $path; # can't pass a read-only value to syscall
 	$block ||= 1024;
-	my $stat = '0' x 64; # pre-extend the buffer
+	my $stat = '0' x 128; # pre-extend the buffer
 	my @vals;
-	if ($long) {
+	if ($long and $use64) {
 		warn "statfs failed: $!\n" and return if syscall &SYS_statfs64, $path, $stat;
 #	} elsif (FAKELONG) {
 #		for (reverse map $_*2, 1..5) {
@@ -53,7 +54,8 @@ sub statfs {
 #		}
 	} else {
 		warn "statfs failed: $!\n" and return if syscall &SYS_statfs, $path, $stat;
-		@vals = unpack 'l[16]', $stat;
+		my $unpack = $long ? 'q[16]' : 'l[16]';
+		@vals = unpack $unpack, $stat;
 		splice @vals, -5;
 	}
 	my $fs_block = $vals[1];
