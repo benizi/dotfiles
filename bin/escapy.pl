@@ -60,5 +60,7 @@ while (<>) {
 		print join "\t", "Base64e", $b64;
 		print join "\t", "SHA-1", sha1_base64($str), sha1_hex($str);
 		print join "\t", "MD5", md5_base64($str), md5_hex($str);
+		print join "\t", "rot13", rot13($str);
 	}
 }
+sub rot13 { y/A-MN-Za-mn-z/N-ZA-Mn-za-m/ for @_; @_ }
