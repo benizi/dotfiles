@@ -5,6 +5,7 @@ use FindBin '$Bin';
 use Getopt::Long;
 GetOptions(
 	'dry|dry-run' => \(my $dry = 0),
+	'first=i' => \(my $first = 0),
 	'cmd' => \(my $just_cmd = 0),
 	'inlist' => \(my $in_list = 0),
 	'specs' => \(my $from_specs = 0),
@@ -13,6 +14,10 @@ $dry++ if $just_cmd;
 my @packages;
 while (<>) {
 	chomp;
+	if ($first and @packages >= $first) {
+		warn "Only taking first $first packages\n";
+		last;
+	}
 	s{\e\[[\d;]+m}{}g;
 	if ($in_list) {
 		push @packages, $_;
