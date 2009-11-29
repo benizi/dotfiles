@@ -9,9 +9,10 @@ GetOptions(
 	'debug+' => \$::DEBUG,
 	'outfile=s' => \(my $outfilename = ''),
 	'dry-run' => \(my $dry = 0),
+	'force' => \(my $force = 0),
 ) or die 'options';
 s/\$REPO/$repo_dir/g for $patterns_file;
-die "Not to terminal\n" if !($dry or length $outfilename) and -t 1;
+die "Not to terminal\n" if !($dry or $force or length $outfilename) and -t 1;
 $outfilename = '-' unless length $outfilename;
 
 chdir $repo_dir;
@@ -57,7 +58,7 @@ use File::Find;
 			die "GOT: $File::Find::name\n" if /^\.\.?$/;
 			my $skip = 1;
 			for (@in_ex) {
-				$::DEBUG > 2 and print "test{ $rel =~ $$_{qr} }\n";
+				$::DEBUG > 2 and warn "test{ $rel =~ $$_{qr} }\n";
 				next unless $rel =~ $$_{qr};
 				last if $$_{pm} eq '-';
 				$skip = 0;
@@ -68,7 +69,7 @@ use File::Find;
 			} else {
 				push @files, $rel;
 			}
-			$::DEBUG and print "$rel? ", $skip?"skip":"include", "\n";
+			$::DEBUG and warn "$rel? ", $skip?"skip":"include", "\n";
 		},
 		preprocess => sub {
 			return () if $excluded_dirs{$File::Find::dir};
@@ -83,6 +84,9 @@ use File::Find;
 		next unless $is_tracked;
 		push @tracked, $_;
 	}
-	$dry or open STDOUT, "| tar -jcvf $outfilename -T -";
+	my $out_cmd = "tar -jcvf $outfilename -T -";
+	$out_cmd .= " | cat -" if $force and $outfilename eq '-';
+	$::DEBUG and warn "OUTCMD: $out_cmd\n";
+	$dry or open STDOUT, "| $out_cmd";
 	print "$_\n" for @tracked;
 }
