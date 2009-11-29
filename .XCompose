@@ -1,5 +1,7 @@
 include "%L"
 include ".XCompose-unicode"
+include ".XCompose-greek"
+include ".XCompose-ordering"
 <Multi_key> <a> <a> : "å"
 <Multi_key> <A> <a> : "Å"
 <Multi_key> <A> <A> : "Å"
@@ -8,3 +10,11 @@ include ".XCompose-unicode"
 <Multi_key> <E> <t> <a> : U0397 # GREEK CAPITAL LETTER ETA
 <Multi_key> <e> <t> <a> : U03B7 # GREEK SMALL LETTER ETA
 <Multi_key> <g> <a> <m> : "γ" U03B3 # GREEK SMALL LETTER GAMMA
+# <Multi_key> <Multi_key> : Menu
+<Multi_key> <s> <e> : "§" # \u00a7	00a7	SECTION SIGN
+<Multi_key> <p> <a> : "¶" # \u00b6	00b6	PILCROW SIGN
+<Multi_key> <n> <minus> : "–" # \u2013 # EN DASH
+<Multi_key> <minus> <n> : "–" # \u2013 # EN DASH
+<Multi_key> <minus> <minus> : "–" # \u2013 # EN DASH
+<Multi_key> <m> <minus> : "—" # \u2014 # EM DASH
+<Multi_key> <minus> <m> : "—" # \u2014 # EM DASH
