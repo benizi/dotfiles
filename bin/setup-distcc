@@ -1,0 +1,60 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+my $pump = 0;
+my $path = '/usr/lib/distcc/bin';
+my $distcc_dir = '/var/tmp/paludis/.distcc';
+my $hosts = '+zeroconf';
+my @distcc_args;
+my $just_distcc = 0;
+my $debug = 0;
+while (@ARGV) {
+	last unless $ARGV[0];
+	if ($ARGV[0] =~ /^--?pump$/) {
+		shift;
+		$pump = 1;
+	} elsif ($ARGV[0] =~ /^--?debug$/) {
+		shift;
+		$debug++;
+	} elsif ($ARGV[0] eq '--jobs') {
+		shift;
+		push @distcc_args, '-j';
+		$just_distcc++;
+	} elsif ($ARGV[0] =~ /^-(?:-show-hosts|j)$/) {
+		push @distcc_args, shift;
+		$just_distcc++;
+	} elsif ($ARGV[0] =~ /^--?(dir|path|hosts?)(?:=(.*))?$/) {
+		shift;
+		my $arg = $1;
+		my $val = defined($2) ? $2 : shift;
+		my $needs_arg = 0;
+		if ($arg eq 'dir') {
+			$distcc_dir = $val;
+			$needs_arg++;
+		} elsif ($arg eq 'path') {
+			$path = $val;
+			$needs_arg++;
+		} else {
+			$hosts = $val;
+		}
+		die "--$arg needs argument\n" if $needs_arg and not defined $val;
+	} else {
+		last;
+	}
+}
+my %pre = %ENV;
+$ENV{DISTCC_DIR} = $distcc_dir;
+$ENV{PATH} = join ':', $path, $ENV{PATH};
+$ENV{DISTCC_HOSTS} = $hosts;
+my @cmd = @ARGV;
+if ($just_distcc) {
+	die "@distcc_args passed to $0, but also: @cmd\n" if @cmd;
+	@cmd = (distcc => @distcc_args);
+}
+sub qs { local $_ = @_ ? shift : $_; s{([\"\'\$\`])}{\\$1}g; $_ }
+if (!@cmd) {
+	print qq{export $_="}.qs($ENV{$_}).qq{"\n} for grep !(($pre{$_}//42) eq $ENV{$_}), keys %ENV;
+} else {
+	unshift @cmd, 'pump' if $pump;
+	exec { $cmd[0] } @cmd;
+}
