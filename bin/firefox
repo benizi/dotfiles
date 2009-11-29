@@ -1,5 +1,8 @@
 #!/bin/zsh
-if [ -n "$0:e" ] ; then args=(-P $0:e) ; else args=() ; fi
+profile=
+if [ -n "$0:e" ] ; then profile=$0:e ; fi
+args=()
+[[ -n "$profile" ]] && args=(-no-remote -P $profile)
 #exec aoss /usr/bin/firefox-bin $argv
 while [ $# -gt 0 ] ; do
 	arg=$1
@@ -9,7 +12,11 @@ while [ $# -gt 0 ] ; do
 		*) args+=($arg) ;;
 	esac
 done
-args=(/opt/firefox/firefox-bin $args)
+for bin in /usr/bin/firefox /opt/firefox/firefox-bin ; do
+	[ ! -x $bin ] && continue
+	args=( $bin $args )
+	break
+done
 logfile=~/firefox-launcher.log
 echo GOT $0 $argv >> $logfile
 echo exec $args >> $logfile
