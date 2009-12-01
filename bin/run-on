@@ -1,7 +1,43 @@
 #!/bin/zsh
 host=localhost
-case $0 in
-	*dell) host=dell.local:0 ;;
-	*win) host=acer2k3.local:0 ;;
+_dry=false
+_argv=()
+for arg in "${argv[@]}" ; do
+	case "$arg" in
+		--dry) _dry=true ;;
+		-*) echo "Unknown option: $arg" ; exit 1 ;;
+		*) _argv+=( $arg ) ;;
+	esac
+done
+argv=($_argv)
+
+case "$(hostname -f)" in
+	*.internal) _suff=internal ;;
+	*.local) _suff=local ;;
 esac
-DISPLAY=$host exec $argv
+_set=false
+case $0 in
+	*dell) host=dell.${_suff}:0 ; _set=true ;;
+	*win) host=acer2k3.${_suff}:0 ; _set=true ;;
+esac
+$_set || case `basename $0` in
+	on*) host=`basename $0` ; host=${host#on}.${_suff}:0 ; _set=true ;;
+esac
+if ! $_set && [ $# -gt 0 ] ; then
+	case $1 in
+		*:*) host=$1 ; _set=true ;;
+		*) host="$1":0 ; _set=true ;;
+	esac
+	$_set && shift
+fi
+if ! $_set ; then
+	echo "No host set" >&2
+	exit 1
+fi
+if [ $#argv = 0 ] ; then
+	echo "export DISPLAY=$host"
+elif $_dry ; then
+	echo DISPLAY=$host exec $argv
+else
+	DISPLAY=$host exec $argv
+fi
