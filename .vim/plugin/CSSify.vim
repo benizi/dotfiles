@@ -1,6 +1,10 @@
 " mark.vim - from Text::VimColor
 " Plugin-ified by benizi
 
+if v:version < 700
+	finish
+endif
+
 let s:save_cpo = &cpo
 set cpo&vim
 if exists("markymark")

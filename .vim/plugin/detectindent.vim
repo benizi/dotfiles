@@ -1,0 +1,1 @@
+/home/bhaskell/git/detectindent/plugin/detectindent.vim
