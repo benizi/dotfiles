@@ -28,7 +28,6 @@ else
 		set background=light
 	endif
 endif
-set binary
 set hidden
 syntax enable
 syntax sync maxlines=2000
