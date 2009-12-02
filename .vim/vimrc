@@ -7,7 +7,7 @@ else
 endif
 if g:vim_at_work
 	set expandtab softtabstop=3 tabstop=3 shiftwidth=3
-	let loaded_detectindent = 1 " Don't detect indent
+	let disable_detectindent = 1 " Don't detect indent
 else
 	set noexpandtab softtabstop=4 tabstop=4 shiftwidth=4
 endif
