@@ -9,9 +9,10 @@ autoload -U compinit
 export ZSH_UNAME=$(uname)
 export ZSH_UNAMER=$(uname -r | perl -lpwe 's/^(\d+(?:\.\d+)?)\D.*$/$1/')
 case $ZSH_UNAME in
+	CYGWIN_NT-6.1) export INWIN7=true ;|
 	*CYGWIN*) export INCYG=true ;;
 	*FreeBSD*) export INBSD=true ;;
-	*) ;;
+	*) export INLIN=true ;;
 esac
 if [ -n "$INCYG" ] ; then
 	compinit -i
@@ -19,6 +20,7 @@ if [ -n "$INCYG" ] ; then
 else
 	compinit
 fi
+[ -n "$INCYG" -a -n "$INWIN7" ] && export CYGWIN=nontsec
 
 dirs=(~/.zsh-scripts ~ ~/.zsh-scripts-)
 SCRIPT=${(%)${:-%N}}
