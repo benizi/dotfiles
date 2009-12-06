@@ -4,7 +4,7 @@ if [ -n "$INCYG" -a "$USERNAME" = "Administrator" ] || [ "$UID" = "0" ] ; then
 	_i_am_admin=true
 fi
 if $_i_am_admin ; then
-	_ps_color='${PSCOLORALL-${PSCOLORROOT-$UNDERLINE}}'
+	_ps_color='${PSCOLORALL-${PSCOLORROOT-$INVERSE$BOLD$PSCOLORNORM}}'
 else
 	_ps_color='${PSCOLORALL-$PSCOLORNORM}'
 fi
