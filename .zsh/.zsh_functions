@@ -11,6 +11,8 @@ function count () { echo $#argv }
 function countf () { perl -lwe '$a++for grep-f,@ARGV;print$a' $argv }
 function with-size () { perl -lpwe '$_=join"\t",-s,$_' }
 function with-time () { perl -lpwe '$_=join"\t",(stat)[9],$_' }
+function epoch-to-localtime () { perl -lpwe 's.^(\d+)(?=\s|$).scalar localtime $1.e' }
+function epoch-to-isotime () { perl -MPOSIX=strftime -lpwe 's.^(\d+)(?=\s|$).strftime "%Y-%m-%d\@%H:%M:%S%z", localtime $1.e' }
 function with-time-human () { perl -lpwe '$_=join"\t",scalar(localtime((stat)[9])),$_' }
 function total () { perl -lanwe '$t+=shift@F;END{$t||=0;print$t}' }
 function running-total () { perl -lapwe '$t+=$F[0];$_="$t\t$_"' }
