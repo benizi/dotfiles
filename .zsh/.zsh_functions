@@ -44,3 +44,28 @@ function set-pulse-server () {
 }
 function unix2win () { eol.pl -pc | iconv -f UTF-8 -t UTF-16 }
 function win2unix () { iconv -f UTF-16 -t UTF-8 | eol.pl }
+function instagit () {
+	local email
+	local git
+	git=(git)
+	while [ $# -gt 0 ] ; do
+		case "$1" in
+			--dry*) git=(echo git)
+			;;
+			*)
+				if [ -z "$email" ] ; then
+					email="$1"
+				else
+					print -r Unknown argument "$1"
+				fi
+			;;
+		esac
+		shift
+	done
+	[ -n "$email" ] || read 'email?Email: '
+	[[ $email = *@* ]] || email=$email@benizi.com
+	$git init \
+	&& $git config user.email $email \
+	&& $git add . \
+	&& $git ci -a -m init
+}
