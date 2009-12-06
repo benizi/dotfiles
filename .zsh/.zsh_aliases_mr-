@@ -1,0 +1,8 @@
+hash -d novartis=~desktop/brady-devel/Novartis.Web
+hash -d generic=~desktop/generic-devel/Novartis.Web
+hash -d komen=~desktop/komen-ct/Source/Site
+hash -d flash=~desktop/temp-flash
+hash -d msvn=/home/bhaskell/MedRespond/svn
+hash -d gitsvn=~msvn/gitsvn
+hash -d convert=~msvn/CONVERT-intetics
+hash -d ded2=/home/bhaskell/MedRespond/ftp/ded2

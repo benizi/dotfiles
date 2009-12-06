@@ -35,3 +35,24 @@ alias wcc='LC_ALL=C wc'
 alias z=' exec zsh'
 alias Z=' exec sudo su bhaskell -'
 hash -d afs=/afs/cs.cmu.edu/user/bhaskell/protected
+if [ -n "$INCYG" ] ; then
+	alias sudo='runas /savecred /user:Administrator'
+	alias -g '/?=/\?'
+	hash -d c='/cygdrive/c'
+	hash -d progfiles=~c/'Program Files'
+fi
+
+local _win_root _win_docset _win_inet _win_down _win_doc
+[ -n "$INCYG" ] && _win_root=/cygdrive/c || _win_root=/mnt/acer2k3
+[ -n "$INWIN7" ] && _win_docset=Users || _win_docset="Documents and Settings"
+_win_inet=inetpub
+[ -n "$INWIN7" ] && _win_down=Downloads || _win_down="My Documents/Downloads"
+[ -n "$INWIN7" ] && _win_doc=Documents || _win_doc="My Documents"
+hash -d benwin="$_win_root/$_win_docset/bhaskell"
+hash -d allusers="$_win_root/$_win_docset/All Users"
+hash -d inetpub="$_win_root/$_win_inet"
+hash -d progfiles="$_win_root/Program Files"
+[ -n "$INCYG" ] && hash -d colinux=~progfiles/coLinux || hash -d colinux=/opt/coLinux
+hash -d downloads=~benwin/$_win_down
+hash -d desktop=~benwin/Desktop
+hash -d documents=~benwin/$_win_doc
