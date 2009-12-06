@@ -1,5 +1,5 @@
 # keep some builtins out of history
-alias fg=' builtin fg'
+alias fg=' fancytitle "$(fc -ln -1) (cont.) " ; builtin fg'
 alias bg=' builtin bg'
 alias rehash=' builtin rehash'
 
