@@ -15,6 +15,10 @@ LABPCS=(rapture elation thought dream dictus nym remind wonder felicity bliss se
 export LABPCS
 export WORDCHARS='*?_-.[]~&;!#$%^(){}<>'
 export PERL5LIB=$HOME/Usable
+LD_LIBRARY_PATH=$HOME/lib${LD_LIBRARY_PATH+:$LD_LIBRARY_PATH}
+typeset -T LD_LIBRARY_PATH ld_library_path
+typeset -U ld_library_path
+export LD_LIBRARY_PATH
 export MOZ5PROF=/home/bhaskell/.mozilla/firefox/qk8tugb3.default
 export AXIS2_HOME=/opt/axis2-1.3
 export LESS="-R -i -M --shift 5"
