@@ -15,6 +15,7 @@ function epoch-to-localtime () { perl -lpwe 's.^(\d+)(?=\s|$).scalar localtime $
 function epoch-to-isotime () { perl -MPOSIX=strftime -lpwe 's.^(\d+)(?=\s|$).strftime "%Y-%m-%d\@%H:%M:%S%z", localtime $1.e' }
 function with-time-human () { perl -lpwe '$_=join"\t",scalar(localtime((stat)[9])),$_' }
 function total () { perl -lanwe '$t+=shift@F;END{$t||=0;print$t}' }
+function running-avg () { perl -lapwe '$t+=$F[0];$_=($t/$.)."\t$_"' }
 function running-total () { perl -lapwe '$t+=$F[0];$_="$t\t$_"' }
 function total-size () { with-size | cut -f1 | total | commafy }
 function sort-with-size () { with-size | sort -n }
