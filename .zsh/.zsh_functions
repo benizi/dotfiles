@@ -34,3 +34,4 @@ function update-zsh () {
 	fi
 	popd
 }
+function lslvm () { vgdisplay -C ; pvdisplay -C ; lvdisplay -C }
