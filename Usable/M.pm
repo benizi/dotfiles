@@ -138,6 +138,12 @@ my_use 'MIME::Base64', qw/decode_base64_/;
 	s/\n\Z//;
 	$_
 };
+my_use 'MIME::QuotedPrint', qw/decode_qp_/;
+*encode_qp = sub {
+	local $_ = MIME::QuotedPrint::encode_qp(@_?$_[0]:$_);
+	s/\n\Z//;
+	$_
+};
 my_use 'File::Basename';
 my_use 'File::Find';
 my_use 'Storable', qw/nstore retrieve_/;
