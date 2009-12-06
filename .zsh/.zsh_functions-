@@ -28,3 +28,8 @@ function setup-wordnet-cvs () {
 	export CVS_RSH=ssh
 	export CVS_SERVER=/usr/csl/bin/cvs
 }
+function xhost-it-up () {
+	for host in acer averatec ; do
+		ssh $host DISPLAY=:0 xhost +$(hostname -f)
+	done
+}
