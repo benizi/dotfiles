@@ -63,3 +63,5 @@ hash -d progfiles="$_win_root/Program Files"
 hash -d downloads=~benwin/$_win_down
 hash -d desktop=~benwin/Desktop
 hash -d documents=~benwin/$_win_doc
+hash -d chrome=~benwin/"Local Settings/Application Data/Google/Chrome"
+hash -d quicklaunch=~benwin/"Application Data/Microsoft/Internet Explorer/Quick Launch"
