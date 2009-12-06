@@ -35,3 +35,6 @@ function update-zsh () {
 	popd
 }
 function lslvm () { vgdisplay -C ; pvdisplay -C ; lvdisplay -C }
+if [ -n "$INCYG" ] ; then
+	function cyg () { reply=("$(cygpath -w $REPLY)") }
+fi
