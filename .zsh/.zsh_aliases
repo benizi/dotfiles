@@ -28,6 +28,9 @@ alias alpine='titlep PINE ; alpine-svn -bail -p $PINERC'
 alias mysqle='mysql --defaults-extra-file=/wordnet/wn/2k3/util/mysql.pass'
 alias mysqlh='mysql --defaults-extra-file=/wordnet/wn/2k3/util/mysql.pass.plusHTML'
 alias nacroread='acroread -openInNewWindow'
+alias noagent='env -u SSH_AGENT_PID -u SSH_AUTH_SOCK'
+alias ssh-noagent='noagent ssh'
+alias hidessh='env -u SSH_CLIENT -u SSH_CONNECTION -u SSH_TTY'
 alias vi=vim
 alias wget-cookies='wget --load-cookies $MOZ5PROF/cookies.txt'
 alias wget-fakeit="wget -U 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070515 Firefox/2.0.0.4' --load-cookies \$MOZ5PROF/cookies.txt"
