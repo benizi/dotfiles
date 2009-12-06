@@ -45,6 +45,8 @@ if [ -n "$INCYG" ] ; then
 	alias -g '/?=/\?'
 	hash -d c='/cygdrive/c'
 	hash -d progfiles=~c/'Program Files'
+else
+	hash -d vdb=/var/db/pkg
 fi
 
 local _win_root _win_docset _win_inet _win_down _win_doc
