@@ -1,2 +1,5 @@
 [ -n "$SSH_CLIENT" ] || return
-date +"%s ${${=SSH_CLIENT}[0]}" >> ~/.ssh/log-of-ips
+_ssh_ip="${${=SSH_CLIENT}[1]}"
+[ -z "$_ssh_ip" ] && return
+[ -t 0 ] && _extra="" || _extra=" pinger"
+date +"%s $_ssh_ip$_extra" | tee -a ~/.ssh/log-of-ips
