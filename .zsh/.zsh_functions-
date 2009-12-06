@@ -23,3 +23,8 @@ function dlink-remove () {
 }
 function dlink-insert () { for l in wlan ath_pci ath_hal ; modprobe $l }
 function dlink-replug () { dlink-remove ; dlink-insert }
+function setup-wordnet-cvs () {
+	export CVSROOT=remind.princeton.edu:/usr/local/cvsroot
+	export CVS_RSH=ssh
+	export CVS_SERVER=/usr/csl/bin/cvs
+}
