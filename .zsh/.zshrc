@@ -22,12 +22,14 @@ else
 fi
 [ -n "$INCYG" -a -n "$INWIN7" ] && export CYGWIN=nontsec
 
-dirs=(~/.zsh-scripts ~ ~/.zsh-scripts-)
+_pre_dirs=(~/.zsh-scripts)
+_post_dirs=(~/.zsh-scripts-)
+dirs=(~)
+typeset -U dirs
 SCRIPT=${(%)${:-%N}}
-if [ -L $SCRIPT ] ; then
-	SCRIPT=$(readlink $SCRIPT)
-	dirs+=($SCRIPT:h)
-fi
+[ -L $SCRIPT ] && SCRIPT="$(readlink -f $SCRIPT)"
+dirs+=( $SCRIPT:h )
+dirs=( $_pre_dirs $dirs $_post_dirs )
 for dir in $dirs ; do
 	[ ! -d $dir ] && continue
 	setopt nullglob
