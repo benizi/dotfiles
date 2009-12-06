@@ -42,3 +42,5 @@ function real () { reply=("$(readlink -f $REPLY)") }
 function set-pulse-server () {
 	xprop -root -f PULSE_SERVER 8s -set PULSE_SERVER "$1"
 }
+function unix2win () { eol.pl -pc | iconv -f UTF-8 -t UTF-16 }
+function win2unix () { iconv -f UTF-16 -t UTF-8 | eol.pl }
