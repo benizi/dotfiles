@@ -1,23 +1,9 @@
 " map!  a. hbmmi?\<2h"zdt.@z^Mywmx`mP xi
 " map!  a. hbmmi/\<2h"zdt.@z^Mywmx`mP xi
-if filereadable(expand("~/.vim-at-usc"))
-	let g:vim_at_work = 1
-else
-	let g:vim_at_work = 0
-endif
-if g:vim_at_work
-	set expandtab softtabstop=3 tabstop=3 shiftwidth=3
-	let disable_detectindent = 1 " Don't detect indent
-else
-	set noexpandtab softtabstop=4 tabstop=4 shiftwidth=4
-endif
+set noexpandtab softtabstop=4 tabstop=4 shiftwidth=4
 set list listchars=tab:\ \ ,trail:·
 if $TERM =~ 'rxvt'
-	if g:vim_at_work
-		set t_Co=88
-	else
-		set t_Co=256
-	endif
+	set t_Co=256
 endif
 if exists('$VIM_BACK')
 	exec "set background=" . $VIM_BACK
@@ -70,3 +56,6 @@ endif
 set backupdir=~/.vim-tmp//,~/.tmp//,~/tmp//,/tmp//
 set directory=~/.vim-tmp//,~/.tmp//,~/tmp//,/tmp//
 "^^ from http://items.sjbach.com/319/configuring-vim-right ***
+if filereadable(expand("~/.vimrc.local"))
+	source ~/.vimrc.local
+endif
