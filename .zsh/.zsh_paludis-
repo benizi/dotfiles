@@ -1,0 +1,1 @@
+export PALUDIS_OPTIONS="--dl-downgrade error --resume-command-template $HOME/paludis-resume/XXXXXX"
