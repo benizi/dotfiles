@@ -33,7 +33,7 @@ alias wget-cookies='wget --load-cookies $MOZ5PROF/cookies.txt'
 alias wget-fakeit="wget -U 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070515 Firefox/2.0.0.4' --load-cookies \$MOZ5PROF/cookies.txt"
 alias wcc='LC_ALL=C wc'
 alias z=' exec zsh'
-alias Z=' exec sudo su bhaskell -'
+alias Z=' exec sudo su -l bhaskell'
 hash -d afs=/afs/cs.cmu.edu/user/bhaskell/protected
 if [ -n "$INCYG" ] ; then
 	alias sudo='runas /savecred /user:Administrator'
