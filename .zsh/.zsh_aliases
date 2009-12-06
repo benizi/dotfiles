@@ -5,6 +5,7 @@ alias rehash=' builtin rehash'
 
 alias bash='HISTFILE=~/.bash_history bash'
 
+alias chroot32='sudo su - -c "linux32 chroot /32 /bin/zsh -l"'
 alias fcl='fc -nidl 0 | less'
 local lscolor
 if [ -n "$INBSD" ] ; then lscolor="ls" ; else lscolor="ls --color=auto" ; fi
