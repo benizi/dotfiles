@@ -154,6 +154,26 @@ OPTION 'MyMatrices';
 OPTION 'Acme::MetaSyntactic', 'batman';
 OPTION 'Statfs';
 my_use 'POSIX', 'strftime';
+*hms = _underscored(sub {
+	my $tot = shift;
+	my $neg = ($tot < 0) ? '-' : '';
+	$tot *= -1 if $neg;
+	$tot = int $tot if $tot > 1;
+	my @div = ([d=>0],[h=>24],[m=>60],[s=>60]);
+	my @n;
+	my @l;
+	while ($_ = pop @div) {
+		last if @n and not $tot;
+		my ($l, $m) = @$_;
+		my $rem = $m ? $tot % $m : $tot;
+		unshift @n, $rem;
+		unshift @l, $l;
+		last if not $m;
+		$tot -= $rem;
+		$tot /= $m;
+	}
+	$neg . join ':', map sprintf("%0*d%s", $_?2:1, $n[$_], $l[$_]), 0..$#n;
+});
 *md5file = _filesum("Digest::MD5");
 *sha1file = _filesum("Digest::SHA1");
 *read_file = _read_file;
