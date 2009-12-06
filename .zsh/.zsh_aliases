@@ -4,6 +4,8 @@ alias bg=' builtin bg'
 alias rehash=' builtin rehash'
 
 alias bash='HISTFILE=~/.bash_history bash'
+alias ksh='HISTFILE=~/.ksh_history ksh'
+alias sh='HISTFILE=~/.sh_history sh'
 
 alias chroot32='sudo su - -c "linux32 chroot /32 /bin/zsh -l"'
 alias fcl='fc -nidl 0 | less'
