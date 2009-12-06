@@ -10,9 +10,6 @@ for p in $pathtest ; do [ -d $p ] && path+=($p) done
 export PATH
 export MANPATH=/usr/share/man:/usr/csl/man:/usr/cogsci/man:/usr/cogsci/X11/man:/usr/dt/man:/usr/openwin/man:/usr/man:/usr/local/man
 export PINERC='{dovecot.benizi.com/ssl/user=bhaskell}pinerc'
-export CVSROOT=remind.princeton.edu:/usr/local/cvsroot
-export CVS_RSH=ssh
-export CVS_SERVER=/usr/csl/bin/cvs
 umask 077
 LABPCS=(rapture elation thought dream dictus nym remind wonder felicity bliss serenity)
 export LABPCS
