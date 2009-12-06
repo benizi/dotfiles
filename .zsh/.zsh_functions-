@@ -1,4 +1,7 @@
-function playit () { for s in $(perl -lwe 'print for 1..$ARGV[0]' $(nosefart -i "$*" | perl -nwe 'print for /Songs:\s(\d+)/')) ; do if ! aoss nosefart -t $s -a 1 "$*" ; then break ; fi ; done; }
+function nsf () { padsp nosefart $argv }
+function nsf-count () { nsf -i $1 | perl -lnwe 'print for /Songs:\s(\d+)/'}
+function nsf-track () { nsf -t $2 -a 1 $1 }
+function playit () { for t in {1..$(nsf-count $1)} ; nsf-track $1 $t }
 function wlan-replug () { wlan-remove ; wlan-insert }
 function wlan-remove () { modprobe --remove ipw2200 ieee80211_crypt{_tkip,_ccmp,_wep,} }
 function wlan-insert () { modprobe ipw2200 }
