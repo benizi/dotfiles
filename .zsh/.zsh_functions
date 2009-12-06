@@ -39,3 +39,6 @@ if [ -n "$INCYG" ] ; then
 	function cyg () { reply=("$(cygpath -w $REPLY)") }
 fi
 function real () { reply=("$(readlink -f $REPLY)") }
+function set-pulse-server () {
+	xprop -root -f PULSE_SERVER 8s -set PULSE_SERVER "$1"
+}
