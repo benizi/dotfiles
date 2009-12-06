@@ -38,3 +38,4 @@ function lslvm () { vgdisplay -C ; pvdisplay -C ; lvdisplay -C }
 if [ -n "$INCYG" ] ; then
 	function cyg () { reply=("$(cygpath -w $REPLY)") }
 fi
+function real () { reply=("$(readlink -f $REPLY)") }
