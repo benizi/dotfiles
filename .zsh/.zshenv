@@ -24,6 +24,7 @@ export AXIS2_HOME=/opt/axis2-1.3
 export LESS="-R -i -M --shift 5"
 export LESSOPEN="|lesspipe.sh %s"
 export PAGER=less
+export auto_proxy=http://localhost/proxy.pac
 export MATLAB=/home/bhaskell/MATLAB/7.4/lib/matlab7
 export PYTHONSTARTUP=~/.python/startup
 export PYTHONPATH=~/py
