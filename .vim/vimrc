@@ -22,7 +22,6 @@ set ofu=syntaxcomplete#Complete
 imap <C-@> <C-Space>
 " autocmd FileType * set tabstop=4|set shiftwidth=4|set softtabstop=4|set expandtab
 autocmd BufRead *.thtml set syntax=thtml
-autocmd FileType php noremap <C-M> :w!<CR>:!php %<CR>
 " map  {gq}
 if has("cscope")
 	set csprg=/usr/local/bin/cscope
