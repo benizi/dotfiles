@@ -1,0 +1,111 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use DBI;
+use Getopt::Long;
+my $opt;
+(my $def_opt = $0) =~ s{^.*xmms2-}{};
+GetOptions(
+	'dry-run' => \(my $dry = 0),
+	'out' => \(my $just_out = 0),
+	'debug+' => \(my $debug = 0),
+	'verbose+' => \(my $verbose = 0),
+	'file=s' => \(my $file = "$ENV{HOME}/.config/xmms2/medialib.db"),
+	'opt=s' => \$opt,
+	'<>' => sub {
+		local $_ = shift;
+		my $pn = qr/^prev(?:ious)?|next$/;
+		my $die = 0;
+		if (/$pn/) {
+			$opt //= $def_opt;
+			$die = 1 if $opt and $opt =~ /$pn/;
+			$opt .= $_;
+		} else {
+			$die = defined $opt;
+			$opt = shift;
+		}
+		die "Too many options" if $die;
+	},
+	'current=s' => \(my $current),
+) or die 'options';
+$opt //= $def_opt;
+$opt || die "Must specify something\n";
+
+my (%A,%just_out); BEGIN { undef @A{keys %::} }
+$just_out = 1 if $just_out{$opt};
+
+my $dbh = DBI->connect("dbi:SQLite:$file") or die "Connect: $!";
+
+sub _single { ($dbh->selectrow_array(@_)) }
+
+BEGIN { $just_out{currlist}++; }
+sub currlist {
+	_single(<<SQL);
+select collid
+from CollectionLabels
+where name='_active'
+SQL
+}
+
+BEGIN { $just_out{total}++; }
+sub total {
+	_single(<<SQL, {}, currlist);
+select count(*) as c
+from CollectionIdlists
+where collid = ?
+SQL
+}
+BEGIN { $just_out{current}++; }
+sub current {
+	$current // _single(<<SQL, {}, currlist);
+select value
+from CollectionAttributes
+where key='position'
+and collid=?
+SQL
+}
+sub _next_prev {
+	my $rev = shift;
+	my ($gtlt, $desc) = $rev ? ('<', ' desc') : ('>', '');
+	my $id = _single(<<SQL, {}, (current) x 2);
+select min(position) as pos
+from CollectionIdlists as c
+join Media as u on (u.id=mid and u.key='url')
+left join Media as a on (a.id=u.id and a.key='artist')
+left join Media as al on (al.id=u.id and al.key='album')
+where position $gtlt ?
+and al.value not in (select m.value
+	from CollectionIdlists as c
+	join Media as m on (mid=m.id and m.key='album')
+	where position=?)
+group by al.value
+order by position$desc
+limit 1
+SQL
+	$id // ($rev ? total : 0);
+}
+sub albumnext { _next_prev 0 }
+sub albumprev { _next_prev 1 }
+
+sub _random {
+	my $rev = shift;
+	srand 618;
+	my @i = (0..total-1);
+	my @all;
+	push @all, splice @i, rand(@i), 1 while @i;
+	my $curr = current;
+	my ($ci) = grep $all[$_] == $curr, 0..$#all;
+	return $all[(($rev?-1:1)+$ci) % @all];
+}
+sub random { _random 0 }
+sub randomnext { _random 0 }
+sub randomprev { _random 1 }
+
+my %dispatch;
+$dispatch{$_} = eval "\\&$_" for grep /[a-z]/, grep !/::$/, grep !/^_/, grep !exists($A{$_}), keys %::;
+my $value = ($dispatch{$opt} || sub { die "Unknown option: $opt\n" })->();
+print "$0 $opt => $value\n" and exit if $dry;
+print $value, "\n" and exit if $just_out;
+my @cmd = ("xmms2", "jump", $value);
+print "@cmd\n" if $verbose;
+system { $cmd[0] } @cmd;
