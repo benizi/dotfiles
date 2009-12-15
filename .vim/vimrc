@@ -24,7 +24,6 @@ imap <C-@> <C-Space>
 autocmd BufRead *.thtml set syntax=thtml
 " map  {gq}
 if has("cscope")
-	set csprg=/usr/local/bin/cscope
 	set csto=0
 	set cst
 	set nocsverb
