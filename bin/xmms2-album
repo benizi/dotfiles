@@ -1,0 +1,37 @@
+#!/bin/zsh
+reverse=false
+dry=false
+while [ $# -gt 0 ] ; do
+	[[ "$1" = *prev* ]] && reverse=true
+	[[ "$1" = *dry* ]] && dry=true
+	shift
+done
+$dry && cmd=( echo ) || cmd=( )
+$reverse && gtlt=\< || gtlt=\>
+$reverse && desc=' desc' || desc=''
+currlist=$(sqlite3 ~/.config/xmms2/medialib.db <<CURRLIST
+select collid
+from CollectionLabels where name='_active';
+CURRLIST)
+currid=$(sqlite3 ~/.config/xmms2/medialib.db <<CURRID
+select value
+from CollectionAttributes
+where key='position'
+and collid=${currlist};
+CURRID)
+nextid=$(sqlite3 ~/.config/xmms2/medialib.db <<NEXT
+select min(position) as pos
+from CollectionIdlists as c
+join Media as u on (u.id=mid and u.key='url')
+left join Media as a on (a.id=u.id and a.key='artist')
+left join Media as al on (al.id=u.id and al.key='album')
+where position ${gtlt} ${currid}
+and al.value not in (select m.value
+	from CollectionIdlists as c
+	join Media as m on (mid=m.id and m.key='album')
+	where position=${currid})
+group by al.value
+order by position${desc}
+limit 1;
+NEXT)
+$cmd xmms2 jump $nextid

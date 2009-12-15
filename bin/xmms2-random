@@ -1,0 +1,17 @@
+#!/bin/zsh
+dry=false
+while [ $# -gt 0 ] ; do
+	[[ "$1" = *prev* ]] && reverse=true
+	[[ "$1" = *dry* ]] && dry=true
+	shift
+done
+$dry && cmd=( echo ) || cmd=( )
+rand=$(N=$($0:h/xmms2-total) Z=$0 perl -lw - <<'PERL'
+@i = (0..$ENV{N}-1);
+srand $_ for (stat $ENV{Z})[8];
+push @all, splice @i, rand(@i), 1 while @i;
+srand time;
+$current = int rand @all;
+print $current;
+PERL)
+$cmd xmms2 jump $rand

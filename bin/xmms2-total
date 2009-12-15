@@ -1,0 +1,11 @@
+#!/bin/zsh
+currlist=$(sqlite3 ~/.config/xmms2/medialib.db <<CURRLIST
+select collid
+from CollectionLabels where name='_active';
+CURRLIST)
+total=$(sqlite3 ~/.config/xmms2/medialib.db <<TOTAL
+select count(*) as c
+from CollectionIdlists
+where collid = $currlist;
+TOTAL)
+echo $total
