@@ -8,7 +8,7 @@ alias ksh='HISTFILE=~/.ksh_history ksh'
 alias sh='HISTFILE=~/.sh_history sh'
 
 alias chroot32='sudo su - -c "linux32 chroot /32 /bin/zsh -l"'
-alias fcl='fc -nidl 0 | less'
+alias fcl='fc -t %Y-%m-%d@%H:%M:%S -nl 0 | less'
 local lscolor="ls --color=auto"
 [ -n "$INBSD" ] && lscolor=ls
 alias l="$lscolor -trl"
