@@ -29,7 +29,7 @@ $p->new(start_h => [
 			url => url($$att{$attr}, $B)->abs,
 			text => $text,
 		};
-		$print =~ s{\$$_}{$$sub{$_}}g for keys %$sub;
-		print $print
+		$toprint =~ s{\$$_}{$$sub{$_}}g for keys %$sub;
+		print $toprint
 	}, "tag, attr, text"]
 )->parse_file($_)for@ARGV;
