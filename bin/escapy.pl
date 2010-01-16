@@ -55,6 +55,10 @@ while (<>) {
 		if ($str =~ /([A-Za-z0-9\/\+=]{8,})/) {
 			print join "\t", "Base64d", $1, decode_base64($1);
 		}
+		print join "\t", "URI+",
+			join '',
+			map /\ / ? '+' : uri_escape_utf8($_),
+			split /(\ )/, $str;
 		print join "\t", "URI", uri_escape_utf8($str);
 		print join "\t", "FullURI", join "", map sprintf("%%%02X",ord), split //, $str;
 #		print join "\t", "URI8", uri_escape_utf8($str);
