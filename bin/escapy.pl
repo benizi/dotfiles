@@ -1,6 +1,7 @@
 #!/usr/bin/perl -l
 use strict;
 use warnings;
+$|=1;
 #use open ':utf8', ':std';
 use bytes;
 use MIME::Base64 qw/encode_base64 decode_base64/;
