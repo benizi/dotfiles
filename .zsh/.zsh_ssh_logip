@@ -1,4 +1,5 @@
 [ -n "$SSH_CLIENT" ] || return
+(( $-[(I)l] )) || return
 _ssh_ip="${${=SSH_CLIENT}[1]}"
 [ -z "$_ssh_ip" ] && return
 [ -t 0 ] && _extra="" || _extra=" pinger"
