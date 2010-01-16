@@ -44,6 +44,9 @@ while (<>) {
 		print join "\t", "Octets", sprintf '0x%*v02x', ' 0x', $str;
 		print join "\t", "octets:d", sprintf '%*v03d', ' ', $str;
 		print join "\t", "octets:o", sprintf '\\%*v03o', '\\', $str;
+		print join "\t", "octaly", join '',
+			map /[A-Za-z0-9]/ ? $_ : sprintf("\\%03o", ord),
+			split //, $str;
 		print join "\t", "zsh", join '',
 			map /[\x21-\x7e]/ ? $_ : sprintf("%s%03o%s", '$\'\\', ord, "'"),
 			map chr,
