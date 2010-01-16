@@ -1,2 +1,5 @@
-export LANG="en_US.UTF-8"
+function locale_except_collate () {
+export LANG="$1"
 export LC_COLLATE=POSIX
+}
+locale_except_collate en_US.UTF-8
