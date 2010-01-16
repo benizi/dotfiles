@@ -4,7 +4,7 @@ export WNSEARCHDIR=/wordnet/wn/dict
 export WNSEARCHPATH=$WNSEARCHDIR:/wordnet/wn/2k3/lib/perl/various
 export READNULLCMD=less
 typeset -U path
-pathtest=($HOME/bin /home/benhaskell/bin /home/bhaskell/qmail/bin {/usr{/local,},}/{s,}bin /opt/bin $HOME/bin/dslinux/bin /usr/games/bin /home/bhaskell/wn/bin /var/qmail/bin /usr/kde/4.0/bin /usr/X11R6/bin $path /usr/kde/3.5/bin /people/bhaskell/bin)
+pathtest=($HOME/python/bin $HOME/bin /home/benhaskell/bin /home/bhaskell/qmail/bin {/usr{/local,},}/{s,}bin /opt/bin $HOME/bin/dslinux/bin /usr/games/bin /home/bhaskell/wn/bin /var/qmail/bin /usr/kde/4.0/bin /usr/X11R6/bin $path /usr/kde/3.5/bin /people/bhaskell/bin)
 path=()
 for p in $pathtest ; do [ -d $p ] && path+=($p) done
 export PATH
