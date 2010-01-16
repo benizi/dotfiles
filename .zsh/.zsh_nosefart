@@ -1,0 +1,6 @@
+if (( $+commands[nosefart] )) ; then
+	(( $+commands[padsp] )) && function nsf () { padsp nosefart $argv }
+	function nsf-count () { nsf -i $1 | perl -lnwe 'print for /Songs:\s(\d+)/'}
+	function nsf-track () { nsf -t $2 -a 1 $1 }
+	function playit () { for t in {1..$(nsf-count $1)} ; nsf-track $1 $t }
+fi
