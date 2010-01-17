@@ -1,5 +1,3 @@
-" map!  a. hbmmi?\<2h"zdt.@z^Mywmx`mP xi
-" map!  a. hbmmi/\<2h"zdt.@z^Mywmx`mP xi
 set noexpandtab softtabstop=4 tabstop=4 shiftwidth=4
 set list listchars=tab:\ \ ,trail:·
 if $TERM =~ 'rxvt'
