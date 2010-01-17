@@ -1,0 +1,10 @@
+#!/bin/env updater
+#grep LIGATURE /usr/lib/perl5/5.10.1/unicore/UnicodeData.txt | grep LATIN | grep -v LONG.S.T | grep -v OE | cut -f1 -d\; | perl -CDS -lnwe 'print chr hex' | charnames.pl | perl -CDS -lapwe 's/\t/" # \\u/; $c=/CAPITAL/?1:0; @k=map $c?$_:lc, map "<$_>", split //, $F[-1]; s/^/<Multi_key> @k : "/'
+<Multi_key> <I> <J> : "Ĳ" # \u0132	LATIN CAPITAL LIGATURE IJ
+<Multi_key> <i> <j> : "ĳ" # \u0133	LATIN SMALL LIGATURE IJ
+<Multi_key> <f> <f> : "ﬀ" # \ufb00	LATIN SMALL LIGATURE FF
+<Multi_key> <f> <i> : "ﬁ" # \ufb01	LATIN SMALL LIGATURE FI
+<Multi_key> <f> <l> : "ﬂ" # \ufb02	LATIN SMALL LIGATURE FL
+<Multi_key> <f> <f> <i> : "ﬃ" # \ufb03	LATIN SMALL LIGATURE FFI
+<Multi_key> <f> <f> <l> : "ﬄ" # \ufb04	LATIN SMALL LIGATURE FFL
+<Multi_key> <s> <t> : "ﬆ" # \ufb06	LATIN SMALL LIGATURE ST

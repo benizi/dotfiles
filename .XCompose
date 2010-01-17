@@ -1,7 +1,7 @@
 include "%L"
 include ".XCompose-unicode"
 include ".XCompose-greek"
-include ".XCompose-ordering"
+include ".XCompose-ligatures"
 <Multi_key> <a> <a> : "å"
 <Multi_key> <A> <a> : "Å"
 <Multi_key> <A> <A> : "Å"
@@ -18,3 +18,4 @@ include ".XCompose-ordering"
 <Multi_key> <minus> <minus> : "–" # \u2013 # EN DASH
 <Multi_key> <m> <minus> : "—" # \u2014 # EM DASH
 <Multi_key> <minus> <m> : "—" # \u2014 # EM DASH
+<Multi_key> <asterisk> <asterisk> : "•" # \u2022 # BULLET
