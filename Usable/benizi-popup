@@ -8,6 +8,24 @@ sub browser_menu_item {
 	( $url => sub { open_in_browser $self, $url } )
 }
 
+sub load_ipc_run {
+	eval "use IPC::Run";
+	return $@ ? 0 : 1;
+}
+
+sub ipc_run {
+	my ($self, @cmd) = @_;
+	%ENV = %{$self->env};
+	IPC::Run::run([@cmd], '<', \$_, '>', \my $out, '2>', \my $err);
+	$_ = $out || $err;
+}
+
+sub run_menu_item {
+	my ($self, @cmd) = @_;
+	return "IPC::Run not loaded" => $_ unless load_ipc_run;
+	( "@cmd" => sub { ipc_run $self, @cmd } )
+}
+
 sub on_start {
 	my $self = shift;
 	my $open_in_browser = sub {
@@ -18,29 +36,7 @@ sub on_start {
 		/^\d+$/ or return;
 		browser_menu_item $self, "http://benizi.com/cgi/env?$_"
 	}, sub {
-		/\A[+]--/ or return;
-		'detablefy --min' => sub {
-			if (s/\A([+](?:-+[+])+)\s*$(.*)\1//sm) {
-				my ($hdr,$body) = ($1,$2);
-				my @cols = grep substr($hdr, $_, 1) eq '+', 0..-1+length($hdr);
-				while (1) {
-					$body =~ s/\A\s+//;
-					last unless length $body;
-					my $got = substr $body, 0, length $hdr;
-					$body = substr $body, length $hdr;
-					if ($got eq $hdr
-							or $got eq '|'.substr($got,1,-1).'|'
-						) {
-						my $sep = $got eq $hdr ? '+' : '|';
-						$_ .= join $sep, '', map substr($got, $cols[$_]+2, $cols[$_+1]-$cols[$_]-3), 0..$#cols-1;
-						$_ .= "$sep\n";
-					} else {
-						$_ .= "\nGOT{$got}";
-					}
-				}
-			} else {
-				$_ = "couldn't parse $_";
-			}
-		}
+		/^[+]--/m or return;
+		run_menu_item $self, 'detablefy.pl', '--min'
 	};
 }
