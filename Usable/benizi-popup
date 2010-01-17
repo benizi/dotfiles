@@ -5,7 +5,7 @@ sub open_in_browser {
 
 sub browser_menu_item {
 	my ($self, $url) = @_;
-	( $url => sub { open_in_browser $self, $url } );
+	( $url => sub { open_in_browser $self, $url } )
 }
 
 sub on_start {
