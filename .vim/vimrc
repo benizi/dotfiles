@@ -1,7 +1,6 @@
 set noexpandtab softtabstop=4 tabstop=4 shiftwidth=4
 set list listchars=tab:\ \ ,trail:·
 if $TERM =~ 'rxvt'
-	set t_Co=256
 endif
 if exists('$VIM_BACK')
 	exec "set background=" . $VIM_BACK
