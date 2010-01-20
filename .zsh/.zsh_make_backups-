@@ -1,23 +1,29 @@
-for f in .historyfile
-do
-	FILE=~/.backup.$f
-	FILE=$FILE:gs/.././
-	BZF="$FILE.`date +%Y.%U`.bz2"
-	if [ -f ~/$f ]
-	then
-		[[ -f $BZF ]] && break
-		bzip2 < ~/$f > $BZF
-		fm=`md5sum < $BZF`
-		for l in $FILE.*(On)
-		do
-			[[ $l = $BZF ]] && continue
-			lm=`md5sum < $l`
-			if [[ "$fm" = "$lm" ]]
-			then rm $l
-			else # echo keep $l "($lm != $fm)"
-			fm="$lm"
-			# break
-			fi
-		done
-	fi
-done
+function () {
+	local tobackup listfile BZF FILE fm lm
+	tobackup=( .historyfile )
+	for listfile in ~/.zsh{,-}/backup(N) ; do
+		tobackup+=( "${(f)$(<$listfile)}" )
+	done
+	for f in $tobackup ; do
+		[[ -f $f ]] || f=~/$f
+		FILE=$f:h/.backup.$f:t
+		FILE=$FILE:gs/.././
+		BZF="$FILE.`date +%Y.%U`.bz2"
+		if [ -f $f ] ; then
+			[[ -f $BZF ]] && break
+			bzip2 < $f > $BZF
+			fm=`md5sum < $BZF`
+			for l in $FILE.*(On) ; do
+				[[ $l = $BZF ]] && continue
+				lm=`md5sum < $l`
+				if [[ "$fm" = "$lm" ]] ; then
+					echo rm $l
+				else
+					echo keep $l "($lm != $fm)"
+					fm="$lm"
+					# break
+				fi
+			done
+		fi
+	done
+}
