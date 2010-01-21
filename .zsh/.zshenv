@@ -21,8 +21,8 @@ typeset -U ld_library_path
 export LD_LIBRARY_PATH
 export MOZ5PROF=/home/bhaskell/.mozilla/firefox/qk8tugb3.default
 export AXIS2_HOME=/opt/axis2-1.3
-export LESS="-R -i -M --shift 5"
-export LESSOPEN="|lesspipe.sh %s"
+export LESS="-R -i -M --shift 5 -F -X -j4"
+(( $+commands[lesspipe.sh] )) && export LESSOPEN="|lesspipe.sh %s"
 export PAGER=less
 export auto_proxy=http://localhost/proxy.pac
 export MATLAB=/home/bhaskell/MATLAB/7.4/lib/matlab7
