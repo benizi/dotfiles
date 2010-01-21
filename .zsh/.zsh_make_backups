@@ -11,7 +11,7 @@ function () {
 		# %Y.%U.%w = year-week-dayofweek
 		BZF="$FILE.`date +%Y.%j`.bz2"
 		if [ -f $f ] ; then
-			[[ -f $BZF ]] && break
+			[[ -f $BZF ]] && continue
 			bzip2 < $f > $BZF
 			fm=`md5sum < $BZF`
 			for l in $FILE.*(On) ; do
