@@ -34,7 +34,7 @@ zsh_dirs=( $_pre_dirs ${^zsh_dirs}{,.local,-}(N/) $_post_dirs )
 zsh_dirs=( ${^zsh_dirs}(N/) )
 for dir in $zsh_dirs ; do
 	setopt nullglob
-	pushd $dir
+	pushd $dir 2> /dev/null || continue
 	files=(.zshrc-)
 	if [ -f .ZSHFILES ] ; then
 		files=($files `cat .ZSHFILES`)
