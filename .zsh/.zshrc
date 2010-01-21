@@ -26,14 +26,13 @@ fi
 
 _pre_dirs=(~/.zsh-scripts)
 _post_dirs=(~/.zsh-scripts-)
-dirs=(~)
-typeset -U dirs
-SCRIPT=${(%)${:-%N}}
-[ -L $SCRIPT ] && SCRIPT="$(readlink -f $SCRIPT)"
-dirs+=( $SCRIPT:h )
-dirs=( $_pre_dirs $dirs $_post_dirs )
-for dir in $dirs ; do
-	[ ! -d $dir ] && continue
+zsh_dirs=(~)
+typeset -U zsh_dirs
+SCRIPT=${(%):-"%N"}
+zsh_dirs+=( $SCRIPT:h $SCRIPT:A:h )
+zsh_dirs=( $_pre_dirs ${^zsh_dirs}{,.local,-}(N/) $_post_dirs )
+zsh_dirs=( ${^zsh_dirs}(N/) )
+for dir in $zsh_dirs ; do
 	setopt nullglob
 	pushd $dir
 	files=(.zshrc-)

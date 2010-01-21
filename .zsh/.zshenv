@@ -28,9 +28,5 @@ export auto_proxy=http://localhost/proxy.pac
 export MATLAB=/home/bhaskell/MATLAB/7.4/lib/matlab7
 export PYTHONSTARTUP=~/.python/startup
 export PYTHONPATH=~/python
-THIS_SCRIPT=${(%)${:-%N}}
-EXTRAENV=$THIS_SCRIPT
-[ -L $EXTRAENV ] && EXTRAENV=$(readlink $EXTRAENV)
-[ -e $EXTRAENV ] || EXTRAENV=$THIS_SCRIPT:h/$EXTRAENV
-EXTRAENV=$EXTRAENV-
+EXTRAENV=${${(%):-"%N"}:A}-
 [ -f $EXTRAENV ] && source $EXTRAENV
