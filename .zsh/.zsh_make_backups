@@ -8,7 +8,8 @@ function () {
 		[[ -f $f ]] || f=~/$f
 		FILE=$f:h/.backup.$f:t
 		FILE=$FILE:gs/.././
-		BZF="$FILE.`date +%Y.%U`.bz2"
+		# %Y.%U.%w = year-week-dayofweek
+		BZF="$FILE.`date +%Y.%j`.bz2"
 		if [ -f $f ] ; then
 			[[ -f $BZF ]] && break
 			bzip2 < $f > $BZF
