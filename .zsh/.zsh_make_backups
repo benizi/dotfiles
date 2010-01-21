@@ -18,9 +18,9 @@ function () {
 				[[ $l = $BZF ]] && continue
 				lm=`md5sum < $l`
 				if [[ "$fm" = "$lm" ]] ; then
-					echo rm $l
+					rm $l
 				else
-					echo keep $l "($lm != $fm)"
+					#echo keep $l "($lm != $fm)"
 					fm="$lm"
 					# break
 				fi
