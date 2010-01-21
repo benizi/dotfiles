@@ -23,8 +23,9 @@ alias lsr="$lscolor -Sl"
 alias pf='ps -ef'
 alias pfg='ps -ef | grep'
 alias lsl=l
-alias pine='titlep PINE ; command alpine -bail -p $PINERC'
-alias alpine='titlep PINE ; alpine-svn -bail -p $PINERC'
+if [[ $commands[alpine] != /usr/local/bin/alpine ]] ; then
+	alias alpine='titlep ALPINE ; alpine-svn -bail -p $PINERC'
+fi
 alias mysqle='mysql --defaults-extra-file=/wordnet/wn/2k3/util/mysql.pass'
 alias mysqlh='mysql --defaults-extra-file=/wordnet/wn/2k3/util/mysql.pass.plusHTML'
 alias nacroread='acroread -openInNewWindow'
