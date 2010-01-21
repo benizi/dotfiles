@@ -1,3 +1,4 @@
-autoload insert-composed-char
-zle -N insert-composed-char
-bindkey "^U" insert-composed-char
+# see also 'insert-composed-char'
+autoload insert-unicode-char
+zle -N insert-unicode-char
+bindkey "^U" insert-unicode-char
