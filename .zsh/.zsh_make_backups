@@ -1,7 +1,7 @@
 function () {
 	local tobackup listfile BZF FILE fm lm
 	tobackup=( .historyfile )
-	for listfile in ~/.zsh{,-}/backup(N) ; do
+	for listfile in ${^zsh_dirs}/backup{,s}(.N) ; do
 		tobackup+=( "${(f)$(<$listfile)}" )
 	done
 	for f in $tobackup ; do
