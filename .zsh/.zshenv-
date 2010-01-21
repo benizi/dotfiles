@@ -1,5 +1,6 @@
 path=( ~/bin/lvmstuff $path ~/obfu /opt/google-web-toolkit )
 export PERL5LIB=$PERL5LIB:$HOME/Usable/testing/lib
+export PRINTER=pdf
 
 # ConTeXt-related shit
 function () {
