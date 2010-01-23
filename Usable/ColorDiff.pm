@@ -67,9 +67,26 @@ sub Format {
 	}
 }
 Format('ANSI');
+my $preprocess;
+sub svn_strip {
+	local $_ = @_ ? shift : $_;
+	s/\$(Date|LastChangedDate|Revision|LastChangedRevision|Rev|Author|LastChangedBy|HeadURL|URL|Id)(?::[^\$]*)?\$/\$$1\$/g;
+	$_;
+}
+sub Preprocess {
+	my $p = shift;
+    for (
+		[ qr/^svn(?:-?key(?:words?)?)?$/i, \&svn_strip ],
+		) {
+		my ($m, $v) = @$_;
+		$preprocess = $v if $p =~ $m;
+		last if $preprocess;
+	}
+}
+Preprocess('');
 
 sub import {
-    my @options_at = grep { $_[$_] =~ /^(?:format|split)$/ } 0..$#_;
+    my @options_at = grep { $_[$_] =~ /^(?:format|split|preprocess)$/ } 0..$#_;
     while (@options_at) {
         my ($loc) = pop @options_at;
         my ($opt, $val) = splice @_, $loc, 2;
@@ -156,6 +173,7 @@ sub color_diff_files {
 	@_ = map {
 		open my $f, '<', $_ or die "opening $_: $!";
 		$_ = [ <$f> ];
+		$preprocess and @$_ = map $preprocess->($_), @$_;
 		chomp @$_;
 		$_
 	} @_;
