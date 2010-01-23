@@ -60,9 +60,13 @@ sub _shellquote {
 *shell_quote = _underscored(\&_shellquote);
 *quote_shell = \&shellquote;
 sub run_cmd {
-	my @cmd = @_;
-	my $ret = system { $cmd[0] } @cmd;
-	!$ret;
+	if (grep ref, @_) {
+		&IPC::Run::run;
+	} else {
+		my @cmd = @_;
+		my $ret = system { $cmd[0] } @cmd;
+		!$ret;
+	}
 }
 sub map2bits {
 	my ($txt, $bits, $nouse, $all)=@_;
@@ -154,6 +158,7 @@ OPTION 'MyMatrices';
 OPTION 'Acme::MetaSyntactic', 'batman';
 OPTION 'Statfs';
 my_use 'POSIX', 'strftime';
+my_use 'IPC::Run';
 *hms = _underscored(sub {
 	my $tot = shift;
 	my $neg = ($tot < 0) ? '-' : '';
