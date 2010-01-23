@@ -94,11 +94,12 @@ sub import {
         $opt = lc $opt;
         if ($opt eq 'format') { Format($_) for split /-/, $val; }
         elsif ($opt eq 'split') { Split($val); }
+        elsif ($opt eq 'preprocess') { Preprocess($val); }
     }
     $_[0]->SUPER::export_to_level(1, @_);
 }
 
-my %c = qw/u 0 + 42;37;1 - 41;37;1/;
+my %c = qw/u 0 + 38;5;28;7 - 31;7/;
 my %functions;
 {
     no strict 'refs';
@@ -151,11 +152,17 @@ POSTCSS
     preline => sub { qq|<div class="changed">|            },
     postline => sub { "</div>\n"                          },
 };
+sub ansi_color {
+	my ($color, $text) = @_;
+	return $text unless $color;
+	my @lines = split /\n/, $text, -1;
+	join "\n", map length() ? "\e[${color}m$_\e[0m" : $_, @lines;
+}
 $functions{ANSI} = {
-    removed => sub {           "\e[".$c{"-"}."m$_[0]\e[0m"         },
-    added   => sub {           "\e[".$c{"+"}."m$_[0]\e[0m"         },
-    unchanged => sub { $c{u} ? "\e[".$c{"u"}."m$_[0]\e[0m" : $_[0] },
-    postline => sub { "\n"                                         },
+	removed => sub { ansi_color $c{'-'}, $_[0] },
+	added   => sub { ansi_color $c{'+'}, $_[0] },
+	unchanged => sub { ansi_color $c{u}, $_[0] },
+    postline => sub { "\n"                     },
 };
 $functions{plain} = {
     removed => sub { "<*-:$_[0]*>" },
