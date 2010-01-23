@@ -8,6 +8,7 @@ my ($f, $g);
 my %split;
 my %format;
 GetOptions(
+	'svn' => \(my $use_svn = 0),
 	'c' => \$format{ignoresame},
 	'n' => \ (my $no_color = 0),
 	'split=s' => \$split{custom},
@@ -26,16 +27,22 @@ GetOptions(
 		die "too many files";
 	},
 );
+my @extra;
 my @split = map /custom/?$split{$_}:$_, grep defined($split{$_}), keys %split;
 my @format = grep $format{$_}, keys %format;
 die "Too many split options specified: @split\n" if @split > 1;
-push @split, 'p';
+push @extra, split => 'p';
 #warn "SPLIT(@split) FORMAT(@format)\n";
+if ($f and !$g and $use_svn) {
+	$g = $f;
+	($f = $g) =~ s{/([^/]+)$}{/.svn/text-base/$1.svn-base};
+	push @extra, preprocess => 'svn';
+}
 die "Usage: $0 [options] file1 file2\n" unless $f and $g;
 
 require ColorDiff;
 ColorDiff->import('color_diff_files',
-	split=>($split[0]),
 	format=>join('-', @format),
+	@extra,
 );
 print for color_diff_files($f,$g);
