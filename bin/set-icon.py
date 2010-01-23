@@ -4,19 +4,32 @@ import gtk
 import warnings
 from sys import argv, exit
 from struct import pack, unpack
-import getopt
+from optparse import OptionParser
+
+parser = OptionParser()
+parser.add_option("--graphic", "--img", "--image", type="string",
+	dest="imagefile", metavar="FILE",
+	help="Image file for icon")
+parser.add_option("--id", type="int", dest="window_id",
+	help="Window ID whose icon is being set")
+parser.add_option("-v","--verbose")
+parser.add_option("-s","--silent","-q","--quiet")
+(options, args) = parser.parse_args()
+if not options.imagefile and len(args):
+	options.imagefile = args[0]
+	args = args[1:]
+if not options.window_id and len(args):
+	options.window_id = int(args[0], 0)
+	args = args[1:]
 
 verbose = False
 silent = True
 def err(msg=None):
-	if msg and not silent:
+	if msg and not options.silent:
 		print msg
 	exit(1)
 
-if len(argv) < 3:
-	err("Usage: %s icon-file window-id" % (argv[0]))
-
-pixmap = gtk.gdk.pixbuf_new_from_file(argv[1])
+pixmap = gtk.gdk.pixbuf_new_from_file(options.imagefile)
 if not pixmap:
 	err("pixmap")
 
@@ -39,7 +52,7 @@ for row in pixels:
 			argb += p[i] << (8 * (len(p)-i-1))
 		prop += unpack("i",pack("I",argb))
 
-window = gtk.gdk.window_foreign_new(int(argv[2],16))
+window = gtk.gdk.window_foreign_new(options.window_id)
 if not window:
 	err("Couldn't open window")
 window.property_delete("_NET_WM_ICON")
