@@ -209,7 +209,7 @@ sub import {
 	}
 	my $out = symtab caller;
 	my @x = @_ ? (@_) : (keys %$new);
-	$verbose and warn "Exporting: (@x)\n";
+	$verbose and print "Exporting: (@x)\n";
 	my %help;
 	for my $fn (@x) {
 		die "$fn is not exported by ".__PACKAGE__."\n" if !$$new{$fn};
@@ -230,9 +230,9 @@ sub import {
 		$$out{$_} = $$new{$fn} for @as;
 	}
 	for my $p (sort keys %help) {
-		warn "$p\n";
+		print "$p\n";
 		my @f = sort { $$a[0] cmp $$b[0] } @{$help{$p}};
-		warn "$$_[0]", (@$_ > 1) ? " [also as: @$_[1..$#$_]]" : "", "\n" for @f;
+		print "$$_[0]", (@$_ > 1) ? " [also as: @$_[1..$#$_]]" : "", "\n" for @f;
 	}
 	exit if $help > 1;
 }
