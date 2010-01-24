@@ -14,7 +14,7 @@ GetOptions(
 	'extra=s@' => \my @extra,
 	'ion!' => \(my $ion = `pgrep ion3`),
 ) or die 'options';
-sub run_it {my@p=map{(length)?$_:"''"}@_;print"@p\n";$dry_run||system{$_[0]}@_}
+sub run_it {my@p=map{(length)?$_:"''"}@_;warn"@p\n";$dry_run||system{$_[0]}@_}
 my %defaults = (
 	'' => {
 		model => 'pc104',
