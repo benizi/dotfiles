@@ -1,14 +1,11 @@
 setopt promptsubst
-(( $+termcap && $termcap[Co] > 8 )) || PSCOLORNORM=$PSCOLORLO
+local _ps_color='$PSCOLORNORM'
+(( $+termcap[Co] && $termcap[Co] > 8 )) || _ps_color='$PSCOLORLO'
 local _i_am_admin=false
 if [ -n "$INCYG" -a "$USERNAME" = "Administrator" ] || [ "$UID" = "0" ] ; then
 	_i_am_admin=true
 fi
-if $_i_am_admin ; then
-	_ps_color='${PSCOLORALL-${PSCOLORROOT-$INVERSE$BOLD$PSCOLORNORM}}'
-else
-	_ps_color='${PSCOLORALL-$PSCOLORNORM}'
-fi
+$_i_am_admin && _ps_color='${PSCOLORROOT-$INVERSE$BOLD'$_ps_color'}'
 $_i_am_admin && _pschar='#' || _pschar='$'
 local _screen=""
 if [ -n "$STY" ] ; then
