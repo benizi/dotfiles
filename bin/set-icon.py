@@ -22,8 +22,6 @@ if not options.window_id and len(args):
 	options.window_id = int(args[0], 0)
 	args = args[1:]
 
-verbose = False
-silent = True
 def err(msg=None):
 	if msg and not options.silent:
 		print msg
@@ -31,16 +29,15 @@ def err(msg=None):
 
 pixmap = gtk.gdk.pixbuf_new_from_file(options.imagefile)
 if not pixmap:
-	err("pixmap")
+	err("Couldn't load pixmap")
 
 warnings.filterwarnings('ignore','PyArray_FromDimsAndDataAndDescr',DeprecationWarning)
 pixels = pixmap.get_pixels_array()
 
 prop = []
-prop += [len(pixels[0])] #unpack("BBBB", pack("I", len(pixels[0]))) # width
-prop += [len(pixels   )] #unpack("BBBB", pack("I", len(pixels   ))) # height
+prop += [len(pixels[0])]
+prop += [len(pixels   )]
 
-# print "Image %s loaded (%sx%s)" % (argv[1], prop[0],prop[1])
 for row in pixels:
 	for p in row:
 		p = p.tolist()
