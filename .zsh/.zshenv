@@ -17,10 +17,10 @@ export WNSEARCHPATH=$WNSEARCHDIR:/wordnet/wn/2k3/lib/perl/various
 export READNULLCMD=less
 typeset -U path
 pathtest=($HOME/python/bin $HOME/bin /home/benhaskell/bin /home/bhaskell/qmail/bin {/usr{/local,},}/{s,}bin /opt/bin $HOME/bin/dslinux/bin /usr/games/bin /home/bhaskell/wn/bin /var/qmail/bin /usr/kde/4.0/bin /usr/X11R6/bin $path /usr/kde/3.5/bin /people/bhaskell/bin)
-path=()
-for p in $pathtest ; do [ -d $p ] && path+=($p) done
+path=( ${^pathtest}(N-/) )
 export PATH
-export MANPATH=/usr/share/man:/usr/csl/man:/usr/cogsci/man:/usr/cogsci/X11/man:/usr/dt/man:/usr/openwin/man:/usr/man:/usr/local/man
+manpath=( /usr/share/man /usr/csl/man /usr/cogsci/man /usr/cogsci/X11/man /usr/dt/man /usr/openwin/man /usr/man /usr/local/man )
+manpath=( ${^manpath}(N-/) )
 export PINERC='{dovecot.benizi.com/ssl/user=bhaskell}pinerc'
 umask 077
 LABPCS=(rapture elation thought dream dictus nym remind wonder felicity bliss serenity)
