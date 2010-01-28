@@ -3,4 +3,4 @@
 _ssh_ip=$SSH_CLIENT[(w)1]
 [ -z "$_ssh_ip" ] && return
 [ -t 0 ] && _extra="" || _extra=" pinger"
-date +"%s $_ssh_ip$_extra" | tee -a ~/.ssh/log-of-ips
+perl -lwe 'print join " ", time, shift' "$_ssh_ip$_extra" | tee -a ~/.ssh/log-of-ips

@@ -14,6 +14,7 @@ case $ZSH_UNAME in
 	CYGWIN_NT-6.1) export INWIN7=true ;|
 	*CYGWIN*) export INCYG=true ;;
 	*FreeBSD*) export INBSD=true ;;
+	*SunOS*) export INSOL=true ;;
 	*) export INLIN=true ;;
 esac
 if [ -n "$INCYG" ] ; then

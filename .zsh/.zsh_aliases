@@ -11,6 +11,7 @@ alias chroot32='sudo su - -c "linux32 chroot /32 /bin/zsh -l"'
 alias fcl='fc -t %Y-%m-%d@%H:%M:%S -nl 0 | less'
 local lscolor="ls --color=auto"
 [ -n "$INBSD" ] && lscolor=ls
+[ -n "$INSOL" ] && lscolor=ls
 alias l="$lscolor -trl"
 alias ll="$lscolor -trlL"
 alias lll="$lscolor -trl | less"
