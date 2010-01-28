@@ -1,3 +1,15 @@
+# simulates file(:A) as file(+A)
+function A () { reply=("$(readlink -f $REPLY)") }
+_pre_dirs=(~/.zsh-scripts)
+_post_dirs=(~/.zsh-scripts-)
+zsh_dirs=(~)
+typeset -U zsh_dirs
+SCRIPT=${(%):-"%N"}
+zsh_dirs+=( $SCRIPT:h $SCRIPT(+A:h) )
+zsh_dirs=( $_pre_dirs ${^zsh_dirs}{,.local,-}(N/) $_post_dirs )
+zsh_dirs=( ${^zsh_dirs}(N/) )
+[ -L $SCRIPT ] && SCRIPT=$(readlink -f $SCRIPT)
+
 export EDITOR=/usr/bin/vim
 export WNHOME=/wordnet/wn
 export WNSEARCHDIR=/wordnet/wn/dict
@@ -28,5 +40,9 @@ export auto_proxy=http://localhost/proxy.pac
 export MATLAB=/home/bhaskell/MATLAB/7.4/lib/matlab7
 export PYTHONSTARTUP=~/.python/startup
 export PYTHONPATH=~/python
-EXTRAENV=${${(%):-"%N"}:A}-
-[ -f $EXTRAENV ] && source $EXTRAENV
+for env in ${^zsh_dirs}/${SCRIPT:t}{,-}(N) ; do
+	[ $env = $SCRIPT ] && continue
+	[ -f $env ] || continue
+	[ -L $env ] && continue
+	source $env
+done

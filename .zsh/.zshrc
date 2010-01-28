@@ -24,14 +24,6 @@ else
 fi
 [ -n "$INCYG" -a -n "$INWIN7" ] && export CYGWIN=nontsec
 
-_pre_dirs=(~/.zsh-scripts)
-_post_dirs=(~/.zsh-scripts-)
-zsh_dirs=(~)
-typeset -U zsh_dirs
-SCRIPT=${(%):-"%N"}
-zsh_dirs+=( $SCRIPT:h $SCRIPT:A:h )
-zsh_dirs=( $_pre_dirs ${^zsh_dirs}{,.local,-}(N/) $_post_dirs )
-zsh_dirs=( ${^zsh_dirs}(N/) )
 for dir in $zsh_dirs ; do
 	setopt nullglob
 	pushd $dir 2> /dev/null || continue
