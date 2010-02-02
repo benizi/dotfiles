@@ -5,8 +5,8 @@ use warnings;
 use List::Util qw/min max/;
 use Getopt::Long qw/:config pass_through/;
 GetOptions(
-	'maxlength=i' => \(my $maxl = 20),
-	'max!' => \(my $use_max = 1),
+	'maxlength=i' => \(my $maxl),
+	'max!' => \(my $use_max = 0),
 	'ascii!' => \(my $ascii = 1),
 	'color!' => \(my $color = 1),
 	'sep=s' => \(my $sep = ''),
