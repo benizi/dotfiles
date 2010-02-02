@@ -10,18 +10,20 @@ function ssh_find_add () {
 	| perl -l0pe '' \
 	| env -u DISPLAY xargs -0 ssh-add
 }
+function ssh_re_source () {
+	[ -r ~/ssh-script ] && . ~/ssh-script > /dev/null
+}
+function ssh_restart () {
+	ssh-agent > ~/ssh-script
+	ssh_re_source
+}
+ssh_re_source
 if $FORCE || [ "x$LOGNAME" = "xbhaskell" ] ; then
-	# Windows7 doesn't like 'pgrep'
-	if $FORCE || [ -n "$INWIN7" ] || ! pgrep ssh-agent > /dev/null ; then
-		[ -r ~/ssh-script ] && . ~/ssh-script > /dev/null
-		local _run=false
-		[ -z "$SSH_AGENT_PID" ] && _run=true
-		$_run || kill -0 $SSH_AGENT_PID 2>/dev/null || _run=true
-		$_run || [ -z "$INLIN" ] || grep -q ssh-agent /proc/$SSH_AGENT_PID/cmdline 2>/dev/null || _run=true
-		$_run && ssh-agent > ~/ssh-script
-		. ~/ssh-script
-		ssh-add -l | grep -vq no.identities || ssh_find_add
-		return
-	fi
+	local _run=false
+	[ -z "$SSH_AGENT_PID" ] && _run=true
+	$_run || kill -0 $SSH_AGENT_PID 2>/dev/null || _run=true
+	$_run || [ -z "$INLIN" ] || grep -q ssh-agent /proc/$SSH_AGENT_PID/cmdline 2>/dev/null || _run=true
+	$_run && ssh_restart
+	ssh-add -l >/dev/null || ssh_restart
+	ssh-add -l | grep -vq no.identities || ssh_find_add
 fi
-[ -f ~/ssh-script ] && . ~/ssh-script > /dev/null
