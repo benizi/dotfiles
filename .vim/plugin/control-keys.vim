@@ -8,11 +8,3 @@ if $TERM !~ 'xterm' && (!exists("&t_kl") || &t_kl =~ '^\e\[')
 		endfor
 	endfor
 endif
-imap <Up>    up-test
-imap <Down>  down-test
-imap <Right> right-test
-imap <Left>  left-test
-imap <C-Up>    c-up-test
-imap <C-Down>  c-down-test
-imap <C-Right> c-right-test
-imap <C-Left>  c-left-test
