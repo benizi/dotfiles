@@ -14,6 +14,7 @@ else
 endif
 colorscheme dual-converted
 set hidden
+set laststatus=2
 syntax enable
 syntax sync maxlines=2000
 filetype plugin on
