@@ -35,6 +35,6 @@ for dir in $zsh_dirs ; do
 	popd
 	setopt nonullglob
 done
-for l in '' 's' ; [[ -f ~/.zshreminder$l ]] && cat ~/.zshreminder$l
+cat ${^zsh_dirs}/{.zsh,}reminder{,s} 2>/dev/null
 #screen -ls 2>/dev/null | grep -q Detached && exec screen -rr
 #[ -n "$SSH_CLIENT" ] && [ "$TERM" != "screen" ] && exec screen -RR -- zsh -l
