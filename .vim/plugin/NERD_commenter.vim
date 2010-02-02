@@ -3072,21 +3072,21 @@ function! s:CreateMaps(target, combo)
 endfunction
 
 if g:NERDCreateDefaultMappings
-    call s:CreateMaps('<plug>NERDCommenterComment',    ',cc')
-    call s:CreateMaps('<plug>NERDCommenterToggle',     ',c<space>')
-    call s:CreateMaps('<plug>NERDCommenterMinimal',    ',cm')
-    call s:CreateMaps('<plug>NERDCommenterSexy',       ',cs')
-    call s:CreateMaps('<plug>NERDCommenterInvert',     ',ci')
-    call s:CreateMaps('<plug>NERDCommenterYank',       ',cy')
-    call s:CreateMaps('<plug>NERDCommenterAlignLeft',  ',cl')
-    call s:CreateMaps('<plug>NERDCommenterAlignBoth',  ',cb')
-    call s:CreateMaps('<plug>NERDCommenterNest',       ',cn')
-    call s:CreateMaps('<plug>NERDCommenterUncomment',  ',cu')
-    call s:CreateMaps('<plug>NERDCommenterToEOL',      ',c$')
-    call s:CreateMaps('<plug>NERDCommenterAppend',     ',cA')
+    call s:CreateMaps('<plug>NERDCommenterComment',    '<LocalLeader>cc')
+    call s:CreateMaps('<plug>NERDCommenterToggle',     '<LocalLeader>c<space>')
+    call s:CreateMaps('<plug>NERDCommenterMinimal',    '<LocalLeader>cm')
+    call s:CreateMaps('<plug>NERDCommenterSexy',       '<LocalLeader>cs')
+    call s:CreateMaps('<plug>NERDCommenterInvert',     '<LocalLeader>ci')
+    call s:CreateMaps('<plug>NERDCommenterYank',       '<LocalLeader>cy')
+    call s:CreateMaps('<plug>NERDCommenterAlignLeft',  '<LocalLeader>cl')
+    call s:CreateMaps('<plug>NERDCommenterAlignBoth',  '<LocalLeader>cb')
+    call s:CreateMaps('<plug>NERDCommenterNest',       '<LocalLeader>cn')
+    call s:CreateMaps('<plug>NERDCommenterUncomment',  '<LocalLeader>cu')
+    call s:CreateMaps('<plug>NERDCommenterToEOL',      '<LocalLeader>c$')
+    call s:CreateMaps('<plug>NERDCommenterAppend',     '<LocalLeader>cA')
 
     if !hasmapto('<plug>NERDCommenterAltDelims', 'n')
-        nmap ,ca <plug>NERDCommenterAltDelims
+        nmap <LocalLeader>ca <plug>NERDCommenterAltDelims
     endif
 endif
 
