@@ -17,12 +17,9 @@ case $ZSH_UNAME in
 	*SunOS*) export INSOL=true ;;
 	*) export INLIN=true ;;
 esac
-if [ -n "$INCYG" ] ; then
-	compinit -i
-	cd
-else
-	compinit
-fi
+compinitargs=( -d ~/.zcompdump )
+[ -n "$INCYG" ] && compinitargs+=( -i )
+compinit $compinitargs
 [ -n "$INCYG" -a -n "$INWIN7" ] && export CYGWIN=nontsec
 
 for dir in $zsh_dirs ; do
