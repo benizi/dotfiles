@@ -19,6 +19,9 @@ filetype plugin indent on
 syntax enable
 syntax sync maxlines=2000
 set foldmethod=marker
+" make 'l' and 'h' open the fold on the current line
+nnoremap <expr> l foldclosed(".")==-1 ? "l" : "zv"
+nnoremap <expr> h foldclosed(".")==-1 ? "h" : "zv"
 set ofu=syntaxcomplete#Complete
 imap <C-@> <C-Space>
 " autocmd FileType * set tabstop=4|set shiftwidth=4|set softtabstop=4|set expandtab
