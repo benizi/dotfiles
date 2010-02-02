@@ -12,7 +12,7 @@ my $www = "$ENV{HOME}/www";
 my $perm_only = ((basename $0) eq 'p') ? 1 : 0;
 use Getopt::Long;
 GetOptions(
-	'dry' => \(my $dry = 0),
+	'dry-run' => \(my $dry = 0),
 	'debug+' => \(my $debug = 0),
 	'site=s@' => \my @site,
 	'all' => \(my $all = $perm_only),
@@ -60,7 +60,7 @@ for my $site (@site ? @site : $all ? (get_sites) : 'benizi.com') {
 		splice @src_dest, 1, 1, '/nonexistent/file/';
 	}
 	my @run = (@cmd, (map {('--exclude-from', $_)} @ex), @opts, @src_dest);
-	print "\e[32mSITE = $site\e[0m\n";
+	print "\e[32mSITE = $site", ($dry?' DRY':''),"\e[0m\n";
 	$debug and print "[$_]=$run[$_]\n" for 0..$#run;
 	chdir $_ or die "chdir $_: $!" for $src_dest[0];
 	if ($perm_only) {
