@@ -12,6 +12,7 @@ else
 		set background=light
 	endif
 endif
+colorscheme dual-converted
 set hidden
 syntax enable
 syntax sync maxlines=2000
