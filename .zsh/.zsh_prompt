@@ -18,7 +18,8 @@ fi
 PROMPT='%{${PSCOLOR}'$_ps_color'%}%n@%m'$_screen' %~'$_pschar'%{$NOCOLOR%} '
 
 TITLESEP='│' # ceçi n'est pas un pipe
-[ -n "$INCYG" -o "$TERM" = cygwin -o -n "$STY" ] && TITLESEP='|'
+(( $+INCYG || $+STY )) && TITLESEP='|'
+[[ $TERM = (screen|cygwin)* ]] && TITLESEP='|'
 function fancytitle () {
 	local host c=$TITLESEP
 	host="%m $c "
