@@ -1,12 +1,10 @@
 # simulates file(:A) as file(+A)
 function A () { reply=("$(readlink -f $REPLY)") }
-_pre_dirs=(~/.zsh-scripts)
-_post_dirs=(~/.zsh-scripts-)
 zsh_dirs=(~)
 typeset -U zsh_dirs
 SCRIPT=${(%):-"%N"}
 zsh_dirs+=( $SCRIPT:h $SCRIPT(+A:h) )
-zsh_dirs=( $_pre_dirs ${^zsh_dirs}{,.local,-}(N/) $_post_dirs )
+zsh_dirs=( ${^zsh_dirs}{,.local,-}(N/) )
 zsh_dirs=( ${^zsh_dirs}(N/) )
 [ -L $SCRIPT ] && SCRIPT=$(readlink -f $SCRIPT)
 
