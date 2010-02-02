@@ -18,6 +18,7 @@ set laststatus=2
 filetype plugin indent on
 syntax enable
 syntax sync maxlines=2000
+set foldmethod=marker
 set ofu=syntaxcomplete#Complete
 imap <C-@> <C-Space>
 " autocmd FileType * set tabstop=4|set shiftwidth=4|set softtabstop=4|set expandtab
