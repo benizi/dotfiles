@@ -15,9 +15,9 @@ endif
 colorscheme dual-converted
 set hidden
 set laststatus=2
+filetype plugin indent on
 syntax enable
 syntax sync maxlines=2000
-filetype plugin on
 set ofu=syntaxcomplete#Complete
 imap <C-@> <C-Space>
 " autocmd FileType * set tabstop=4|set shiftwidth=4|set softtabstop=4|set expandtab
