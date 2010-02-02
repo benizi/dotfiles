@@ -2,11 +2,10 @@
 function A () { reply=("$(readlink -f $REPLY)") }
 zsh_dirs=(~)
 typeset -U zsh_dirs
-SCRIPT=${(%):-"%N"}
-zsh_dirs+=( $SCRIPT:h $SCRIPT(+A:h) )
+zshenv=${(%):-"%N"}
+zsh_dirs+=( $zshenv:h $zshenv(+A:h) )
 zsh_dirs=( ${^zsh_dirs}{,.local,-}(N/) )
-zsh_dirs=( ${^zsh_dirs}(N/) )
-[ -L $SCRIPT ] && SCRIPT=$(readlink -f $SCRIPT)
+ZDOTDIR=( $zshenv(+A:h) ) && ZDOTDIR=$ZDOTDIR[1]
 
 export EDITOR=/usr/bin/vim
 export WNHOME=/wordnet/wn
@@ -38,9 +37,7 @@ export auto_proxy=http://localhost/proxy.pac
 export MATLAB=/home/bhaskell/MATLAB/7.4/lib/matlab7
 export PYTHONSTARTUP=~/.python/startup
 export PYTHONPATH=~/python
-for env in ${^zsh_dirs}/${SCRIPT:t}{,-}(N) ; do
-	[ $env = $SCRIPT ] && continue
-	[ -f $env ] || continue
-	[ -L $env ] && continue
+for env in ${^zsh_dirs}/${zshenv:t}{,-}(.N) ; do
+	[ $env = $zshenv(+A) ] && continue
 	source $env
 done
