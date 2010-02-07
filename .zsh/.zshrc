@@ -1,6 +1,7 @@
 bindkey -e
 bindkey "^T" expand-word
-bindkey "^R" history-incremental-pattern-search-backward
+(( $+widgets[history-incremental-pattern-search-backward] )) \
+&& bindkey "^R" history-incremental-pattern-search-backward
 setopt nohup no_notify no_check_jobs
 setopt auto_cd no_auto_menu
 setopt extended_glob glob_dots hist_subst_pattern 2>/dev/null
