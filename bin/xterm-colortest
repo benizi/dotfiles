@@ -6,7 +6,7 @@ use Getopt::Long;
 my @esc;
 GetOptions(
 	'text=s' => \(my $text = ''),
-	'num!' => \(my $show_number = 1),
+	'num!' => \(my $show_number),
 	'escape|extra-escape=s@' => \@esc,
 	'split=s' => \(my $split = chr 0x2502),
 	'raw' => \(my $raw = 0),
@@ -16,6 +16,7 @@ GetOptions(
 	'rgb' => \(my $rgb = 0),
 	'88' => \(my $c88 = 0),
 ) or die 'options';
+$show_number //= 1-$square;
 chomp($text = do { undef local $/; <STDIN> }) if $stdin;
 ($show_number, $split) = (0, '') if $raw;
 my $X = $text || 'X';
