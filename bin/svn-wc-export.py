@@ -56,18 +56,38 @@ def blob(repopath,client,path,info,debug=False):
    textbase += '.svn-base'
    textbase = repopath + '/' + textbase
    textwc = repopath + '/' + reponame
+   islink = False
+   proplist = client.proplist(path)
+   if len(proplist):
+      for proppath, props in proplist:
+         if proppath == path:
+            if 'svn:special' in props:
+               if props['svn:special'] == '*':
+                  islink = True
    if not os.path.isfile(textbase):
       raise Exception("base not a file? %s\n%s %s %s" % (textbase, repopath, path, reponame))
-   if not os.path.isfile(textwc):
-      raise Exception("wc not a file? %s\n%s %s %s" % (textwc, repopath, path, reponame))
+   if islink:
+      if not os.path.islink(textwc):
+         raise Exception("wc not a link? %s\n%s %s %s" % (textwc, repopath, path, reponame))
+   else:
+      if not os.path.isfile(textwc):
+         raise Exception("wc not a file? %s\n%s %s %s" % (textwc, repopath, path, reponame))
+
    infile = open(textbase,'rb')
    data = infile.read()
+   if islink:
+      data = data.replace('link ','',1)
+
    mark = Mark()
    mark.file = True
    mark.reponame = reponame
-   mark.perms = 0100644
-   if os.access(textwc,os.X_OK):
-      mark.perms |= 0111
+   if not islink:
+      mark.perms = 0100644
+      if os.access(textwc,os.X_OK):
+         mark.perms |= 0111
+   else:
+      mark.perms = 0120000
+
    print "blob"
    print mark
    print datalen(data)
