@@ -235,5 +235,7 @@ if __name__ == '__main__':
          continue
       elif info['kind'] != pysvn.node_kind.file:
          raise Exception("Unhandled node kind: %s" % info['kind'])
+      if not a % 100:
+         print "progress report: fast-import: file %d/%d" % (a,len(files_info))
       blob(repopath,client,path,info,debug=options.debug)
    commit(repopath,client,debug=options.debug)
