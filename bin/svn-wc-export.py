@@ -16,14 +16,15 @@ unspecified = pysvn.Revision(pysvn.opt_revision_kind.unspecified)
 class Mark(object):
    marks = []
    def __init__(self):
-      marks = Mark.marks
-      self.i = len(marks)
+      self.i = len(Mark.marks)
       self.N = self.i + 1
-      marks += [ self ]
+      Mark.marks += [ self ]
    def __str__(self):
       return "mark :%d" % self.N
    def __contains__(self,x):
       return x in self.__dict__
+   def __getitem__(self,x):
+      return self.__dict__[x]
 
 def datalen(x):
    return "data %d\n%s" % (len(x), x)
