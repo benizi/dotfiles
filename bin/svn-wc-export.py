@@ -104,7 +104,7 @@ def commit(repopath,client,debug=False):
    uuid = get_uuid(repopath,client)
    repoinfo = get_repoinfo(repopath,client)
    try:
-      repolog = client.log(repopath,limit=1)
+      repolog = client.log(repoinfo['newest_path'],limit=1)
       repolog = repolog[0]
       if debug:
          for k in repolog.keys():
