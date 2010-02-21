@@ -121,9 +121,7 @@ if ($font) {
 	}
 }
 my $mlterm = $client ? $ml_client : $ml_term;
-my @mlterm = $using_dev
-	? ($mlterm, '-D', '--type', 'xft', '-w')
-	: ($mlterm, '-A', '-D', '-w');
+my @mlterm = ($mlterm, '-D', '--type', 'xft', '-w');
 push @mlterm, $FW, @ARGV;
 push @mlterm, '-V' if $vary;
 $ENV{LC_ALL} = $LC;
