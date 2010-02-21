@@ -2,22 +2,15 @@
 use strict;
 use warnings;
 use FindBin '$Bin';
+use lib $Bin;
+use PathNext;
 use Getopt::Long qw/:config pass_through/;
-use File::Spec;
-use File::Basename;
 my ($prog, $server) = split /\./, $0, 2;
+my $bin = path_next $prog;
 $server ||= '';
-my $zero = join "\t", (stat $0)[0,1];
 GetOptions(
 	'server=s' => \$server,
 ) or die 'options';
-my $bin;
-for my $dir (File::Spec->path) {
-	$bin = File::Spec->catfile($dir, basename $prog);
-	next unless -f $bin;
-	next if $zero eq join "\t", (stat $bin)[0,1];
-	last;
-}
 my %options = (
 	'1p' => [ qw/-u admin -p s3r@ph2009! -d LocalDomain 71.240.123.98/ ],
 	'mr' => [ qw/-u bhaskell -d MedRespond vpn.medrespond.com/ ],
