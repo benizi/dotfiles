@@ -1,5 +1,5 @@
 # simulates file(:A) as file(+A)
-function A () { reply=("$(readlink -f $REPLY)") }
+A () { reply=("$(perl -MCwd=realpath -we 'print realpath shift' $REPLY)") }
 zsh_dirs=(~)
 typeset -U zsh_dirs
 zshenv=${(%):-"%N"}
