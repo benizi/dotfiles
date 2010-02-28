@@ -1,0 +1,21 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Getopt::Long;
+GetOptions(
+    'verbose+' => \(my $verbose = 0),
+) or die 'options';
+my $script = '';
+my $out = '';
+my ($file) = @ARGV;
+while (<>) {
+    next unless s/^(#\s*)//;
+    $script .= $_ unless $. == 1;
+    $out .= "$1$_";
+}
+open STDOUT, '>', $file;
+print $out;
+open my $pipe, "| $ENV{SHELL}";
+print $pipe $script;
+$verbose and warn "SCRIPT={\n$script\n}\n";
+close $pipe;

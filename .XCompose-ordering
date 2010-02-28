@@ -1,3 +1,4 @@
+#!/home/bhaskell/bin/updater
 # perl -lanwe 'BEGIN { push @{$o{0+@$_}}, $_ for map [split//], qw/021 0132 0213 0231 0312 0321/; } next unless /LATIN.*LETTER...WITH/; next if /<dead/; my @keys = @F[0..(-1+(grep $F[$_] eq ":", 0..$#F)[0])]; $K=join"-",sort @keys; next if $seen{$K}; $seen{$K}++; next if $K eq "<Multi_key>-<U>-<o>"; next if /LETTER \S+ WITH \S+ AND \S+/; print "@keys[@$_] @F[@keys..$#F]" for @{$o{0+@keys}}' /usr/share/X11/locale/${LANG}/Compose
 <Multi_key> <d> <minus> : "đ" dstroke # LATIN SMALL LETTER D WITH STROKE
 <Multi_key> <D> <minus> : "Đ" Dstroke # LATIN CAPITAL LETTER D WITH STROKE
