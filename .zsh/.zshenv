@@ -7,6 +7,13 @@ zsh_dirs+=( $zshenv:h $zshenv(+A:h) )
 zsh_dirs=( ${^zsh_dirs}{,.local,-}(N/) )
 ZDOTDIR=( $zshenv(+A:h) ) && ZDOTDIR=$ZDOTDIR[1]
 
+function term_color_test () { eval '(( $+terminfo[colors] ))' 2>/dev/null }
+if ! term_color_test ; then
+	terminfo_dirs=( ${^zsh_dirs}/{.,}terminfo(N/) )
+	(( $#terminfo_dirs )) && export TERMINFO=$terminfo_dirs[1]
+fi
+term_color_test || TERM=xterm
+
 export EDITOR=/usr/bin/vim
 export READNULLCMD=less
 typeset -U path
