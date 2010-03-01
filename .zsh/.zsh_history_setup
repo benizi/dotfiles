@@ -3,4 +3,8 @@ setopt hist_ignore_dups hist_ignore_space hist_no_store
 setopt inc_append_history
 export HISTSIZE=50000000
 export SAVEHIST=$HISTSIZE
-export HISTFILE=~/.historyfile
+if (( UID )) ; then
+	export HISTFILE=~/.historyfile
+else
+	export HISTFILE=$zsh_dirs[-1]/$LOGNAME.historyfile
+fi
