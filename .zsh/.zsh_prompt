@@ -30,7 +30,7 @@ function fancytitle () {
 	printf "${TITLE}%s%s${ENDTITLE}" $1 "$(print -nP "$extra$host"'%~ $c %n${STY+ $c $STY}')"
 }
 function term_with_title () {
-	if [ $SHLVL -eq 1 -a "$TERM" = linux ] ; then return 1 ; fi
+	(( $+terminfo[tsl] )) || return 1
 	if [ -n "$NOTITLE" ] ; then return 1 ; fi
 	return 0
 }
