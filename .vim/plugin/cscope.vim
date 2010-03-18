@@ -11,7 +11,7 @@ function cscope#Init()
 			endif
 			let s:cscope_name .= 'cscope.out'
 			if filereadable(s:cscope_name)
-				exec "sil! cs add ".s:cscope_name
+				exec "sil! cs add ".s:cscope_name." ".s:fname
 			endif
 			let s:fname = fnamemodify(s:fname,':h')
 			let s:a += 1
