@@ -1,0 +1,51 @@
+#!/bin/zsh
+case $0 in
+	*.*) argv+=( --profile $0:e ) ;;
+esac
+function warn () { echo "\e[31m$*\e[0m" >&2 }
+function die () { warn $* ; exit 1 }
+_dry=false
+unset _plugins
+unset _url
+_log=false
+_args=()
+while [ $# -gt 0 ] ; do
+	arg=$1 ; shift
+	case "$arg" in
+		-profile*|--profile*) _profile=${arg/*=}
+			if [ "$arg" = "$_profile" ] ; then _profile="$1" ; shift ; fi
+			[ -z "$_profile" ] && die "Bad argument: $arg" ;;
+		-plugins|--plugins) _plugins=true ;;
+		-no-plugins|--no-plugins) _plugins=false ;;
+		-dry|--dry) _dry=true ;;
+		-logging|--logging) _log=true ;;
+		-no-logging|--no-logging) _log=false ;;
+		[a-z\-]*:*) _url=$arg ;;
+    esac
+done
+if [ -n "$_profile" ] ; then
+	: ${_plugins=true}
+	_profdir=$_profile
+	[[ $_profdir = */* ]] || _profdir=$HOME/.config/chromium/$_profile
+	_logext=$_profdir:t
+	_args=( --user-data-dir=$_profdir )
+fi
+: ${_plugins=false}
+: ${_logext=default}
+$_plugins && _args+=( --enable-plugins ) || _args+=( --disable-plugins )
+_echo=()
+$_dry && _echo=(echo)
+[[ -n "$_url" ]] && _args=( --remote "$_url" )
+(( $+commands[chromium-bin] )) && exe=chromium-bin || exe=chrome
+_cmd=( $_echo exec $exe $_args )
+if $_log ; then
+	_logfile=~/logs/errors-chromium-${_logext}-$(date +%Y-%m-%d-%H%M%S)
+	if $_dry ; then
+		echo LOG file: $_logfile
+		echo $_cmd
+	else
+		$_cmd |& tai64n > $_logfile
+	fi
+else
+	$_cmd
+fi
