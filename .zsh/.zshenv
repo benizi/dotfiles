@@ -39,6 +39,7 @@ export auto_proxy=http://localhost/proxy.pac
 export MATLAB=/home/bhaskell/MATLAB/7.4/lib/matlab7
 export PYTHONSTARTUP=~/.python/startup
 export PYTHONPATH=~/python
+export EMAIL=benizi@benizi.com
 for env in ${^zsh_dirs}/${zshenv:t}{,-}(.N) ; do
 	[ $env = $zshenv(+A) ] && continue
 	source $env
