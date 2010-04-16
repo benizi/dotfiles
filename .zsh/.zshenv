@@ -7,6 +7,15 @@ zsh_dirs+=( $zshenv:h $zshenv(+A:h) )
 zsh_dirs=( ${^zsh_dirs}{,.local,-}(N/) )
 ZDOTDIR=( $zshenv(+A:h) ) && ZDOTDIR=$ZDOTDIR[1]
 
+# run versions of the current file that aren't the file itself
+function run_local_versions () {
+	local file thisfile=${1:-${(%):-"%x"}}
+	for file in ${^zsh_dirs}/${thisfile:t}{,-}(.N) ; do
+		[ $file = $thisfile(+A) ] && continue
+		source $file
+	done
+}
+
 function term_color_test () { eval '(( $+terminfo[colors] ))' 2>/dev/null }
 if ! term_color_test ; then
 	terminfo_dirs=( ${^zsh_dirs}/{.,}terminfo(N/) )
@@ -40,7 +49,4 @@ export MATLAB=/home/bhaskell/MATLAB/7.4/lib/matlab7
 export PYTHONSTARTUP=~/.python/startup
 export PYTHONPATH=~/python
 export EMAIL=benizi@benizi.com
-for env in ${^zsh_dirs}/${zshenv:t}{,-}(.N) ; do
-	[ $env = $zshenv(+A) ] && continue
-	source $env
-done
+run_local_versions

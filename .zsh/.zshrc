@@ -37,5 +37,6 @@ for dir in $zsh_dirs ; do
 	setopt nonullglob
 done
 cat ${^zsh_dirs}/{.zsh,}reminder{,s} 2>/dev/null
+run_local_versions ${(%):-"%x"}
 #screen -ls 2>/dev/null | grep -q Detached && exec screen -rr
 #[ -n "$SSH_CLIENT" ] && [ "$TERM" != "screen" ] && exec screen -RR -- zsh -l
