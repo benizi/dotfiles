@@ -8,6 +8,7 @@ _dry=false
 unset _plugins
 unset _url
 _log=false
+_userscripts=true
 _args=()
 while [ $# -gt 0 ] ; do
 	arg=$1 ; shift
@@ -20,6 +21,9 @@ while [ $# -gt 0 ] ; do
 		-dry|--dry) _dry=true ;;
 		-logging|--logging) _log=true ;;
 		-no-logging|--no-logging) _log=false ;;
+		-userscripts|--userscripts) _userscripts=true ;;
+		-no-userscripts|--no-userscripts) _userscripts=false ;;
+		-*) _args+=( $arg ) ;;
 		[a-z\-]*:*) _url=$arg ;;
     esac
 done
@@ -32,7 +36,12 @@ if [ -n "$_profile" ] ; then
 fi
 : ${_plugins=false}
 : ${_logext=default}
-$_plugins && _args+=( --enable-plugins ) || _args+=( --disable-plugins )
+for feature in plugins userscripts.user-scripts ; do
+	var=_$feature:r
+	flag=$feature:e
+	(( $#flag )) || flag=$feature
+	${(P)var} && _args+=( --enable-$flag ) || _args+=( --disable-$flag )
+done
 _echo=()
 $_dry && _echo=(echo)
 [[ -n "$_url" ]] && _args=( --remote "$_url" )
