@@ -18,6 +18,10 @@ case $ZSH_UNAME in
 	*SunOS*) export INSOL=true ;;
 	*) export INLIN=true ;;
 esac
+if [ -f ~/.zcompdump.debugging ] ; then
+	rm -f ~/.zcompdump
+	fpath=( ~/git/zsh/Completion/**/*(N/) $fpath )
+fi
 compinitargs=( -d ~/.zcompdump )
 [ -n "$INCYG" ] && compinitargs+=( -i )
 compinit $compinitargs
