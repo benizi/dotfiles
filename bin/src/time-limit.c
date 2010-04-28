@@ -41,16 +41,17 @@ static int my_exit (int ret) {
 
 static char *usage =
 	"Usage: %s [options] command [arguments]\n"
-	"  -t N    wait N seconds\n"
-	"  -s      numeric status\n"
+	"  -t N    wait N seconds [default:1]\n"
+	"  -g N    grace period before kill -KILL [default:1]\n"
+	"  -s      numeric status (requires -v)\n"
 	"  -v      verbose\n";
 int main (int argc, char **argv, char **env) {
 	pid_t pid, err = 0;
-	int i, status = 0;
+	int i, status = 0, printed_kill = 0, printed_grace = 0;
 	char f;
-	double diff;
+	double diff, wait = 1, grace = 1;
 	struct timeval start, now;
-	unsigned int c = 0, nonpass = 1, wrap = 0, wait = 1;
+	unsigned int c = 0, nonpass = 1, wrap = 0;
 	if (argc < 2) {
 		fprintf(stderr, usage, argv[0]);
 		return 1;
@@ -70,12 +71,18 @@ int main (int argc, char **argv, char **env) {
 				numeric_status++;
 				break;
 			case 't':
+			case 'g':
 				if (i+1 >= argc) {
 					fprintf(stderr,usage,argv[0]);
 					return 2;
 				}
-				wait = atol(argv[++i]);
-				if (verbose>1) fprintf(stderr,"Wait=%d\n",wait);
+				if (f == 't') {
+					wait = atof(argv[++i]);
+					if (verbose>1) fprintf(stderr,"Wait=%f\n",wait);
+				} else {
+					grace = atof(argv[++i]);
+					if (verbose>1) fprintf(stderr,"Grace=%f\n",grace);
+				}
 				nonpass++;
 				break;
 			default:
@@ -120,15 +127,22 @@ int main (int argc, char **argv, char **env) {
 				}
 				if (verbose>1) fprintf(stderr,"Returning %d (status=%d)\n",err,status);
 				return my_exit(err);
-			} else if (c) {
-				if (verbose>1&&c++<2) fprintf(stderr,"Killed but not dead\n");
 			} else {
 				diff = time_to_double(now) - time_to_double(start);
-				if (diff >= (double)wait && !c++) {
-					if (verbose>1) fprintf(stderr,"now:%f\n",time_to_double(now));
-					if (verbose>1) fprintf(stderr,"now:%ld.%06ld\n",now.tv_sec,now.tv_usec);
-					if (verbose>1) fprintf(stderr,"Time limit reached (diff=%f)\n",diff);
-					kill(pid,9);
+				if (diff >= wait) {
+					if (!c++) {
+						if (verbose>1) fprintf(stderr,"now:%f\n",time_to_double(now));
+						if (verbose>1) fprintf(stderr,"now:%ld.%06ld\n",now.tv_sec,now.tv_usec);
+						if (verbose>1) fprintf(stderr,"Time limit reached (diff=%f)\n",diff);
+						kill(pid,grace?SIGTERM:SIGKILL);
+						continue;
+					}
+					if (verbose>1 && !printed_kill++) fprintf(stderr,"Killed but not dead\n");
+					if (diff >= wait + grace) {
+						if (verbose>1 && !printed_grace++)
+							fprintf(stderr,"Grace period exceeded (diff=%f)\n",diff);
+						kill(pid,SIGKILL);
+					}
 				} else {
 					if (verbose>1) fprintf(stderr,"Diff: %f\n",diff);
 				}
