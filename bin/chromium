@@ -25,7 +25,7 @@ while [ $# -gt 0 ] ; do
 		-no-userscripts|--no-userscripts) _userscripts=false ;;
 		-*) _args+=( $arg ) ;;
 		[a-z\-]*:*) _url=$arg ;;
-    esac
+	esac
 done
 if [ -n "$_profile" ] ; then
 	: ${_plugins=true}
