@@ -7,22 +7,31 @@ function die () { warn $* ; exit 1 }
 _dry=false
 unset _plugins
 unset _url
-_log=false
+_logging=false
 _userscripts=true
 _args=()
+_flags=( plugins logging user-scripts )
 while [ $# -gt 0 ] ; do
 	arg=$1 ; shift
+	for l in $_flags ; do
+		_found=true
+		alt=${l//-}
+		#local -a yes no
+		yes=( -{,-}{$l,$alt} )
+		no=( -{,-}no{,-}{$l,$alt} )
+		case $arg in
+			${~${(j:|:)yes}}) eval "_$alt=true" ;;
+			${~${(j:|:)no}}) eval "_$alt=false" ;;
+			*) _found=false ;;
+		esac
+		$_found && break
+	done
+	$_found && continue
 	case "$arg" in
 		-profile*|--profile*) _profile=${arg/*=}
 			if [ "$arg" = "$_profile" ] ; then _profile="$1" ; shift ; fi
 			[ -z "$_profile" ] && die "Bad argument: $arg" ;;
-		-plugins|--plugins) _plugins=true ;;
-		-no-plugins|--no-plugins) _plugins=false ;;
 		-dry|--dry) _dry=true ;;
-		-logging|--logging) _log=true ;;
-		-no-logging|--no-logging) _log=false ;;
-		-userscripts|--userscripts) _userscripts=true ;;
-		-no-userscripts|--no-userscripts) _userscripts=false ;;
 		-*) _args+=( $arg ) ;;
 		[a-z\-]*:*) _url=$arg ;;
 	esac
@@ -36,18 +45,15 @@ if [ -n "$_profile" ] ; then
 fi
 : ${_plugins=false}
 : ${_logext=default}
-for feature in plugins userscripts.user-scripts ; do
-	var=_$feature:r
-	flag=$feature:e
-	(( $#flag )) || flag=$feature
-	${(P)var} && _args+=( --enable-$flag ) || _args+=( --disable-$flag )
+for flag in $_flags ; do
+	${(P)${:-_${flag//-}}} && _args+=( --enable-$flag ) || _args+=( --disable-$flag )
 done
 _echo=()
 $_dry && _echo=(echo)
-[[ -n "$_url" ]] && _args=( --remote "$_url" )
+[[ -n "$_url" ]] && _args+=( --remote "$_url" )
 (( $+commands[chromium-bin] )) && exe=chromium-bin || exe=chrome
 _cmd=( $_echo exec $exe $_args )
-if $_log ; then
+if $_logging ; then
 	_logfile=~/logs/errors-chromium-${_logext}-$(date +%Y-%m-%d-%H%M%S)
 	if $_dry ; then
 		echo LOG file: $_logfile
