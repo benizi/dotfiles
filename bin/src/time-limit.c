@@ -1,3 +1,4 @@
+#include "libmyc.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -10,13 +11,8 @@
 #define EXIT_THISPROG 110
 #define EXIT_EXECVP 3
 
-static double _time_double (struct timeval t) {
-	return t.tv_sec+((double)t.tv_usec/100000);
-}
-
-static unsigned int verbose = 0, numeric_status = 0;
+static unsigned int numeric_status = 0;
 static int my_exit (int ret) {
-	struct timeval now;
 	if (verbose) {
 		if (numeric_status) {
 			fprintf(stderr,"Exit=%d\n",ret);
@@ -36,11 +32,7 @@ static int my_exit (int ret) {
 					fprintf(stderr,"code=%d",ret);
 					break;
 			}
-			if (gettimeofday(&now,NULL)) {
-				fprintf(stderr," (error getting time of day)");
-			} else {
-				fprintf(stderr," (@ %f)",_time_double(now));
-			}
+			fprintf(stderr," (@ %f)",NOW());
 			fprintf(stderr,"\n");
 		}
 	}
@@ -103,7 +95,7 @@ int main (int argc, char **argv, char **env) {
 		fprintf(stderr, "Couldn't fork\n");
 		return 2;
 	}
-	if (verbose>1) fprintf(stderr,"Start:%f\n",_time_double(start));
+	if (verbose>1) fprintf(stderr,"Start:%f\n",time_to_double(start));
 	if (pid) {
 		while (1) {
 			if (gettimeofday(&now,NULL)) {
@@ -127,9 +119,9 @@ int main (int argc, char **argv, char **env) {
 			} else if (c) {
 				if (verbose>1&&c++<2) fprintf(stderr,"Killed but not dead\n");
 			} else {
-				diff = _time_double(now) - _time_double(start);
+				diff = time_to_double(now) - time_to_double(start);
 				if (diff >= (double)wait && !c++) {
-					if (verbose>1) fprintf(stderr,"now:%f\n",_time_double(now));
+					if (verbose>1) fprintf(stderr,"now:%f\n",time_to_double(now));
 					if (verbose>1) fprintf(stderr,"now:%ld.%06ld\n",now.tv_sec,now.tv_usec);
 					if (verbose>1) fprintf(stderr,"Time limit reached (diff=%f)\n",diff);
 					kill(pid,9);
