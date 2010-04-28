@@ -39,7 +39,11 @@ static int my_exit (int ret) {
 	return ret;
 }
 
-static char *usage = "Usage: %s [options] command [arguments]\n  -t N    wait N seconds\n";
+static char *usage =
+	"Usage: %s [options] command [arguments]\n"
+	"  -t N    wait N seconds\n"
+	"  -s      numeric status\n"
+	"  -v      verbose\n";
 int main (int argc, char **argv, char **env) {
 	pid_t pid, err = 0;
 	int i, status = 0;
