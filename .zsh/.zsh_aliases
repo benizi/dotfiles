@@ -27,8 +27,6 @@ alias lsl=l
 if [[ $commands[alpine] != /usr/local/bin/alpine ]] ; then
 	alias alpine='titlep ALPINE ; alpine-svn -bail -p $PINERC'
 fi
-alias mysqle='mysql --defaults-extra-file=/wordnet/wn/2k3/util/mysql.pass'
-alias mysqlh='mysql --defaults-extra-file=/wordnet/wn/2k3/util/mysql.pass.plusHTML'
 alias nacroread='acroread -openInNewWindow'
 alias noagent='env -u SSH_AGENT_PID -u SSH_AUTH_SOCK'
 alias ssh-noagent='noagent ssh'
