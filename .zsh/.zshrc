@@ -20,7 +20,7 @@ case $ZSH_UNAME in
 esac
 if [ -f ~/.zcompdump.debugging ] ; then
 	rm -f ~/.zcompdump
-	fpath=( ~/git/zsh/Completion/**/*(N/) $fpath )
+	fpath=( ${^zsh_dirs}/Completion(N/) ~/git/zsh/Completion/**/*(N/) $fpath )
 fi
 compinitargs=( -d ~/.zcompdump )
 [ -n "$INCYG" ] && compinitargs+=( -i )
