@@ -3,6 +3,7 @@ host=localhost
 _dry=false
 _argv=()
 for arg in "${argv[@]}" ; do
+	(( $#_argv )) && _argv+=( $arg ) && continue
 	case "$arg" in
 		--dry) _dry=true ;;
 		-*) echo "Unknown option: $arg" ; exit 1 ;;
