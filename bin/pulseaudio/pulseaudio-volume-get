@@ -1,2 +1,2 @@
 #!/bin/zsh
-pacmd dump | grep sink-volume | cut -f3 -d' '
+pacmd dump | grep sink-volume | cut -f3 -d' ' | head -n 1
