@@ -1,0 +1,19 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use File::Temp 'tempfile';
+use IPC::Run 'run';
+my $STDIN = \0;
+@ARGV = ('links', '-dump', 'STDIN') unless @ARGV;
+my @cmd = map {
+   /^STDIN$/ ? $STDIN
+   : $_
+} @ARGV;
+@cmd or die "Need a command or something\n";
+if (grep $_ eq $STDIN, @cmd) {
+   my ($fh, $filename) = tempfile;
+   print $fh <STDIN>;
+   close $fh;
+   @cmd = map $_ eq $STDIN ? $filename : $_, @cmd;
+}
+run [@cmd];
