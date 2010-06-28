@@ -4,7 +4,13 @@ use warnings;
 use File::Temp 'tempfile';
 use IPC::Run 'run';
 my $STDIN = \0;
-@ARGV = ('links', '-dump', 'STDIN') unless @ARGV;
+unless (@ARGV) {
+   if ($0 =~ /links-dump-stdin/) {
+      @ARGV = ('links', '-dump', 'STDIN') 
+   } elsif ($0 =~ /antiword-/) {
+      @ARGV = ('antiword', 'STDIN');
+   }
+}
 my @cmd = map {
    /^STDIN$/ ? $STDIN
    : $_
