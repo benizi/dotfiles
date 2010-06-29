@@ -65,3 +65,5 @@ hash -d desktop=~benwin/Desktop
 hash -d documents=~benwin/$_win_doc
 hash -d chrome=~benwin/"Local Settings/Application Data/Google/Chrome"
 hash -d quicklaunch=~benwin/"Application Data/Microsoft/Internet Explorer/Quick Launch"
+
+(( $+commands[xwininfo] )) && alias x-click-id='xwininfo | grep Window.id | cut -f4 -d" "'
