@@ -10,3 +10,8 @@ zstyle ':completion:complete-history:*' completer _history
 bindkey '^X^H' complete-history
 # don't insert tab on empty line
 zstyle ':completion:*' insert-tab false
+# only complete bhaskell/root/current for ssh'ing
+local _ssh_users
+typeset -U _ssh_users
+_ssh_users=( bhaskell root $LOGNAME )
+zstyle ':completion:*:ssh:*' users ${^_ssh_users}
