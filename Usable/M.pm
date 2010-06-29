@@ -159,6 +159,18 @@ OPTION 'Acme::MetaSyntactic', 'batman';
 OPTION 'Statfs';
 my_use 'POSIX', 'strftime';
 my_use 'IPC::Run';
+optuse 'Term::ReadLine';
+my_use 'JSON', qw/decode_json_ encode_json_/;
+*read_pass = sub {
+	undef local $\;
+	my $prompt = @_ ? shift : 'Password? ';
+	my $term = Term::ReadLine->new('M.pm');
+	my $atts = $term->Attribs;
+	$$atts{redisplay_function} = $$atts{shadow_redisplay};
+	chomp(my $password = $term->readline($prompt));
+	$term->remove_history($term->where_history);
+	$password;
+};
 *hms = _underscored(sub {
 	my $tot = shift;
 	my $neg = ($tot < 0) ? '-' : '';
@@ -188,7 +200,8 @@ BEGIN { $not{$_}++ for qw/BEGIN import before/; }
 my $_not_re = qr/^_/;
 my %alias;
 for (qw/uri_unescape:unuri uri_escape:uri
-	encode_base64:base64_encode decode_base64:base64_decode/) {
+	encode_base64:base64_encode decode_base64:base64_decode
+	encode_json:json_encode:as_json:to_json decode_json:json_decode:json/) {
 	my ($fn, @al) = split /:/;
 	push @{$alias{$fn}}, @al;
 }
