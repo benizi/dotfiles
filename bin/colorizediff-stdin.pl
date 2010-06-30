@@ -4,7 +4,7 @@ use warnings;
 use Getopt::Long;
 GetOptions(
 	'files' => \(my $create_files = 0),
-	'diffcmd=s' => \(my $diff_cmd = 'kdiff3 %1$s %2$s'),
+	'diffcmd=s' => \(my $diff_cmd = 'kdiff3'),
 ) or die 'options';
 my $need_hunk = 0;
 my @AB = \my (@A, @B);
@@ -74,61 +74,71 @@ ColorDiff::Split('punc');
 #ColorDiff::Split('words');
 my (@files, @filenames);
 if ($create_files) {
-   eval 'use File::Temp; 1' or die "$@";
-   for (1,2) {
-      my ($fh, $filename) = &File::Temp::tempfile;
-      push @files, $fh;
-      push @filenames, $filename;
-   }
+	eval 'use File::Temp; 1' or die "$@";
+	for (1,2) {
+		my ($fh, $filename) = &File::Temp::tempfile;
+		push @files, $fh;
+		push @filenames, $filename;
+	}
 }
 for (0..$#A) {
-   my ($l, $r) = ($A[$_],$B[$_]);
-   if (@$l and ref($$l[0])) {
-      my @lr = ($l, $r) = map shift(@$_), $l, $r;
-      if ($$l{filename}) {
-         if (@files) {
-            for (0..$#lr) {
-               my $fh = $files[$_];
-               print $fh "====> $lr[$_]{filename} <====\n";
-            }
-         } else {
-            print ColorDiff::color_diff(
-               ["--- $$l{filename}"],
-               ["+++ $$r{filename}",''],
-            );
-         }
-      } elsif ($$l{header}) {
-         my @toprint = @files ? @files : (\*STDOUT);
-         my @lines = map [$$l{header}], @toprint;
-         if(1){#if (@files) {
-            unshift @{$lines[$_]},
-               map { ($_ x 72)."\n" }
-               '=', [qw/< >/]->[-$_], '='
-               for 0..$#lines;
-         }
-         print $_ @{shift @lines} for @toprint;
-         #print $_ "HEADER\n$$l{header}" for (@files) ? @files : (\*STDOUT);
-      } else {
-         die "Unknown special field: @{[keys %$l]}\n";
-      }
-   } else {
-      if (@files) {
-         my @line_arrays = ($l, $r);
-         for my $i (0..$#files) {
-            my $fh = $files[$i];
-            my $lines = $line_arrays[$i];
-            print $fh map { "\n" } 1..5;
-            print $fh @$lines;
-         }
-      } else {
-         print ColorDiff::color_diff($l, $r);
-         print "\n";
-      }
-   }
+	my ($l, $r) = ($A[$_],$B[$_]);
+	if (@$l and ref($$l[0])) {
+		my @lr = ($l, $r) = map shift(@$_), $l, $r;
+		if ($$l{filename}) {
+			if (@files) {
+				for (0..$#lr) {
+					my $fh = $files[$_];
+					print $fh "====> $lr[$_]{filename} <====\n";
+				}
+			} else {
+				print ColorDiff::color_diff(
+					["--- $$l{filename}"],
+					["+++ $$r{filename}",''],
+				);
+			}
+		} elsif ($$l{header}) {
+			my @toprint = @files ? @files : (\*STDOUT);
+			my @lines = map [$$l{header}], @toprint;
+			if(1){#if (@files) {
+				unshift @{$lines[$_]},
+				map { ($_ x 72)."\n" }
+				'=', [qw/< >/]->[-$_], '='
+				for 0..$#lines;
+			}
+			print $_ @{shift @lines} for @toprint;
+			#print $_ "HEADER\n$$l{header}" for (@files) ? @files : (\*STDOUT);
+		} else {
+			die "Unknown special field: @{[keys %$l]}\n";
+		}
+	} else {
+		if (@files) {
+			my @line_arrays = ($l, $r);
+			for my $i (0..$#files) {
+				my $fh = $files[$i];
+				my $lines = $line_arrays[$i];
+				print $fh map { "\n" } 1..5;
+				print $fh @$lines;
+			}
+		} else {
+			print ColorDiff::color_diff($l, $r);
+			print "\n";
+		}
+	}
 }
 sub close_files { close $_ for @files; @files = () }
 sub unlink_files { unlink $_ for @filenames; @filenames = () }
 close_files;
-$create_files and system sprintf($diff_cmd, @filenames);
+if ($create_files) {
+	my @cmd;
+	if ($diff_cmd =~ /%s/) {
+		for (split ' ', $diff_cmd) {
+			push @cmd, /%s/ ? shift @filenames : $_;
+		}
+	} else {
+		@cmd = ($diff_cmd, @filenames);
+	}
+	system { $cmd[0] } @cmd;
+}
 unlink_files;
 END { close_files; unlink_files; }
