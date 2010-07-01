@@ -12,7 +12,7 @@ GetOptions(
 	'server=s' => \$server,
 ) or die 'options';
 my %options = (
-	'1p' => [ qw/-u admin -p s3r@ph2009! -d LocalDomain 71.240.123.98/ ],
+	'1p' => [ qw/-u admin -p s3r@ph2009! -d LocalDomain vpn.one-planet.net/ ],
 	'mr' => [ qw/-u bhaskell -d MedRespond vpn.medrespond.com/ ],
 	'mr2' => [ qw/-u bhaskell -d MedRespond mtlebanon.medrespond.com/ ],
 	'usc' => [ qw/-u bhaskell -d universalsmartcomp.com vpn.universalsmartcomp.com/ ],
