@@ -32,7 +32,7 @@ while (<DATA>) {
 	}
 }
 __END__
-" Maintainer:   Benjamin R. Haskell <vim-braille@benizi.com>
+" Maintainer:   Benjamin R. Haskell <vim@benizi.com>
 " Last Changed: [date: %Y-%m-%d %H:%M:%S]
 
 let b:keymap_name="$name"
