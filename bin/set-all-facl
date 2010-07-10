@@ -1,0 +1,37 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Getopt::Long;
+my @perms;
+my @args;
+my $permbits = 'rwX';
+GetOptions(
+	'permbit=s' => \$permbits,
+	'n|dry-run' => \(my $dry = 0),
+	'verbose+' => \(my $verbose = 0),
+	'defaults!' => \(my $defaults = 1),
+	'sudo!' => \(my $do_sudo = 1),
+	'recurse|recursive|R!' => \(my $recursive = 1),
+	'<>' => sub {
+		for (@_) {
+			/^[dug]:/ ? (push @perms, $_) :
+			/^:...$/ ? ($permbits = $_) :
+			push @args, $_;
+		}
+	},
+) or die 'options';
+@perms = map {; ("d:$_", $_) } @perms if $defaults;
+/^(?:d:.*:.*:.*|[ug]:.*:.*)$/ or $_ .= ":$permbits" for @perms;
+@perms or die "No default/user/group permissions specified\n";
+@args or die "No files/directories specified\n";
+my @cmd = (
+	setfacl =>
+	grep($recursive, '-R'),
+	-m => join(',', @perms),
+	@args
+);
+$< and $do_sudo and @cmd = ( sudo => @cmd );
+if ($dry or $verbose) {
+	print "[$_]=$cmd[$_]\n" for 0..$#cmd;
+}
+$dry or system { $cmd[0] } @cmd;
