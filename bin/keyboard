@@ -13,6 +13,8 @@ GetOptions(
 	'dry' => \(my $dry_run = 0),
 	'extra=s@' => \my @extra,
 	'ion!' => \(my $ion = `pgrep ion3`),
+	'modmap=s' => \(my $modmap = "$ENV{HOME}/.xmodmap"),
+	'M|justmod' => \(my $just_modmap = 0),
 ) or die 'options';
 sub run_it {my@p=map{(length)?$_:"''"}@_;warn"@p\n";$dry_run||system{$_[0]}@_}
 my %defaults = (
@@ -49,19 +51,19 @@ if ($menu) {
 		push @$_, 'altwin:menu';
 	}
 }
-my @cmd = ('setxkbmap');
-push @cmd, map {; "-$_" => $opt{$_} } grep length($opt{$_}), @xkbopts;
-push @cmd, -option => '' if $opt{reset};
-push @cmd, -option => $_ for @{$opt{options}};
-push @cmd, @extra;
-run_it @cmd;
-my $modmap = "$ENV{HOME}/.xmodmap";
-if (-f $modmap) {
-	run_it xmodmap => $modmap;
-	if ($ion) {
-		run_it xmodmap => -e => 'add mod3 = Super_L';
-		run_it xmodmap => -e => 'remove mod4 = Super_L';
-	}
+if (!$just_modmap) {
+	my @cmd = ('setxkbmap');
+	push @cmd, map {; "-$_" => $opt{$_} } grep length($opt{$_}), @xkbopts;
+	push @cmd, -option => '' if $opt{reset};
+	push @cmd, -option => $_ for @{$opt{options}};
+	push @cmd, @extra;
+	run_it @cmd;
+}
+if ($just_modmap or -f $modmap) {
+	run_it xmodmap => $modmap if -f $modmap;
+	my ($old, $use) = map "mod$_", $ion ? (4, 3) : (3, 4);
+	run_it xmodmap => -e => "remove $old = Super_L";
+	run_it xmodmap => -e => "add $use = Super_L";
 }
 __END__
 setxkbmap
