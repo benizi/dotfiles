@@ -36,9 +36,6 @@ imap <C-@> <C-Space>
 autocmd BufRead *.thtml set syntax=thtml
 " map  {gq}
 let g:tex_flavor = "context"
-"nmap <F5> :sil ! xpdf %:p:r.pdf<cr>
-nmap <F5> :sil ! acroread %:p:r.pdf &<cr>
-nmap <F6> :make %<cr>
 "vv from http://items.sjbach.com/319/configuring-vim-right ***
 set history=1000
 set wildmenu
