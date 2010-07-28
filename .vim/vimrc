@@ -30,6 +30,7 @@ aug END
 nnoremap <expr> l foldclosed(".")==-1 ? "l" : "zv"
 nnoremap <expr> h foldclosed(".")==-1 ? "h" : "zv"
 set ofu=syntaxcomplete#Complete
+set nostartofline
 imap <C-@> <C-Space>
 " autocmd FileType * set tabstop=4|set shiftwidth=4|set softtabstop=4|set expandtab
 autocmd BufRead *.thtml set syntax=thtml
