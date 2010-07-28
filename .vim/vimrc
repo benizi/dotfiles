@@ -40,6 +40,7 @@ let g:tex_flavor = "context"
 set history=1000
 set wildmenu
 " set wildmode=list:longest
+set modeline
 set ignorecase
 set smartcase
 
