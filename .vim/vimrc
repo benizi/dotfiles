@@ -1,6 +1,6 @@
 set noexpandtab softtabstop=4 tabstop=4 shiftwidth=4
 set list listchars=tab:\ \ ,trail:·
-if $TERM =~ 'rxvt'
+if $TERM =~ 'rxvt' || $TERM =~ 'xterm'
 	set mouse=a
 endif
 if exists('$VIM_BACK')
