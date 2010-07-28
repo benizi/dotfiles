@@ -12,7 +12,9 @@ else
 		set background=light
 	endif
 endif
-colorscheme dual-converted
+if &t_Co > 16
+	colorscheme dual-converted
+endif
 set hidden
 set laststatus=2
 filetype plugin indent on
