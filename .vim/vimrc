@@ -6,7 +6,7 @@ endif
 if exists('$VIM_BACK')
 	exec "set background=" . $VIM_BACK
 else
-	if $TERM == 'cygwin'
+	if &term == 'cygwin' || &term == 'linux'
 		set background=dark
 	else
 		set background=light
