@@ -21,6 +21,11 @@ filetype plugin indent on
 syntax enable
 syntax sync maxlines=2000
 set foldmethod=marker
+" ensure that unsaveable buffers are also uneditable
+aug NoEditUnsaveable
+	au!
+	au BufReadPost * if &readonly | set nomodifiable | endif
+aug END
 " make 'l' and 'h' open the fold on the current line
 nnoremap <expr> l foldclosed(".")==-1 ? "l" : "zv"
 nnoremap <expr> h foldclosed(".")==-1 ? "h" : "zv"
