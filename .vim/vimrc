@@ -42,6 +42,11 @@ set wildmenu
 " set wildmode=list:longest
 set ignorecase
 set smartcase
+
+" hlsearch
+set hls
+map <esc>h :noh<cr>
+
 if isdirectory(expand("~/.vim-tmp")) < 1
 	if exists("*mkdir")
 		call mkdir(expand("~/.vim-tmp"), "p", 0700)
