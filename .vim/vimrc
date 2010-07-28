@@ -59,3 +59,9 @@ set runtimepath=~/.vim.local,~/.vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/afte
 if filereadable(expand("~/.vimrc.local"))
 	source ~/.vimrc.local
 endif
+if exists("g:alpine")
+	let alpinevim=globpath(&rtp,"alpine.vim")
+	if filereadable(alpinevim)
+		exe "source ".alpinevim
+	endif
+endif
