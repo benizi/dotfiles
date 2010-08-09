@@ -13,6 +13,8 @@ GetOptions(
 	'defaults=s' => \(my $defaults_from = ''),
 	'dry' => \(my $dry = 0),
 	'verbose+' => \(my $verbose = 0),
+	'disk' => \(my $add_disk = 0),
+	'sound' => \(my $add_sound = 0),
 ) or die 'options';
 $opt{server} //= shift @ARGV;
 shift @ARGV if @ARGV and $ARGV[0] eq '--';
@@ -82,13 +84,17 @@ for (
 	}
 }
 
+my @extra = @{$opt{extra}||[]};
+push @extra, '-r', 'disk:shared=/home/bhaskell/shared' if $add_disk;
+push @extra, '-r', 'sound' if $add_sound;
+my $seamless = grep /-A/, @extra;
 my @rcmd = (
 	rdesktop =>
-	-g => $opt{graphics},
+	grep(!$seamless, -g => $opt{graphics}),
 	-a => $opt{depth},
 	-u => $opt{user},
 	grep(defined($opt{pass}), -p => $opt{pass}),
-	@{$opt{extra}},
+	@extra,
 	$opt{server},
 );
 $dry and warn "@rcmd\n" and exit;
