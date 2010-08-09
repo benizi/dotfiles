@@ -24,9 +24,13 @@ $opt{extra} = [@ARGV];
 my (%rev_alias, %ip);
 my %defaults = (
 	'' => {
-		graphics => '1010x740', # approx. full-screen on 1024x768
+		graphics => '95%',
 		depth => 16,
 		user => $ENV{LOGNAME},
+		extra => [ '-z' ],
+	},
+	localhost => {
+		depth => 24,
 	},
 );
 
