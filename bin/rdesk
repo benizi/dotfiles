@@ -101,7 +101,7 @@ my @rcmd = (
 	@extra,
 	$opt{server},
 );
-$dry and warn "@rcmd\n" and exit;
-$verbose and warn "@rcmd\n";
+warn "@rcmd\n";
+$dry and exit;
 exec { $rcmd[0] } @rcmd;
 die "Couldn't exec(",join(",",@rcmd),")\n";
