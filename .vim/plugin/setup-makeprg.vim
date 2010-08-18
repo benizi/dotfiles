@@ -12,8 +12,9 @@ fun! SetupMakePrg(...)
 	else
 		let prog = &ft
 	endif
+	let &l:makeprg = prog
 	if prefix
-		let &l:makeprg = prog.' %:p'
+		let &l:makeprg .= ' %:p'
 	endif
 	if a:0 > 0
 		let &l:makeprg = input("Make program: ", &l:makeprg, 'shellcmd')
