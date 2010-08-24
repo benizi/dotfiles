@@ -24,7 +24,9 @@ GetOptions(
 	'notable' => \(my $notable = 0),
 	'markodd' => \(my $mark_odd = 0),
 	'sort' => \(my $do_sort = 0),
+	'plain' => \(my $plain = 0),
 ) or die 'options';
+$plain and ($sep, $texty) = ('  ', 1);
 my @headers = split /,/, $headers;
 @headers and $has_hdr = 1;
 $use_max = 1 if defined $maxl;
