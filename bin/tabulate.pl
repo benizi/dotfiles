@@ -25,6 +25,7 @@ GetOptions(
 	'markodd' => \(my $mark_odd = 0),
 	'sort' => \(my $do_sort = 0),
 	'plain' => \(my $plain = 0),
+	'headersep!' => \(my $header_sep = 1),
 ) or die 'options';
 $plain and ($sep, $texty) = ('  ', 1);
 my @headers = split /,/, $headers;
@@ -81,6 +82,13 @@ if ($texty) {
 		$_ .= "\n";
 	}
 	$l[0] = "\e[7m".uncolor($l[0])."\e[0m" if $color and $has_hdr;
+	if ($header_sep) {
+		my ($hdr_col, $hdr_sep) = $ascii ? ("\x{2550}", "\x{256c}") : ('=', '+');
+		$header_sep = join $hdr_sep, map $hdr_col x $_, @len;
+		$color and $header_sep = "\e[31m$header_sep\e[0m";
+		$header_sep .= "\n";
+		splice @l, 1, 0, $header_sep;
+	}
 } else {
 	for (0..$#l) {
 		my $func = ($has_hdr and !$_) ? \&th : \&td;
@@ -98,9 +106,17 @@ if ($texty) {
 }
 sub uncolor { local $_ = shift; s/\e\[[\d;]+m//g; $_ }
 if ($has_hdr and $rpt_head) {
-	my $head = $l[0];
-	my $n = 24;
-	splice @l, $_, 0, $head for reverse grep !($_ % $n), 1..$#l;
+	my @hdr = splice @l, 0, 1 + ($header_sep ? 1 : 0);
+	my @repeated = ((grep $_, $header_sep), @hdr);
+	my @newl = (@hdr);
+	my $n = ($ENV{LINES} // 24) - 1;
+	while (@l) {
+		if (@newl % $n == ($header_sep ? $n - 1 : 0)) {
+			push @newl, @repeated;
+		}
+		push @newl, splice @l, 0, 1;
+	}
+	@l = @newl;
 }
 @l = ("<table>\n", @l, "</table>\n") if $html and not $notable;
 print for @l;
