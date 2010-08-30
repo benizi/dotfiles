@@ -82,7 +82,7 @@ if ($texty) {
 		$_ .= "\n";
 	}
 	$l[0] = "\e[7m".uncolor($l[0])."\e[0m" if $color and $has_hdr;
-	if ($header_sep) {
+	if (@headers and $header_sep) {
 		my ($hdr_col, $hdr_sep) = $ascii ? ("\x{2550}", "\x{256c}") : ('=', '+');
 		$header_sep = join $hdr_sep, map $hdr_col x $_, @len;
 		$color and $header_sep = "\e[31m$header_sep\e[0m";
