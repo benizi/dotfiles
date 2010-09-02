@@ -6,8 +6,10 @@ use Getopt::Long;
 GetOptions(
 	'mountpoint=s' => \$::mount_point,
 	'debug+' => \($::debug = 0),
+	'fusedebug' => \$::fusedebug,
 	'branchslash=s' => \($::slash = '%'),
 	'gitdir=s' => \$::gitdir,
+	'allusers' => \$::allusers,
 	'<>' => sub {
 		if (!defined $::mount_point) {
 			$::mount_point = shift;
@@ -18,6 +20,7 @@ GetOptions(
 		}
 	},
 ) or die 'options';
+$::fusedebug = 1 if $::debug > 2;
 defined $::mount_point or die "Need to specify --mountpoint\n";
 defined $::gitdir or die "Need to specify --gitdir\n";
 use Fuse;
@@ -32,7 +35,11 @@ print "kill -HUP $$\n";
 END { umount }
 umount;
 my $git = Git->repository($::gitdir);
-main(mountpoint=>$::mount_point,map {; $_, $_ }
+main(
+	mountpoint=>$::mount_point,
+	grep($::allusers, qw/mountopts allow_other/),
+	grep($::fusedebug, qw/debug 1/),
+	map {; $_, $_ }
 qw/getattr getdir readlink mknod mkdir unlink rmdir symlink
 rename link chmod chown truncate utime open read
 write statfs flush release fsync setxattr getxattr
