@@ -23,7 +23,7 @@ sub counter {
 	return sub {
 		my $t = time;
 		if ($t - $last > 5) {
-		   	print "$disp $c\n";
+			print "$disp $c\n";
 			$last = $t;
 		}
 		$c++;
