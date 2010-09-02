@@ -17,13 +17,15 @@ function ssh_restart () {
 	ssh-agent > ~/ssh-script
 	ssh_re_source
 }
-ssh_re_source
 if $FORCE || [ "x$LOGNAME" = "xbhaskell" ] ; then
 	local _run=false
+	[ -n "$SSH_AGENT_PID" ] && return
+	ssh_re_source
 	[ -z "$SSH_AGENT_PID" ] && _run=true
 	$_run || kill -0 $SSH_AGENT_PID 2>/dev/null || _run=true
 	$_run || [ -z "$INLIN" ] || grep -q ssh-agent /proc/$SSH_AGENT_PID/cmdline 2>/dev/null || _run=true
 	$_run && ssh_restart
-	ssh-add -l >/dev/null || ssh_restart
+	ssh-add -l &> /dev/null
+	[[ $? = 2 ]] && ssh_restart
 	ssh-add -l | grep -vq no.identities || ssh_find_add
 fi
