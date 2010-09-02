@@ -45,8 +45,34 @@ rename link chmod chown truncate utime open read
 write statfs flush release fsync setxattr getxattr
 listxattr removexattr/);
 use POSIX qw/:errno_h ENOENT/;
-sub _de { $::debug or return; warn "", (caller(1))[3], "(@_)\n"; }
+sub _de { $::debug or return; warn "", (caller(1))[3], "(", map(defined()?$_:"<undef>",@_), ")\n"; }
 sub _branches { my @br = $git->command('branch'); s{^..}{} and s{/}{$::slash}g for @br; @br }
+my %special;
+BEGIN { $special{$_}++ for qw/.index .working/; }
+my %cached_svn_revs;
+sub _rev {
+	my ($rev, $subst) = @_;
+	$subst and $rev =~ s/$::slash/\//g;
+	return $rev if $special{$rev};
+	my @out;
+	if ($rev =~ /\@(r\d+)$/) {
+		my $svnrev = $1;
+		if (!$cached_svn_revs{$rev}) {
+			eval {
+				@out = $git->command(['svn','find-rev',$svnrev],{STDERR=>0});
+			};
+			@out and $cached_svn_revs{$rev} = shift @out;
+		}
+		@out = $cached_svn_revs{$rev};
+	} else {
+		eval {
+			@out = $git->command(['rev-parse','-q','--verify',$rev],{STDERR=>0});
+		};
+		return _rev($rev, 1) if !@out and $rev =~ /$::slash/;
+	}
+	return unless @out;
+	shift @out;
+}
 sub _parts {
 	my $fn = shift;
 	my @parts = split m{/}, $fn, -1;
@@ -56,8 +82,10 @@ sub _parts {
 	($fn, $branch, $dir)
 }
 sub _lsfile {
-	my ($fn, $branch, $dir) = _parts shift;
+	my $orig_fn = shift;
+	my ($fn, $branch, $dir) = _parts $orig_fn;
 	my @got;
+	$branch = _rev $branch if $branch =~ /[^\da-f]/;
 	for ($git->command('ls-tree', '--long', $branch, '--', $dir)) {
 		my ($ptss, $name) = split /\t/;
 		if ($name =~ s/^"//) {
@@ -82,9 +110,30 @@ sub _lsfile {
 		$size =~ /\D/ and $size = 0;
 		$size = 0 + $size;
 		$name =~ s{^\Q$dir\E}{};
-		push @got, { perm => oct "0$perm", type => $type, sha1 => $sha1, size => $size, name => $name };
+		push @got, { perm => oct "0$perm", type => $type, sha1 => $sha1, size => $size, name => $name, branch => $branch, fn => $orig_fn };
 	}
 	@got;
+}
+my %cached_times;
+sub _sha1_commit_time {
+	my $rev = shift;
+	if (!$cached_times{$rev}) {
+		my ($commit) = $git->command('log', '--pretty=format:%ct', $rev);
+		$cached_times{$rev} = 0 + $commit;
+	}
+	$cached_times{$rev};
+}
+sub _getbranchtime {
+	my $info = shift;
+	my @times;
+	if ($$info{branch}) {
+		if (my $rev = _rev $$info{branch}) {
+			@times = (_sha1_commit_time $rev);
+		}
+	}
+	@times = (@times) x 3 if @times == 1;
+	@times = (time, time, time) unless @times;
+	@times;
 }
 =begin STAT fields
 00 dev      device number of filesystem
@@ -116,18 +165,10 @@ sub _fakestat {
 	}
 	1234, 1234, $perm, $links, 0+$<, 0+$(, 0, $size, time, time, time, 4096, 0;
 }
-my %special = map {; $_ => 1 } qw/.index .working/;
-sub _rev {
-	my ($rev, $subst) = @_;
-	$subst and $rev =~ s/$::slash/\//g;
-	return $rev if $special{$rev};
-	my @out;
-	eval {
-		@out = $git->command(['rev-parse','-q','--verify',$rev],{STDERR=>0});
-	};
-	return _rev($rev, 1) if !@out and $rev =~ /$::slash/;
-	return unless @out;
-	shift @out;
+sub _actual {
+	my ($rev, $dir) = @_;
+	return unless $rev eq '.working';
+	join '/', $git->wc_path, $dir;
 }
 sub getattr {
 	&_de;
@@ -135,6 +176,11 @@ sub getattr {
 	my @ret = (-&ENOENT);
 	if ($fn eq '/') {
 		@ret = _fakestat {perm => 16384}
+	} elsif ($fn =~ m{^/\.working\b}) {
+		my ($dir) = (_parts $fn)[-1];
+		if (my $actual = _actual '.working', $dir) {
+			@ret = stat $actual;
+		}
 	} elsif ($fn =~ m{^/([^/]+)$}) {
 		my $rev = $1;
 		@ret = _fakestat {perm => 16384} if _rev $rev;
@@ -154,6 +200,11 @@ sub getdir {
 	my @files = (qw/. ../);
 	if ($fn eq '/') {
 		push @files, HEAD => (keys %special), _branches;
+	} elsif ($fn =~ m{^/\.working\b}) {
+		my ($dir) = (_parts $fn)[2];
+		opendir my $d, $git->wc_path.'/'.$dir or return -$!;
+		@files = readdir $d;
+		close $d;
 	} else {
 		push @files, map $$_{name}, _lsfile "$fn/";
 		$::debug and print Dumper [_lsfile "$fn/"], [@files];
@@ -164,10 +215,64 @@ sub unlink { &_de; $_[0] eq '/unmount' and exit; -&EOPNOTSUPP }
 sub readlink {
 	&_de;
 	my ($fn, $branch, $dir) = _parts shift;
+	if (my $actual = _actual $branch, $dir) {
+		return readlink $actual;
+	}
 	my ($info) = _lsfile $fn;
 	$info or return '';
 	$$info{perm} & 0120000 or return '';
 	$git->command('cat-file', '-p', $$info{sha1});
+}
+sub open { 0 }
+sub flush { 0 }
+sub release { 0 }
+sub read {
+	&_de;
+	my ($fn, $commitish, $dir) = _parts shift;
+	my ($len, $off) = @_;
+	my $rev = _rev $commitish;
+	$::debug > 1 and print Dumper {
+		fn => $fn,
+		commitish => $commitish,
+		dir => $dir,
+		rev => $rev,
+		special => $special{$commitish},
+	};
+	$rev or return -&EPERM;
+	if (my $actualfile = _actual $rev, $dir) {
+		$::debug > 1 and print "Trying actual file: $actualfile\n";
+		(-f $actualfile) or return -&ENOENT;
+		$::debug and print "Using actual file: $actualfile\n";
+		CORE::open my $f, '<', $actualfile or return -$!;
+		seek $f, $off, 0;
+		local $/ = \$len;
+		my $ret = <$f>;
+		close $f;
+		return $ret;
+	}
+	$::debug and print "Reading from git $commitish(=$rev)\n";
+	my ($info) = _lsfile $fn;
+	$info or return -&ENOTFOUND;
+	$$info{type} eq 'blob' or return -&EOPNOTSUPP;
+	my $sha1 = $$info{sha1};
+=begin more efficient way?
+	my $gitdir = $git->repo_dir;
+	my $objfile = join '/', $gitdir, substr($sha1, 0, 2), substr($sha1, 2);
+	if (-f $objfile) {
+		open my $f, '<', $objfile;
+=cut
+=begin fuck - doesn't handle packs
+	my $storage = "\0" x $$info{size};
+	CORE::open my $temp, '+<', \$storage or return -&EOPNOTSUPP;
+	$git->cat_blob($sha1, $temp);
+	seek $temp, $off, 0;
+	local $/ = \$len;
+	my $ret = <$temp>;
+	close $temp;
+	$ret
+=cut
+	my $file = $git->command('cat-file','-p',$sha1);
+	substr $file, $off, $len;
 }
 our $AUTOLOAD;
 sub AUTOLOAD {
