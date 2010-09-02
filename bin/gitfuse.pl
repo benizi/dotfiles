@@ -10,6 +10,7 @@ GetOptions(
 	'branchslash=s' => \($::slash = '%'),
 	'gitdir=s' => \$::gitdir,
 	'allusers' => \$::allusers,
+	'notime' => \($::notime = 0),
 	'<>' => sub {
 		if (!defined $::mount_point) {
 			$::mount_point = shift;
@@ -155,15 +156,23 @@ sub _fakestat {
 	my $perm = $$info{perm};
 	$perm |= 0444 unless $perm & 0444;
 	my $size = $$info{size} // 0;
+	my $inode = 0; # TODO
 	my $links = 1; # TODO
 	if ($perm & 040000) {
 		$perm |= 0111;
 		$size ||= 4096;
 		$links++;
+		$links++; # fool 'find' (which optimizes link=2 case)
 	} elsif (($perm & 0120000) == 0120000) {
 		$perm |= 0777;
 	}
-	1234, 1234, $perm, $links, 0+$<, 0+$(, 0, $size, time, time, time, 4096, 0;
+	my @times;
+	if ($::notime) {
+		@times = (time) x 3;
+	} else {
+		@times = _getbranchtime $info;
+	}
+	1234, $inode, $perm, $links, 0+$<, 0+$(, 0, $size, @times, 4096, 0;
 }
 sub _actual {
 	my ($rev, $dir) = @_;
