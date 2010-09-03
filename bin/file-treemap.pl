@@ -3,6 +3,8 @@ use strict;
 use warnings;
 package Fuse;
 use FindBin '$Bin';
+use File::Basename;
+use Fcntl ':mode';
 use M;
 BEGIN {
 	if (!eval "use WordNet; 1") {
@@ -48,8 +50,13 @@ GetOptions(
 	'create|createtab|filetab' => \(my $create = 0),
 	'directories|dirs|D=s@' => \my @dirs,
 	'xdev' => \(my $xdev = 0),
+	'fixup' => \(my $fixup = 0),
 ) or die 'options';
+my (%FILES, %DIRS);
+my @stat = qw/dev ino mode nlink uid gid rdev size atime mtime ctime blksize blocks/;
+my @fields = (readlink => @stat);
 if ($create) {
+	$fixup++;
 	push @dirs, splice @ARGV if @ARGV;
 	(@dirs) = ('/') and warn "No dirs specified, using @dirs\n" unless @dirs;
 	my $alldevok = 1;
@@ -59,18 +66,70 @@ if ($create) {
 	eval $use or die "ERROR { $use }\n$!";
 #	my $lim=7;
 	my $counter = WordNet::counter(display=>'finding files'=>persec=>);
+	my $memfile = '';
+	open my $file, '+<', \$memfile;
 	File::Find::find({
 		wanted => sub {
 			my $fn = $File::Find::name;
-			my $link = (-l) ? (readlink) : '';
-			my @stat = lstat;
+			my %stat;
+			$stat{readlink} = (-l) ? (readlink) : '';
+			@stat{@stat} = lstat;
 			if ($alldevok or $okdev{$stat[0]}) {
-				print join("\t", $fn, $link, @stat), "\n";
+				my $dest = S_ISDIR($stat{mode}) ? \%DIRS : \%FILES;
+				$$dest{$fn} = join "\t", @stat{@fields};
 			}
 			$counter->();
 		},
 #		preprocess => sub { splice @_, $lim if @_ > $lim; @_ },
 	}, @dirs);
+}
+if ($fixup) {
+	my %defaults = (
+		qw/dev 1 ino 1 mode 0 nlink 1/ =>
+		uid => 0+$< => gid => 0+$( =>
+		qw/rdev 0 size 4096/ =>
+		map(($_ => time), qw/atime mtime ctime/) =>
+		qw/blksize 4096 blocks 4096/
+	);
+	my %file = %defaults;
+	my %dir = %defaults;
+	$file{mode} = 010000 | 0644;
+	$dir{mode} =  004000 | 0755;
+	if (!$create) {
+		while (<>) {
+			chomp;
+			my @F = split /\t/, $_, -1;
+			my ($fn, %stat);
+			if (@F > 2) {
+				($fn, @stat{@fields}) = @F;
+			} elsif (@F == 2) {
+				($fn, @stat{@fields}) = ($F[0], '', @file{@stat});
+				$stat{size} = $F[1];
+			} elsif (@F == 1) {
+				($fn, @stat{@fields}) = ($F[0], '', @dir{@stat});
+			} else {
+				die "Bad line: $_\n";
+			}
+			my $dest = S_ISDIR($stat{mode}) ? \%DIRS : \%FILES;
+			$$dest{$fn} = join "\t", @stat{@fields};
+		}
+	}
+	my %links;
+	for my $fn (map keys %$_, \%FILES, \%DIRS) {
+		while ($fn ne "/") {
+			$links{dirname $fn}{basename $fn} = 1;
+			$fn = dirname $fn;
+		}
+	}
+	$links{$_} = 0 + keys %{$links{$_}} for keys %links;
+	$DIRS{$_} //= join "\t", '', @dir{@stat} for keys %links;
+	for my $d (sort keys %DIRS) {
+		my %stat;
+		@stat{@fields} = split "\t", $DIRS{$d}, -1;
+		$stat{nlink} = 2 + $links{$d};
+		print join("\t", $d, @stat{@fields}), "\n";
+	}
+	print join("\t", $_, $FILES{$_}), "\n" for sort keys %FILES;
 	exit;
 }
 require "Fuse.pm" or die "$!";
