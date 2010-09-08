@@ -1,0 +1,10 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use bytes;
+$/ = \2;
+$_ = <>;
+print
+/PK/ ? 'antiword-2007' :
+/\xd0\xcf/ ? 'antiword' :
+'echo';
