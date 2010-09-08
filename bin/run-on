@@ -1,44 +1,45 @@
 #!/bin/zsh
-host=localhost
+unset host
 _dry=false
 _argv=()
-for arg in "${argv[@]}" ; do
+case $0:t in
+	*dell) host=dell:0 ;;
+	*win) host=acer2k3:0 ;;
+	on*) host=${${0:t}#on}:0 ;;
+esac
+if (( ! $+host )) && [ $# -gt 0 ] ; then
+	case $1 in
+		*:*) host=$1 ;;
+		*) host="$1":0 ;;
+	esac
+	(( $+host )) && shift
+fi
+(( $+host )) && [[ $host != *:* ]] && host=$host\:0
+if (( ! $+host )) ; then
+	echo "No host set" >&2
+	exit 1
+fi
+while (( $#argv )) ; do
+	arg=$1
+	shift
 	(( $#_argv )) && _argv+=( $arg ) && continue
 	case "$arg" in
 		--dry) _dry=true ;;
+		--) _argv+=( $1 ) ; shift ;;
 		-*) echo "Unknown option: $arg" ; exit 1 ;;
 		*) _argv+=( $arg ) ;;
 	esac
 done
 argv=($_argv)
 
-case "$(hostname -f)" in
-	*.internal) _suff=internal ;;
-	*.local) _suff=local ;;
-esac
-_set=false
-case $0 in
-	*dell) host=dell.${_suff}:0 ; _set=true ;;
-	*win) host=acer2k3.${_suff}:0 ; _set=true ;;
-esac
-$_set || case `basename $0` in
-	on*) host=`basename $0` ; host=${host#on}.${_suff}:0 ; _set=true ;;
-esac
-if ! $_set && [ $# -gt 0 ] ; then
-	case $1 in
-		*:*) host=$1 ; _set=true ;;
-		*) host="$1":0 ; _set=true ;;
-	esac
-	$_set && shift
+if (( $+commands[x-is-active] )) ; then
+	if ! env DISPLAY=$host x-is-active ; then
+		auth=( ssh ${host%:*} DISPLAY=:0 xhost +$HOST )
+		$_dry && print -l $auth || $auth
+	fi
 fi
-if ! $_set ; then
-	echo "No host set" >&2
-	exit 1
-fi
-if [ $#argv = 0 ] ; then
-	echo "export DISPLAY=$host"
-elif $_dry ; then
-	echo DISPLAY=$host exec $argv
-else
-	DISPLAY=$host exec $argv
-fi
+
+(( $#argv )) || argv=( urxvt )
+argv=( env DISPLAY=$host $argv )
+$_dry && argv=( echo $argv )
+$argv
