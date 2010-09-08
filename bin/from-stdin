@@ -4,6 +4,10 @@ use warnings;
 use File::Temp 'tempfile';
 use IPC::Run 'run';
 my $STDIN = \0;
+my $delete = 1;
+@ARGV = grep {!(
+   /^-?-no-del/ ? (($delete = 0), 1)[1] :
+0)} @ARGV;
 unless (@ARGV) {
    if ($0 =~ /links-dump-stdin/) {
       @ARGV = ('links', '-dump', 'STDIN') 
@@ -16,10 +20,13 @@ my @cmd = map {
    : $_
 } @ARGV;
 @cmd or die "Need a command or something\n";
+my @stdin;
 if (grep $_ eq $STDIN, @cmd) {
    my ($fh, $filename) = tempfile;
    print $fh <STDIN>;
    close $fh;
    @cmd = map $_ eq $STDIN ? $filename : $_, @cmd;
+   push @stdin, $filename;
 }
 run [@cmd];
+$delete and unlink $_ for @stdin;
