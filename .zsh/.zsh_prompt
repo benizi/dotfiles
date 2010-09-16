@@ -1,3 +1,4 @@
+function __setup_prompt () {
 setopt promptsubst
 local _ps_color='$PSCOLORNORM'
 (( $+termcap[Co] && $termcap[Co] > 8 )) || _ps_color='$PSCOLORLO'
@@ -15,7 +16,30 @@ if [ -n "$STY" ] ; then
 	[[ $_screen = *.$_host ]] && _screen=$_screen:r
 	_screen="[$_screen]"
 fi
-PROMPT='%{${PSCOLOR}'$_ps_color'%}%n@%m'$_screen' %~'$_pschar'%{$NOCOLOR%} '
+local -a _extra
+
+local -a test_git
+test_git=( $PWD )
+local -A added
+local n=0 git_dir=
+while (( $#test_git && n < 20 )) ; do
+	local d=$test_git[1]
+	shift test_git
+	n=$(( n + 1 ))
+	[[ -d $d/.git ]] && git_dir=$d/.git && break
+	local -a add
+	add=( $d:h $d/./..(+A) )
+	for d in $add ; do
+		(( $+added[(e)$d] )) && continue
+		test_git+=( $d )
+		added[$d]=1
+	done
+done
+(( $#git_dir )) && _extra+=( ":$(git --git-dir=$git_dir branch | grep '^[*]' | cut -c3-)" )
+local __extra
+(( $#_extra )) && __extra=" $_extra" || __extra=""
+PROMPT='%{${PSCOLOR}'$_ps_color'%}%n@%m'$_screen' %~'$__extra$_pschar'%{$NOCOLOR%} '
+}
 
 TITLESEP='│' # ceçi n'est pas un pipe
 (( $+INCYG || $+STY )) && TITLESEP='|'
@@ -39,6 +63,7 @@ function preexec () {
 	fancytitle "$1 $TITLESEP "
 }
 function precmd () {
+	__setup_prompt
 	term_with_title || return
 	fancytitle ""
 }
