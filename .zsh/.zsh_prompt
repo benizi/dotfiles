@@ -1,13 +1,15 @@
+function __i_am_admin () {
+	local admin=1
+	[ -n "$INCYG" -a "$USERNAME" = "Administrator" ] && admin=0
+	[ "$UID" = "0" ] && admin=0
+	return $admin
+}
 function __setup_prompt () {
 setopt promptsubst
 local _ps_color='$PSCOLORNORM'
 (( $+termcap[Co] && $termcap[Co] > 8 )) || _ps_color='$PSCOLORLO'
-local _i_am_admin=false
-if [ -n "$INCYG" -a "$USERNAME" = "Administrator" ] || [ "$UID" = "0" ] ; then
-	_i_am_admin=true
-fi
-$_i_am_admin && _ps_color='${PSCOLORROOT-$INVERSE$BOLD'$_ps_color'}'
-$_i_am_admin && _pschar='#' || _pschar='$'
+__i_am_admin && _ps_color='${PSCOLORROOT-$INVERSE$BOLD'$_ps_color'}'
+__i_am_admin && _pschar='#' || _pschar='$'
 local _screen=""
 if [ -n "$STY" ] ; then
 	_screen="$STY"
@@ -52,7 +54,8 @@ function fancytitle () {
 	case "$DISPLAY" in
 		:0*|localhost:*) [ -z "$SSH_CLIENT" ] && host="" ;;
 	esac
-	$_i_am_admin && extra="ROOT $c " || extra=""
+	local extra=
+	__i_am_admin && extra="ROOT $c "
 	printf "${TITLE}%s%s${ENDTITLE}" $1 "$(print -nP "$extra$host"'%~ $c %n${STY+ $c $STY}')"
 }
 function term_with_title () {
