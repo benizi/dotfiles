@@ -16,7 +16,7 @@ if &t_Co > 16
 	colorscheme dual-converted
 endif
 set hidden
-set laststatus=2
+set laststatus=2 ruler
 filetype plugin indent on
 syntax enable
 syntax sync maxlines=2000
