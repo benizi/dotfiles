@@ -44,6 +44,15 @@ map <esc>m <C-W>_
 map <esc>- <C-W>-
 map <esc>= <C-W>+
 
+" Ctrl+Arrow = window movement
+map <C-Left> <C-W>h
+map <C-Down> <C-W>j
+map <C-Up> <C-W>k
+map <C-Right> <C-W>l
+" Ctrl+jk = window movement (C-h and C-l have other meanings)
+map <C-j> <C-W>j
+map <C-k> <C-W>k
+
 set ofu=syntaxcomplete#Complete
 set nostartofline
 imap <C-@> <C-Space>
