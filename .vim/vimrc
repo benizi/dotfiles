@@ -36,6 +36,9 @@ vmap < <gv
 nnoremap Q @q
 " allow fully-collapsed windows
 set winminheight=0
+" allow backspace to erase before insertion point
+set backspace=2
+
 set ofu=syntaxcomplete#Complete
 set nostartofline
 imap <C-@> <C-Space>
