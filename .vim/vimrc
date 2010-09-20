@@ -32,6 +32,8 @@ nnoremap <expr> h foldclosed(".")==-1 ? "h" : "zv"
 " keep visual mode selection when indenting
 vmap > >gv
 vmap < <gv
+" record macros into register 'q', playback with Q
+nnoremap Q @q
 set ofu=syntaxcomplete#Complete
 set nostartofline
 imap <C-@> <C-Space>
