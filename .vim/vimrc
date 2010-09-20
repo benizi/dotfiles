@@ -29,6 +29,9 @@ aug END
 " make 'l' and 'h' open the fold on the current line
 nnoremap <expr> l foldclosed(".")==-1 ? "l" : "zv"
 nnoremap <expr> h foldclosed(".")==-1 ? "h" : "zv"
+" keep visual mode selection when indenting
+vmap > >gv
+vmap < <gv
 set ofu=syntaxcomplete#Complete
 set nostartofline
 imap <C-@> <C-Space>
