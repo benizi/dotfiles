@@ -39,6 +39,11 @@ set winminheight=0
 " allow backspace to erase before insertion point
 set backspace=2
 
+" window mappings
+map <esc>m <C-W>_
+map <esc>- <C-W>-
+map <esc>= <C-W>+
+
 set ofu=syntaxcomplete#Complete
 set nostartofline
 imap <C-@> <C-Space>
