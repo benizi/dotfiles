@@ -24,7 +24,7 @@ set foldmethod=marker
 " ensure that unsaveable buffers are also uneditable
 aug NoEditUnsaveable
 	au!
-	au BufReadPost * let &modifiable = !&readonly
+	au BufWinEnter * let &modifiable = !&readonly
 aug END
 " make 'l' and 'h' open the fold on the current line
 nnoremap <expr> l foldclosed(".")==-1 ? "l" : "zv"
