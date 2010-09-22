@@ -4,4 +4,4 @@ case $0 in
 	*-down) factor=0.9 ;;
 	*) factor=$1 ;;
 esac
-pacmd set-sink-volume 0 0x$(( factor * [##16] $(pulseaudio-volume-get) ))
+pacmd set-sink-volume 0 0x$(( [##16] factor * $(pulseaudio-volume-get) )) >& /dev/null
