@@ -1,0 +1,153 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use open ':std', ':utf8';
+use utf8;
+# like pstree -aclpuU, but without the need to filter so much.
+use Getopt::Long;
+my (@cmds, @pids);
+GetOptions(
+	'cmd=s' => \@cmds,
+	'pid=s@' => \@pids,
+	'C|l|level=i' => \(my $levels),
+	'A|after=i' => \(my $kid_levels),
+	'kids' => \(my $all_kids),
+	'B|before=i' => \(my $parent_levels),
+	'P' => \(my $print_pids),
+	'T' => \(my $no_tasks),
+	'<>' => sub {
+		for (@_) {
+			/^\d+$/ ? push @pids, $_
+			: push @cmds, $_;
+		}
+	},
+) or die 'options';
+$all_kids = 1 unless @pids or @cmds;
+my $default_parent_levels =
+	(grep defined, $levels, $kid_levels, $parent_levels) ? 0 : -1;
+$kid_levels //= -1 if $all_kids;
+$kid_levels //= $levels // 0;
+$parent_levels //= $levels // $default_parent_levels;
+my @procs = grep /^\d+$/, do { opendir my $d, "/proc"; readdir $d };
+sub slurp {
+	my $fn = shift;
+	open my $f, '<', $fn or return '';
+	undef local $/;
+	scalar <$f>
+}
+sub linky {
+	my $fn = shift;
+	return '' unless -r $fn and -l $fn;
+	readlink $fn
+}
+@procs = map +{
+	pid => 0+$_,
+	dir => "/proc/$_",
+}, @procs;
+unless ($no_tasks) {
+	my %proc;
+	$proc{$$_{pid}}++ for @procs;
+	my @tasks;
+	for my $p (@procs) {
+		my @tid = do { opendir my $d, "$$p{dir}/task"; readdir $d };
+		push @tasks, map +{
+			pid => 0+$_,
+			dir => "/proc/$_",
+			parentish=>$$p{pid},
+			task => 1
+		}, grep !$proc{$_}, grep /^\d+$/, @tid;
+	}
+	push @procs, @tasks;
+}
+for my $p (@procs) {
+	my ($pid, $dir) = @$p{qw/pid dir/};
+	$$p{$_} = slurp "$dir/$_" for qw{cmdline stat};
+	$$p{$_} = linky "$dir/$_" for qw{root exe cwd};
+	die "Can't parse stat:\n$$p{stat}\n"
+		unless (@$p{qw/taskname ppid pgid sid/}) = $$p{stat} =~ /^\d+ \((\S+)\) . (\d+) (\d+) (\d+)/;
+	$$p{argv} = [ split "\0", $$p{cmdline}, -1 ];
+	$$p{cmd} = $$p{argv}[0] // '';
+	$$p{parentish} //= $$p{ppid};
+}
+my %procs;
+$procs{$$_{pid}} = $_ for @procs;
+push @{$procs{$$_{parentish}}{kids}}, $_ for grep $$_{parentish}, grep $$_{parentish} ne $$_{pid}, @procs;
+$$_{parentish} and $$_{parent} = $procs{$$_{parentish}} for @procs;
+for (
+	[cmd=>@cmds],
+	[pid=>map '^'.$_.'$', @pids],
+) {
+	my ($field, @vals) = @$_;
+	for my $v (@vals) {
+		@$_{qw/marked target/} = (1, 1) for grep $$_{$field} =~ $v, @procs;
+	}
+}
+
+my $maxdepth = 0;
+my @n = ($procs{1});
+while (@n) {
+	$maxdepth++;
+	@n = map @$_, grep defined, map $$_{kids}, @n;
+}
+$_ = $_ < 0 ? $maxdepth : $_ for $parent_levels, $kid_levels;
+($levels) = (sort { $a <=> $b } grep defined, 0, $parent_levels, $kid_levels, $levels)[-1];
+
+my @m = grep $$_{marked}, @procs;
+my $print_target_pids = @m;
+if (!@m) {
+	exit 1 if @pids or @cmds;
+	@m = ($procs{1});
+}
+
+my @p = @m;
+for my $l (0..$parent_levels) {
+	my %seen;
+	@p = grep !$seen{$$_{pid}}++, @p, grep defined, map $$_{parent}, @p;
+}
+my @k = @m;
+for (0..$kid_levels) {
+	my %seen;
+	@k = grep !$seen{$$_{pid}}++, @k, map @$_, grep defined, map $$_{kids}, @k;
+}
+$$_{marked} = 1 for @p, @k;
+
+my ($dash, $pipe, $haskid, $ismid, $islast) = map chr 0x2500+$_, 0, 2, 0x2c, 0x1c, 0x14;
+my @roots = grep !$$_{parent}{marked}, grep $$_{marked}, @procs;
+open STDOUT, "| ".($ENV{PAGER}//"less");
+for my $r (@roots) {
+	my @toprint;
+	my @q = ([0,$r,1]);
+	while (@q) {
+		my ($lev, $node, $islast) = @{shift @q};
+		my $this = {lev=>$lev, node=>$node, last=>$islast};
+		my @k = grep $$_{marked}, map @$_, $$node{kids}//[];
+		@k = sort { $$a{cmd} cmp $$b{cmd} or $$a{pid} <=> $$b{pid} } @k;
+		unshift @q, map [$lev+1, $k[$_], $_==$#k?1:0], 0..$#k;
+		$$this{haskid} = 0+@k;
+		push @toprint, $this;
+	}
+	for my $i (0..$#toprint) {
+		my $t = $toprint[$i];
+		my $n = $$t{node};
+		if ($print_target_pids) {
+			print $$n{pid} if $$n{target};
+			print "\t";
+		}
+		print join "\t", @$n{qw/pid ppid pgid sid/}, '' if $print_pids;
+		if ($$t{lev}) {
+			for my $l (1..$$t{lev}-1) {
+				my ($prev) = (grep $$_{lev} == $l, reverse @toprint[0..$i-1]);
+				print $$prev{last} ? " " : $pipe;
+				print " ";
+			}
+			print $$t{last} ? $islast : $ismid;
+			print $dash;
+			print $haskid if $$t{haskid};
+			print $dash;
+			print " ";
+		}
+		print $$n{task} ? "«$$n{taskname}»" : $$n{cmd};
+		print "\n";
+	}
+}
+close STDOUT;
