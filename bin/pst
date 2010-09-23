@@ -69,6 +69,7 @@ for my $p (@procs) {
 		$$p{invalid} = 1;
 		next;
 	}
+	$$p{cmdline} = "($$p{taskname})" if !length $$p{cmdline};
 	$$p{argv} = [ split "\0", $$p{cmdline}, -1 ];
 	$$p{cmd} = $$p{argv}[0] // '';
 	$$p{parentish} //= $$p{ppid};
