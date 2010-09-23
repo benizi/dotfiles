@@ -14,7 +14,7 @@ GetOptions(
 	'kids' => \(my $all_kids),
 	'B|before=i' => \(my $parent_levels),
 	'P' => \(my $print_pids),
-	'T' => \(my $no_tasks),
+	'T' => \(my $use_tasks),
 	'<>' => sub {
 		for (@_) {
 			/^\d+$/ ? push @pids, $_
@@ -44,7 +44,7 @@ sub linky {
 	pid => 0+$_,
 	dir => "/proc/$_",
 }, @procs;
-unless ($no_tasks) {
+if ($use_tasks) {
 	my %proc;
 	$proc{$$_{pid}}++ for @procs;
 	my @tasks;
