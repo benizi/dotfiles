@@ -63,8 +63,8 @@ for my $p (@procs) {
 	my ($pid, $dir) = @$p{qw/pid dir/};
 	$$p{$_} = slurp "$dir/$_" for qw{cmdline stat};
 	$$p{$_} = linky "$dir/$_" for qw{root exe cwd};
-	unless ((@$p{qw/taskname ppid pgid sid/}) =
-		$$p{stat} =~ /^\d+ \((\S+)\) . (\d+) (\d+) (\d+)/) {
+	unless ((@$p{qw/taskname status ppid pgid sid/}) =
+		$$p{stat} =~ /^\d+ \((\S+)\) (.) (\d+) (\d+) (\d+)/) {
 		# deal with readdir(/proc/*) race condition
 		$$p{invalid} = 1;
 		next;
@@ -135,11 +135,10 @@ for my $r (@roots) {
 	for my $i (0..$#toprint) {
 		my $t = $toprint[$i];
 		my $n = $$t{node};
-		if ($print_target_pids) {
-			print $$n{pid} if $$n{target};
-			print "\t";
-		}
-		print join "\t", @$n{qw/pid ppid pgid sid/}, '' if $print_pids;
+		my @info;
+		push @info, $$n{target} ? $$n{pid} : '' if $print_target_pids;
+		push @info, @$n{qw/pid ppid pgid sid status/} if $print_pids;
+		print join "\t", @info, '' if @info;
 		if ($$t{lev}) {
 			for my $l (1..$$t{lev}-1) {
 				my ($prev) = (grep $$_{lev} == $l, reverse @toprint[0..$i-1]);
