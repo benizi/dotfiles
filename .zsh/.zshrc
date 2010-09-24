@@ -7,6 +7,7 @@ setopt auto_cd no_auto_menu
 setopt extended_glob glob_dots hist_subst_pattern 2>/dev/null
 setopt pushd_silent
 setopt no_recexact no_rcquotes
+setopt csh_junkie_history
 export MAILCHECK=0
 autoload -U compinit
 export ZSH_UNAME=$(uname)
