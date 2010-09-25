@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 my %stupid = qw/ch zh cn zh jp ja/;
-my %country = qw/ar EG zh TW en US ja JP el GR/;
+my %country = qw/ar EG zh TW en US ja JP el GR hi IN/;
 my %font = (
 	ar => 'ae_AlMohanad',
 	en => 'Lucida Sans Mono',
@@ -11,9 +11,10 @@ my %font = (
 	zh_HK => '-*-ar pl kaitim big5-*-*-*-*-*-*-*-100-*-*-iso10646-*',
 #	zh_HK => '-*-ming for iso10646 -*-*-*-*-*-*-*-*-*-*-iso10646-*',
 	zh_CN => '-*-ming for iso10646 -*-*-*-*-*-*-*-*-*-*-iso10646-*',
+	hi => 'Lohit Hindi',
 );
-my %big = (ar => 30, zh => 22, ja => 22, ko => 22);
-my %vary = (ar => 1);
+my %big = (ar => 30, zh => 22, ja => 22, ko => 22, hi => 20);
+my %vary = (ar => 1, hi => 1);
 
 use Getopt::Long qw/:config pass_through/;
 GetOptions(
