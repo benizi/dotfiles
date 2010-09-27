@@ -1,0 +1,50 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Getopt::Long;
+use File::Find;
+
+GetOptions(
+	'in=s' => \(my $in_dir),
+	'out=s' => \(my $out_dir),
+	'include=s@' => \my @include,
+	'dry-run' => \(my $dry_run),
+) or die 'options';
+@include = ('*.mp3') unless @include;
+my %replace = ( '*' => '.*', '.' => '\\.' );
+my $rep = join '|', map quotemeta, reverse sort keys %replace;
+s/($rep)/$replace{$1}/g, s/^/^/, s/$/\$/ for @include;
+
+$in_dir // die "Must specify --in\n";
+$out_dir // die "Must specify --out\n";
+
+my @files;
+find sub {
+	my $fn = $_;
+	return unless -f;
+	return unless grep $fn =~ /$_/, @include;
+	push @files, "$File::Find::dir/$fn";
+}, $in_dir;
+
+for (@files) {
+	(my $fn = $_) =~ s{^\Q$in_dir\E/?}{};
+	my @parts = split m{/}, $fn;
+	my $base = pop @parts;
+	for (@parts, $base) {
+		# s{[^A-Za-z0-9\ .,\-]}{_}g;
+		y/*"\/\\[]:;|=?/_/;
+	}
+	1 while $base =~ s{\.(?=.+\.)}{_};
+	while (length $base > 128) {
+		#print "$base\n->";
+		$base =~ s{^\S+\s*(?:\W+\s*)?}{};
+		#print "$base\n";
+	}
+	my $dir = join '/', $out_dir, @parts;
+	if ($dry_run) {
+		print "$_\n> $dir/$base\n";
+	} else {
+		system { 'mkdir' } 'mkdir', '-p', $dir;
+		symlink $_, "$dir/$base";
+	}
+}
