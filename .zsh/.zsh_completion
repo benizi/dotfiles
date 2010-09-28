@@ -15,3 +15,7 @@ local _ssh_users
 typeset -U _ssh_users
 _ssh_users=( bhaskell root $LOGNAME )
 zstyle ':completion:*:ssh:*' users ${^_ssh_users}
+# complete all git commands
+zstyle ':completion:*:git:*' wanted-commands all
+# add custom git commands to completion
+zstyle ':completion:*:git:*' user-commands ${${(k)commands[(I)git-*]}#git-}
