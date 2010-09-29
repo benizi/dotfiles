@@ -15,6 +15,7 @@ GetOptions(
 	'B|before=i' => \(my $parent_levels),
 	'P' => \(my $print_pids),
 	'T' => \(my $use_tasks),
+	'F' => \(my $show_files = $0 =~ /pstf/),
 	'<>' => sub {
 		for (@_) {
 			/^\d+$/ ? push @pids, $_
@@ -135,6 +136,20 @@ for my $r (@roots) {
 		unshift @q, map [$lev+1, $k[$_], $_==$#k?1:0], 0..$#k;
 		$$this{haskid} = 0+@k;
 		push @toprint, $this;
+		if ($show_files and $$node{target}) {
+			my %fds = map {
+				$_ => linky("$$node{dir}/fd/$_")
+			} number_files "$$node{dir}/fd";
+			push @toprint, map {
+				lev => $lev+1,
+				node => {
+					pid => $_+0,
+					cmd => "$_: $fds{$_}",
+				},
+			}, sort { $a <=> $b } keys %fds;
+			$toprint[-1]{last} = 1 if keys %fds;
+			$$this{haskid} ||= 0+keys %fds;
+		}
 	}
 	for my $i (0..$#toprint) {
 		my $t = $toprint[$i];
