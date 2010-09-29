@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use open ':std', ':utf8';
 use utf8;
+use Encode qw/decode_utf8 FB_CROAK/;
 # like pstree -aclpuU, but without the need to filter so much.
 use Getopt::Long;
 my (@cmds, @pids);
@@ -40,10 +41,18 @@ sub slurp {
 	undef local $/;
 	scalar <$f>
 }
+sub utf8ly {
+	my $ret = shift;
+	eval {
+		my $utf8 = decode_utf8 $ret, FB_CROAK;
+		$ret = $utf8;
+	};
+	$ret
+}
 sub linky {
 	my $fn = shift;
 	return '' unless -r $fn and -l $fn;
-	readlink $fn
+	utf8ly readlink $fn;
 }
 @procs = map +{
 	pid => 0+$_,
