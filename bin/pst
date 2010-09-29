@@ -28,7 +28,11 @@ my $default_parent_levels =
 $kid_levels //= -1 if $all_kids;
 $kid_levels //= $levels // 0;
 $parent_levels //= $levels // $default_parent_levels;
-my @procs = grep /^\d+$/, do { opendir my $d, "/proc"; readdir $d };
+sub number_files {
+	opendir my $d, $_[0] or return ();
+	grep /^\d+$/, readdir $d;
+}
+my @procs = number_files "/proc";
 sub slurp {
 	my $fn = shift;
 	open my $f, '<', $fn or return '';
@@ -49,13 +53,13 @@ if ($use_tasks) {
 	$proc{$$_{pid}}++ for @procs;
 	my @tasks;
 	for my $p (@procs) {
-		my @tid = do { opendir my $d, "$$p{dir}/task"; readdir $d };
+		my @tid = number_files "$$p{dir}/task";
 		push @tasks, map +{
 			pid => 0+$_,
 			dir => "/proc/$_",
 			parentish=>$$p{pid},
 			task => 1
-		}, grep !$proc{$_}, grep /^\d+$/, @tid;
+		}, grep !$proc{$_}, @tid;
 	}
 	push @procs, @tasks;
 }
