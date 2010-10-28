@@ -1,4 +1,4 @@
-fun! Eatchar(pat)
+fun! Eatchar(...)
 	let c = nr2char(getchar(0))
-	return c =~ a:pat ? '' : c
+	return c =~ (a:0 ? a:1 : '\s') ? '' : c
 endfun
