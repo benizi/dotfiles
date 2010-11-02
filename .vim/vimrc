@@ -39,8 +39,8 @@ set winminheight=0
 " allow backspace to erase before insertion point
 set backspace=2
 
-" treat 'n' in visual mode similarly to normal mode
-vmap n y/<C-R>=substitute(tolower(getreg('"')), '\([/$~^*]\)', '\\\1','')<CR><CR>
+" treat '*' in visual mode similarly to normal mode
+vmap * y/<C-R>=substitute(tolower(getreg('"')), '\([/$~^*]\)', '\\\1', 'g')<CR><CR>
 
 " window mappings
 map <esc>m <C-W>_
