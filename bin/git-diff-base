@@ -5,9 +5,9 @@ git branch | grep -q '^\* master$' && onmaster=true || onmaster=false
 merge_base=$(git merge-base $rev master)
 [[ $rev = $merge_base ]] && merge_base=$(git rev-parse $merge_base\~1)
 case $0:t in
-	git-lm) sub=log ; rev_arg=$merge_base.. ;;
-	git-dm) sub=diff ; rev_arg=$merge_base.. ;;
+	git-lm) sub=log ;;
+	git-dm) sub=diff ;;
 	*) echo $merge_base ; exit ;;
 esac
-cmd=( git $sub $rev_arg $argv )
+cmd=( git $sub $merge_base..$rev $argv )
 exec $cmd
