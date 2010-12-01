@@ -1,0 +1,30 @@
+#!/usr/bin/python
+import re
+from sys import stdin, stdout, stderr
+import sys
+
+if stdin.isatty():
+    stderr.write("""Usage: {0} < input.rtf                   -- print statistics on size reduction
+       {0} < input.rtf > output.rtf      -- create the demoronized RTF
+(Exiting for lack of RTF input)
+""".format(sys.argv[0]))
+    sys.exit(1)
+
+# read an RTF on stdin
+rtf_contents = stdin.read()
+
+# strip out \nonshppict sections
+match_stupid_wma_content = re.compile(r'\{\\nonshppict\s*\{[^\{]+\{[^\{\}]+blipuid\s+\w+\}[0-9a-f\r\n]+\}\}')
+stripped_rtf = re.sub(match_stupid_wma_content, '', rtf_contents)
+
+# print before and after sizes
+info = stdout.isatty() and stdout or stderr
+old, new = map(len, [rtf_contents, stripped_rtf])
+info.write("""Old RTF was %s bytes
+New RTF is %s bytes
+Savings of %s bytes (new = %d%% of old)
+""" % (old, new, old-new, (100.0 * new)/old))
+
+# output the new RTF if output not to terminal
+if not stdout.isatty():
+    stdout.write(stripped_rtf)
