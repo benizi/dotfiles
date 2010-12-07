@@ -1,0 +1,53 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Getopt::Long;
+my (@args, @sha1s);
+GetOptions(
+	'first' => \(my $stop_at_first = 0),
+	'stdin' => \(my $sha1_from_stdin),
+	'name-only' => \(my $name_only = 0),
+	'<>' => sub {
+		@_ = grep {!(
+			/^[\da-f]{40}$/ ? (push @sha1s, $_) :
+		0)} @_;
+		push @args, @_;
+	},
+) or die 'options';
+
+push @sha1s, <STDIN> if $sha1_from_stdin;
+chomp @sha1s;
+
+use Memoize;
+sub check_tree {
+	my ($seeking, $tree, @path) = @_;
+	my @ret;
+	open my $ls_tree, "git ls-tree $tree|" or die "git ls-tree|: $!";
+	while (<$ls_tree>) {
+		chomp;
+		my ($type, $sha, $name) = /\A[0-7]{6} (\S+) (\S+)\t(.*)\Z/;
+		push @ret, join "/", @path, $name if $sha eq $seeking;
+		push @ret, check_tree($seeking, $sha, @path, $name) if $type eq 'tree';
+	}
+	sort @ret;
+}
+memoize 'check_tree';
+sub rev_name {
+	my $rev = shift;
+	chomp(my $name = `git name-rev --always --name-only $rev`);
+	$name;
+}
+
+my %seeking = map {; $_ => 1 } @sha1s;
+@args = ('--all') unless @args;
+for my $rev (readpipe("git rev-list @args")) {
+	for my $sha (grep $seeking{$_}, @sha1s) {
+		my @paths = check_tree $sha, $rev;
+		for (@paths) {
+			my $name = rev_name $rev;
+			$name_only or print "$sha\t";
+			print "$name:$_\n";
+			$seeking{$sha} = 0 if $stop_at_first;
+		}
+	}
+}
