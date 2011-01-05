@@ -34,7 +34,14 @@ argv=($_argv)
 
 if (( $+commands[x-is-active] )) ; then
 	if ! env DISPLAY=$host x-is-active ; then
-		auth=( ssh ${host%:*} DISPLAY=:0 xhost +$HOST )
+		if (( $+SSH_CONNECTION )) ; then
+			xhost=$SSH_CONNECTION[(w)3]
+		elif (( $+commands[hostname] )) ; then
+			xhost=$(hostname -f)
+		else
+			xhost=$HOST
+		fi
+		auth=( ssh ${host%:*} DISPLAY=:0 xhost +$xhost )
 		$_dry && print -l $auth || $auth
 	fi
 fi
