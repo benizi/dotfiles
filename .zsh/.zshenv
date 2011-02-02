@@ -1,5 +1,3 @@
-# simulates file(:A) as file(+A)
-A () { reply=("$(perl -MCwd=realpath -we 'print realpath shift' $REPLY)") }
 # Deal with pathological path on Windows 7 Cygwin
 (( $path[(Ie)/bin] )) || export PATH=$PATH:/bin
 # Set up system-specific vars
@@ -11,6 +9,13 @@ case $ZSH_UNAME in
 	*SunOS*) export INSOL=true ;;
 	*) export INLIN=true ;;
 esac
+# simulate file(:A) as file(+A) if needed
+autoload -z is-at-least
+if is-at-least 4.2.0 ; then
+	A () { reply=( $REPLY(:A) ) }
+else
+	A () { reply=("$(perl -MCwd=realpath -we 'print realpath shift' $REPLY)") }
+fi
 zsh_dirs=(~)
 typeset -U zsh_dirs
 zshenv=${(%):-"%N"}
