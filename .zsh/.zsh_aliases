@@ -10,6 +10,11 @@ alias ksh='HISTFILE=$zsh_dirs[-1]/ksh-history ksh'
 alias tcsh='HISTFILE=$zsh_dirs[-1]/tcsh-history tcsh'
 alias sh='HISTFILE=$zsh_dirs[-1]/sh-history sh'
 
+# no globbing for some commands
+alias cave='noglob cave'
+alias find='noglob find'
+'find' () { integer i=${argv[(i)-*]} ; command find ${~argv[1,i-1]} "${(@)argv[i,-1]}" }
+
 alias chroot32='sudo su - -c "linux32 chroot /32 /bin/zsh -l"'
 alias fcl='fc -t %Y-%m-%d@%H:%M:%S -nl 0 | less'
 local lscolor="ls --color=auto"
