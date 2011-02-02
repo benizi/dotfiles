@@ -11,7 +11,7 @@ case $ZSH_UNAME in
 esac
 # simulate file(:A) as file(+A) if needed
 autoload -z is-at-least
-if is-at-least 4.2.0 ; then
+if is-at-least 4.2.0 && (( ! $+INSOL )) ; then
 	A () { reply=( $REPLY(:A) ) }
 else
 	A () { reply=("$(perl -MCwd=realpath -we 'print realpath shift' $REPLY)") }
