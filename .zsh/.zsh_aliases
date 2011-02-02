@@ -33,6 +33,8 @@ alias lss="$lscolor -Srl"
 alias lsr="$lscolor -Sl"
 alias lsl=l
 
+(( UID )) && alias lvm='sudo lvm'
+
 alias pf='ps -ef'
 alias pfg='ps -ef | grep'
 if [[ $commands[alpine] != /usr/local/bin/alpine ]] ; then
