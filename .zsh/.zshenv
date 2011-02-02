@@ -42,13 +42,18 @@ term_color_test || TERM=xterm
 export EDITOR=/usr/bin/vim
 export READNULLCMD=less
 typeset -U path
+function () {
+local originalpath
+originalpath=( $path )
 pathtest=( ${^zsh_dirs}(+A) )
 pathtest=( ${^pathtest}/{bin-shared,bin} )
 for user in benhaskell bhaskell USC/bhaskell ; do
 	pathtest+=( /home/$user/bin-shared /home/$user/bin )
 done
 pathtest+=($HOME/python/bin $HOME/bin /home/benhaskell/bin /home/bhaskell/qmail/bin {/usr{/local,},}/{s,}bin /opt/bin $HOME/bin/dslinux/bin /usr/games/bin /home/bhaskell/wn/bin /var/qmail/bin /usr/kde/4.0/bin /usr/X11R6/bin $path /usr/kde/3.5/bin /people/bhaskell/bin)
+pathtest+=( $originalpath )
 path=( ${^pathtest}(N-/) )
+}
 export PATH
 manpath=( /usr/share/man /usr/csl/man /usr/cogsci/man /usr/cogsci/X11/man /usr/dt/man /usr/openwin/man /usr/man /usr/local/man )
 manpath=( ${^manpath}(N-/) )
