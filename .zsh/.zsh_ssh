@@ -19,7 +19,7 @@ function ssh_restart () {
 	ssh-agent > ~/ssh-script
 	ssh_re_source
 }
-if $FORCE || [ "x$LOGNAME" = "xbhaskell" ] ; then
+if $FORCE || [[ -O ${(%):-"%N"} ]] ; then
 	local _run=false
 	[ -n "$SSH_AGENT_PID" ] && return
 	ssh_re_source
