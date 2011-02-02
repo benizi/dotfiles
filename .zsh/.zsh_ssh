@@ -2,8 +2,8 @@ FORCE=${SSH_FORCE:-false}
 function ssh_find () {
 	find ~/.ssh ! -name .ssh -type d -prune -o \
 		-type f -name 'id_*' \
-		! -iname '*.pub' \
-		! -iname '*.ppk' \
+		! -name '*.pub' \
+		! -name '*.ppk' \
 		-print \
 	| sort
 }
