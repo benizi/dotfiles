@@ -28,7 +28,6 @@ SSH
 }
 if $FORCE || [[ -O ${(%):-"%N"} ]] ; then
 	local _run=false
-	[ -n "$SSH_AGENT_PID" ] && return
 	ssh_re_source
 	[ -z "$SSH_AGENT_PID" ] && _run=true
 	$_run || kill -0 $SSH_AGENT_PID 2>/dev/null || _run=true
