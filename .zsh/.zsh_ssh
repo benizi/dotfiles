@@ -19,6 +19,13 @@ function ssh_restart () {
 	ssh-agent > ~/ssh-script
 	ssh_re_source
 }
+function ssh_script_regen () {
+	cat > ~/ssh-script <<SSH
+SSH_AUTH_SOCK=$SSH_AUTH_SOCK; export SSH_AUTH_SOCK;
+SSH_AGENT_PID=$SSH_AGENT_PID; export SSH_AGENT_PID;
+echo Agent pid $SSH_AGENT_PID;
+SSH
+}
 if $FORCE || [[ -O ${(%):-"%N"} ]] ; then
 	local _run=false
 	[ -n "$SSH_AGENT_PID" ] && return
