@@ -8,7 +8,7 @@ function ssh_find () {
 function ssh_find_add () {
 	ssh_find \
 	| perl -l0pe '' \
-	| env -u DISPLAY xargs -0 ssh-add
+	| env DISPLAY= xargs -0 ssh-add
 }
 function ssh_re_source () {
 	[ -r ~/ssh-script ] && . ~/ssh-script > /dev/null
