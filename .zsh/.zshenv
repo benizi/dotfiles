@@ -1,5 +1,7 @@
 # simulates file(:A) as file(+A)
 A () { reply=("$(perl -MCwd=realpath -we 'print realpath shift' $REPLY)") }
+# Deal with pathological path on Windows 7 Cygwin
+(( $path[(Ie)/bin] )) || export PATH=$PATH:/bin
 # Set up system-specific vars
 export ZSH_UNAME=$(uname)
 case $ZSH_UNAME in
