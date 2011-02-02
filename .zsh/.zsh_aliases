@@ -17,6 +17,8 @@ alias find='noglob find'
 
 alias chroot32='sudo su - -c "linux32 chroot /32 /bin/zsh -l"'
 alias fcl='fc -t %Y-%m-%d@%H:%M:%S -nl 0 | less'
+
+# various versions of 'ls'
 local lscolor="ls --color=auto"
 [ -n "$INBSD" ] && lscolor=ls
 [ -n "$INSOL" ] && lscolor=ls
@@ -29,9 +31,10 @@ alias lsda="$lscolor -trldA"
 alias lso="$lscolor -tlA"
 alias lss="$lscolor -Srl"
 alias lsr="$lscolor -Sl"
+alias lsl=l
+
 alias pf='ps -ef'
 alias pfg='ps -ef | grep'
-alias lsl=l
 if [[ $commands[alpine] != /usr/local/bin/alpine ]] ; then
 	alias alpine='titlep ALPINE ; alpine-svn -bail -p $PINERC'
 fi
