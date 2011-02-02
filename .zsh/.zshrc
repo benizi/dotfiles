@@ -11,6 +11,7 @@ setopt magic_equal_subst
 setopt csh_junkie_history
 export MAILCHECK=0
 autoload -U compinit
+autoload -Uz age
 if [ -f ~/.zcompdump.debugging ] ; then
 	rm -f ~/.zcompdump
 	fpath=( ${^zsh_dirs}/Completion(N/) ~/git/zsh/Completion/**/*(N/) $fpath )
