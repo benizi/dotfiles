@@ -10,15 +10,6 @@ setopt no_recexact no_rcquotes
 setopt csh_junkie_history
 export MAILCHECK=0
 autoload -U compinit
-export ZSH_UNAME=$(uname)
-export ZSH_UNAMER=$(uname -r | perl -lpwe 's/^(\d+(?:\.\d+)?)\D.*$/$1/')
-case $ZSH_UNAME in
-	CYGWIN_NT-6.1) export INWIN7=true ;|
-	*CYGWIN*) export INCYG=true ;;
-	*FreeBSD*) export INBSD=true ;;
-	*SunOS*) export INSOL=true ;;
-	*) export INLIN=true ;;
-esac
 if [ -f ~/.zcompdump.debugging ] ; then
 	rm -f ~/.zcompdump
 	fpath=( ${^zsh_dirs}/Completion(N/) ~/git/zsh/Completion/**/*(N/) $fpath )

@@ -1,5 +1,14 @@
 # simulates file(:A) as file(+A)
 A () { reply=("$(perl -MCwd=realpath -we 'print realpath shift' $REPLY)") }
+# Set up system-specific vars
+export ZSH_UNAME=$(uname)
+case $ZSH_UNAME in
+	CYGWIN_NT-6.1) export INWIN7=true INCYG=true ;;
+	*CYGWIN*) export INCYG=true ;;
+	*FreeBSD*) export INBSD=true ;;
+	*SunOS*) export INSOL=true ;;
+	*) export INLIN=true ;;
+esac
 zsh_dirs=(~)
 typeset -U zsh_dirs
 zshenv=${(%):-"%N"}
