@@ -8,6 +8,10 @@ function ssh_find () {
 	| sort
 }
 function ssh_find_add () {
+	if (( $+INSOL )) ; then
+		ssh_find | env DISPLAY= xargs ssh-add
+		return
+	fi
 	ssh_find \
 	| perl -l0pe '' \
 	| env DISPLAY= xargs -0 ssh-add
