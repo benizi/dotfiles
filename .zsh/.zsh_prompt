@@ -7,7 +7,7 @@ function __i_am_admin () {
 function __setup_prompt () {
 setopt promptsubst
 local _ps_color='$PSCOLORNORM'
-(( $+termcap[Co] && $termcap[Co] > 8 )) || _ps_color='$PSCOLORLO'
+(( $+termcap[Co] )) && (( $termcap[Co] > 8 )) || _ps_color='$PSCOLORLO'
 __i_am_admin && _ps_color='${PSCOLORROOT-$INVERSE$BOLD'$_ps_color'}'
 __i_am_admin && _pschar='#' || _pschar='$'
 local _screen=""
