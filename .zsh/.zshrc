@@ -3,7 +3,7 @@ bindkey "^T" expand-word
 (( $+widgets[history-incremental-pattern-search-backward] )) \
 && bindkey "^R" history-incremental-pattern-search-backward
 setopt nohup no_notify no_check_jobs
-setopt auto_cd no_auto_menu
+setopt auto_cd auto_pushd no_auto_menu
 setopt extended_glob glob_dots hist_subst_pattern 2>/dev/null
 setopt pushd_silent
 setopt no_recexact no_rcquotes
