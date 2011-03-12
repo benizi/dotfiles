@@ -1,5 +1,11 @@
 fun! GitDiff(...)
-   let rev = (a:0 && a:1) ? a:1 : 'HEAD~1'
+   if a:0 && a:1
+      let rev = a:1
+   elseif filereadable('.git/rebase-apply')
+      let rev = 'HEAD~1'
+   else
+      let rev = 'HEAD'
+   endif
    let force = a:0 > 1 ? a:2 : 1
    let lines = map(split(system('git diff '.shellescape(rev)), "\n"), '"# ".v:val')
    let noncomment = filter(range(1,line('$')), 'getline(v:val) !~ "^#"')
