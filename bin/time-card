@@ -1,12 +1,30 @@
 #!/usr/bin/ruby
 
 require 'pp'
+require 'ostruct'
+require 'optparse'
+
+opts = OpenStruct.new
+opts.use = OpenStruct.new
+opts.use.histfile = false
+opts.use.vimtrack = false
+opts.use.chromium = false
+opts.cutoff = 14
+opts.chunk = 10
+optparse = OptionParser.new do |o|
+	o.on('-h') { opts.use.histfile = true }
+	o.on('-v') { opts.use.vimtrack = true }
+	o.on('-c') { opts.use.chromium = true }
+	o.on('--cutoff') { opts.cutoff = 14 }
+	o.on('--chunk') { opts.chunk = 10 }
+end.parse!(ARGV)
 
 now = Time.new
-two_weeks_ago = now - 86400 * 7 * 2
+min_date = now - 86400 * opts.cutoff
+
 times = {}
 min_max = {}
-min_chunk = 10
+min_chunk = opts.chunk
 abort "min_chunk should divide 60 (but is #{min_chunk})" if 60 % min_chunk != 0
 
 @wk_fmt = '%Y week %U'
@@ -15,25 +33,94 @@ abort "min_chunk should divide 60 (but is #{min_chunk})" if 60 % min_chunk != 0
 
 all_times = []
 
-ARGF.each do |line|
-	m = line.match(/^: (\d+):\d+;/) or next
-	all_times << [ 'hist', Time.at(m[1].to_i) ]
-end
-
-begin
-	require 'rubygems'
-	require 'dbi'
-	dbh = DBI.connect('DBI:SQLite3:' + (ENV['HOME'] or abort 'home?') + '/.vim.local/timetrack.sqlite3')
-	sth = dbh.prepare('select time from edited_files')
-	sth.execute
-	while r = sth.fetch
-		all_times << [ 'vim', Time.at(r[0].to_i) ]
+if opts.use.histfile
+	ARGF.each do |line|
+		m = line.match(/^: (\d+):\d+;/) or next
+		all_times << [ 'hist', Time.at(m[1].to_i) ]
 	end
-	sth.finish
-	dbh.disconnect
 end
 
-all_times.select {|t| t[-1] >= two_weeks_ago }.each do |info|
+if opts.use.vimtrack
+	begin
+		require 'rubygems'
+		require 'dbi'
+		dbh = DBI.connect('DBI:SQLite3:' + (ENV['HOME'] or abort 'home?') + '/.vim.local/timetrack.sqlite3')
+		sth = dbh.prepare('select time from edited_files')
+		sth.execute
+		while r = sth.fetch
+			all_times << [ 'vim', Time.at(r[0].to_i) ]
+		end
+		sth.finish
+		dbh.disconnect
+	rescue
+		puts "Couldn't read Vim tracking"
+	end
+end
+
+if opts.use.chromium
+	begin
+		require 'find'
+		require 'open3'
+		@dbfiles = []
+		dirs = ['google-chrome','chromium'].map { |d| ENV['HOME'] + '/.config/' + d }
+		Find.find(*dirs) do |path|
+			case File.basename(path)
+			when 'History'
+				if File.mtime(path) >= min_date
+					@dbfiles << path
+				end
+			end
+		end
+		@dbfiles = @dbfiles.map { |path| [ path, path + '.readonly' ] }
+		@readonly = @dbfiles.map do |paths|
+			file, readonly = paths
+			cmd = ['rsync','-av',file,readonly]
+			Open3.popen3(*cmd)
+			readonly
+		end
+
+		require 'rubygems'
+		require 'dbi'
+		require 'date'
+
+		@windows_epoch = Date.civil(1601,1,1).strftime("%s").to_f
+		def from_chrometime(nanoseconds)
+			Time.at(@windows_epoch + (nanoseconds.to_i / 1e6))
+		end
+
+		def to_chrometime(time)
+			Time.at(1e6 * time.to_i - @windows_epoch).strftime("%s")
+		end
+
+		@readonly.each do |path|
+			# Open3.popen3('sqlite3',path,'.schema') { |i,o,e| puts o.read }
+			# next
+			#puts "Fetching from #{path}"
+			dbh = DBI.connect("DBI:SQLite3:#{path}")
+			sth = dbh.prepare(<<SQL)
+select urls.url, visit_time
+from visits
+join urls on visits.url = urls.id
+where length(title) > 0
+order by visit_time
+SQL
+			sth.execute
+			while r = sth.fetch
+				url, time = r
+				case url
+				when /google/, /benizi/, /webmail/, /reviews\/dashboard/
+				else
+					#puts "#{from_chrometime(time)} #{url}"
+					all_times << [ 'chromium', from_chrometime(time) ]
+				end
+			end
+			sth.finish
+			dbh.disconnect
+		end
+	end
+end
+
+all_times.select {|t| t[-1] >= min_date }.each do |info|
 	label, t = info
 	r = Time.at(t - t.to_i % (min_chunk * 60))
 	wk = r.strftime("%Y week %U")
