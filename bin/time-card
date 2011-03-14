@@ -1,0 +1,118 @@
+#!/usr/bin/ruby
+
+require 'pp'
+
+now = Time.new
+two_weeks_ago = now - 86400 * 7 * 2
+times = {}
+min_max = {}
+min_chunk = 10
+abort "min_chunk should divide 60 (but is #{min_chunk})" if 60 % min_chunk != 0
+
+@wk_fmt = '%Y week %U'
+@day_fmt = '%Y-%m-%d - %a'
+@blk_fmt = '%H:%M'
+
+all_times = []
+
+ARGF.each do |line|
+	m = line.match(/^: (\d+):\d+;/) or next
+	all_times << [ 'hist', Time.at(m[1].to_i) ]
+end
+
+begin
+	require 'rubygems'
+	require 'dbi'
+	dbh = DBI.connect('DBI:SQLite3:' + (ENV['HOME'] or abort 'home?') + '/.vim.local/timetrack.sqlite3')
+	sth = dbh.prepare('select time from edited_files')
+	sth.execute
+	while r = sth.fetch
+		all_times << [ 'vim', Time.at(r[0].to_i) ]
+	end
+	sth.finish
+	dbh.disconnect
+end
+
+all_times.select {|t| t[-1] >= two_weeks_ago }.each do |info|
+	label, t = info
+	r = Time.at(t - t.to_i % (min_chunk * 60))
+	wk = r.strftime("%Y week %U")
+	day = r.strftime("%Y-%m-%d - %a")
+	block = r.strftime("%H:%M")
+
+	min_max[day] ||= {}
+	mmd = min_max[day]
+	mmd[:min] ||= t
+	mmd[:max] ||= t
+	mmd[:min] = t if t < mmd[:min]
+	mmd[:max] = t if t > mmd[:max]
+
+	times[wk] ||= {}
+	times[wk][day] ||= {}
+	times[wk][day][block] ||= 0
+	times[wk][day][block] += 1
+	# times[f] << t.strftime("%Y-%m-%d %H:%M")
+end
+
+times.keys.sort.each do |wk|
+	puts '',wk
+	times[wk].keys.sort.each do |day|
+		h = times[wk][day]
+		(0..23).each do |hr|
+			(0...60).each do |min|
+				next if 0 != min % min_chunk
+				h[sprintf "%02d:%02d", hr, min] ||= 0
+			end
+		end
+		x = {}
+		h.each do |k,v|
+			hr = k[0,2].to_i
+			newk = k # hr < 9 ? "<<:" << k[3,2] : hr > 20 ? ">>:" << k[3,2] : k # (9..20).include?(hr) ? k : "xx:xx"
+			x[newk] ||= 0
+			x[newk] += v
+		end
+		h = x
+
+		ordered = h.keys.sort
+		# Unicode box-drawing chars: 0x2502 = vertical line, ones in @vals are shaded boxes
+		sep = [ 0x2502 ].pack("U")
+		@vals = [ [ 0, 0x20 ], [ 1, 0x2591 ], [ 3, 0x2592 ], [ 7, 0x2593 ], [ 10, 0x2588 ] ].reverse
+		def val_to_chr(val)
+			@vals.each do |x|
+				v, c = x
+				return [c].pack("U") if val >= v
+			end
+			return '-'
+		end
+
+		hourline = []
+		minuteline = []
+		timeline = []
+
+		chunk = 60 / min_chunk
+		ordered.each_slice(chunk) do |keys|
+			hourline << sep
+			minuteline << sep
+			timeline << ''
+			keys.each_with_index do |x,i|
+				hourline << (i > 2 ? ' ' : i > 0 ? '' : x[0,2])
+				minuteline << (i > 0 ? x[3,2] : '  ')
+				timeline << (h[x].to_i > 0 ? sprintf((val_to_chr h[x]) * 1) : ' ')
+			end
+		end
+
+		# hourline << ' ' + day
+		puts "#{day} min(#{min_max[day][:min].strftime("%H:%M:%S")}) max(#{min_max[day][:max].strftime("%H:%M:%S")})"
+		lines = ['','']
+		while hourline.length > 0
+			[ hourline, timeline ].each_with_index do |arr,i|
+				lines[i] << arr.shift(1 + chunk).join('')
+			end
+			if lines[0].length > 120 || lines[0].length > (chunk + 1) * 13 || hourline.length == 0
+				lines.each { |x| puts x }
+				lines = ['','']
+			end
+		end
+		#[ hourline, timeline ].each { |arr| puts arr.join('') }
+	end
+end
