@@ -5,19 +5,21 @@ require 'ostruct'
 require 'optparse'
 
 opts = OpenStruct.new
-opts.use = OpenStruct.new
-opts.use.histfile = false
-opts.use.vimtrack = false
-opts.use.chromium = false
+use = { :histfile => false, :vimtrack => false, :chromium => false }
 opts.cutoff = 14
 opts.chunk = 10
 optparse = OptionParser.new do |o|
-	o.on('-h') { opts.use.histfile = true }
-	o.on('-v') { opts.use.vimtrack = true }
-	o.on('-c') { opts.use.chromium = true }
+	o.on('-h') { use[:histfile] = true }
+	o.on('-v') { use[:vimtrack] = true }
+	o.on('-c') { use[:chromium] = true }
 	o.on('--cutoff') { opts.cutoff = 14 }
 	o.on('--chunk') { opts.chunk = 10 }
 end.parse!(ARGV)
+
+unless use.select { |k,v| v }.length > 0
+	use.each { |k,v| use[k] = true }
+	ARGV << "#{ENV['HOME']}/.historyfile" if ARGV.size.zero?
+end
 
 now = Time.new
 min_date = now - 86400 * opts.cutoff
@@ -33,14 +35,14 @@ abort "min_chunk should divide 60 (but is #{min_chunk})" if 60 % min_chunk != 0
 
 all_times = []
 
-if opts.use.histfile
+if use[:histfile]
 	ARGF.each do |line|
 		m = line.match(/^: (\d+):\d+;/) or next
 		all_times << [ 'hist', Time.at(m[1].to_i) ]
 	end
 end
 
-if opts.use.vimtrack
+if use[:vimtrack]
 	begin
 		require 'rubygems'
 		require 'dbi'
@@ -57,7 +59,7 @@ if opts.use.vimtrack
 	end
 end
 
-if opts.use.chromium
+if use[:chromium]
 	begin
 		require 'find'
 		require 'open3'
