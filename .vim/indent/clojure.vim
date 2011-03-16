@@ -1,0 +1,1 @@
+/home/bhaskell/hg/vimclojure/vim/indent/clojure.vim

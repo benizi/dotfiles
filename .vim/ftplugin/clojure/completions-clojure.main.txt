@@ -1,0 +1,1 @@
+/home/bhaskell/hg/vimclojure/vim/ftplugin/clojure/completions-clojure.main.txt
