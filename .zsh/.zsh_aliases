@@ -4,11 +4,12 @@ alias bg=' builtin bg'
 alias rehash=' builtin rehash'
 
 # keep shell history separate
-alias bash='HISTFILE=$zsh_dirs[-1]/bash-history bash'
-alias csh='HISTFILE=$zsh_dirs[-1]/csh-history csh'
-alias ksh='HISTFILE=$zsh_dirs[-1]/ksh-history ksh'
-alias tcsh='HISTFILE=$zsh_dirs[-1]/tcsh-history tcsh'
-alias sh='HISTFILE=$zsh_dirs[-1]/sh-history sh'
+() {
+	local shell
+	for shell in {ba,c,k,tc,}sh ; do
+		alias $shell='HISTFILE=$zsh_dirs[-1]/'"${shell}-history $shell"
+	done
+}
 
 # no globbing for some commands
 alias cave='noglob cave'
