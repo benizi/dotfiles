@@ -1,0 +1,64 @@
+#!/usr/bin/ruby
+
+require 'open3'
+require 'optparse'
+
+opt = {
+	:match => [],
+	:limit => 20,
+	:tag => 'sel',
+	:cmd => [],
+}
+optparse = OptionParser.new do |o|
+	o.on('--pattern PATTERN') { |p| opt[:match] << p }
+	o.on('--limit N') { |n| opt[:limit] = n.to_f }
+	o.on('--tag TAG') { |t| opt[:tag] = t }
+	o.on('-v') { opt[:verbose] = true }
+end
+optparse.parse!(ARGV)
+
+until ARGV.empty?
+	case ARGV[0]
+	when /^\//
+		opt[:match] << eval(ARGV.shift)
+	else
+		break
+	end
+end
+opt[:cmd] += ARGV
+
+pid = nil
+unless opt[:cmd].empty?
+	unless fork
+		exit unless fork
+		exec(*opt[:cmd])
+		abort "Error executing command (#{opt[:cmd].join(' ')})"
+	end
+end
+
+start = Time.now
+Open3.popen3(*%w{wmiir read /event}) do |i,o,e|
+	while x = o.readline
+		x.chomp!
+		case x
+		when /^CreateClient (0x[\da-f]+)$/
+			c = $1
+			props = Open3.popen3('wmiir','read',"/client/#{c}/props") do |ki,ko,ke|
+				ko.read
+			end
+			opt[:match].each do |m|
+				puts "Testing #{props} against #{m}" if opt[:verbose]
+				if m.kind_of?(String)
+					puts "As String" if opt[:verbose]
+					next unless props.include?(m)
+				else
+					puts "Using ===" if opt[:verbose]
+					next unless m === props
+				end
+				puts "Matched!" if opt[:verbose]
+				exec('wmiir','xwrite',"/client/#{c}/tags",opt[:tag])
+			end
+		end
+		exit if Time.now - start > opt[:limit]
+	end
+end
