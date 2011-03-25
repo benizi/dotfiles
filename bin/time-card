@@ -14,7 +14,18 @@ optparse = OptionParser.new do |o|
 	o.on('-c') { use[:chromium] = true }
 	o.on('--cutoff') { opts.cutoff = 14 }
 	o.on('--chunk') { opts.chunk = 10 }
+	o.on('-w N') { |n| opts.width = n.to_i }
+	o.on('--whour N') { |n| opts.whour = n.to_i }
 end.parse!(ARGV)
+
+if not opts.width and not opts.whour
+	opts.width = 120
+	opts.whour = 13
+elsif opts.width
+	opts.whour = 30
+elsif opts.whour
+	opts.width = 10000
+end
 
 unless use.select { |k,v| v }.length > 0
 	use.each { |k,v| use[k] = true }
@@ -36,6 +47,7 @@ abort "min_chunk should divide 60 (but is #{min_chunk})" if 60 % min_chunk != 0
 all_times = []
 
 if use[:histfile]
+	ARGV << ENV['HOME']+'/.historyfile' if ARGV.empty?
 	ARGF.each do |line|
 		m = line.match(/^: (\d+):\d+;/) or next
 		all_times << [ 'hist', Time.at(m[1].to_i) ]
@@ -197,7 +209,7 @@ times.keys.sort.each do |wk|
 			[ hourline, timeline ].each_with_index do |arr,i|
 				lines[i] << arr.shift(1 + chunk).join('')
 			end
-			if lines[0].length > 120 || lines[0].length > (chunk + 1) * 13 || hourline.length == 0
+			if lines[0].length > opts.width || lines[0].length > (chunk + 1) * opts.whour || hourline.length == 0
 				lines.each { |x| puts x }
 				lines = ['','']
 			end
