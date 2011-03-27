@@ -29,6 +29,7 @@ package Fuse;
 use Git;
 use Data::Dumper;
 use IPC::Run 'run';
+use Time::Local;
 sub umount { run [fusermount=>'-u'=>$::mount_point] }
 $SIG{INT} = sub { exit };
 $SIG{HUP} = sub { exit };
@@ -49,7 +50,7 @@ use POSIX qw/:errno_h ENOENT/;
 sub _de { $::debug or return; warn "", (caller(1))[3], "(", map(defined()?$_:"<undef>",@_), ")\n"; }
 sub _branches { my @br = $git->command('branch'); s{^..}{} and s{/}{$::slash}g for @br; @br }
 my %special;
-BEGIN { $special{$_}++ for qw/.index .working/; }
+BEGIN { $special{$_}++ for qw/.index .working .bydate/; }
 my %cached_svn_revs;
 sub _rev {
 	my ($rev, $subst) = @_;
@@ -79,6 +80,7 @@ sub _parts {
 	my @parts = split m{/}, $fn, -1;
 	shift @parts;
 	my $branch = shift @parts;
+	$branch .= '/'.shift(@parts) if $branch eq '.bydate';
 	my $dir = join '/', @parts;
 	($fn, $branch, $dir)
 }
@@ -86,7 +88,7 @@ sub _lsfile {
 	my $orig_fn = shift;
 	my ($fn, $branch, $dir) = _parts $orig_fn;
 	my @got;
-	$branch = _rev $branch if $branch =~ /[^\da-f]/;
+	$branch = _rev $branch if $branch !~ /^[\da-f]{40}$/;
 	for ($git->command('ls-tree', '--long', $branch, '--', $dir)) {
 		my ($ptss, $name) = split /\t/;
 		if ($name =~ s/^"//) {
@@ -167,7 +169,12 @@ sub _fakestat {
 		$perm |= 0777;
 	}
 	my @times;
-	if ($::notime) {
+	my @intimes = qw/atime mtime ctime/;
+	if ($$info{times} or grep defined, @$info{@intimes}) {
+		@times = ($$info{times}) x 3;
+		my $now;
+		$times[$_] //= $$info{$intimes[$_]} // ($now //= time) for 0..$#times;
+	} elsif ($::notime) {
 		@times = (time) x 3;
 	} else {
 		@times = _getbranchtime $info;
@@ -179,6 +186,8 @@ sub _actual {
 	return unless $rev eq '.working';
 	join '/', $git->wc_path, $dir;
 }
+our @date_defaults;
+BEGIN { @date_defaults = (0, 1, 1, 0, 0, 0); }
 sub getattr {
 	&_de;
 	my $fn = shift;
@@ -190,6 +199,14 @@ sub getattr {
 		if (my $actual = _actual '.working', $dir) {
 			@ret = stat $actual;
 		}
+	} elsif ($fn =~ m{^/\.bydate((?:/\d+){1,6})$}) {
+		my @time = split '/', substr $1, 1;
+		$time[0] -= 1900 if @time;
+		$time[1] -= 1 if @time > 1;
+		push @time, @date_defaults[@time..$#date_defaults];
+		@time = reverse @time;
+		my $time = timelocal @time;
+		@ret = _fakestat {perm => 16384, times => $time};
 	} elsif ($fn =~ m{^/([^/]+)$}) {
 		my $rev = $1;
 		@ret = _fakestat {perm => 16384} if _rev $rev;
@@ -214,6 +231,23 @@ sub getdir {
 		opendir my $d, $git->wc_path.'/'.$dir or return -$!;
 		@files = readdir $d;
 		close $d;
+	} elsif ($fn =~ m{^/\.bydate((?:/\d+){0,6})$}) {
+		my (@YmdHMS) = split '/', substr $1, 1;
+		my @time_args;
+		if (@YmdHMS) {
+			my @since = (@YmdHMS, @date_defaults[@YmdHMS..$#date_defaults]);
+			my @until = (@YmdHMS, @date_defaults[@YmdHMS..$#date_defaults]);
+			$until[$#YmdHMS]++;
+			push @time_args, map sprintf('--%s=%04d-%02d-%02d %02d:%02d:%02d', @$_),
+				[ after => @since ],
+				[ before => @until ];
+		}
+		if (my @revs = $git->command('rev-list', '--all', @time_args)) {
+			my ($beg, $end) = map [(localtime $_)[reverse 0..5]], map _sha1_commit_time($_), @revs[-1,0];
+			$$_[0] += 1900 for $beg, $end;
+			$$_[1] += 1 for $beg, $end;
+			@files = map sprintf("%02d", $_), ($$beg[@YmdHMS]..$$end[@YmdHMS]);
+		}
 	} else {
 		push @files, map $$_{name}, _lsfile "$fn/";
 		$::debug and print Dumper [_lsfile "$fn/"], [@files];
