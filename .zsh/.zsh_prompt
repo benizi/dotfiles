@@ -4,6 +4,7 @@
 function __i_am_admin () {
 	local admin=1
 	[ -n "$INCYG" -a "$USERNAME" = "Administrator" ] && admin=0
+	[ -n "$INCYG" ] && [[ "$(id)" = *,0'(root)',* ]] && admin=0
 	[ "$UID" = "0" ] && admin=0
 	return $admin
 }
