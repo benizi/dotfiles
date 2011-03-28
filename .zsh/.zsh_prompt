@@ -1,3 +1,6 @@
+# TODO: vcs_info stuff
+# autoload -Uz vcs_info
+# zstyle ':vcs_info:*' disable cdv darcs mtn p4 svk tla
 function __i_am_admin () {
 	local admin=1
 	[ -n "$INCYG" -a "$USERNAME" = "Administrator" ] && admin=0
