@@ -42,11 +42,17 @@ while (( $#test_git && n < 20 )) ; do
 	done
 done
 if (( $#git_dir )) ; then
-	local pretty_git=$(cd $git_dir:h ; print -P '%~')
-	_extra+=( "$pretty_git:$(git --git-dir=$git_dir branch | grep '^[*]' | cut -c3-)" )
+	local -a pretty_git
+	local dir=$(cd $git_dir:h ; print -P '%~')
+	[[ $dir = $(print -P '%~') ]] || pretty_git+=( $dir )
+	local branch="$(git --git-dir=$git_dir branch | grep '^[*]' | cut -c3-)"
+	[[ "$branch" = master ]] || pretty_git+=( $branch )
+	(( $#pretty_git )) || pretty_git+=( . )
+	_extra+=( ${(j.:.)pretty_git} )
 fi
+[[ ! -e $PWD ]] && _extra+=( "!deleted!" )
+(( $#_extra )) && __extra="[$_extra]" || __extra=''
 PROMPT='%{${PSCOLOR}'$_ps_color'%}%n@%m'$_screen' %~'$__extra$_pschar'%{$NOCOLOR%} '
-(( $#_extra )) && RPROMPT='%{${PSCOLOR}'$_ps_color'%}'$_extra'%{$NOCOLOR%}' || unset RPROMPT
 }
 
 TITLESEP='│' # ceçi n'est pas un pipe
