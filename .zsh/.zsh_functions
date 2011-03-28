@@ -71,3 +71,4 @@ function instagit () {
 }
 function current-linux () { cd $(readlink -f /lib/modules/$(uname -r)/source) }
 function message () { notify-send -t 0 $argv }
+function uniq () { command uniq $argv | perl -lpwe 's/^\s*(\d+)\s/$1\t/' }
