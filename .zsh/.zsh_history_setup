@@ -7,4 +7,5 @@ if (( UID )) ; then
 	export HISTFILE=~/.historyfile
 else
 	export HISTFILE=$zsh_dirs[-1]/$LOGNAME.historyfile
+	[[ ! -f $HISTFILE ]] && touch $HISTFILE && chown --reference=${(%):-%N} $HISTFILE
 fi
