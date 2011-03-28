@@ -3,4 +3,6 @@
 _ssh_ip=$SSH_CLIENT[(w)1]
 [ -z "$_ssh_ip" ] && return
 [ -t 0 ] && _extra="" || _extra=" pinger"
-perl -lwe 'print join " ", time, shift' "$_ssh_ip$_extra" | tee -a ~/.ssh/log-of-ips
+_ssh_log=~/.ssh/log-of-ips
+perl -lwe 'print join " ", time, shift' "$_ssh_ip$_extra" >> $_ssh_log
+(( $-[(I)i] )) && perl -lnwe 'print if eof' $_ssh_log
