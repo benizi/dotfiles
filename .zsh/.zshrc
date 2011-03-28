@@ -1,4 +1,19 @@
-bindkey -e
+#bindkey -e
+
+# emacs mode bindings that I still want...
+bindkey "^P" up-line-or-history
+bindkey "^N" down-line-or-history
+
+bindkey "^A" beginning-of-line
+bindkey "^E" end-of-line
+bindkey "^F" forward-char
+bindkey "^[f" forward-word
+bindkey "^B" backward-char
+bindkey "^[b" backward-word
+bindkey "^[^?" backward-kill-word
+bindkey "^K" kill-line
+bindkey "^_" undo
+
 bindkey "^T" expand-word
 (( $+widgets[history-incremental-pattern-search-backward] )) \
 && bindkey "^R" history-incremental-pattern-search-backward
