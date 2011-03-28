@@ -82,3 +82,22 @@ function precmd () {
 	term_with_title || return
 	fancytitle ""
 }
+() {
+function zle-line-init zle-keymap-select {
+	local -A seqs
+	if [[ $TERM = rxvt* ]] ; then
+		seqs+=( cmd $'\e]12;1\a' )
+		seqs+=( ins $'\e]12;0\a' )
+	else
+		seqs+=( cmd $terminfo[cvvis] )
+		seqs+=( ins $terminfo[cnorm] )
+	fi
+	case $KEYMAP in
+		vicmd) print -rn -- $seqs[cmd] ;;
+		main|viins) print -rn -- $seqs[ins] ;;
+	esac
+}
+# need line-init for cancelled commands
+zle -N zle-line-init
+zle -N zle-keymap-select
+}
