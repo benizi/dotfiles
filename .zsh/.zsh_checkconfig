@@ -1,0 +1,6 @@
+function () {
+	local cfg
+	for cfg in .Xdefaults .gitconfig .screenrc .vim .vimrc ; do
+		[[ -e ~/$cfg ]] || warn "$cfg doesn't exist"
+	done
+}
