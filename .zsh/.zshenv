@@ -63,20 +63,31 @@ export PATH
 manpath=( /usr/share/man /usr/csl/man /usr/cogsci/man /usr/cogsci/X11/man /usr/dt/man /usr/openwin/man /usr/man /usr/local/man )
 manpath=( ${^manpath}(N-/) )
 export PINERC='{dovecot.benizi.com/ssl/user=bhaskell}pinerc'
+
+if_exists () {
+	local dir t=-d var=$1
+	shift
+	for dir ; do
+		case $dir in -f|-d) t=$dir ; continue ;; esac
+		eval "[[ $t ${(qqq)dir} ]]" && typeset -x $var=$dir
+	done
+}
+
 umask 077
 export WORDCHARS='*?_-.[]~&;!#$%^(){}<>'
-export PERL5LIB=$HOME/Usable
+if_exists PERL5LIB ~/Usable
 LD_LIBRARY_PATH=$HOME/lib${LD_LIBRARY_PATH+:$LD_LIBRARY_PATH}
 typeset -T LD_LIBRARY_PATH ld_library_path
 typeset -U ld_library_path
 export LD_LIBRARY_PATH
-export MOZ5PROF=/home/bhaskell/.mozilla/firefox/qk8tugb3.default
-export AXIS2_HOME=/opt/axis2-1.3
+if_exists MOZ5PROF ~/.mozilla/firefox/default
+if_exists AXIS2_HOME /opt/axis2-1.3
 export LESS="-R -i -M --shift 5 -F -X -j4"
 (( $+commands[lesspipe.sh] )) && export LESSOPEN="|lesspipe.sh %s"
 export PAGER=less
 export auto_proxy=http://localhost/proxy.pac
-export MATLAB=/home/bhaskell/MATLAB/7.4/lib/matlab7
-export PYTHONSTARTUP=~/.python/startup
-export PYTHONPATH=~/python
+if_exists MATLAB ~/MATLAB/7.4/lib/matlab7
+if_exists PYTHONSTARTUP -f ~/.python/startup
+if_exists PYTHONPATH ~/python
+if_exists CLOJURE_EXT ~/git/clojure
 run_local_versions
