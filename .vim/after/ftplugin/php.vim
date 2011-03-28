@@ -12,3 +12,7 @@ let php_folding = 2
 au Syntax php syn case match | syn keyword phpTodo DEBUG contained | syn case ignore
 setlocal makeprg=php\ \%:p
 setl efm=''
+fun! MyFoldText()
+   return '+'.v:folddashes.' '.(1 + v:foldend - v:foldstart).' lines ['.v:foldstart.'-'.v:foldend.']: '.substitute(foldtext(),'^[+\-]*\s*\d*\s*lines:\s*','','')
+endfun
+setl fdt=MyFoldText()
