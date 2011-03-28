@@ -6,7 +6,7 @@ alias rehash=' builtin rehash'
 # keep shell history separate
 () {
 	local shell
-	for shell in {ba,c,k,tc,}sh ; do
+	for shell in {ba,c,fi,k,tc,}sh ; do
 		alias $shell='HISTFILE=$zsh_dirs[-1]/'"${shell}-history $shell"
 	done
 }
