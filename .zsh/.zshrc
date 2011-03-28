@@ -28,6 +28,7 @@ export MAILCHECK=0
 autoload -U compinit
 autoload -Uz age
 autoload -Uz warn
+zmodload zsh/mathfunc 2>/dev/null
 if [ -f ~/.zcompdump.debugging ] ; then
 	rm -f ~/.zcompdump
 	fpath=( ${^zsh_dirs}/Completion(N/) ~/git/zsh/Completion/**/*(N/) $fpath )
