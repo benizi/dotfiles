@@ -9,3 +9,4 @@ else
 	export HISTFILE=$zsh_dirs[-1]/$LOGNAME.historyfile
 	[[ ! -f $HISTFILE ]] && touch $HISTFILE && chown --reference=${(%):-%N} $HISTFILE
 fi
+TRAPUSR1 () { fc -W $zsh_dirs[-1]/emergency-zsh-backup-$(date +%Y%m%d-%H%M%S)-$$ }
