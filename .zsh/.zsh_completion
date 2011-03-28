@@ -19,3 +19,14 @@ zstyle ':completion:*:ssh:*' users ${^_ssh_users}
 zstyle ':completion:*:git:*' wanted-commands all
 # add custom git commands to completion
 zstyle ':completion:*:git:*' user-commands ${${(k)commands[(I)git-*]}#git-}
+
+# from mikachu
+zstyle ':completion:*:descriptions' format "%B---- %d%b"
+zstyle ':completion:*:messages' format '%B%U---- %d%u%b'
+zstyle ':completion:*:warnings' format '%B%F{9}---- no match for: %d%f%b'
+zstyle ':completion:*:corrections' format '%B---- %d %F{11}(errors: %e)%f%b'
+zstyle ':completion:*:options' description 'yes'
+zstyle ':completion:*:options' auto-description '%d'
+zstyle ':completion:*' separate-sections 'yes'
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*' prompt 'errors: %e'
