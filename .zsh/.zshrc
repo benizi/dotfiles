@@ -35,7 +35,11 @@ if [ -f ~/.zcompdump.debugging ] ; then
 fi
 fpath+=( $^zsh_dirs/autoload(N/) )
 compinitargs=( -d ~/.zcompdump )
-[ -n "$INCYG" ] && compinitargs+=( -i )
+() {
+	local -a notmine
+	notmine=( $fpath(N^U) )
+	(( $+INCYG )) || (( $#notmine )) && compinitargs+=( -i )
+}
 compinit $compinitargs
 [ -n "$INCYG" -a -n "$INWIN7" ] && export CYGWIN=nontsec
 
