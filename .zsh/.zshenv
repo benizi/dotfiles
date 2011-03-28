@@ -51,6 +51,7 @@ for user in benhaskell bhaskell USC/bhaskell ; do
 	pathtest+=( /home/$user/bin-shared /home/$user/bin )
 done
 pathtest+=( $HOME/python/bin $HOME/bin )
+(( $+INSOL )) && pathtest+=( /usr/xpg4/bin )
 pathtest+=( {/usr{/local,},}/{s,}bin /opt/bin )
 pathtest+=( $HOME/bin/dslinux/bin /usr/games/bin /home/bhaskell/wn/bin /home/bhaskell/qmail/bin /var/qmail/bin /usr/kde/4.0/bin /usr/X11R6/bin )
 pathtest+=( $path )
