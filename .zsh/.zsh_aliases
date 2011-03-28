@@ -82,3 +82,14 @@ hash -d chrome=~benwin/"Local Settings/Application Data/Google/Chrome"
 hash -d quicklaunch=~benwin/"Application Data/Microsoft/Internet Explorer/Quick Launch"
 
 (( $+commands[xwininfo] )) && alias x-click-id='xwininfo | grep Window.id | cut -f4 -d" "'
+
+() {
+local dir
+local -a target
+for dir in ${^zsh_dirs}/(#i)[[:alpha:]]*(N@-/) ; do
+	[[ -e $dir ]] || continue
+	target=( $dir(+A) )
+	(( $#target )) || continue
+	hash -d ${dir:t}=$target[1]
+done
+}
