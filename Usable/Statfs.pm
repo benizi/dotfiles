@@ -54,7 +54,7 @@ sub statfs {
 #		}
 	} else {
 		warn "statfs failed: $!\n" and return if syscall &SYS_statfs, $path, $stat;
-		my $unpack = $long ? 'q[16]' : 'l[16]';
+		my $unpack = $long ? 'Q[16]' : 'l[16]';
 		@vals = unpack $unpack, $stat;
 		splice @vals, -5;
 	}
