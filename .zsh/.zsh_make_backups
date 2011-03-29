@@ -29,3 +29,27 @@ function () {
 		fi
 	done
 }
+_remove_prefixdups () {
+	local i a b len md5
+	local -a rm files
+	local cmd hasall=true
+	for cmd in md5sum bunzip2 head wc ; do
+		(( $+commands[$cmd] )) || hasall=false
+	done
+	$hasall || return 1
+	rm=( rm )
+	(( $+dry )) && rm=( echo $rm )
+	files=( $argv(Om) )
+	for (( i=1 ; i<$#files ; i+=1 )) ; do
+		a=$files[$i]
+		b=$files[$i+1]
+		len="$(bunzip2 -d < $a | LC_ALL=C wc -c)"
+		md5="$(bunzip2 -d < $a | md5sum)"
+		if [[ "$(bunzip2 -d < $b | head -c $len | md5sum)" != $md5 ]] ; then
+			echo nope $a not a prefix of $b
+			(( $+veryverbose )) && diff --side-by-side =(bunzip2 -d < $a) =(bunzip2 -d < $b) | less
+		else
+			$rm -v $a
+		fi
+	done
+}
