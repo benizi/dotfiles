@@ -5,6 +5,7 @@ endif
 let s:override_c = { 'makeprg': 'gcc %:p -o %:p:r && %:p:r' }
 let s:override_cpp = { 'makeprg': 'g++ %:p -o %:p:r && %:p:r' }
 let s:override_pl = { 'makeprg': 'perl' }
+let s:override_xdefaults = { 'makeprg': 'xrdb < %:p' }
 
 fun! s:FindFromModeline(...)
 	let maxsearch = a:0 ? a:1 : 10
