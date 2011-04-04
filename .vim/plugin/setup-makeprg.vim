@@ -2,8 +2,8 @@ if exists('g:loaded_setup_makeprg')
 	finish
 endif
 
-let s:override_c = { 'makeprg': 'gcc %:p -o %:p:r && %:p:r', 'prefix': 0 }
-let s:override_cpp = { 'makeprg': 'g++ %:p -o %:p:r && %:p:r', 'prefix': 0 }
+let s:override_c = { 'makeprg': 'gcc %:p -o %:p:r && %:p:r' }
+let s:override_cpp = { 'makeprg': 'g++ %:p -o %:p:r && %:p:r' }
 let s:override_pl = { 'makeprg': 'perl' }
 
 fun! s:FindFromModeline(...)
@@ -39,7 +39,7 @@ fun! SetupMakePrg(...)
 	let found = s:FindFromModeline()
 	if len(found)
 		let prog = found[0]
-		let prefix = get(found,1,0)
+		let prefix = get(found,1,len(matchlist(prog,'%'))?0:1)
 	else
 		if exists('g:override_makeprg_{&ft}')
 			let from = g:override_makeprg_{&ft}
@@ -68,7 +68,7 @@ fun! SetupMakePrg(...)
 			let from = { 'makeprg': &ft, 'prefix': 1 }
 		endif
 		let prog = get(from, 'makeprg', &ft)
-		let prefix = get(from, 'prefix', 1)
+		let prefix = get(from, 'prefix', len(matchlist(prog, '%')) ? 0 : 1)
 	endif
 	let &l:makeprg = prog
 	if prefix
