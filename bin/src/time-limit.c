@@ -93,7 +93,7 @@ int main (int argc, char **argv, char **env) {
 				} while (wrap++);
 		}
 	}
-	if (nonpass >= argc-1) {
+	if (nonpass > argc-1) {
 		fprintf(stderr,usage,argv[0]);
 		return 4;
 	}
