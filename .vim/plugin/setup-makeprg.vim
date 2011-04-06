@@ -40,7 +40,7 @@ fun! SetupMakePrg(...)
 	let found = s:FindFromModeline()
 	if len(found)
 		let prog = found[0]
-		let prefix = get(found,1,len(matchlist(prog,'%'))?0:1)
+		let prefix = 0
 	else
 		if exists('g:override_makeprg_{&ft}')
 			let from = g:override_makeprg_{&ft}
