@@ -64,6 +64,8 @@ where key='position'
 and collid=?
 SQL
 }
+# CollectionIdlists = collid, position, mid
+# CollectionAttributes = collid, key, value
 sub current {
 	$current // _single(<<SQL, {}, currlist);
 select col.position
@@ -97,7 +99,6 @@ group by al.value
 order by position$desc
 limit 1
 SQL
-
 	$id // ($rev ? total : 0);
 }
 sub albumnext { _next_prev 0 }
