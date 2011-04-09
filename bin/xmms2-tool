@@ -78,17 +78,21 @@ SQL
 sub _next_prev {
 	my $rev = shift;
 	my ($gtlt, $desc) = $rev ? ('<', ' desc') : ('>', '');
-	my $id = _single(<<SQL, {}, (current) x 2);
-select min(position) as pos
+	my $id = _single(<<SQL, {}, (current, currlist) x 2);
+select 1+min(position)
 from CollectionIdlists as c
 join Media as u on (u.id=mid and u.key='url')
-left join Media as a on (a.id=u.id and a.key='artist')
-left join Media as al on (al.id=u.id and al.key='album')
+join Media as a on (a.id=mid and a.key='artist')
+join Media as al on (al.id=mid and al.key='album')
 where position $gtlt ?
-and al.value not in (select m.value
+and collid=?
+and al.value <> (
+	select al.value
 	from CollectionIdlists as c
-	join Media as m on (mid=m.id and m.key='album')
-	where position=?)
+	join Media as al on (mid=al.id and al.key='album')
+	where position=?
+	and collid=?
+)
 group by al.value
 order by position$desc
 limit 1
