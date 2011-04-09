@@ -25,7 +25,7 @@ my %defaults = (
 		variant => 'intl',
 		keycodes => 'evdev',
 		reset => 1,
-		options => [ qw/lv3:ralt_switch altwin:super_win/ ],
+		options => [ qw/lv3:ralt_switch altwin:super_win terminate:ctrl_alt_bksp/ ],
 	},
 );
 my @defopt = qw/layout variant/;
