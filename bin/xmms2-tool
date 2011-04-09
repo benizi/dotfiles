@@ -65,11 +65,13 @@ and collid=?
 SQL
 }
 sub current {
-	$current // _single(<<SQL, {});
-select id
-from media
-where key='laststarted'
-order by intval desc
+	$current // _single(<<SQL, {}, currlist);
+select col.position
+from media as las
+join CollectionIdlists as col on mid=las.id
+where las.key='laststarted'
+and col.collid = ?
+order by las.intval desc
 limit 1;
 SQL
 }
