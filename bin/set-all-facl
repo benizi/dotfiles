@@ -28,14 +28,25 @@ push @perms, grep $do_current_group, "g:".getgrgid $(;
 /^(?:d:.*:.*:.*|[ug]:.*:.*)$/ or $_ .= ":$permbits" for @perms;
 @perms or die "No default/user/group permissions specified\n";
 @args or die "No files/directories specified\n";
-my @cmd = (
-	setfacl =>
-	grep($recursive, '-R'),
-	-m => join(',', @perms),
-	@args
-);
-$< and $do_sudo and @cmd = ( sudo => @cmd );
-if ($dry or $verbose) {
-	print "[$_]=$cmd[$_]\n" for 0..$#cmd;
+my (@with_defaults, @no_defaults);
+(-d) ? (push @with_defaults, $_) : (push @no_defaults, $_) for @args;
+for (
+	[ 1, @no_defaults ],
+	[ 0, @with_defaults ],
+) {
+	my ($filter_defaults, @paths) = @$_;
+	next unless @paths;
+	my @use_perms = @perms;
+	@use_perms = grep !/^d:/, @use_perms if $filter_defaults;
+	my @cmd = (
+		setfacl =>
+		grep($recursive, '-R'),
+		-m => join(',', @use_perms),
+		@paths
+	);
+	$< and $do_sudo and @cmd = ( sudo => @cmd );
+	if ($dry or $verbose) {
+		print "[$_]=$cmd[$_]\n" for 0..$#cmd;
+	}
+	$dry or system { $cmd[0] } @cmd;
 }
-$dry or system { $cmd[0] } @cmd;
