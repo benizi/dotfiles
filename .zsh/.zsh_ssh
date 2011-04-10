@@ -14,7 +14,7 @@ function ssh_find_add () {
 	fi
 	ssh_find \
 	| perl -l0pe '' \
-	| env DISPLAY= xargs -0 ssh-add
+	| env -u DISPLAY xargs -0 ssh-add
 }
 function ssh_re_source () {
 	[ -r ~/ssh-script ] && . ~/ssh-script > /dev/null
