@@ -73,6 +73,16 @@ map <esc>m <C-W>_
 map <esc>- <C-W>-
 map <esc>= <C-W>+
 
+" Let C-w f open a nonexistent file if it fails to find one
+fun! OpenOrNewUnderCursor()
+	try
+		wincmd F
+	catch
+		new <cfile>
+	endtry
+endfun
+nnoremap <C-w>f call OpenOrNewUnderCursor()<CR>
+
 " Ctrl+Arrow = window movement
 map <C-Left> <C-W>h
 map <C-Down> <C-W>j
