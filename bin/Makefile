@@ -12,7 +12,7 @@ place-holder:	src/place-holder.c
 	mv $@.tmp $@
 
 %:	src/X11/%.c
-	gcc -Wall $(shell pkg-config --cflags x11) -o $@.tmp $< $(shell pkg-config --libs x11)
+	gcc -Wall -I$(HOME)/include $(shell pkg-config --cflags x11) -o $@.tmp $< $(shell pkg-config --libs x11)
 	mv $@.tmp $@
 
 x-active-id:	src/X11/x-active-id.c
