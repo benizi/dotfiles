@@ -123,7 +123,7 @@ fun! SetupSpacing(...)
 		return
 	endif
 	let b:setup_spacing = 1
-	if a:0 > 0
+	if a:0 && a:1 < 2
 		let homestyle = (a:1 ? 1 : 0)
 	else
 		let detected = DetectSpacing()
