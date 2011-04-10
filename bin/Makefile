@@ -27,5 +27,9 @@ NOW:	src/NOW.c
 	gcc -Wall -I../include -L../lib -o $@.tmp $< -lmyc
 	mv $@.tmp $@
 
+time-limit:	src/time-limit.c
+	gcc -Wall -I../include -L../lib -o $@.tmp $< -lmyc
+	mv $@.tmp $@
+
 echo:
 	echo $(basename $(allsource))
