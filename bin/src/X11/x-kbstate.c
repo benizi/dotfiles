@@ -16,13 +16,11 @@ int main(int argc, char **argv) {
 	}
 	if (!disp) return 1;
 	if (!XkbGetState(disp, XkbUseCoreKbd, &kbstate)) {
-		if (use_unicode) printf("│");
 		if (use_unicode) {
 			printbyteblock(kbstate.mods);
 		} else
 			for (i=7; i>=0; i--)
 				printf("%d", ((kbstate.mods >> i) & 1));
-		if (use_unicode) printf("│");
 		printf("\n");
 	} else {
 		printf("Request failed.\n");
