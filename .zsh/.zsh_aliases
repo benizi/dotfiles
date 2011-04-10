@@ -42,6 +42,7 @@ alias pfg='ps -ef | grep'
 if [[ $commands[alpine] != /usr/local/bin/alpine ]] ; then
 	alias alpine='titlep ALPINE ; alpine-svn -bail -p $PINERC'
 fi
+(( $+commands[parallel] )) && alias pvim='parallel -uXj1 vim'
 alias nacroread='acroread -openInNewWindow'
 alias noagent='env -u SSH_AGENT_PID -u SSH_AUTH_SOCK'
 alias ssh-noagent='noagent ssh'
