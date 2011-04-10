@@ -31,7 +31,8 @@ fun! DetectSpacing()
 	let expand_tabs = exists('g:spacing_expand_tabs') ? g:spacing_expand_tabs : 0
 	let default_spacing = exists('g:spacing_default') ? g:spacing_default : 4
 	let max_lines = exists('g:spacing_max_lines') ? g:spacing_max_lines : 1000
-	let max_consider = exists('g:spacing_max_spaces') ? g:spacing_max_spaces : 8
+	" TODO - fix this
+	let max_consider = exists('g:spacing_max_spaces') ? g:spacing_max_spaces : 5
 
 	let ret = []
 	if SetInModeline('ts')
