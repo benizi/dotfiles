@@ -12,10 +12,11 @@ optparse = OptionParser.new do |o|
 	o.on('-h') { use[:histfile] = true }
 	o.on('-v') { use[:vimtrack] = true }
 	o.on('-c') { use[:chromium] = true }
-	o.on('--cutoff') { opts.cutoff = 14 }
-	o.on('--chunk') { opts.chunk = 10 }
-	o.on('-w N') { |n| opts.width = n.to_i }
-	o.on('--whour N') { |n| opts.whour = n.to_i }
+	o.on('--cutoff N', Integer) { |n| opts.cutoff = n }
+	o.on('--chunk N', Integer) { |n| opts.chunk = n }
+	o.on('-w N', Integer) { |n| opts.width = n }
+	o.on('--whour N', Integer) { |n| opts.whour = n }
+	o.on('--urls') { opts.urls = true }
 end.parse!(ARGV)
 
 if not opts.width and not opts.whour
