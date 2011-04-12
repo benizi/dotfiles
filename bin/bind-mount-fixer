@@ -1,0 +1,57 @@
+#!/bin/zsh
+
+unset verbose
+for arg ; do
+	case $arg in
+		-v|--verbose) verbose=true ;;
+	esac
+done
+
+typeset -A points
+for dir in /var/git/amp/reorganization/*(N/) ; do
+	points+=( $dir /srv/www/$dir:t )
+done
+points+=( /var/git/amp/www/trunk /srv/www/htdocs )
+points+=( /var/git/amp/scripts /srv/scripts )
+points+=( /var/git/amp/edi/amp/edi /srv/edi )
+
+typeset -A mounted dst_mounted
+die () { print -r $'\e[31m'$*$'\e[0m' >&2 ; exit 1 }
+mount | grep /var/git/amp/ | grep bind | while read line ; do
+	print -r $line | while read src on dst t none opts ; do
+		[[ $on = on ]] || die "Bad line - $on isn't on:$line"
+		[[ $t = type ]] || die "Bad line - $type isn't type:$line"
+		[[ $none = none ]] || die "Bad line - $none isn't none:$line"
+		dst_mounted+=( $dst 1 )
+		if [[ $dst != $points[$src] ]] ; then
+			if [[ $src = */reorganization/* ]] ; then
+				echo umounting $src
+				sudo umount $dst
+			else
+				typeset src dst
+				die "WTF? $points[$src]"
+			fi
+		else
+			srci=$(stat -c %i $src)
+			dsti=$(stat -c %i $dst)
+			if [[ $srci = $dsti ]] ; then
+				(( $+verbose )) && echo "OK : $src -> $dst"
+				mounted+=( $src $dst )
+			fi
+		fi
+	done
+done
+
+for src in ${(k)points} ; do
+	(( $+mounted[$src] )) && continue
+	dst=$points[$src]
+	(( $+dst )) || die "Where to mount $src?"
+	if [[ -d $dst ]] ; then
+		echo remounting $src to $dst
+		(( $+dst_mounted[$dst] )) && sudo umount $dst
+	else
+		echo mkdir and mount $dst
+		sudo mkdir $dst
+	fi
+	sudo mount --bind $src $dst
+done

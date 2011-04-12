@@ -106,6 +106,7 @@ if use[:chromium]
 			Time.at(1e6 * time.to_i - @windows_epoch).strftime("%s")
 		end
 
+		url_debugging = { :reject => [], :accept => [] }
 		@readonly.each do |path|
 			# Open3.popen3('sqlite3',path,'.schema') { |i,o,e| puts o.read }
 			# next
@@ -121,15 +122,25 @@ SQL
 			sth.execute
 			while r = sth.fetch
 				url, time = r
+				status = :reject
 				case url
 				when /google/, /benizi/, /webmail/, /reviews\/dashboard/
 				else
 					#puts "#{from_chrometime(time)} #{url}"
 					all_times << [ 'chromium', from_chrometime(time) ]
+					status = :accept
 				end
+				url_debugging[status] << [ from_chrometime(time), url ] if opts.urls
 			end
 			sth.finish
 			dbh.disconnect
+		end
+	end
+	if opts.urls
+		[:reject,:accept].each do |status|
+			url_debugging[status].sort_by {|x| x[0] }.each do |t,u|
+				puts "#{status} #{t} #{u}"
+			end
 		end
 	end
 end
