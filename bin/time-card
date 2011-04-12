@@ -124,7 +124,7 @@ SQL
 				url, time = r
 				status = :reject
 				case url
-				when /google/, /benizi/, /webmail/, /reviews\/dashboard/
+				when /google/, /benizi/, /webmail/, /reviews[^\/]*\/dashboard/
 				else
 					#puts "#{from_chrometime(time)} #{url}"
 					all_times << [ 'chromium', from_chrometime(time) ]
