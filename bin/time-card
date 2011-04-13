@@ -111,7 +111,6 @@ if use[:chromium]
 		@readonly.each do |path|
 			# Open3.popen3('sqlite3',path,'.schema') { |i,o,e| puts o.read }
 			# next
-			#puts "Fetching from #{path}"
 			dbh = DBI.connect("DBI:SQLite3:#{path}")
 			sth = dbh.prepare(<<SQL)
 select urls.url, visit_time
@@ -127,7 +126,6 @@ SQL
 				case url
 				when /google/, /benizi/, /webmail/, /reviews[^\/]*\/dashboard/
 				else
-					#puts "#{from_chrometime(time)} #{url}"
 					all_times << [ 'chromium', from_chrometime(time) ]
 					status = :accept
 				end
