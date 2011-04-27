@@ -1,0 +1,24 @@
+#!/usr/bin/ruby
+
+rev = IO.popen('git rev-parse HEAD') { |io| io.read.chomp }
+repo = File.basename(Dir.pwd)
+
+def run(cmd)
+	warn "CMD=«#{cmd}»"
+	system(cmd)
+end
+
+case repo
+when 'zsh'
+	dest = "/tmp/zsh-r#{rev[0,8]}"
+	ENV['CFLAGS'] = '-g'
+	ENV['LIBLDFLAGS'] = ''
+	ENV['EXELDFLAGS'] = ''
+	run 'autoreconf'
+	run "./configure --enable-multibyte --prefix=#{dest}"
+	run 'make -j5'
+	run 'make install'
+	puts
+else
+	abort "Don't know how to make this repo\nvi =git-make +#{__LINE__}"
+end
