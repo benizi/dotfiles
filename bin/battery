@@ -1,0 +1,12 @@
+#!/bin/sh
+power=/sys/class/power_supply
+find $power/ -mindepth 1 | grep -q . || exit
+for bat in $power/BAT* ; do
+	now=$bat/charge_now
+	full=$bat/charge_full
+	if [ ! -f $now ] || [ ! -f $full ] ; then
+		echo -1
+	else
+		perl -lnwe 'if($a){print int(100*$a/$_)}else{$a=$_}' $now $full
+	fi
+done
