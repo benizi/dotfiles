@@ -29,7 +29,6 @@ sub ls_tree {
 	while (<$ls_tree>) {
 		chomp;
 		my ($mode, $type, $sha, $name) = /\A([0-7]{6}) (\S+) (\S+)\t(.*)\Z/;
-		# hmm... push @ret, join "\x00", $mode, $type, $sha, $name;
 		$name .= "/$sha" if $type eq 'tree';
 		push @ret, $name;
 	}

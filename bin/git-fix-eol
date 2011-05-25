@@ -1,0 +1,5 @@
+#!/bin/zsh
+cd "$(git rev-parse --git-dir)/.."
+git diff "$@" \
+| perl -nwe 'BEGIN{$pm=" ";} chomp; $fn = $1 if /^[+]{3} b\/([^\t]+)/; $pm = $1 if /^([+\-])/; print "$fn\0" if $pm eq "-" and /^\\ No newline/' \
+| xargs --no-run-if-empty -0 perl -i -pwe 'next unless eof; s/\r?\n//'

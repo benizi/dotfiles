@@ -1,0 +1,112 @@
+#!/usr/bin/env ruby
+require 'optparse'
+opts = {
+	:base => 'git-svn',
+}
+parser = OptionParser.new do |o|
+	o.on('--base BASE') { |b| opts[:base] = b }
+end
+parser.parse!(ARGV)
+
+rev = ARGV[0] || 'HEAD'
+
+@log = {}
+def revlog(rev)
+	unless @log[rev]
+		@log[rev] = IO.popen("git log --pretty=format:%B -1 #{rev}") { |i| i.read }
+	end
+	@log[rev]
+end
+
+@name_status = {}
+def name_status(rev)
+	unless @name_status[rev]
+		@name_status[rev] = IO.popen("git log --pretty=format: --name-status -1 #{rev}") do |file|
+			ret = {}
+			file.each_with_index do |line,lineno|
+				next if lineno < 1
+				line.chomp!
+				stat, name = line.split("\t")
+				ret[name] = stat
+			end
+			ret
+		end
+	end
+	@name_status[rev]
+end
+
+@svnrev = {}
+def svnrev(rev)
+	unless @svnrev.has_key?(rev)
+		@svnrev[rev] = (revlog(rev) =~ /git-svn-id: \S+@(\d+) [\da-f\-]+/) ? $1.to_i : nil
+	end
+	@svnrev[rev]
+end
+
+def latest_svnrev(rev, path)
+	IO.popen("git rev-list #{rev} -- #{path}") do |i|
+		i.each do |r|
+			r.chomp!
+			srev = svnrev(r)
+			next unless srev
+			add_del = name_status(r)
+			next unless add_del[path]
+			case add_del[path]
+			when nil ; next  # no decision
+			when /D/ ; return nil # if deleted, this is a new file to SVN
+			else ; break # added/modified = fall through to latest
+			end
+		end
+	end
+	svnrev(IO.popen("git rev-list -1 --grep=git-svn-id #{rev}") { |i| i.read.chomp })
+end
+
+files = []
+diff = IO.popen("git diff #{opts[:base]}..#{rev}") do |i|
+	chunk = nil
+	filename = nil
+	in_header = true
+	lines = 0
+	i.each do |line|
+		if (in_header or lines == 0) and line =~ /^diff --git a\/(.+) b\/\1/
+			files << { :file => $1, :chunk => [] }
+			in_header = true
+		elsif in_header and line =~ /^[+][+][+]/
+			in_header = false
+		else
+			files[-1][:chunk] << line if line =~ /^\\ No newline/ or not in_header
+			files[-1][:bin] = true if line =~ /^Binary files/
+				if lines > 0
+					case line
+					when /^ / ; lines -= 2
+					when /^[+\-]/ ; lines -= 1
+					end
+				elsif line =~ /^@@ -\d+,?(\d+)? \+\d+,?(\d+)? @@/
+					lines = ($1||1).to_i  + ($2||1).to_i
+				end
+		end
+	end
+	files.sort_by { |f| f[:file] }.each do |f|
+		puts "Index: #{f[:file]}\n#{'=' * 67 }"
+		if f[:bin]
+			puts <<BINARY
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+BINARY
+		else
+			unless f[:chunk].empty?
+				svn = latest_svnrev(rev, f[:file])
+				old = new = "(revision 0)"
+				if svn
+					old = "(revision #{svn})"
+					new = "(working copy)"
+				end
+				puts "--- #{f[:file]}\t#{old}"
+				puts "+++ #{f[:file]}\t#{new}"
+				#require 'pp' ; pp :svn => svn
+				puts f[:chunk]
+			end
+		end
+	end
+end
+# require 'pp' ; pp files

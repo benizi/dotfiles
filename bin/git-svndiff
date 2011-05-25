@@ -1,0 +1,65 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use bytes;
+use IPC::Run 'run';
+
+sub find_svn_rev {
+	run [ qw/git log -1 --grep=git-svn-id/ ], '>', \my $out;
+	/^\s*git-svn-id: [^\@]*\@(\d+)/ and return $1 for split /\n/, $out;
+	0;
+}
+die "Couldn't determine SVN revision\n" unless my $rev = find_svn_rev;
+
+my @args = @ARGV ? @ARGV : 'master..';
+run [ qw/git diff/, @args ], '>', \my $out;
+
+my $need_hunk = 0;
+my $file_name;
+my $file_is_new = 0;
+my $file_is_deleted = 0;
+for (split /\n/, $out) {
+	if (/^\\ No newline at end of file/) {
+	} elsif ($need_hunk) {
+		my $counts_toward = /^ / ? 2 : /^[+\-]/ ? 1
+		: die "Expected line of diff hunk, but got: $_\n";
+		$need_hunk -= $counts_toward;
+	} elsif (/^diff --git a\/(.*) b\/\1$/) {
+		$file_name = $1;
+		next;
+	} elsif (/^(new|deleted) file mode [0-7]+$/) {
+		my $type = $1;
+		if ($type eq 'new') {
+			$file_is_new = 1;
+		} else {
+			$file_is_deleted = 1;
+		}
+		next;
+	} elsif (/^index [\da-f]+\.\.[\da-f]+(?: [0-7]+)?$/) {
+		die "Didn't find filename before index??\n" unless length $file_name;
+		print sprintf "Index: %s\n%s\n", $file_name, ('=' x 67);
+		next;
+	} elsif (/^\@\@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? \@\@$/) {
+		$need_hunk = ($2//1) + ($4//1);
+		# reset file-is-{new,deleted} indicators when we've passed the headers
+		$file_is_new = 0;
+		$file_is_deleted = 0;
+	} elsif ($file_is_new and (m{^(---) /dev/null$} or m{^(\+\+\+) b/(.*)$})) {
+		# new files have a different header
+		print "$1 $file_name\t(revision 0)\n";
+		next;
+	} elsif ($file_is_deleted and m{^\+\+\+ /dev/null$}) {
+		print "+++ /dev/null\t(working copy)\n";
+		next;
+	} elsif (/^--- a\/(.*)$/) {
+		print "--- $1\t(revision $rev)\n";
+		next;
+	} elsif (/^\+\+\+ b\/(.*)/) {
+		print "+++ $1\t(working copy)\n";
+		next;
+	}
+	print "$_\n";
+}
+
+# post-review adds an extra newline...
+print "\n";
