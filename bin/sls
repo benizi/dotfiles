@@ -14,6 +14,7 @@ for (readpipe 'screen -ls') {
 	my @parts = split /\./;
 	push @screens, [ $status, reverse @parts ];
 }
+@screens or exit;
 my %uniq;
 for (@screens) {
 	my ($status, @parts) = @$_;
