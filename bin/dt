@@ -4,13 +4,15 @@ require 'optparse'
 
 abort unless system('dtach --version > /dev/null')
 
+@dir = nil
+
 opts = {
 	:mode => :new
 }
 parser = OptionParser.new do |o|
 	o.on('-n') { opts[:mode] = :detach }
 	o.on('-S NAME', '--name NAME') { |n| opts[:name] = n }
-	o.on('--dir DIR') { |d| opts[:dir] = d }
+	o.on('--dir DIR') { |d| @dir = d }
 	o.on('-r') { opts[:mode] = :resume }
 	o.on('-R') { opts[:mode] = :resume_or_new }
 	o.on('-l','-ls','--ls') { opts[:mode] = :list }
@@ -18,24 +20,24 @@ parser = OptionParser.new do |o|
 end
 parser.order!(ARGV)
 
-opts[:dir] ||= ENV['DTACH_DIR']
-opts[:dir] ||= ENV['HOME'] + '/.dtach'
+@dir ||= ENV['DTACH_DIR']
+@dir ||= ENV['HOME'] + '/.dtach'
 
-FileUtils.mkdir_p(opts[:dir]) unless File.directory?(opts[:dir])
+FileUtils.mkdir_p(@dir) unless File.directory?(@dir)
 
-def socks(dir)
+def socks
 	ret = []
-	Dir.new(dir).each do |f|
+	Dir.new(@dir).each do |f|
 		next if %w{. ..}.include?(f)
 		ret << f
 	end
 	ret.sort
 end
 
-def suffixed(dir, name, exist)
+def suffixed(name, exist)
 	name ||= ''
 	name = name.gsub(/^.*\//,'')
-	already = socks(dir).grep(/^#{name}\d{0,2}$/).sort
+	already = socks.grep(/^#{name}\d{0,2}$/).sort
 	return already[0] if exist
 	ret = nil
 	100.times do |i|
@@ -50,7 +52,7 @@ end
 
 if opts[:mode] == :list
 	me = ENV['DTACH'] ? ENV['DTACH'].split('/')[-1] : nil
-	socks(opts[:dir]).each do |sock|
+	socks.each do |sock|
 		print '*' if sock == me
 		puts sock
 	end
@@ -60,7 +62,7 @@ end
 case opts[:mode]
 when :resume, :resume_or_new
 	opts[:name] ||= ARGV[0]
-	opts[:name] = suffixed(opts[:dir], opts[:name], true)
+	opts[:name] = suffixed(opts[:name], true)
 	if opts[:mode] == :resume_or_new
 		opts[:mode] = opts[:name] ? :resume : :new
 	else
@@ -71,10 +73,10 @@ end
 case opts[:mode]
 when :new, :detach
 	ARGV << (ENV['SHELL'] || 'bash') if ARGV.empty?
-	opts[:name] = suffixed(opts[:dir], opts[:name] || ARGV[0], false)
+	opts[:name] = suffixed(opts[:name] || ARGV[0], false)
 end
 
-sock = opts[:dir] + '/' + opts[:name]
+sock = @dir + '/' + opts[:name]
 abort "No such socket: #{sock}" if opts[:mode] == :resume and not File.exists?(sock)
 
 cmd = ['dtach']
