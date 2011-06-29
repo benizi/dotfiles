@@ -1,0 +1,77 @@
+#!/usr/bin/env ruby
+require 'fileutils'
+require 'optparse'
+
+abort unless system('dtach --version > /dev/null')
+
+opts = {
+	:mode => :new
+}
+parser = OptionParser.new do |o|
+	o.on('-n') { opts[:mode] = :detach }
+	o.on('-S NAME', '--name NAME') { |n| opts[:name] = n }
+	o.on('--dir DIR') { |d| opts[:dir] = d }
+	o.on('-r') { opts[:mode] = :resume }
+	o.on('-l','-ls','--ls') { opts[:mode] = :list }
+	o.on('--dry-run') { opts[:dry] = true }
+end
+parser.order!(ARGV)
+
+opts[:dir] ||= ENV['DTACH_DIR']
+opts[:dir] ||= ENV['HOME'] + '/.dtach'
+
+FileUtils.mkdir_p(opts[:dir]) unless File.directory?(opts[:dir])
+
+def socks(dir)
+	ret = []
+	Dir.new(dir).each do |f|
+		next if %w{. ..}.include?(f)
+		ret << f
+	end
+	ret.sort
+end
+
+case opts[:mode]
+when :list
+	puts socks(opts[:dir])
+	exit
+when :resume
+	opts[:name] ||= ARGV.shift
+	opts[:name] ||= socks(opts[:dir])[0]
+	abort "Nothing to resume" unless opts[:name]
+else
+	i = 0
+	until opts[:name]
+		i += 1
+		next if File.exists?("#{opts[:dir]}/#{i}")
+		opts[:name] = i.to_s
+	end
+	ARGV << (ENV['SHELL'] || 'bash') if ARGV.empty?
+end
+
+sock = opts[:dir] + '/' + opts[:name]
+
+cmd = ['dtach']
+case opts[:mode]
+when :resume ; cmd << '-a'
+when :new ; cmd << '-A'
+when :detach ; cmd << '-n'
+end
+cmd << sock
+
+cmd += ARGV
+
+if ENV['DTACH'] and ENV['DTACH'] == sock and not opts[:force]
+	abort "Already in dtach?"
+end
+
+if opts[:dry]
+	puts <<INFO
+DTACH=#{sock}
+cmd=#{cmd.join(' ')}
+INFO
+	exit
+end
+
+ENV['DTACH'] = sock
+exec(*cmd)
