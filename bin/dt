@@ -12,6 +12,7 @@ parser = OptionParser.new do |o|
 	o.on('-S NAME', '--name NAME') { |n| opts[:name] = n }
 	o.on('--dir DIR') { |d| opts[:dir] = d }
 	o.on('-r') { opts[:mode] = :resume }
+	o.on('-R') { opts[:mode] = :resume_or_new }
 	o.on('-l','-ls','--ls') { opts[:mode] = :list }
 	o.on('--dry-run') { opts[:dry] = true }
 end
@@ -31,25 +32,50 @@ def socks(dir)
 	ret.sort
 end
 
-case opts[:mode]
-when :list
-	puts socks(opts[:dir])
-	exit
-when :resume
-	opts[:name] ||= ARGV.shift
-	opts[:name] ||= socks(opts[:dir])[0]
-	abort "Nothing to resume" unless opts[:name]
-else
-	i = 0
-	until opts[:name]
-		i += 1
-		next if File.exists?("#{opts[:dir]}/#{i}")
-		opts[:name] = i.to_s
+def suffixed(dir, name, exist)
+	name ||= ''
+	name = name.gsub(/^.*\//,'')
+	already = socks(dir).grep(/^#{name}\d{0,2}$/).sort
+	return already[0] if exist
+	ret = nil
+	100.times do |i|
+		testname = "#{name}"
+		testname << i.to_s if i > 0
+		next if testname.empty? or already.include?(testname)
+		ret = testname
+		break
 	end
+	ret
+end
+
+if opts[:mode] == :list
+	me = ENV['DTACH'] ? ENV['DTACH'].split('/')[-1] : nil
+	socks(opts[:dir]).each do |sock|
+		print '*' if sock == me
+		puts sock
+	end
+	exit
+end
+
+case opts[:mode]
+when :resume, :resume_or_new
+	opts[:name] ||= ARGV[0]
+	opts[:name] = suffixed(opts[:dir], opts[:name], true)
+	if opts[:mode] == :resume_or_new
+		opts[:mode] = opts[:name] ? :resume : :new
+	else
+		abort "Nothing to resume" unless opts[:name]
+	end
+end
+
+case opts[:mode]
+when :new, :detach
 	ARGV << (ENV['SHELL'] || 'bash') if ARGV.empty?
+	opts[:name] = suffixed(opts[:dir], opts[:name] || ARGV[0], false)
 end
 
 sock = opts[:dir] + '/' + opts[:name]
+abort "No such socket: #{sock}" if opts[:mode] == :resume and not File.exists?(sock)
 
 cmd = ['dtach']
 case opts[:mode]
@@ -59,7 +85,7 @@ when :detach ; cmd << '-n'
 end
 cmd << sock
 
-cmd += ARGV
+cmd += ARGV unless opts[:mode] == :resume
 
 if ENV['DTACH'] and ENV['DTACH'] == sock and not opts[:force]
 	abort "Already in dtach?"
