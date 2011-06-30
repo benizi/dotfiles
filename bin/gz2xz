@@ -10,6 +10,7 @@ optparse = OptionParser.new do |o|
 	o.on('-k','--keep') { opt[:keep] = true }
 	o.on('-f','--force') { opt[:overwrite] = true }
 	o.on('--out TYPE','-d TYPE','--dest TYPE') { |t| opt[:out] = t.to_sym }
+	o.on('--dry','--dry-run') { opt[:dry] = true }
 end
 optparse.parse!(ARGV)
 
@@ -91,6 +92,7 @@ until todo.empty?
 	comp = OUT[:prog]
 	cmd = "#{cat} < #{filename} | #{decomp} -d | #{comp} > #{newfn}"
 	puts "Creating #{newfn} from #{filename}\n{ #{cmd} }"
+	next if opt[:dry]
 
 	if system(cmd)
 		old_size, new_size = File.size(filename), File.size(newfn)
