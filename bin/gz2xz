@@ -3,22 +3,27 @@
 require 'optparse'
 require 'thread'
 
-opt = {}
+opt = {
+	:out => :xz
+}
 optparse = OptionParser.new do |o|
 	o.on('-k','--keep') { opt[:keep] = true }
 	o.on('-f','--force') { opt[:overwrite] = true }
+	o.on('--out TYPE','-d TYPE','--dest TYPE') { |t| opt[:out] = t.to_sym }
 end
 optparse.parse!(ARGV)
 
+TYPES = {
+	:xz => { :prog => 'xz', :long => 'xzip', :sig => "\xfd7zXZ\x00\x00" },
+	:bz2 => { :prog => 'bzip2', :sig => "BZh91AY" },
+	:gz => { :prog => 'gzip', :sig => "\x1f\x8b\x08\x00" },
+}
+OUT = TYPES[opt[:out]] or abort "No definitions for output type #{opt[:out]}"
+
 class File
 	def is?(type)
-		types = {
-			:xz => "\xfd7zXZ\x00\x00",
-			:bz2 => "BZh91AY",
-			:gz => "\x1f\x8b\x08\x00",
-		}
 		return nil if pos != 0
-		return nil unless sig = types[type]
+		return nil unless sig = TYPES[type][:sig]
 		ret = read(sig.size) == sig
 		rewind
 		ret
@@ -40,24 +45,51 @@ def over?(newfn, opt)
 end
 
 ARGV.each do |filename|
-	abort "#{filename} doesn't exist?" unless File.exist?(filename)
-	abort "#{filename} isn't gzip?" unless File.new(filename).is?(:gz)
-	newfn = filename.
-		sub(/\.tar\.gz$/,'.tar.xz').
-		sub(/\.tgz$/,'.tar.xz').
-		sub(/gz$/,'xz').
-		sub(/gzip$/,'xz')
+	unless File.exist?(filename)
+		warn "#{filename} doesn't exist?"
+		next
+	end
+	if File.new(filename).is?(opt[:out])
+		long = OUT[:long] || OUT[:prog]
+		warn "#{filename} is already #{long}'ed"
+		next
+	end
+	base = nil
+	types = []
+	TYPES.each do |type,atts|
+		[ type.to_s, atts[:prog] ].uniq.each do |ext|
+			case filename
+			when %r{^(.+)\.(?:tar\.|t)#{ext}$}
+				base = $1
+				types += [ :tar, type ]
+			when %r{^(.+)\.#{ext}$}
+				base = $1
+				types << type
+			end
+			types.empty? or break
+		end
+		types.empty? or break
+	end
+	if types.empty?
+		warn "Couldn't determine type for #{filename}"
+		next
+	end
+	newfn = base.dup
+	newfn << ".#{types[0]}" if types.size > 1
+	newfn << ".#{opt[:out]}"
 	over?(newfn, opt)
 	# TODO: wow -- pipes are confusing...
 	abort "Can only handle filenames that don't need quoting" unless [ filename, newfn ].grep(/[^A-Za-z0-9_\/.\-]/).empty?
-	todo << [ filename, newfn ]
+	todo << [ filename, newfn, types[-1] ]
 end
 
 until todo.empty?
-	filename, newfn = todo.pop
+	filename, newfn, src_type = todo.pop
 	over?(newfn, opt)
 	cat = has_program?('pv') ? 'pv' : 'cat'
-	cmd = "#{cat} < #{filename} | gzip -d | xz > #{newfn}"
+	decomp = TYPES[src_type.to_sym][:prog]
+	comp = OUT[:prog]
+	cmd = "#{cat} < #{filename} | #{decomp} -d | #{comp} > #{newfn}"
 	puts "Creating #{newfn} from #{filename}\n{ #{cmd} }"
 
 	if system(cmd)
