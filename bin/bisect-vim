@@ -13,11 +13,13 @@
 #}}}1
 
 #{{{1 utility functions
+info () { echo $'\e[32m'$argv$'\e[0m' >&2 }
 warn () { echo $'\e[31m'$argv$'\e[0m' >&2 }
 cleanup () { (( $+builddir && ! $+keeptmp )) && [[ -d $builddir ]] && rm -rf $builddir }
 skip () { warn $argv ; cleanup ; exit 125 }
 good () { ret=0 }
 bad () { ret=1 }
+informatively () { info $argv ; $argv >& /dev/null ; return $? }
 #}}}1
 
 #{{{1 VCS agnosticism
@@ -28,7 +30,7 @@ case $rcs in
 	create-tar () { git archive HEAD }
 	;;
 	hg)
-	get-version () { hg log -r tip --template '{node}' }
+	get-version () { hg parent --template '{node}' }
 	create-tar () { hg archive -t tar -p . - }
 	;;
 esac
@@ -38,6 +40,14 @@ esac
 : ${version=$(get-version)}
 : ${prefix=/tmp/vim-$rcs-$version}
 : ${makejobs:=5}
+(( $+verbose )) || info () {}
+makeargs=()
+() {
+local arg
+for arg in CFLAGS CPPFLAGS LDFLAGS ; do
+	(( $+parameters[$arg] )) && makeargs+=( $arg=${(P)arg} )
+done
+}
 unset builddir
 #}}}1
 
@@ -50,19 +60,28 @@ elif (( ! $+testscript )) ; then
 fi
 #}}}1
 
+#{{{1 function for verbose stage skipping
+skipcheck () {
+	local isset var=$1
+	(( $+parameters[$var] )) && isset=true || isset=false
+	info $var isset:$isset
+	$isset && return 1 || return 0
+}
+#}}}1
+
 #{{{1 compile and make
-if (( ! $+nocompile )) ; then
-	(( $makejobs )) && makeargs=( --jobs=$makejobs )
+if skipcheck nocompile ; then
+	(( $makejobs )) && makeargs+=( --jobs=$makejobs )
 	(( $+strip )) || makeinstall=( STRIP=nm )
-	if (( ! $+noclean )) ; then
+	if skipcheck noclean ; then
 		builddir=$(mktemp -t -d build-vim.XXXXXXXX) || skip mktemp
 		create-tar | (cd $builddir ; tar -xf -) || skip archive
 		pushd $builddir || skip no builddir
 	fi
-	if (( ! $+noconfig )) ; then
-		./configure --prefix=$prefix $argv >& /dev/null || skip configure
+	if skipcheck noconfig ; then
+		informatively ./configure --prefix=$prefix $argv || skip configure
 	fi
-	(make $makeargs && make $makeinstall install) >& /dev/null || skip make
+	(informatively make $makeargs && informatively make $makeinstall install) || skip make
 	(( $+builddir )) && popd
 	cleanup
 fi
