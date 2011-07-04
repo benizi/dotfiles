@@ -45,8 +45,8 @@ sub info {
 	my $uni = charinfo(ord);
 	my $n = charnames::viacode(ord);
 	my $script = $$uni{script} || $$uni{block} || '';
-	next if $nonascii and $c =~ /[\x20-\x7e]/;
-	next if $nonlatin and $script =~ /^(?:common|latin)$/i;
+	return if $nonascii and $c =~ /[\x20-\x7e]/;
+	return if $nonlatin and $script =~ /^(?:common|latin)$/i;
 	my $h = ($script eq 'Han') ? $han->Mandarin($_) : '';
 	print join "\t", $c, $x, $n||$h||'(no info)';
 	print "\n";
