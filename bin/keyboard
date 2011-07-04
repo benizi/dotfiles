@@ -16,6 +16,7 @@ GetOptions(
 	'mod3' => \(my $mod3),
 	'modmap=s' => \(my $modmap = "$ENV{HOME}/.xmodmap"),
 	'M|justmod' => \(my $just_modmap = 0),
+	'clear' => \(my $clear_mods),
 ) or die 'options';
 sub run_it {my@p=map{(length)?$_:"''"}@_;warn"@p\n";$dry_run||system{$_[0]}@_}
 my %defaults = (
@@ -65,6 +66,16 @@ if ($mod3 or $just_modmap or -f $modmap) {
 	my ($old, $use) = map "mod$_", ($ion or $mod3) ? (4, 3) : (3, 4);
 	run_it xmodmap => -e => "remove $old = Super_L";
 	run_it xmodmap => -e => "add $use = Super_L";
+}
+if ($clear_mods) {
+	run_it xdotool => keyup => $_
+		for qw/
+		Hyper_L Hyper_R
+		Super_L Super_R
+		Alt_L Alt_R
+		Control_L Control_R
+		Shift_L Shift_R
+		/;
 }
 __END__
 setxkbmap
