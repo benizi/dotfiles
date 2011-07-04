@@ -3,8 +3,10 @@ use strict;
 use warnings;
 use feature ':5.10';
 use Getopt::Long qw/:config pass_through/;
+use IPC::Run;
 my %opt;
 my @xkbopts = qw/model layout variant keycodes/;
+my @includes;
 GetOptions(
 	(map {; "$_=s" => \$opt{$_} } @xkbopts),
 	'reset=s' => \$opt{reset},
@@ -17,8 +19,16 @@ GetOptions(
 	'modmap=s' => \(my $modmap = "$ENV{HOME}/.xmodmap"),
 	'M|justmod' => \(my $just_modmap = 0),
 	'clear' => \(my $clear_mods),
+	'I=s@' => \@includes,
 ) or die 'options';
-sub run_it {my@p=map{(length)?$_:"''"}@_;warn"@p\n";$dry_run||system{$_[0]}@_}
+@includes = grep -d, "$ENV{HOME}/xkb" unless @includes;
+sub run_it {
+	my @flat = map ref() ? @$_ : $_, grep { (!ref) or ('ARRAY' eq ref) } @_;
+	$_ = (length) ? $_ : "''" for @flat;
+	print "@flat\n";
+	$dry_run and return;
+	IPC::Run::run grep ref(), @_ ? @_ : [@_];
+}
 my %defaults = (
 	'' => {
 		model => 'pc104',
@@ -59,6 +69,11 @@ if (!$just_modmap) {
 	push @cmd, -option => '' if $opt{reset};
 	push @cmd, -option => $_ for @{$opt{options}};
 	push @cmd, @extra;
+	@cmd = (
+		[@cmd, '-print'],
+		'|',
+		[xkbcomp => -w => 3 => map("-I$_", @includes), '-', $ENV{DISPLAY}]
+	) if @includes;
 	run_it @cmd;
 }
 if ($mod3 or $just_modmap or -f $modmap) {
