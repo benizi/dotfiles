@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+=begin
+
+Really stupid CSV to Tab-Separated-Value converter
+
+=end
+ARGF.each do |f|
+	f.gsub!(/\r/,'')
+	fields = []
+	while f and not f.empty?
+		case f
+		when /^([^",][^,]+)/
+			fields << $1
+			f = f[($1.size + 1)..-1]
+		when /^"((?:[^"\\])*)"(?=,|$)/
+			fields << $1
+			f = f[($1.size + 3)..-1]
+		else
+			abort "Couldn't parse: #{f}"
+		end
+	end
+	puts fields.join("\t")
+end
