@@ -1,20 +1,13 @@
 FORCE=${SSH_FORCE:-false}
 function ssh_find () {
-	find ~/.ssh ! -name .ssh -type d -prune -o \
-		-type f -name 'id_*' \
-		! -name '*.pub' \
-		! -name '*.ppk' \
-		-print \
-	| sort
+	print -l ~/.ssh/id_*~*.pub~*.ppk(.N)
 }
 function ssh_find_add () {
-	if (( $+INSOL )) ; then
-		ssh_find | env DISPLAY= xargs ssh-add
-		return
-	fi
-	ssh_find \
-	| perl -l0pe '' \
-	| env -u DISPLAY xargs -0 ssh-add
+	local -a ids envargs
+	ids=( ${(f):-"$(ssh_find)"} )
+	(( $#ids )) || return
+	(( $+INSOL )) && envargs=( DISPLAY= ) || envargs=( -u DISPLAY )
+	env $envargs ssh-add $ids
 }
 function ssh_re_source () {
 	[ -r ~/ssh-script ] && . ~/ssh-script > /dev/null
