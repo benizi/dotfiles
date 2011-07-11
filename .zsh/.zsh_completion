@@ -44,12 +44,3 @@ __git_files () {
 	# with the current PREFIX
 	__git_tree_files ${PREFIX:-.} HEAD
 }
-
-git () {
-	local disabled=$(command git config --bool disabled.$1 2>/dev/null)
-	if ${disabled:-false} ; then
-		echo "The $1 command is intentionally disabled" >&2
-		return 1
-	fi
-	command git "$@"
-}
