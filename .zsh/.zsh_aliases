@@ -74,7 +74,6 @@ alias ssh-noagent='noagent ssh'
 alias hidessh='env -u SSH_CLIENT -u SSH_CONNECTION -u SSH_TTY'
 alias noproxy='env -u auto_proxy -u http_proxy -u socks_proxy'
 alias with-depot='PATH=${HOME}/bin/depot_tools:${PATH}'
-alias vi=vim
 alias wget-cookies='wget --load-cookies $MOZ5PROF/cookies.txt'
 alias wget-fakeit="wget -U 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070515 Firefox/2.0.0.4' --load-cookies \$MOZ5PROF/cookies.txt"
 alias wcc='LC_ALL=C wc'
