@@ -3,7 +3,7 @@ zstyle ':completion:*' accept-exact-dirs true
 # <C-x><C-f> == complete file regardless of context
 zle -C complete-files complete-word _generic
 zstyle ':completion:complete-files:*' completer _files
-bindkey '^X^F' complete-files
+bindkey '^[,' complete-files
 # <C-x><C-h> == complete history regardless of context
 zle -C complete-history complete-word _generic
 zstyle ':completion:complete-history:*' completer _history
