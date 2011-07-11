@@ -30,3 +30,26 @@ zstyle ':completion:*:options' auto-description '%d'
 zstyle ':completion:*' separate-sections 'yes'
 zstyle ':completion:*' group-name ''
 zstyle ':completion:*' prompt 'errors: %e'
+
+__git_files () {
+	# localize options as appropriate
+	local compadd_opts opts tag description
+	# ignore compadd-related options that __git_files passes along
+	zparseopts -D -E -a compadd_opts V: J: 1 2 n f X: M: P: S: r: R: q F:
+	# ignore git ls-files options that __git_files uses
+	zparseopts -D -E -a opts -- -cached -deleted -modified -others -ignored -unmerged -killed x+: --exclude+:
+	# __git_files expects a tag and a description
+	tag=$1 description=$2 ; shift 2
+	# but we ignore those and call __git_tree_files against the HEAD revision
+	# with the current PREFIX
+	__git_tree_files ${PREFIX:-.} HEAD
+}
+
+git () {
+	local disabled=$(command git config --bool disabled.$1 2>/dev/null)
+	if ${disabled:-false} ; then
+		echo "The $1 command is intentionally disabled" >&2
+		return 1
+	fi
+	command git "$@"
+}
