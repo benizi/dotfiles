@@ -53,7 +53,25 @@ if (( $#git_dir )) ; then
 fi
 [[ ! -e $PWD ]] && _extra+=( "!deleted!" )
 (( $#_extra )) && __extra="[$_extra]" || __extra=''
-PROMPT='%{${PSCOLOR}'$_ps_color'%}%n@%m'$_screen' %~'$__extra$_pschar'%{$NOCOLOR%} '
+PROMPT='%{${PSCOLOR}'$_ps_color'%}%32<...<%n@%m'$_screen' %~%<<'$__extra$_pschar'%{$NOCOLOR%} '
+}
+prompt_shorten () {
+	local in=$1
+	if (( $#in > 15 )) ; then
+		local -a out
+		local i
+		out=( ${(s./.)in} )
+		for (( i = 1 ; i < $#out ; i++ )) ; do
+			part=$out[$i]
+			case $part in
+				.[[:alpha:]]*) part=.$part[2] ;;
+				[[:alpha:]]*) part=$part[1] ;;
+			esac
+			out[$i]=$part
+		done
+		in=${(j./.)out}
+	fi
+	printf %s $in
 }
 
 TITLESEP='│' # ceçi n'est pas un pipe
