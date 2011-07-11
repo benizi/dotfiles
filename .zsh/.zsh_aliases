@@ -29,7 +29,13 @@ alias fcl='fc -t %Y-%m-%d@%H:%M:%S -nl 0 | less'
 () {
 local lscolor="ls --color=auto"
 (( $+INBSD || $+INSOL )) && lscolor=ls
+
+# really-short list
+alias g=git
 alias l="$lscolor -trl"
+alias v='vim -u ~/.vimrc -N'
+alias vi=v
+
 alias ll="$lscolor -trlL"
 alias lll="$lscolor -trl | less"
 alias la="$lscolor -trlA"
