@@ -143,7 +143,6 @@ endif
 set backupdir=~/.vim-tmp//,~/.tmp//,~/tmp//,/tmp//
 set directory=~/.vim-tmp//,~/.tmp//,~/tmp//,/tmp//
 "^^ from http://items.sjbach.com/319/configuring-vim-right ***
-set runtimepath=~/.vim.local,~/.vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,~/.vim/after,~/.vim.local/after
 if filereadable(expand("~/.vimrc.local"))
 	source ~/.vimrc.local
 endif
