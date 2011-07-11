@@ -43,8 +43,8 @@ while (<>) {
 		my $nolead = $_;
 		push @{$$_[-1]}, $nolead for @in;
 		$need_hunk-- for @in;
-	} elsif (/^\@\@ -(\d+),(\d+) \+(\d+),(\d+) \@\@/) {
-		$need_hunk = $2 + $4;
+	} elsif (/^\@\@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? \@\@/) {
+		$need_hunk = ($2//1) + ($4//1);
 		if (@ind) {
 			@ind == 2 or die "Didn't find proper indexes around line $.\n";
 			push @$_, [{ filename => shift @ind }] for @AB;
