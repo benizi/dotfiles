@@ -21,6 +21,7 @@ GetOptions(
 	'diffcmd=s' => \(my $diff_cmd = 'kdiff3'),
 	'mac' => \(my $handle_bare_cr = 0),
 	'keep' => \(my $keep = 0),
+	'pager!' => \(my $pager = 1),
 ) or usage;
 usage if @ARGV and @ARGV != 2;
 my $input;
@@ -112,6 +113,11 @@ if ($create_files) {
 		push @files, $fh;
 		push @filenames, $filename;
 	}
+} else {
+	if ($pager and -t 1) {
+		$pager = $ENV{PAGER} // 'less';
+		open STDOUT, "| $pager";
+	}
 }
 for (0..$#A) {
 	my ($l, $r) = ($A[$_],$B[$_]);
@@ -173,4 +179,5 @@ if ($create_files) {
 	system { $cmd[0] } @cmd;
 }
 unlink_files;
+close STDOUT;
 END { close_files; unlink_files; }
