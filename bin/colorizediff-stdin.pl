@@ -25,14 +25,14 @@ while (<>) {
 		$$lines[-1] =~ s/(?=[\r\n]*$)/<no newline>/;
 	} elsif (/^Files (.*?) and (.*?) differ/) {
 		push @{$AB[$_]},
-		[{ filename => dollar $orig, $_+1 }],
-		[ 'Binary files differed' ]
-		for 0..$#AB;
+			[{ filename => dollar $orig, $_+1 }],
+			[ 'Binary files differed' ]
+			for 0..$#AB;
 	} elsif (/^Only in (.*?): (.*?)$/) {
 		push @{$AB[$_]},
-		[{ filename => $1.'/'.$2.'('.$_.')' }],
-		[ 'Path only in one or the other' ]
-		for 0..$#AB
+			[{ filename => $1.'/'.$2.'('.$_.')' }],
+			[ 'Path only in one or the other' ]
+			for 0..$#AB
 	} elsif ($need_hunk) {
 		@in = (
 			s/^ // ? (\@A,\@B) :
@@ -108,9 +108,9 @@ for (0..$#A) {
 			my @lines = map [$$l{header}], @toprint;
 			if(1){#if (@files) {
 				unshift @{$lines[$_]},
-				map { ($_ x 72)."\n" }
-				'=', [qw/< >/]->[-$_], '='
-				for 0..$#lines;
+					map { ($_ x 72)."\n" }
+					'=', [qw/< >/]->[-$_], '='
+					for 0..$#lines;
 			}
 			print $_ @{shift @lines} for @toprint;
 			#print $_ "HEADER\n$$l{header}" for (@files) ? @files : (\*STDOUT);
