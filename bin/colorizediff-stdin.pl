@@ -5,6 +5,7 @@ use Getopt::Long;
 GetOptions(
 	'files' => \(my $create_files = 0),
 	'diffcmd=s' => \(my $diff_cmd = 'kdiff3'),
+	'mac' => \(my $handle_bare_cr = 0),
 ) or die 'options';
 my $need_hunk = 0;
 my @AB = \my (@A, @B);
@@ -13,6 +14,10 @@ my @in;
 sub dollar { my ($str, $n) = @_; substr $str, $-[$n], $+[$n]-$-[$n] }
 while (<>) {
 	my $orig = $_;
+	if ($need_hunk and $handle_bare_cr and /\r(?!\n)/) {
+		my ($type) = /^([+\-\ ])/;
+		s/\r(?!\n)/\n/g;
+	}
 	if (/^\\ No newline at end of file/ and @in == 1) {
 		my $lines = $in[0][-1];
 		$lines // die "No newline at end of what file?\n";
