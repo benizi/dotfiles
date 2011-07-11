@@ -96,4 +96,5 @@ if_exists MATLAB ~/MATLAB/7.4/lib/matlab7
 if_exists PYTHONSTARTUP -f ~/.python/startup
 if_exists PYTHONPATH ~/python{,/lib/python*}(N)
 if_exists CLOJURE_EXT ~/git/clojure
+if_exists M2_HOME ~/maven
 run_local_versions
