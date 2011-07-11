@@ -1,3 +1,10 @@
+for dir in map([ '~/.vim', '~/.vim.local' ], 'expand(v:val)')
+	if isdirectory(dir)
+		if index(split(&rtp,','), dir) < 0
+			let &rtp = join([ dir, &rtp, dir.'/after' ], ',')
+		endif
+	endif
+endfor
 set noexpandtab softtabstop=4 tabstop=4 shiftwidth=4
 set list listchars=tab:\ \ ,trail:·
 if $TERM =~ 'rxvt' || $TERM =~ 'xterm'
