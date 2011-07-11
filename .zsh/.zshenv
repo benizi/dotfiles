@@ -18,7 +18,7 @@ else
 fi
 zsh_dirs=(~)
 typeset -U zsh_dirs
-zshenv=${(%):-"%x"}
+is-at-least 4.3.9 && zshenv=${(%):-"%x"} || zshenv=${(%):-"%N"}
 zsh_dirs+=( $zshenv:h $zshenv(+A:h) )
 zsh_dirs=( ${^zsh_dirs}{,.local,-}(N/) )
 ZDOTDIR=( $zshenv(+A:h) ) && ZDOTDIR=$ZDOTDIR[1]
