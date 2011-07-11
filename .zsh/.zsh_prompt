@@ -107,7 +107,7 @@ function zle-line-init zle-keymap-select {
 	if [[ $TERM = rxvt* ]] ; then
 		seqs+=( cmd $'\e]12;1\a' )
 		seqs+=( ins $'\e]12;0\a' )
-	else
+	elif (( $+terminfo[cvvis] && $+terminfo[cnorm] )) ; then
 		seqs+=( cmd $terminfo[cvvis] )
 		seqs+=( ins $terminfo[cnorm] )
 	fi
