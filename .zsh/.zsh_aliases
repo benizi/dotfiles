@@ -49,6 +49,8 @@ alias lsl=l
 
 (( UID )) && alias lvm='sudo lvm'
 
+(( $+commands[certutil] )) && alias c-cert="certutil -d sql:$HOME/.pki/nssdb"
+(( $+commands[pk12util] )) && alias c-pk12="pk12util -d sql:$HOME/.pki/nssdb"
 alias pf='ps -ef'
 alias pfg='ps -ef | grep'
 if [[ $commands[alpine] != /usr/local/bin/alpine ]] ; then
