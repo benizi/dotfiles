@@ -6,6 +6,7 @@ GetOptions(
 	'files' => \(my $create_files = 0),
 	'diffcmd=s' => \(my $diff_cmd = 'kdiff3'),
 	'mac' => \(my $handle_bare_cr = 0),
+	'keep' => \(my $keep = 0),
 ) or die 'options';
 my $need_hunk = 0;
 my @AB = \my (@A, @B);
@@ -132,7 +133,7 @@ for (0..$#A) {
 	}
 }
 sub close_files { close $_ for @files; @files = () }
-sub unlink_files { unlink $_ for @filenames; @filenames = () }
+sub unlink_files { $keep or unlink $_ for @filenames; @filenames = () }
 close_files;
 if ($create_files) {
 	my @cmd;
