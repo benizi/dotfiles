@@ -33,8 +33,8 @@ syntax sync maxlines=2000
 set foldmethod=marker
 aug NoInsertFolding
 	au!
-	au InsertEnter * let b:oldfdm = &l:fdm | setl fdm=manual
-	au InsertLeave * let &l:fdm = b:oldfdm
+	au InsertEnter * if !exists('w:oldfdm') | let w:oldfdm = &fdm | setl fdm=manual | endif
+	au InsertLeave,WinLeave * if exists('w:oldfdm') | let &l:fdm = w:oldfdm | unlet w:oldfdm | endif
 aug END
 " ensure that unsaveable buffers are also uneditable
 aug NoEditUnsaveable
