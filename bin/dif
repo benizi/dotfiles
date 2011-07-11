@@ -1,19 +1,44 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use Getopt::Long;
+use Getopt::Long qw/:config pass_through/;
+use IPC::Cmd 'run';
+sub usage {
+	die <<USAGE;
+$0 [options]                -- stdin mode
+$0 [options] file1 file2    -- run-diff mode
+
+Options:
+	-g / --graphical / --files      Create files for the diffs
+	--diffcmd CMD                   Diff cmd for graphical output
+	--mac                           Handle Mac (bare CR) line endings
+	--keep                          Keep the temporary files
+	--no-pager                      Don't automatically page the output
+USAGE
+}
 GetOptions(
-	'files' => \(my $create_files = 0),
+	'g|graphical|files' => \(my $create_files = 0),
 	'diffcmd=s' => \(my $diff_cmd = 'kdiff3'),
 	'mac' => \(my $handle_bare_cr = 0),
 	'keep' => \(my $keep = 0),
-) or die 'options';
+) or usage;
+usage if @ARGV and @ARGV != 2;
+my $input;
+if (@ARGV) {
+	my @cmd = (diff => -ur => @ARGV);
+	my ($yay, $err, $full, $stdout, $stderr) = run command => \@cmd, verbose => 0;
+	$input = join "\n", @$stdout;
+} else {
+	warn "Reading diff from terminal\n" if -t 0;
+	$input = do { undef local $/; <> };
+}
 my $need_hunk = 0;
 my @AB = \my (@A, @B);
 my @ind;
 my @in;
 sub dollar { my ($str, $n) = @_; substr $str, $-[$n], $+[$n]-$-[$n] }
-while (<>) {
+open my $diff, '<', \$input;
+while (<$diff>) {
 	my $orig = $_;
 	if ($need_hunk and $handle_bare_cr and /\r(?!\n)/) {
 		my ($type) = /^([+\-\ ])/;
@@ -64,6 +89,7 @@ while (<>) {
 		}
 	}
 }
+close $diff;
 for my $arr (@AB) {
 	for my $i (reverse 0..$#$arr-1) {
 		my ($this, $next) = @$arr[$i,$i+1];
