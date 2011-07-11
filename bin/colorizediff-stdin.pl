@@ -137,7 +137,7 @@ sub unlink_files { $keep or unlink $_ for @filenames; @filenames = () }
 close_files;
 if ($create_files) {
 	my @cmd;
-	if ($diff_cmd =~ /%s/) {
+	if ($diff_cmd =~ /%/) {
 		for (split ' ', $diff_cmd) {
 			push @cmd, /%s/ ? shift @filenames : $_;
 		}
