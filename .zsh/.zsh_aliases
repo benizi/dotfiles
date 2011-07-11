@@ -26,9 +26,9 @@ alias chroot32='sudo su - -c "linux32 chroot /32 /bin/zsh -l"'
 alias fcl='fc -t %Y-%m-%d@%H:%M:%S -nl 0 | less'
 
 # various versions of 'ls'
+() {
 local lscolor="ls --color=auto"
-[ -n "$INBSD" ] && lscolor=ls
-[ -n "$INSOL" ] && lscolor=ls
+(( $+INBSD || $+INSOL )) && lscolor=ls
 alias l="$lscolor -trl"
 alias ll="$lscolor -trlL"
 alias lll="$lscolor -trl | less"
@@ -39,6 +39,7 @@ alias lso="$lscolor -tlA"
 alias lss="$lscolor -Srl"
 alias lsr="$lscolor -Sl"
 alias lsl=l
+}
 
 (( UID )) && alias lvm='sudo lvm'
 
