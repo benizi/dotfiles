@@ -81,8 +81,8 @@ ColorDiff::Split('punc');
 my (@files, @filenames);
 if ($create_files) {
 	eval 'use File::Temp; 1' or die "$@";
-	for (1,2) {
-		my ($fh, $filename) = &File::Temp::tempfile;
+	for ("diff-000-before.XXXXXXXX", "diff-001-after.XXXXXXXX") {
+		my ($fh, $filename) = File::Temp::tempfile($_, TMPDIR => 1);
 		push @files, $fh;
 		push @filenames, $filename;
 	}
