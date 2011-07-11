@@ -125,6 +125,8 @@ set isf-==
 
 " hlsearch
 set hls
+" turn off highlighting when refreshing the screen
+nn <silent> <C-l> :nohls<CR><C-l>
 
 " settings for TOhtml
 let g:html_no_progress=1
