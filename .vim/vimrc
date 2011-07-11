@@ -24,6 +24,9 @@ if &t_Co > 16
 endif
 set hidden
 set laststatus=2 ruler
+aug filetypedetect
+	au BufNewFile,BufRead *.markdown setf markdown
+aug END
 filetype plugin indent on
 syntax enable
 syntax sync maxlines=2000
