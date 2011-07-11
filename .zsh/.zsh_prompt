@@ -48,6 +48,7 @@ if (( $#git_dir )) ; then
 	local branch="$(git --git-dir=$git_dir branch | grep '^[*]' | cut -c3-)"
 	[[ "$branch" = master ]] || pretty_git+=( $branch )
 	(( $#pretty_git )) || pretty_git+=( . )
+	(( $#pretty_git > 1 && ${#pretty_git[1]} > 15 )) && pretty_git[1]=''
 	_extra+=( ${(j.:.)pretty_git} )
 fi
 [[ ! -e $PWD ]] && _extra+=( "!deleted!" )
