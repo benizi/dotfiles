@@ -83,6 +83,9 @@ map <esc>m <C-W>_
 map <esc>- <C-W>-
 map <esc>= <C-W>+
 
+" pastetoggle
+se pastetoggle=<F7>
+
 " Let C-w f open a nonexistent file if it fails to find one
 fun! OpenOrNewUnderCursor()
 	try
