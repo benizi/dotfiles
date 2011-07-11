@@ -94,6 +94,6 @@ export PAGER=less
 export auto_proxy=http://localhost/proxy.pac
 if_exists MATLAB ~/MATLAB/7.4/lib/matlab7
 if_exists PYTHONSTARTUP -f ~/.python/startup
-if_exists PYTHONPATH ~/python
+if_exists PYTHONPATH ~/python{,/lib/python*}(N)
 if_exists CLOJURE_EXT ~/git/clojure
 run_local_versions
