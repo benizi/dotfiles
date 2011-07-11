@@ -51,6 +51,10 @@ alias lsl=l
 
 (( $+commands[certutil] )) && alias c-cert="certutil -d sql:$HOME/.pki/nssdb"
 (( $+commands[pk12util] )) && alias c-pk12="pk12util -d sql:$HOME/.pki/nssdb"
+
+(( $+commands[colorizediff-stdin.pl] )) && diffy () {
+	diff -ur "$@" | colorizediff-stdin.pl --files
+}
 alias pf='ps -ef'
 alias pfg='ps -ef | grep'
 if [[ $commands[alpine] != /usr/local/bin/alpine ]] ; then
