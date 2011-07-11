@@ -55,6 +55,13 @@ alias lsl=l
 (( $+commands[colorizediff-stdin.pl] )) && diffy () {
 	diff -ur "$@" | colorizediff-stdin.pl --files
 }
+if (( ! $+commands[dt] )) ; then
+	if (( $+commands[dtach] )) ; then
+		alias dt='dtach -A default'
+	elif (( $+commands[screen] )) ; then
+		alias dt='screen -dRR default'
+	fi
+fi
 alias pf='ps -ef'
 alias pfg='ps -ef | grep'
 if [[ $commands[alpine] != /usr/local/bin/alpine ]] ; then
