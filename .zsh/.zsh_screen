@@ -1,4 +1,19 @@
-if (( ! $+commands[screen] )) ; then echo "Install screen" ; return ; fi
-[ "$TERM" = "screen" ] && other=Other || other=Running
-S=$(screen -ls | perl -lnwe 'BEGIN{$sty=$ENV{STY}||"ZZZ";} print if /^\s/ and /\S/ and !/\b\Q$sty\E\b/')
-[ -n "$S" ] && printf '%s screens:\n%s\n' $other $S
+if (( ! $+commands[screen] )) ; then
+   echo "Install screen"
+else
+   (( $+commands[sls] )) || function sls () {
+      [ "$TERM" = "screen" ] && other=Other || other=Running
+      S=$(screen -ls | perl -lnwe 'BEGIN{$sty=$ENV{STY}||"ZZZ";} print if /^\s/ and /\S/ and !/\b\Q$sty\E\b/')
+      [ -n "$S" ] && printf '%s screens:\n%s\n' $other $S
+   }
+   sls
+fi
+if (( $+commands[dtach] )) ; then
+   local -a dtaches
+   if (( $+commands[dt] )) ; then
+      dtaches=( $(dt -ls) )
+   else
+      dtaches=( ~/.dtach/*(N:t) )
+   fi
+   (( $#dtaches )) && echo Dtaches: $dtaches
+fi
