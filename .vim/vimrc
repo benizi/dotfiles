@@ -89,12 +89,12 @@ se pastetoggle=<F7>
 " Let C-w f open a nonexistent file if it fails to find one
 fun! OpenOrNewUnderCursor()
 	try
-		wincmd F
+		wincmd f
 	catch
 		new <cfile>
 	endtry
 endfun
-nnoremap <C-w>f call OpenOrNewUnderCursor()<CR>
+nnoremap <C-w>f :call OpenOrNewUnderCursor()<CR>
 
 " Ctrl+Arrow = window movement
 map <C-Left> <C-W>h
