@@ -5,7 +5,7 @@ use open ':std', ':utf8';
 use utf8;
 use Encode qw/decode_utf8 FB_CROAK/;
 # like pstree -aclpuU, but without the need to filter so much.
-use Getopt::Long qw/:config no_ignore_case/;
+use Getopt::Long qw/:config no_ignore_case bundling/;
 my (@cmds, @pids);
 GetOptions(
 	'cmd=s' => \@cmds,
@@ -24,6 +24,10 @@ GetOptions(
 	'max-env=i' => \(my $max_env = 32),
 	'F' => \(my $show_files = $0 =~ /pstf/),
 	'i' => \(my $case_insensitive),
+	'u=s' => \(my $user),
+	'U' => \(my $show_user),
+	'g=s' => \(my $group),
+	'G' => \(my $show_group),
 	'<>' => sub {
 		for (@_) {
 			/^\d+$/ ? push @pids, $_
@@ -86,6 +90,9 @@ if ($use_tasks) {
 }
 for my $p (@procs) {
 	my ($pid, $dir) = @$p{qw/pid dir/};
+	my ($uid, $gid) = (stat $dir)[4,5];
+	$$p{user} = getpwuid($uid // -1) // $uid // -1;
+	$$p{group} = getgrgid($gid // -1) // $gid // -1;
 	$$p{$_} = slurp "$dir/$_" for qw{cmdline stat};
 	$$p{$_} = linky "$dir/$_" for qw{root exe cwd};
 	unless ((@$p{qw/taskname status ppid pgid sid/}) =
@@ -108,6 +115,8 @@ for (
 	[0=>cmd=>@cmds],
 	[1=>cmdline=>grep $grep_args, @cmds],
 	[0=>pid=>map '^'.$_.'$', @pids],
+	[0=>user=>grep length, $user],
+	[0=>group=>grep length, $group],
 ) {
 	my ($filter_self, $field, @vals) = @$_;
 	for my $v (@vals) {
@@ -221,6 +230,8 @@ for my $r (@roots) {
 		my $n = $$t{node};
 		my @info;
 		push @info, $$n{target} ? $$n{pid} : '' if $print_target_pids;
+		push @info, $$n{user} if $show_user;
+		push @info, $$n{group} if $show_group;
 		push @info, @$n{qw/pid ppid pgid sid status/} if $print_pids;
 		print join "\t", map $_//'', @info, '' if @info;
 		if ($$t{lev}) {
