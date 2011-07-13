@@ -1,0 +1,12 @@
+#!/bin/zsh
+(( $+commands[dt] )) && (( ! $+DTACH )) && exec dt -n -- $0 "$@"
+warn () { print -r $'\e[31m'$*$'\e[0m' >&2 }
+die () { warn "$@" ; exit 1 }
+(( $+commands[mail] )) || die No mailer
+[[ $1  = *[[:digit:]]* ]] && [[ $1 != *[^[:digit:]]* ]] || die "Usage: $0 pid [email] [message]"
+pid=$1 ; shift
+if [[ $1 = *@* ]] ; then email=$1 ; shift ; else email=$EMAIL ; fi
+(( $#email )) || die "Email?"
+while {kill -0 $pid &> /dev/null} {sleep 10}
+(( $#argv )) || argv=( Process $pid finished )
+echo "$argv" | mail -s "$argv" $email
