@@ -1,3 +1,19 @@
+if zmodload zsh/zselect 2> /dev/null ; then
+	function sleep () {
+		local arg t ext
+		for arg ; do
+			case $arg in
+				(<->(.<->(#c,1))(#c,1)|.<->)) t=$(( arg * 100 )) ;;
+				*) ext=true ;;
+			esac
+		done
+		if (( $+ext )) ; then
+			command sleep "$@"
+			return $?
+		fi
+		zselect -t $t 2>/dev/null
+	}
+fi
 function colormsg () { C=${1-RED} ; shift ; print -l "${(P)C}$*${NOCOLOR}" }
 function error () { colormsg RED $@ }
 function title () { print "\e]2;$1\007" }
