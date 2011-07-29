@@ -39,17 +39,20 @@ unless ($mac or $pc or $unix) {
 my $specified = 0;
 $specified += $_ ? 1 : 0 for $mac, $pc, $unix;
 die "Please specify ONE of -pc (-dos / -windows) / -mac / -unix\n$usage" if $specified != 1;
-if ($noisy) {
-    warn "Outputting PC (DOS/Windows) style endings (\\r\\n = \\x0d\\x0a = [13][10])\n" if $pc;
-    warn "Outputting Mac style endings (\\r = \\x0d = [13])\n" if $mac;
-    warn "Outputting Unix style endings (\\n = \\x0a = [10])\n" if $unix;
-    warn "Reading from standard input...\n" unless @ARGV;
-}
 
 my $out = "\x0a";
 $out = "\x0d" if $mac;
 $out = "\x0d\x0a" if $pc;
 $out = "\x0a" if $unix;
+
+if ($noisy) {
+    my $style = $pc ? 'PC (DOS/Windows)' : $mac ? 'Mac (pre-OSX)' : 'Unix';
+    s/\r/\\r/g, s/\n/\\n/g for my $logical = $out;
+    s/(.)/sprintf "\\x%02x", ord $1/ges for my $hex = $out;
+    s/(.)/sprintf "[%d]", ord $1/ges for my $dec = $out;
+    warn "Outputting $style style endings ($logical = $hex = $dec)\n";
+    warn "Reading from standard input...\n" unless @ARGV;
+}
 
 $^I = $delete ? '' : $backup;
 $/ = "\x0a";
