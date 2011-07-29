@@ -26,7 +26,7 @@ GetOptions(
 	'delete|D' => \ (my $delete = 0),
 	'bak' => \ (my $bak = 0),
 	'quiet|q' => \ (my $quiet = 0),
-	'noisy' => \ (my $noisy = 0),
+	'verbose|noisy' => \ (my $noisy = 0),
 	'status|s=i' => \ (my $status = 1000),
 ) or die $usage;
 
