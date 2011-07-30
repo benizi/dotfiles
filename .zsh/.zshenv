@@ -75,8 +75,7 @@ if_exists () {
 		eval "[[ $t ${(qqq)dir} ]]" && typeset -x $var=$dir
 	done
 }
-
-umask 077
+(( UID )) && umask 077 || umask 022
 export WORDCHARS='*?_-.[]~&;!#$%^(){}<>'
 if_exists PERL5LIB ~/Usable
 LD_LIBRARY_PATH=$HOME/lib${LD_LIBRARY_PATH+:$LD_LIBRARY_PATH}
