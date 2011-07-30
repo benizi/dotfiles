@@ -21,6 +21,8 @@ if [ -n "$STY" ] ; then
 	local _host=$(print -P '%m')
 	[[ $_screen = *.$_host ]] && _screen=$_screen:r
 	_screen="[$_screen]"
+elif [ -n "$DTACH" ] ; then
+	_screen="[${DTACH:t}]"
 fi
 local -a _extra
 
