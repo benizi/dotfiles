@@ -78,6 +78,15 @@ alias with-depot='PATH=${HOME}/bin/depot_tools:${PATH}'
 alias wget-cookies='wget --load-cookies $MOZ5PROF/cookies.txt'
 alias wget-fakeit="wget -U 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070515 Firefox/2.0.0.4' --load-cookies \$MOZ5PROF/cookies.txt"
 alias wcc='LC_ALL=C wc'
+() {
+local jar
+for jar in /usr/share/java/saxon8.jar ; do
+	if [[ -f $jar ]] ; then
+		eval "xsltproc () { java -jar $jar - \"\$@\" }"
+		break
+	fi
+done
+}
 alias z=' exec zsh'
 if (( $+zsh_admin_mode )) ; then
 	alias zu='sudo ZDOTDIR=$HOME zsh -l'
