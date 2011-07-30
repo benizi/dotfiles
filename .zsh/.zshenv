@@ -44,9 +44,6 @@ if ! term_color_test ; then
 fi
 term_color_test || TERM=xterm
 
-export EDITOR=/usr/bin/vim
-export READNULLCMD=less
-
 typeset -U path
 function () {
 local pathtest user
@@ -88,9 +85,6 @@ typeset -U ld_library_path
 export LD_LIBRARY_PATH
 if_exists MOZ5PROF ~/.mozilla/firefox/default
 if_exists AXIS2_HOME /opt/axis2-1.3
-export LESS="-R -i -M --shift 5 -F -X -j4"
-(( $+commands[lesspipe.sh] )) && export LESSOPEN="|lesspipe.sh %s"
-export PAGER=less
 export auto_proxy=http://localhost/proxy.pac
 if_exists MATLAB ~/MATLAB/7.4/lib/matlab7
 if_exists PYTHONSTARTUP -f ~/.python/startup
