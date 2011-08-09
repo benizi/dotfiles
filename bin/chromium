@@ -5,7 +5,7 @@ esac
 function warn () { echo "\e[31m$*\e[0m" >&2 }
 function die () { warn $* ; exit 1 }
 _dry=false
-_plugins=false
+_plugins=true
 unset _url _ua
 _logging=false
 _userscripts=true
@@ -40,10 +40,6 @@ while [ $# -gt 0 ] ; do
 	esac
 done
 : ${_profile=Default}
-case $_profile in
-	Default) _plugins=false ;;
-	*) _plugins=true ;;
-esac
 : ${_profdir=$_profile}
 if ! [[ $_profdir = */* ]] ; then
 	for loc in google-chrome chromium ; do
@@ -55,7 +51,7 @@ fi
 _logext=$_profdir:t
 _args+=( --user-data-dir=$_profdir )
 (( $+_ua )) && _args+=( --user-agent=$_ua )
-: ${_plugins=false}
+: ${_plugins=true}
 : ${_logext=default}
 for flag in $_flags ; do
 	${(P)${:-_${flag//-}}} && _args+=( --enable-$flag ) || _args+=( --disable-$flag )
