@@ -10,7 +10,7 @@ ARGF.each do |f|
 	fields = []
 	while f and not f.empty?
 		case f
-		when /^([^",][^,]+)/
+		when /^([^",]*)(?=,|$)/
 			fields << $1
 			f = f[($1.size + 1)..-1]
 		when /^"((?:[^"\\])*)"(?=,|$)/
