@@ -5,6 +5,7 @@ Really stupid CSV to Tab-Separated-Value converter
 
 =end
 ARGF.each do |f|
+	orig = f.dup
 	f.gsub!(/\r/,'')
 	fields = []
 	while f and not f.empty?
@@ -16,7 +17,7 @@ ARGF.each do |f|
 			fields << $1
 			f = f[($1.size + 3)..-1]
 		else
-			abort "Couldn't parse: #{f}"
+			abort "Couldn't parse: #{f}\nFrom: #{orig}"
 		end
 	end
 	puts fields.join("\t")
