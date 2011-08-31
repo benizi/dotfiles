@@ -1,0 +1,15 @@
+#!/bin/zsh
+trap 'returned=SIGNAL' INT TERM
+starttime=$(date +%s)
+$argv
+returned+=$?
+endtime=$(date +%s)
+msgcmd=()
+if [[ -n "$WMII_ADDRESS" ]] ; then
+	msgcmd=( wmii-alert.pl -- )
+else
+	msgcmd=( notify-send -t 0 )
+fi
+[[ $returned != "0" ]] && msg="[!$returned]: $argv" || msg="$argv"
+msg="$msg [time: $(( endtime - starttime ))]"
+$msgcmd $msg || print -r $'\a'$msg
