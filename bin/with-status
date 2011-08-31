@@ -1,8 +1,24 @@
 #!/bin/zsh
+(( $#argv )) || { echo "Usage: ${0:h} cmd [args] [-- message]" >&2 ; exit 1 }
 trap 'returned=SIGNAL' INT TERM
 starttime=$(date +%s)
-$argv
-returned+=$?
+cmd=()
+unset msg
+for arg ; do
+	if (( $+msg )) ; then
+		msg+=( $arg )
+		continue
+	fi
+	case $arg in
+		--) msg=() ;;
+		*) cmd+=( $arg ) ;;
+	esac
+done
+(( $+msg )) || msg=()
+(( $#cmd )) || cmd=( true )
+(( $#msg )) || msg=( $cmd )
+$cmd
+returned=$?
 endtime=$(date +%s)
 msgcmd=()
 if [[ -n "$WMII_ADDRESS" ]] ; then
@@ -10,6 +26,7 @@ if [[ -n "$WMII_ADDRESS" ]] ; then
 else
 	msgcmd=( notify-send -t 0 )
 fi
-[[ $returned != "0" ]] && msg="[!$returned]: $argv" || msg="$argv"
-msg="$msg [time: $(( endtime - starttime ))]"
-$msgcmd $msg || print -r $'\a'$msg
+mess="$msg"
+[[ $returned != "0" ]] && mess="[!$returned]: $mess"
+mess="$mess [time: $(( endtime - starttime ))]"
+$msgcmd $mess || print -r $'\a'$mess
