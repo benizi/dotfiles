@@ -1,0 +1,22 @@
+#!/bin/zsh
+die () {
+	if (( $+commands[with-status] )) ; then
+		cmd=( with-status -- )
+	elif (( $+commands[notify-send] )) ; then
+		cmd=( notify-send )
+	else
+		cmd=( echo )
+	fi
+	$cmd "$@" >&2
+	exit 1
+}
+get_clip () { xclip -o -selection $1 2>/dev/null }
+for l in primary clipboard ; do
+	url="$(get_clip)"
+	[[ "$url" = *$'\n'*$'\n'* ]] && continue
+	[[ "$url" = *.* ]] || [[ "$url" = */* ]] || continue
+	[[ "$url" = *\ *\ * ]] && continue
+	sensible-browser $url
+	exit
+done
+die "No url found"
