@@ -30,7 +30,7 @@ int main(void) {
 		root = screen->root;
 
 	xcb_get_property_cookie_t propc = xcb_get_property(
-		conn, 0, root, _NAWSR->atom, WINDOW, 0L, sizeof(xcb_window_t*)
+		conn, 0, root, _NAWSR->atom, XCB_ATOM_WINDOW, 0L, sizeof(xcb_window_t*)
 	);
 	xcb_get_property_reply_t *prop = xcb_get_property_reply(conn, propc, NULL);
 	xcb_window_t *active = xcb_get_property_value(prop);
