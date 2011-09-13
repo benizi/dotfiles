@@ -17,7 +17,7 @@ int main(void) {
 	int screen_default;
 	xcb_screen_t *screen;
 	xcb_connection_t *conn = xcb_connect(NULL, &screen_default);
-	if (!conn) {
+	if (xcb_connection_has_error(conn)) {
 		fprintf(stderr,"NOK\n");
 		return 1;
 	}
