@@ -2,6 +2,14 @@
 use strict;
 use warnings;
 use feature ':5.10';
+use File::Spec;
+my $rdesktop;
+BEGIN {
+	for my $prog (qw/rdesktop xfreerdp/) {
+		$rdesktop //= $prog if grep -x, map "$_/$prog", File::Spec->path;
+	}
+	$rdesktop // die "Couldn't find rdesktop program\n";
+}
 use Getopt::Long qw/:config pass_through/;
 my %opt;
 GetOptions(
@@ -93,7 +101,7 @@ push @extra, '-r', 'disk:shared=/home/bhaskell/shared' if $add_disk;
 push @extra, '-r', 'sound' if $add_sound;
 my $seamless = grep /-A/, @extra;
 my @rcmd = (
-	rdesktop =>
+	$rdesktop =>
 	grep(!$seamless, -g => $opt{graphics}),
 	-a => $opt{depth},
 	-u => $opt{user},
