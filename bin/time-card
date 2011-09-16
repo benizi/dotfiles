@@ -197,7 +197,7 @@ times.keys.sort.each do |wk|
 		x = {}
 		h.each do |k,v|
 			hr = k[0,2].to_i
-			newk = k # hr < 9 ? "<<:" << k[3,2] : hr > 20 ? ">>:" << k[3,2] : k # (9..20).include?(hr) ? k : "xx:xx"
+			newk = hr < 9 ? "..:" << k[3,2] : hr > 21 ? ">>:" << k[3,2] : k # (9..20).include?(hr) ? k : "xx:xx"
 			x[newk] ||= 0
 			x[newk] += v
 		end
