@@ -17,6 +17,7 @@ optparse = OptionParser.new do |o|
 	o.on('-w N', Integer) { |n| opts.width = n }
 	o.on('--whour N', Integer) { |n| opts.whour = n }
 	o.on('--urls') { opts.urls = true }
+	o.on('--week TIME') { |t| opts.week = t }
 end.parse!(ARGV)
 
 opts.width ||= 10000
@@ -27,8 +28,30 @@ unless use.select { |k,v| v }.length > 0
 	ARGV << "#{ENV['HOME']}/.historyfile" if ARGV.size.zero?
 end
 
+def week_interval(wk, yr=nil)
+	require 'date'
+	yr ||= Time.new.strftime('%Y').to_i
+	monday = Date.commercial(yr, wk, 1)
+	min_date = Time.at((monday-1).strftime('%s').to_i)
+	max_date = Time.at((monday+6).strftime('%s').to_i)
+	[ min_date, max_date ]
+end
+
 now = Time.new
-min_date = now - 86400 * opts.cutoff
+min_date = nil
+max_date = now
+case opts.week
+when nil
+	min_date = now - 86400 * opts.cutoff
+when '0'
+	min_date, max_date = week_interval(now.strftime('%W').to_i)
+when /^(-?)(\d+)$/
+	wk = $1.empty? ? $2.to_i : now.strftime('%W').to_i - $2.to_i
+	min_date, max_date = week_interval(wk)
+else
+	warn "Couldn't parse this --week: #{opts.week}, using this week"
+	min_date, max_date = week_interval(now.strftime('%W').to_i)
+end
 
 times = {}
 min_max = {}
@@ -138,7 +161,7 @@ SQL
 	end
 end
 
-all_times.select {|t| t[-1] >= min_date }.each do |info|
+all_times.select {|t| t[-1] >= min_date && t[-1] < max_date }.each do |info|
 	label, t = info
 	r = Time.at(t - t.to_i % (min_chunk * 60))
 	wk = r.strftime("%Y week %U")
