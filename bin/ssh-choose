@@ -1,0 +1,54 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Sys::Hostname;
+use IPC::Run 'run';
+use Getopt::Long qw/:config pass_through/;
+GetOptions(
+	'1' => \(my $just_one),
+	'r' => \(my $do_exec),
+	'v' => \(my $verbose),
+	'dry-run' => \(my $dry),
+);
+$verbose //= $dry;
+my ($hosts, @hosts, %hosts);
+my %default_other = (
+	'hp' => 'usc.vpn',
+	'bhaskell-pc' => 'hp',
+	'bhaskell-laplin' => 'b',
+	'averatec' => 'hp',
+);
+
+if (@ARGV) {
+	@hosts = @ARGV;
+} else {
+	@ARGV = ("$ENV{HOME}/.ssh/known_hosts");
+	!/^#/ and undef @hosts{map split(/,/), (split)[0]} while <>;
+	@ARGV = ("$ENV{HOME}/.ssh/config");
+	/^Host\s/ and undef @hosts{(split)} while <>;
+	@hosts = grep !/^[\d\[*|]/, grep !/Host/, sort keys %hosts;
+}
+if ($just_one or not @hosts) {
+	if (open my $default, '<', "$ENV{HOME}/.default.ssh") {
+		chomp(@hosts = <$default>);
+	} else {
+		@hosts = $ENV{DEFAULT_SSH}
+		// $default_other{hostname()}
+		// 'localhost'
+	}
+}
+$hosts = join "", map "$_\n", @hosts;
+print $hosts and exit unless $do_exec;
+my $out;
+if ($just_one) {
+	$out = $hosts;
+} else {
+	run [ 'dmenu' ], \$hosts, \$out, \my $err;
+}
+chomp $out;
+exit 1 unless length $out;
+my @cmd = ('urxvt', '-e', 'ssh', split ' ', $out);
+print "@cmd\n" if $verbose;
+exit if $dry;
+open STDERR, '>', '/dev/null';
+exec { $cmd[0] } @cmd;
