@@ -1,6 +1,8 @@
 #!/bin/zsh
 case $0 in
-	*.*) argv+=( --profile $0:e ) ;;
+	*.*) _profile=$0:e ;;
+	*chromium*) ;;
+	*) _profile=$0:t ;;
 esac
 function warn () { echo "\e[31m$*\e[0m" >&2 }
 function die () { warn $* ; exit 1 }
