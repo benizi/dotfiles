@@ -62,18 +62,28 @@ def cwd(pid)
 	File.readlink("/proc/#{pid}/cwd")
 end
 
-# command to run is whatever args you pass
-cmd_to_run = ARGV.dup
-cmd_to_run = default_cmd if cmd_to_run.empty?
-
-winid = IO.popen(active_window) { |p| p.readline.chomp }
-pid = pid_from_window(winid)
-cmd = cmd_from_pid(pid)
-dir = nil
-case cmd[0]
-when /(\A|\/)(?:u?rxvt|st|u?xterm|terminal)$/i # if it looks term-ish, find subshell
-	pid = subvim(pid) || subshell(pid)
+# command to run is whatever args you pass or the default config'ed above
+def cmd_to_run
+	arr = ARGV.dup
+	arr = default_cmd if arr.empty?
+	arr
 end
-dir ||= cwd(pid)
-Dir.chdir(cwd(pid))
-exec(*cmd_to_run)
+
+begin
+	# try to start something in the cwd of the active window
+	winid = IO.popen(active_window) { |p| p.readline.chomp }
+	pid = pid_from_window(winid)
+	cmd = cmd_from_pid(pid)
+	dir = nil
+	case cmd[0]
+	when /(\A|\/)(?:u?rxvt|st|u?xterm|terminal)$/i # if it looks term-ish, find subshell
+		pid = subvim(pid) || subshell(pid)
+	when /chrom/i # if it looks like Chromium, don't care about cwd
+		dir = ENV['HOME']
+	end
+	dir ||= cwd(pid)
+	Dir.chdir(dir)
+ensure
+	# but start the cmd regardless of whether we could find the cwd
+	exec(*cmd_to_run)
+end
