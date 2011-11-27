@@ -1,0 +1,79 @@
+#!/usr/bin/env ruby
+
+# substitute your own tools here
+# `sprop` doesn't handle "CARDINAL" atoms
+
+# command to find the active X11 window ID
+def active_window ; 'xdotool getwindowfocus' ; end
+
+# command to find the PID of a given X11 window ID
+def _net_wm(id) ; %Q{xprop -id #{id} _NET_WM_PID} ; end
+
+# default command to run
+def default_cmd ; %w{urxvt} ; end
+
+
+# Get a PID from a window ID
+def pid_from_window(id)
+	IO.popen(_net_wm(id)) { |p| p.readline.chomp }.split[2].to_i
+end
+
+# Get the cmdline of a given PID as an array
+def cmd_from_pid(pid)
+	cmd = File.open("/proc/#{pid}/cmdline") { |i| i.read }.split(/\0/)
+end
+
+# Get the PPID of a PID
+def parent_pid(pid)
+	stat = File.open("/proc/#{pid}/stat") { |i| i.read }
+	stat.gsub!(/^.*\)\s.\s/, '')
+	stat.split[0].to_i
+end
+
+# Get the child PIDs of a PID
+def child_pids(pid)
+	kids = []
+	Dir.foreach('/proc') do |entry|
+		next unless entry =~ /^\d+$/
+		next if parent_pid(entry) != pid
+		kids << entry.to_i
+	end
+	kids
+end
+
+# Get the first child PID that looks like a shell
+def subshell(pid)
+	kids = child_pids(pid)
+	kids.each do |kid|
+		return kid if cmd_from_pid(kid)[0] =~ /sh$/
+	end
+	kids[0]
+end
+
+# Get the first descendant that looks like a Vim
+def subvim(pid)
+	kids = child_pids(pid)
+	vim = kids.detect { |p| cmd_from_pid(p)[0] =~ /vim/ }
+	vim || kids.collect { |p| subvim(p) }.flatten[0]
+end
+
+# Get the cwd of a PID
+def cwd(pid)
+	File.readlink("/proc/#{pid}/cwd")
+end
+
+# command to run is whatever args you pass
+cmd_to_run = ARGV.dup
+cmd_to_run = default_cmd if cmd_to_run.empty?
+
+winid = IO.popen(active_window) { |p| p.readline.chomp }
+pid = pid_from_window(winid)
+cmd = cmd_from_pid(pid)
+dir = nil
+case cmd[0]
+when /(\A|\/)(?:u?rxvt|st|u?xterm|terminal)$/i # if it looks term-ish, find subshell
+	pid = subvim(pid) || subshell(pid)
+end
+dir ||= cwd(pid)
+Dir.chdir(cwd(pid))
+exec(*cmd_to_run)
