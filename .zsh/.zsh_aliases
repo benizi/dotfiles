@@ -116,6 +116,12 @@ else
 	hash -d vdb=/var/db/pkg
 fi
 
+hash_if_exist () {
+	[[ -d $2 ]] || return 1
+	hash -d $1=$2
+}
+hash_if_exist xkb /usr/share/X11/xkb
+
 local _win_root _win_docset _win_inet _win_down _win_doc
 [ -n "$INCYG" ] && _win_root=/cygdrive/c || _win_root=/mnt/acer2k3
 [ -n "$INWIN7" ] && _win_docset=Users || _win_docset="Documents and Settings"
