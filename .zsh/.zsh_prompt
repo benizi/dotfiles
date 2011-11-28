@@ -121,6 +121,8 @@ function zle-line-init zle-keymap-select {
 	elif (( $+terminfo[cvvis] && $+terminfo[cnorm] )) ; then
 		seqs+=( cmd $terminfo[cvvis] )
 		seqs+=( ins $terminfo[cnorm] )
+	else
+		return
 	fi
 	case $KEYMAP in
 		vicmd) print -rn -- $seqs[cmd] ;;
