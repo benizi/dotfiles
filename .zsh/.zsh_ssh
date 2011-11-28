@@ -1,13 +1,15 @@
 FORCE=${SSH_FORCE:-false}
 function ssh_find () {
-	print -l ~/.ssh/id_*~*.pub~*.ppk(.N)
+	print -l ~/.ssh/id_*~*.pub~*.ppk(.N:t)
 }
 function ssh_find_add () {
 	local -a ids envargs
 	ids=( ${(f):-"$(ssh_find)"} )
 	(( $#ids )) || return
 	(( $+INSOL )) && envargs=( DISPLAY= ) || envargs=( -u DISPLAY )
+	pushd ~/.ssh || return
 	env $envargs ssh-add $ids
+	popd
 }
 function ssh_re_source () {
 	[ -r ~/ssh-script ] && . ~/ssh-script > /dev/null
@@ -17,20 +19,30 @@ function ssh_restart () {
 	ssh_re_source
 }
 function ssh_script_regen () {
-	cat > ~/ssh-script <<SSH
+	cat <<SSH
 SSH_AUTH_SOCK=$SSH_AUTH_SOCK; export SSH_AUTH_SOCK;
 SSH_AGENT_PID=$SSH_AGENT_PID; export SSH_AGENT_PID;
 echo Agent pid $SSH_AGENT_PID;
 SSH
 }
-if $FORCE || [[ -O ${(%):-"%N"} ]] ; then
-	local _run=false
-	ssh_re_source
-	[ -z "$SSH_AGENT_PID" ] && _run=true
-	$_run || kill -0 $SSH_AGENT_PID 2>/dev/null || _run=true
-	$_run || [ -z "$INLIN" ] || grep -q ssh-agent /proc/$SSH_AGENT_PID/cmdline 2>/dev/null || _run=true
-	$_run && ssh_restart
-	ssh-add -l &> /dev/null
-	[[ $? = 2 ]] && ssh_restart
-	ssh-add -l | grep -vq no.identities || ssh_find_add
-fi
+
+# workaround for getting script name
+REPLY=${(%):-"%x"} A
+local ssh_ensure_running_script=$reply[1]
+
+ssh_ensure_running () {
+	if $FORCE || [[ -O $ssh_ensure_running_script ]] ; then
+		local _run=false
+		[ -n "$SSH_AUTH_SOCK" ] && [ -e "$SSH_AUTH_SOCK" ] && return
+		ssh_re_source
+		[ -z "$SSH_AGENT_PID" ] && _run=true
+		$_run || [ -n "$SSH_AUTH_SOCK" ] || [ -e $SSH_AUTH_SOCK ] || _run=true
+		$_run || kill -0 $SSH_AGENT_PID 2>/dev/null || _run=true
+		$_run || [ -z "$INLIN" ] || grep -q ssh-agent /proc/$SSH_AGENT_PID/cmdline 2>/dev/null || _run=true
+		$_run && ssh_restart
+		ssh-add -l &> /dev/null
+		[[ $? = 2 ]] && ssh_restart
+		ssh-add -l | grep -vq no.identities || ssh_find_add
+	fi
+}
+ssh_ensure_running
