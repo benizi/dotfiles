@@ -99,3 +99,22 @@ function edit9 () {
 		wmiir write $path9 < $temp
 	} always { rm $temp }
 }
+can-mail () {
+	(( $+commands[mail] )) && return 0
+	warn "Need to install mailx?"
+	return 1
+}
+reminder () {
+	can-mail || return 1
+	echo Mailed Reminder | mail -s "$*" $EMAIL
+}
+with-mail () {
+	local txt ret
+	can-mail || return 1
+	$argv
+	ret=$?
+	txt="$argv"
+	(( ret )) && txt="[Ret: $ret] $txt"
+	reminder $txt
+	return $ret
+}
