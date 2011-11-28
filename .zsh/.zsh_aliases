@@ -33,8 +33,8 @@ local lscolor="ls --color=auto"
 # really-short list
 alias g=git
 alias l="$lscolor -trl"
-alias gv='gvim -u ~/.vimrc -N'
-alias v='vim -u ~/.vimrc -N'
+alias gv=gvim
+alias v=vim
 alias vi=v
 
 alias ll="$lscolor -trlL"
