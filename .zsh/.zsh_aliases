@@ -48,6 +48,10 @@ alias lsr="$lscolor -Sl"
 alias lsl=l
 }
 
+# global aliases
+alias -g L='| less'
+alias -g LS='| less -S'
+
 (( UID )) && alias lvm='sudo lvm'
 
 (( $+commands[certutil] )) && alias c-cert="certutil -d sql:$HOME/.pki/nssdb"
