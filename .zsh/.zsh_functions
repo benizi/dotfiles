@@ -50,7 +50,7 @@ function update-zsh () {
 	fi
 	popd
 }
-function lslvm () { for l in vg pv lv ; do lvm ${l}display -C ; done }
+function lslvm () { for l in vgs pvs lvs ; do lvm $l ; done }
 if [ -n "$INCYG" ] ; then
 	function cyg () { reply=("$(cygpath -w $REPLY)") }
 fi
