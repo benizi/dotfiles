@@ -26,14 +26,18 @@ elif [ -n "$DTACH" ] ; then
 fi
 local -a _extra
 
-local -a test_git
+local -a test_git other_vcs
 test_git=( $PWD(N) )
+other_vcs=()
 local -A added
-local n=0 git_dir=
+local n=0 git_dir= o
 while (( $#test_git && n < 20 )) ; do
 	local d=$test_git[1]
 	shift test_git
 	n=$(( n + 1 ))
+	for o in $d/{.hg,.svn,CVS} ; do
+		[[ -d $o ]] && other_vcs+=( $o )
+	done
 	[[ -d $d/.git ]] && git_dir=$d/.git && break
 	local -a add
 	add=( $d:h $d/./..(+A,N) )
@@ -43,6 +47,11 @@ while (( $#test_git && n < 20 )) ; do
 		added[$d]=1
 	done
 done
+if (( $#other_vcs )) ; then
+	for n in $other_vcs ; do
+		_extra+=( $(cd $n ; print -P '%~') )
+	done
+fi
 if (( $#git_dir )) ; then
 	local -a pretty_git
 	local dir=$(cd $git_dir:h ; print -P '%~')
