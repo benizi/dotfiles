@@ -14,7 +14,12 @@ setopt csh_junkie_history
 export MAILCHECK=0
 autoload -U compinit
 autoload -Uz age
-autoload -Uz warn
+() {
+	local fn
+	for fn in $^zsh_dirs/autoload/*(N:t) ; do
+		autoload -Uz $fn
+	done
+}
 zmodload zsh/mathfunc 2>/dev/null
 if [ -f ~/.zcompdump.debugging ] ; then
 	rm -f ~/.zcompdump
