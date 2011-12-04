@@ -1,0 +1,5 @@
+#!/bin/zsh
+env -u LD_PRELOAD xinit =minecraft -- :8 &
+export DISPLAY=:8
+x-is-active -wait
+xclock -name blue -geometry +1920+0 &
