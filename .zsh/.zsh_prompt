@@ -49,12 +49,12 @@ while (( $#test_git && n < 20 )) ; do
 done
 if (( $#other_vcs )) ; then
 	for n in $other_vcs ; do
-		_extra+=( $(cd $n ; print -P '%~') )
+		_extra+=( $(cd -q $n ; print -P '%~') )
 	done
 fi
 if (( $#git_dir )) ; then
 	local -a pretty_git
-	local dir=$(cd $git_dir:h ; print -P '%~')
+	local dir=$(cd -q $git_dir:h ; print -P '%~')
 	[[ $dir = $(print -P '%~') ]] || pretty_git+=( $dir )
 	local branch="$(git --git-dir=$git_dir branch | grep '^[*]' | cut -c3-)"
 	[[ "$branch" = master ]] || pretty_git+=( $branch )
