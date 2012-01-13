@@ -82,7 +82,9 @@ if_exists () {
 }
 (( UID )) && umask 077 || umask 022
 export WORDCHARS='*?_-.[]~&;!#$%^(){}<>'
-if_exists PERL5LIB ~$owner/Usable
+typeset -T PERL5LIB perl5lib
+typeset -U perl5lib
+if_exists perl5lib ~$owner/perl-lib ~$owner/Usable
 LD_LIBRARY_PATH=$HOME/lib${LD_LIBRARY_PATH+:$LD_LIBRARY_PATH}
 typeset -T LD_LIBRARY_PATH ld_library_path
 typeset -U ld_library_path
