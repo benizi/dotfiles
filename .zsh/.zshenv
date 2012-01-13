@@ -29,10 +29,8 @@ zsh_dirs+=( $zshenv:h $zshenv(+A:h) )
 zsh_dirs=( ${^zsh_dirs}{,.local,-}(N/) )
 ZDOTDIR=( $zshenv(+A:h) ) && ZDOTDIR=$ZDOTDIR[1]
 
-() {
-local defaultssh=$HOME/.default.ssh
+defaultssh=~$owner/.default.ssh
 [[ -f $defaultssh ]] && export DEFAULT_SSH="$(<$defaultssh)"
-}
 
 # run versions of the current file that aren't the file itself
 function run_local_versions () {
