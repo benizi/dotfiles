@@ -184,3 +184,4 @@ if exists("g:alpine")
 		exe "source ".alpinevim
 	endif
 endif
+silent! call pathogen#infect()
