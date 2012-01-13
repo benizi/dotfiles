@@ -74,9 +74,10 @@ export PINERC='{dovecot.benizi.com/ssl/user=bhaskell}pinerc'
 if_exists () {
 	local dir t=-d var=$1
 	shift
+	[[ $var = [a-z]* ]] && var=$var'[$#'$var'+1]'
 	for dir ; do
 		case $dir in -f|-d) t=$dir ; continue ;; esac
-		eval "[[ $t ${(qqq)dir} ]]" && typeset -x $var=$dir
+		test $t $dir && typeset -x $var=$dir
 	done
 }
 (( UID )) && umask 077 || umask 022
