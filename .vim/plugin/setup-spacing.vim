@@ -125,7 +125,7 @@ fun! SetupSpacing(...)
 	endif
 	let b:setup_spacing = 1
 	if a:0 && a:1 < 2
-		let homestyle = (a:1 ? 1 : 0)
+		let tabby = (a:1 ? 1 : 0)
 	else
 		let detected = DetectSpacing()
 		if len(detected)
@@ -135,10 +135,10 @@ fun! SetupSpacing(...)
 		if !exists('g:disable_detectindent')
 			return
 		endif
-		let homestyle = -1 != match(expand('<afile>:p'),expand('~/bin/'))
+		let tabby = -1 != match(expand('<afile>:p'),expand('~/bin/'))
 	endif
-	let b:homestyle_spacing = homestyle
-	if homestyle
+	let b:tabby_spacing = tabby
+	if tabby
 		call SetupTabstop(4,0)
 		set listchars=tab:\ \ ,trail:·
 	else
