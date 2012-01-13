@@ -7,6 +7,7 @@ my @options = (
 	'256' => \(my $use_256 = 0),
 	'help|usage|?' => \(my $run_help = 0),
 	'x11=s' => \(my $rgb_txt_file = '/usr/share/X11/rgb.txt'),
+	'keep' => \(my $keep_gui = 0),
 );
 my $usage = <<USAGE;
 Usage: $0 [options] [files]
@@ -80,11 +81,16 @@ sub closest {
 	$diff[$_] == $min and return $_ for 0..$#x256;
 	die "No closest for $hex\n";
 }
+
+sub keep {
+	$keep_gui ? "@_ " : '';
+}
+
 my $type = qr{(?:[bf]g)};
 while (<>) {
 	s{\bcterm(|$type)=\w+}{}g;
-	s{\bgui(|$type)=(UNDERLINE|BOLD|NONE|[bf]g)\b}{cterm$1=$2}gi;
-	s#\bgui($type)=($x11_qr)\b#"gui$1=".$x11{lc $2}#gie;
-	s{\bgui($type)=(#......)\b}{"cterm$1=".closest($2)}ge;
+	s{\b(gui(|$type)=(UNDERLINE|BOLD|NONE|[bf]g))\b}{keep($1)."cterm$2=$3"}gie;
+	s#\b(gui($type)=($x11_qr))\b#keep($1)."gui$2=".$x11{lc $3}#gie;
+	s{\b(gui($type)=(#......))\b}{keep($1)."cterm$2=".closest($3)}ge;
 	print;
 }
