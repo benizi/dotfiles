@@ -9,6 +9,7 @@ my @options = (
 	'help|usage|?' => \(my $run_help = 0),
 	'x11=s' => \(my $rgb_txt_file = '/usr/share/X11/rgb.txt'),
 	'keep' => \(my $keep_gui = 0),
+	'debug' => \(my $debugging_colors = 0),
 );
 my $usage = <<USAGE;
 Usage: $0 [options] [files]
@@ -22,6 +23,14 @@ use Getopt::Long qw/:config pass_through/;
 GetOptions(@options) or die $usage;
 sub usage { print $usage; @_ and print @_, "\n"; exit }
 usage if $run_help;
+my $d_width = 10;
+my $d_height = 16;
+my $d_top = 100;
+my $d_hex = 30;
+if ($debugging_colors) {
+	my $img_dim = join 'x', ($d_width * $d_top), (2 * $d_height * $d_hex);
+	open STDOUT, "| convert -size $img_dim -depth 8 rgb:- x:";
+}
 
 sub _grey2rgb {
 	my ($x, $fs) = @_;
@@ -73,12 +82,44 @@ sub _load_x11colors {
 	$x11_qr = qr/(?:$x11_qr)/i;
 }
 _load_x11colors;
-my @x256 = (([-200,-200,-200]) x 16, map [x256torgb $_], 16..255);
+my @x256 = (
+	[ 0,0,0 ],
+	[ 205,0,0 ],
+	[ 0,205,0 ],
+	[ 205,133,0 ],
+	[ 0,0,205 ],
+	[ 205,0,205 ],
+	[ 0,205,205 ],
+	[ 229,229,229 ],
+	[ 77,77,77 ],
+	[ 255,0,0 ],
+	[ 0,255,0 ],
+	[ 238,154,0 ],
+	[ 0,0,255 ],
+	[ 255,0,255 ],
+	[ 0,255,255 ],
+	[ 255,255,255 ],
+	map [x256torgb $_], 16..255
+);
 use Memoize;
+my %debugged;
 sub closest {
 	my $hex = shift;
 	my @rgb = map hex, ($hex =~ /^#(..)(..)(..)$/);
 	my @diff = map color_diff(\@rgb, $x256[$_]), 0..$#x256;
+	if ($debugging_colors and ($d_hex > keys %debugged) and not $debugged{lc $hex}++) {
+		print map chr, @rgb for 1..($d_width * $d_height * $d_top);
+		my @trip = map join('', map chr, @$_),
+		map $x256[$_],
+		sort {
+			$diff[$a] <=> $diff[$b]
+		} 0..$#x256;
+		for my $row (1..$d_height) {
+			for my $col (0..($d_top-1)) {
+				print $trip[$col] x $d_width;
+			}
+		}
+	}
 	my $min = (sort { $a <=> $b } @diff)[0];
 	$diff[$_] == $min and return $_ for 0..$#x256;
 	die "No closest for $hex\n";
@@ -195,5 +236,6 @@ while (<>) {
 	s{\b(gui(|$type)=(UNDERLINE|BOLD|NONE|[bf]g))\b}{keep($1)."cterm$2=$3"}gie;
 	s#\b(gui($type)=($x11_qr))\b#keep($1)."gui$2=".$x11{lc $3}#gie;
 	s{\b(gui($type)=(#......))\b}{keep($1)."cterm$2=".closest($3)}ge;
-	print;
+	print unless $debugging_colors;
 }
+close STDOUT if $debugging_colors;
