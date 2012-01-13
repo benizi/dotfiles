@@ -32,6 +32,10 @@ x-ungrab:	src/X11/x-ungrab.c
 	$(CC) $(CFLAGS) $(shell pkg-config --cflags x11) -o $@.tmp $< $(shell pkg-config --libs x11)
 	mv $@.tmp $@
 
+x-resource-test:	src/X11/x-resource-test.c
+	$(CC) $(CFLAGS) $(shell pkg-config --cflags x11) -o $@.tmp $< $(shell pkg-config --libs x11)
+	mv $@.tmp $@
+
 NOW:	src/NOW.c
 	$(CC) $(CFLAGS) -I../include -L../lib -o $@.tmp $< -lmyc
 	mv $@.tmp $@
