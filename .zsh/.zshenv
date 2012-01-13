@@ -62,7 +62,7 @@ pathtest+=( {/{usr,opt}{/local,},}/{s,}bin )
 pathtest+=( $HOME/bin/dslinux/bin /usr/games/bin /home/bhaskell/wn/bin /home/bhaskell/qmail/bin /var/qmail/bin /usr/kde/4.0/bin /usr/X11R6/bin )
 pathtest+=( $path )
 pathtest+=( /people/bhaskell/bin )
-pathtest=( ~/.rbenv/bin ~/.gem/ruby/*/bin(N) $^pathtest )
+pathtest=( ~/.rbenv/bin $^pathtest )
 path=( ${^pathtest}(N-/) )
 }
 
