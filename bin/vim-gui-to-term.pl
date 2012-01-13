@@ -63,7 +63,7 @@ sub x256torgb { _x2rgb $_[0], 6, 0 }
 my $x11_qr = qr/(?:\000)/;
 my %x11;
 sub _load_x11colors {
-	local @ARGV = grep -f,
+	local @ARGV = grep -f, $rgb_txt_file;
 	@ARGV or return;
 	while (<>) {
 		chomp;
