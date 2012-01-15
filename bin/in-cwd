@@ -89,6 +89,7 @@ begin
 	dir ||= cwd(pid)
 	Dir.chdir(dir)
 ensure
+	ENV.delete_if { |k,v| k =~ /^RBENV/ }
 	# but start the cmd regardless of whether we could find the cwd
 	exec(*cmd_to_run)
 end
