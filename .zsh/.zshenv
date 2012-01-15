@@ -80,15 +80,18 @@ if_exists () {
 		test $t $dir && typeset -x $var=$dir
 	done
 }
+tied_export () {
+	local name=$1
+	print -r - typeset -T $name:u $name:l
+	print -r - typeset -x $name:u
+	print -r - typeset -U $name:l
+}
 (( UID )) && umask 077 || umask 022
 export WORDCHARS='*?_-.[]~&;!#$%^(){}<>'
-typeset -T PERL5LIB perl5lib
-typeset -U perl5lib
+eval "$(tied_export PERL5LIB)"
 if_exists perl5lib ~$owner/perl-lib ~$owner/Usable
-LD_LIBRARY_PATH=$HOME/lib${LD_LIBRARY_PATH+:$LD_LIBRARY_PATH}
-typeset -T LD_LIBRARY_PATH ld_library_path
-typeset -U ld_library_path
-export LD_LIBRARY_PATH
+eval "$(tied_export LD_LIBRARY_PATH)"
+if_exists ld_library_path ~$owner/lib $ld_library_path
 if_exists MOZ5PROF ~/.mozilla/firefox/default
 if_exists AXIS2_HOME /opt/axis2-1.3
 export auto_proxy=http://localhost/proxy.pac
