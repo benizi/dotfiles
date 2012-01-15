@@ -69,6 +69,12 @@ def cmd_to_run
 end
 
 begin
+	# OS X is currently faily fail fail
+	if RUBY_PLATFORM =~ /darwin/i
+		Dir.chdir(ENV['HOME'])
+		throw "Gonna fail anyway"
+	end
+
 	# try to start something in the cwd of the active window
 	winid = IO.popen(active_window) { |p| p.readline.chomp }
 	pid = pid_from_window(winid)
