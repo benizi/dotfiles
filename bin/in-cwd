@@ -1,17 +1,16 @@
 #!/usr/bin/env ruby
 
 # substitute your own tools here
-# `sprop` doesn't handle "CARDINAL" atoms
 
 # command to find the active X11 window ID
 def active_window ; 'xdotool getwindowfocus' ; end
 
 # command to find the PID of a given X11 window ID
+# `sprop` doesn't handle "CARDINAL" atoms
 def _net_wm(id) ; %Q{xprop -id #{id} _NET_WM_PID} ; end
 
 # default command to run
 def default_cmd ; %w{urxvt} ; end
-
 
 # Get a PID from a window ID
 def pid_from_window(id)
