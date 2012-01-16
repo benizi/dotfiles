@@ -1,14 +1,21 @@
-for dir in map([ '~/.vim', '~/.vim.local' ], 'expand(v:val)')
+for dir in map([ '~/.vim', '~/.vim.local', '~/.vim-bundle/vim-addon-manager' ], 'expand(v:val)')
 	if isdirectory(dir)
 		if index(split(&rtp,','), dir) < 0
 			let &rtp = join([ dir, &rtp, dir.'/after' ], ',')
 		endif
 	endif
 endfor
-set noexpandtab softtabstop=4 tabstop=4 shiftwidth=4
-set list listchars=tab:\ \ ,trail:·
+
+" Set leader chars before activating addons
 let g:mapleader = ','
 let g:maplocalleader = g:mapleader
+
+" Run a couple addon managers... displaying nothing for failures...
+silent! call pathogen#infect()
+silent! call vam#ActivateAddons()
+
+set noexpandtab softtabstop=4 tabstop=4 shiftwidth=4
+set list listchars=tab:\ \ ,trail:·
 if $TERM =~ 'rxvt' || $TERM =~ 'xterm'
 	set mouse=a
 endif
@@ -184,4 +191,3 @@ if exists("g:alpine")
 		exe "source ".alpinevim
 	endif
 endif
-silent! call pathogen#infect()
