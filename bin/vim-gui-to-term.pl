@@ -10,6 +10,7 @@ my @options = (
 	'x11=s' => \(my $rgb_txt_file = '/usr/share/X11/rgb.txt'),
 	'keep' => \(my $keep_gui = 0),
 	'debug' => \(my $debugging_colors = 0),
+	'colo' => \(my $just_colors = 0),
 );
 my $usage = <<USAGE;
 Usage: $0 [options] [files]
@@ -23,10 +24,10 @@ use Getopt::Long qw/:config pass_through/;
 GetOptions(@options) or die $usage;
 sub usage { print $usage; @_ and print @_, "\n"; exit }
 usage if $run_help;
-my $d_width = 10;
+my $d_width = 30;
 my $d_height = 16;
-my $d_top = 100;
-my $d_hex = 30;
+my $d_top = 30;
+my $d_hex = 50;
 if ($debugging_colors) {
 	my $img_dim = join 'x', ($d_width * $d_top), (2 * $d_height * $d_hex);
 	open STDOUT, "| convert -size $img_dim -depth 8 rgb:- x:";
@@ -82,6 +83,31 @@ sub _load_x11colors {
 	$x11_qr = qr/(?:$x11_qr)/i;
 }
 _load_x11colors;
+sub x11_to_rgb {
+	my $x = shift;
+	my $ret = $x11{lc $x} // $x;
+	if ($ret =~ /^rgb:([\da-f]{1,4})\/([\da-f]{1,4})\/([\da-f]{1,4})$/i) {
+		$ret = sprintf "#%02x%02x%02x", map x11_scale($_), $1, $2, $3;
+	}
+	$ret;
+}
+
+sub x11_scale {
+	my $c = shift;
+	$c x= 2 if 1 == length $c;
+	$c = substr $c, 0, 2;
+	hex $c;
+}
+
+if ($just_colors) {
+	while (<>) {
+		chomp;
+		print join "\t", $_, x11_to_rgb $_;
+		print "\n";
+	}
+	exit;
+}
+
 my @x256 = (
 	[ 0,0,0 ],
 	[ 205,0,0 ],
