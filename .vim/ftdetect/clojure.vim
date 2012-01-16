@@ -1,1 +1,0 @@
-/home/bhaskell/hg/vimclojure/vim/ftdetect/clojure.vim
