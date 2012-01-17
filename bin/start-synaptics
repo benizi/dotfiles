@@ -1,0 +1,7 @@
+#!/bin/zsh
+dev=$(xinput list | awk -F= '/Synaptics/ { print $2 }' | awk '{ print $1 }')
+if [ -z "$dev" ] ; then
+	exit
+fi
+xinput set-prop $dev 248 10 15 256
+xinput set-prop $dev 266 0 0 0 0 1 3 2
