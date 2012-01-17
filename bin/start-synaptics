@@ -3,5 +3,13 @@ dev=$(xinput list | awk -F= '/Synaptics/ { print $2 }' | awk '{ print $1 }')
 if [ -z "$dev" ] ; then
 	exit
 fi
-xinput set-prop $dev 248 10 15 256
-xinput set-prop $dev 266 0 0 0 0 1 3 2
+typeset -A props
+xinput list-props $dev | while read line ; do
+	[[ $line = *\([[:digit:]]*\):* ]] || continue
+	name=${line%\ \(*}
+	id=${line#*\(}
+	id=${id%\)*}
+	props+=( $name $id )
+done
+xinput set-prop $dev "$props[Synaptics Finger]" 10 15 256
+xinput set-prop $dev "$props[Synaptics Tap Action]" 0 0 0 0 1 3 2
