@@ -1,0 +1,98 @@
+#!/usr/bin/env ruby
+require 'optparse'
+opts = {
+	:runit => $0 =~ /serv/,
+}
+parser = OptionParser.new do |o|
+	o.on('-u','--up') { opts[:up] = true }
+	o.on('-d','--down') { opts[:down] = true }
+	o.on('-l','--left') { opts[:left] = true }
+	o.on('-r','--right') { opts[:right] = true }
+	o.on('-v','--vertical') { opts[:up] = true ; opts[:down] = true }
+	o.on('--dry-run') { opts[:dry] = true }
+end
+parser.parse!(ARGV)
+
+host_info = ARGV.dup
+
+hosts = []
+screens = []
+links = {}
+alia = Hash.new { |h,k| h[k] = [] }
+screen_opts = Hash.new { |h,k| h[k] = Hash.new { |hh,kk| hh[kk] = {} } }
+
+host_info.each do |info|
+	host, host_opts = info.split(':')
+	host, *other_names = host.split('=')
+
+	if host_opts
+		screen_opts[host] ||= {}
+		host_opts.split(',').each do |opt|
+			case opt
+			when 'mac'
+				# swap positions of {Win}+{Alt} and {Option}+{Command}
+				screen_opts[host]['alt'] = 'super'
+				screen_opts[host]['super'] = 'alt'
+			else
+				warn "Unknown option: #{opt}"
+			end
+		end
+	end
+
+	hosts << host
+	other_names.each { |a| alia[host] << a }
+end
+
+if ![:up, :down, :left, :right].detect { |dir| opts[dir] }
+	opts[:left] = true
+	opts[:right] = true
+end
+
+(0...hosts.size).each do |i|
+	this = hosts[i]
+	screens << this
+	links[this] = {}
+	[
+		[ -1, :left ],
+		[ -1, :up ],
+		[  1, :right ],
+		[  1, :down ],
+	].each do |add, dir|
+		links[this][dir] = hosts[(i + add) % hosts.size] if opts[dir]
+	end
+end
+
+class String
+	def indent
+		self.lines.map { |l| "\t" + l }.join('')
+	end
+end
+
+def section(name, text)
+	<<SECTION
+section: #{name}
+#{text.indent}
+end
+SECTION
+end
+
+puts section 'screens', screens.map { |s|
+	opt = screen_opts[s]
+	"#{s}:" +
+		case opt.size
+		when 0
+			""
+		else
+			"\n" + (opt.map { |k,v| "#{k} = #{v}" }.join("\n")).indent
+		end
+}.join("\n")
+
+puts section 'links', links.map { |screen,to|
+	screen + ":\n" + to.map { |dir,what| "#{dir} = #{what}" }.join("\n").indent
+}.join("\n")
+
+if alia.detect { |k,v| !v.empty? }
+	puts section 'aliases', alia.map { |host,al|
+		host + ":\n" + al.join("\n").indent
+	}.join("\n")
+end
