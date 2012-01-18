@@ -144,6 +144,9 @@ hash -d chrome=~benwin/"Local Settings/Application Data/Google/Chrome"
 hash -d quicklaunch=~benwin/"Application Data/Microsoft/Internet Explorer/Quick Launch"
 hash -d log=/var/log
 
+hash_if_exist alog /var/log/apache2
+hash_if_exist ht /srv/www/htdocs
+
 (( $+commands[xwininfo] )) && alias x-click-id='xwininfo | grep Window.id | cut -f4 -d" "'
 
 () {
