@@ -1,4 +1,6 @@
-for dir in map([ '~/.vim', '~/.vim.local', '~/.vim-bundle/vim-addon-manager' ], 'expand(v:val)')
+let s:bundle = '~/.vim-bundle'
+let s:pathogen = s:bundle.'/pathogen'
+for dir in map([ '~/.vim', '~/.vim.local', s:bundle.'/vim-addon-manager', s:pathogen ], 'expand(v:val)')
 	if isdirectory(dir)
 		if index(split(&rtp,','), dir) < 0
 			let &rtp = join([ dir, &rtp, dir.'/after' ], ',')
@@ -11,8 +13,7 @@ let g:mapleader = ','
 let g:maplocalleader = g:mapleader
 
 " Run a couple addon managers... displaying nothing for failures...
-silent! call pathogen#infect()
-silent! call vam#ActivateAddons()
+call pathogen#infect(expand(s:bundle))
 
 set noexpandtab softtabstop=4 tabstop=4 shiftwidth=4
 set list listchars=tab:\ \ ,trail:·
