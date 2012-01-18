@@ -150,6 +150,19 @@ hash_if_exist ht /srv/www/htdocs
 (( $+commands[xwininfo] )) && alias x-click-id='xwininfo | grep Window.id | cut -f4 -d" "'
 
 () {
+if (( $+functions[rbenv] )) ; then
+	local ver="$(rbenv version-name)"
+	case $ver in
+		system) ;;
+		*)
+			hash_if_exist rb ~/.rbenv/versions/$ver
+			hash_if_exist gem ~/.rbenv/versions/$ver/lib/ruby/gems/*/gems(N[1])
+			;;
+	esac
+fi
+}
+
+() {
 local dir
 local -a target
 for dir in ${^zsh_dirs}/(#i)[[:alpha:]]*(N@-/) ; do
