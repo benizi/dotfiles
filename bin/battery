@@ -1,14 +1,16 @@
 #!/bin/sh
 power=/sys/class/power_supply
 find $power/ -mindepth 1 | grep -q . || exit
-do_ac=true
+do_ac=false
 do_pct=true
+as_bool=false
 vb=false
 for arg ; do
 	case $arg in
 		-v|*verb*) vb=true ;;
 		-a|*ac*) do_ac=true ;;
 		-A|*no*p*) do_ac=true ; do_pct=false ;;
+		-p|*plug*) do_ac=true ; as_bool=true ;;
 	esac
 done
 contents () {
@@ -20,7 +22,12 @@ $do_ac && for ac in $power/AC* ; do
 	if $vb ; then
 		contents $online
 	else
-		[ "$(cat $online)" = 1 ] && printf '%s' '=' || printf '%s' '!'
+		[ "$(cat $online)" = 1 ] && plugged=true || plugged=false
+		if $as_bool ; then
+			printf '%s ' $plugged
+		else
+			$plugged && printf '%s' '=' || printf '%s' '!'
+		fi
 	fi
 done
 $do_pct && for bat in $power/BAT* ; do
