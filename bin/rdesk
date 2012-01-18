@@ -40,7 +40,7 @@ sub auto_geometry {
 	return unless my ($bar_height) = `$wininfo -root -children -size` =~ /no name\): \(\)  ${w}x(?!$h)(\d+)\Q$x$y\E/m;
 	$h -= $bar_height;
 	$y += $bar_height;
-	sprintf "%dx%d%+d%+d", $w-2, $h, $x, $y;
+	sprintf "%dx%d", $w-4, $h-2;
 }
 
 my (%rev_alias, %ip);
