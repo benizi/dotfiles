@@ -53,8 +53,9 @@ for dir in $zsh_dirs ; do
 	setopt nonullglob
 done
 
-(( $+RUBYOPT )) && warn "RUBYOPT is set ($RUBYOPT)... shouldn't be"
-unset RUBYOPT
+(( $+warn_rubyopt )) && warn "RUBYOPT was set ($warn_rubyopt)... shouldn't be"
+unset warn_rubyopt
+
 rvmsource=~/.rvm/scripts/rvm
 [[ -x $rvmsource ]] && . $rvmsource
 

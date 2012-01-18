@@ -19,6 +19,11 @@ else
 	A () { reply=("$(perl -MCwd=realpath -we 'print realpath shift' $REPLY)") }
 fi
 
+if (( $+RUBYOPT )) ; then
+	warn_rubyopt=$RUBYOPT
+	unset RUBYOPT
+fi
+
 # find owner of Zsh files (different behavior if root)
 owner="$(stat -L -c %U ${(%):-"%x"})"
 
