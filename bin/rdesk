@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use feature ':5.10';
 use File::Spec;
+use File::Basename;
 sub find_prog {
 	my $prog = shift;
 	(grep -x, map "$_/$prog", File::Spec->path)[0]
@@ -25,6 +26,7 @@ GetOptions(
 	'executable|cmd=s' => \$rdesktop,
 	'seamless|A' => \(my $seamless),
 ) or die 'options';
+$opt{server} //= basename $0 unless 'rdesk' eq basename $0;
 $opt{server} //= shift @ARGV;
 shift @ARGV if @ARGV and $ARGV[0] eq '--';
 warn "Extra options: (@ARGV)\n" if @ARGV;
