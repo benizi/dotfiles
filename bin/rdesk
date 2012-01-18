@@ -31,15 +31,22 @@ $opt{server} //= shift @ARGV;
 shift @ARGV if @ARGV and $ARGV[0] eq '--';
 warn "Extra options: (@ARGV)\n" if @ARGV;
 $opt{extra} = [@ARGV];
-$opt{graphics} //= do {
-	my $xinerama = find_prog 'x-xinerama-info';
-	$xinerama and `$xinerama --first` =~ /^(\d+x\d+\+-?\d+\+-?\d+)$/ ? $1 : undef;
-};
+
+sub auto_geometry {
+	return unless my $xinerama = find_prog 'x-xinerama-info';
+	my $g = `$xinerama --first` =~ /^(\d+x\d+\+-?\d+\+-?\d+)$/ ? $1 : undef;
+	my ($w, $h, $x, $y) = $g =~ /^(\d+)x(\d+)([+\-]\d+)([+\-]\d+)$/;
+	return unless my $wininfo = find_prog 'xwininfo';
+	return unless my ($bar_height) = `$wininfo -root -children -size` =~ /no name\): \(\)  ${w}x(?!$h)(\d+)\Q$x$y\E/m;
+	$h -= $bar_height;
+	$y += $bar_height;
+	sprintf "%dx%d%+d%+d", $w-2, $h, $x, $y;
+}
 
 my (%rev_alias, %ip);
 my %defaults = (
 	'' => {
-		graphics => '100%',
+		# graphics => '100%',
 		depth => 16,
 		user => $ENV{LOGNAME},
 		extra => [ '-z' ],
@@ -103,13 +110,14 @@ for (
 	}
 }
 
+$opt{graphics} //= auto_geometry;
 my @extra = @{$opt{extra}||[]};
 push @extra, '-r', 'disk:shared=/home/bhaskell/shared' if $add_disk;
 push @extra, '-r', 'sound' if $add_sound;
 $seamless ||= grep /-A/, @extra;
 my @rcmd = (
 	$rdesktop =>
-	grep(!$seamless, -g => $opt{graphics}),
+	(grep { !$seamless and defined $opt{graphics} } -g => $opt{graphics}),
 	-a => $opt{depth},
 	-u => $opt{user},
 	grep(defined($opt{pass}), -p => $opt{pass}),
