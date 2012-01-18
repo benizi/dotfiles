@@ -28,9 +28,9 @@ alias fcl='fc -t %Y-%m-%d@%H:%M:%S -nl 0 | less'
 # various versions of 'ls'
 () {
 local lscolor="ls --color=auto"
-(( $+INBSD || $+INSOL || $+INOSX )) && lscolor=ls
-(( $+INOSX )) && lscolor="ls -G"
-(( $+INOSX )) && lscolor="$lscolor -e"
+(( $+INBSD || $+INSOL )) && lscolor=ls
+# OSX: -G = colorize, -e = show ACLs, -O = show file flags
+(( $+INOSX )) && lscolor="ls -GO"
 
 alias l="$lscolor -trl"
 alias ll="$lscolor -trlL"
