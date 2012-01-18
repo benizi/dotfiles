@@ -1,0 +1,2 @@
+#!/bin/zsh
+sudo su - -s =zsh -l
