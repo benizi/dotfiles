@@ -125,5 +125,6 @@ my @rcmd = (
 );
 warn "@rcmd\n";
 $dry and exit;
+system { 'rm' } rm => -rf => "$ENV{HOME}/.rdesktop";
 exec { $rcmd[0] } @rcmd;
 die "Couldn't exec(",join(",",@rcmd),")\n";
