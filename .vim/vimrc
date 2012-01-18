@@ -12,8 +12,11 @@ endfor
 let g:mapleader = ','
 let g:maplocalleader = g:mapleader
 
-" Run a couple addon managers... displaying nothing for failures...
-call pathogen#infect(expand(s:bundle))
+try
+	call vam#ActivateAddons()
+	call pathogen#infect(expand(s:bundle))
+catch
+endtry
 
 set noexpandtab softtabstop=4 tabstop=4 shiftwidth=4
 set list listchars=tab:\ \ ,trail:·
