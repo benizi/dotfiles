@@ -21,6 +21,8 @@ endfor
 let g:mapleader = ','
 let g:maplocalleader = g:mapleader
 
+" keep some plugins around w/o loading by default...
+let g:pathogen_disabled = ['powerline']
 try
 	call vam#ActivateAddons() " set up VAM functions
 	call pathogen#infect(s:BundleDir()) " activate everything
