@@ -30,9 +30,10 @@ host_info.each do |info|
 		host_opts.split(',').each do |opt|
 			case opt
 			when 'mac'
-				# swap positions of {Win}+{Alt} and {Option}+{Command}
-				screen_opts[host]['alt'] = 'super'
+				# {Ctrl}+{Win}+{Alt} act as {Command}+{Alt}+{Option}
+				screen_opts[host]['ctrl'] = 'super'
 				screen_opts[host]['super'] = 'alt'
+				screen_opts[host]['alt'] = 'ctrl'
 			else
 				warn "Unknown option: #{opt}"
 			end
