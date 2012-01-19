@@ -23,6 +23,9 @@ let g:maplocalleader = g:mapleader
 
 " keep some plugins around w/o loading by default...
 let g:pathogen_disabled = ['powerline']
+if !has('gui') || !has('gui_running')
+	call add(g:pathogen_disabled, 'CSApprox')
+endif
 try
 	call vam#ActivateAddons() " set up VAM functions
 	call pathogen#infect(s:BundleDir()) " activate everything
