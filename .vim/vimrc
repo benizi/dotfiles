@@ -1,6 +1,15 @@
-let s:bundle = '~/.vim-bundle'
-let s:pathogen = s:bundle.'/pathogen'
-for dir in map([ '~/.vim', '~/.vim.local', s:bundle.'/vim-addon-manager', s:pathogen ], 'expand(v:val)')
+" Get directory under the set of 'bundled' files
+fun! s:BundleDir(...)
+	if !exists('s:bundle')
+		let s:bundle = '~/.vim-bundle'
+	endif
+	return join(extend([s:bundle],a:000),'/')
+endfun
+
+" Add various directories to &rtp, with their '/after' dirs
+let s:dirs = [ '~/.vim', '~/.vim.local' ]
+\ + map(['vim-addon-manager','vim-pathogen','pathogen'],'s:BundleDir(v:val)')
+for dir in map(s:dirs, 'expand(v:val)')
 	if isdirectory(dir)
 		if index(split(&rtp,','), dir) < 0
 			let &rtp = join([ dir, &rtp, dir.'/after' ], ',')
@@ -13,9 +22,12 @@ let g:mapleader = ','
 let g:maplocalleader = g:mapleader
 
 try
-	call vam#ActivateAddons()
-	call pathogen#infect(expand(s:bundle))
+	call vam#ActivateAddons() " set up VAM functions
+	call pathogen#infect(s:BundleDir()) " activate everything
 catch
+	echomsg 'Caught exception:'
+	echomsg v:exception
+	echomsg 'Perhaps pathogen or vim-addon-manager is not installed?'
 endtry
 
 set noexpandtab softtabstop=4 tabstop=4 shiftwidth=4
