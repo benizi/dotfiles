@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use feature ':5.10';
 use Getopt::Long qw/:config pass_through/;
-use IPC::Cmd 'run';
+use IPC::Run;
 my %opt;
 my @xkbopts = qw/model layout variant keycodes/;
 my @includes;
@@ -28,7 +28,7 @@ sub run_it {
 	print "@flat\n";
 	$dry_run and return;
 	@_ = [@_] unless grep ref, @_;
-	run command => @_;
+	&IPC::Run::run;
 }
 my %defaults = (
 	'' => {
