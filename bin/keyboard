@@ -7,6 +7,17 @@ use IPC::Run;
 my %opt;
 my @xkbopts = qw/model layout variant keycodes/;
 my @includes;
+
+my $is_macbook = do {
+	my $mac = 0;
+	my $id = "/sys/devices/virtual/dmi/id/board_version";
+	if (-e $id) {
+		my $name = do { undef local $/; open my $f, '<', $id; <$f> };
+		$mac = $name =~ /MacBook/;
+	}
+	$mac
+};
+
 GetOptions(
 	(map {; "$_=s" => \$opt{$_} } @xkbopts),
 	'reset=s' => \$opt{reset},
@@ -20,6 +31,7 @@ GetOptions(
 	'M|justmod' => \(my $just_modmap = 0),
 	'clear' => \(my $clear_mods),
 	'I=s@' => \@includes,
+	'macbook' => \$is_macbook,
 ) or die 'options';
 @includes = grep -d, "$ENV{HOME}/xkb" unless @includes;
 sub run_it {
@@ -77,11 +89,18 @@ if (!$just_modmap) {
 	) if @includes;
 	run_it @cmd;
 }
-if ($mod3 or $just_modmap or -f $modmap) {
+if ($mod3 or $just_modmap or $is_macbook or -f $modmap) {
 	run_it xmodmap => $modmap if -f $modmap;
-	my ($old, $use) = map "mod$_", ($ion or $mod3) ? (4, 3) : (3, 4);
-	run_it xmodmap => -e => "remove $old = Super_L";
-	run_it xmodmap => -e => "add $use = Super_L";
+	if ($is_macbook) {
+		my ($b2, $b3) = (64, 108);
+		run_it xmodmap => -e => "keycode $b2 = Pointer_Button2";
+		run_it xmodmap => -e => "keycode $b3 = Pointer_Button3";
+		run_it xkbset => 'm';
+	} else {
+		my ($old, $use) = map "mod$_", ($ion or $mod3) ? (4, 3) : (3, 4);
+		run_it xmodmap => -e => "remove $old = Super_L";
+		run_it xmodmap => -e => "add $use = Super_L";
+	}
 }
 if ($clear_mods) {
 	run_it xdotool => keyup => $_
