@@ -1,13 +1,17 @@
+" different locations if running as root
+let s:home = '~'
+let s:script = shellescape(expand('~/.vimrc'))
+if executable('stat') && system('stat -c %F '.s:script) =~ 'link'
+	let s:home .= split(system('stat -L -c %U '.s:script))[0]
+endif
+
 " Get directory under the set of 'bundled' files
 fun! s:BundleDir(...)
-	if !exists('s:bundle')
-		let s:bundle = '~/.vim-bundle'
-	endif
-	return join(extend([s:bundle],a:000),'/')
+	return join(extend([s:home.'/.vim-bundle'],a:000),'/')
 endfun
 
 " Add various directories to &rtp, with their '/after' dirs
-let s:dirs = [ '~/.vim', '~/.vim.local' ]
+let s:dirs = [ s:home.'/.vim', s:home.'/.vim.local' ]
 \ + map(['vim-addon-manager','vim-pathogen','pathogen'],'s:BundleDir(v:val)')
 for dir in map(s:dirs, 'expand(v:val)')
 	if isdirectory(dir)
@@ -203,8 +207,8 @@ endif
 set backupdir=~/.vim-tmp//,~/.tmp//,~/tmp//,/tmp//
 set directory=~/.vim-tmp//,~/.tmp//,~/tmp//,/tmp//
 "^^ from http://items.sjbach.com/319/configuring-vim-right ***
-if filereadable(expand("~/.vimrc.local"))
-	source ~/.vimrc.local
+if filereadable(expand(s:home.'/.vimrc.local'))
+	exe 'source '.s:home.'/.vimrc.local'
 endif
 if exists("g:alpine")
 	let alpinevim=globpath(&rtp,"alpine.vim")
