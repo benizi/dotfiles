@@ -17,5 +17,6 @@ function s:FixNERDComment(ft)
 endfunction
 
 aug SetupComment
+	au!
 	au FileType sql call s:FixNERDComment(expand("<amatch>"))
 aug END
