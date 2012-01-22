@@ -12,6 +12,7 @@ fun! SetupTabstop(width, expand, ...)
 	let &l:sts = a:0 ? a:1 : a:width
 	let &l:sw = a:width
 	let &l:et = a:expand ? 1 : 0
+	let &listchars = 'tab:'.(a:expand ? '»·' : '  ').',trail:·'
 	" if not mixed tabs+spaces, hilight as errors
 	if (! &l:sts) || (&l:sts == &l:ts)
 		call matchadd('Error', '^\t\+\ ')
@@ -140,9 +141,7 @@ fun! SetupSpacing(...)
 	let b:tabby_spacing = tabby
 	if tabby
 		call SetupTabstop(4,0)
-		set listchars=tab:\ \ ,trail:·
 	else
 		call SetupTabstop(3,1)
-		set listchars=tab:»·,trail:·
 	endif
 endfun
