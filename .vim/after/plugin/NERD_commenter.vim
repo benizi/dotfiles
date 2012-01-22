@@ -3,8 +3,8 @@ function s:GetNERDCommentSNR()
 		redir => s:scriptnames
 			silent scriptnames
 		redir END
-		let s:scripts = split(s:scriptnames,"\n")
-		let s:snr = 1 + match(s:scripts,'\(\d\+\):.*NERD_commenter\.vim')
+		let s:scripts = reverse(split(s:scriptnames,"\n"))
+		let s:snr = len(s:scripts) - match(s:scripts,'\(\d\+\):.*NERD_commenter\.vim')
 	endif
 endfunction
 
