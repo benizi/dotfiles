@@ -9,7 +9,7 @@ endfun
 
 fun! SetupTabstop(width, expand, ...)
 	let &l:ts = a:width
-	let &l:sts = a:0 > 2 ? a:3 : a:width
+	let &l:sts = a:0 ? a:1 : a:width
 	let &l:sw = a:width
 	let &l:et = a:expand ? 1 : 0
 	" if not mixed tabs+spaces, hilight as errors
