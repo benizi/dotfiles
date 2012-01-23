@@ -28,7 +28,7 @@ compinitargs=( -d ~/.zcompdump )
 () {
 	local -a notmine
 	notmine=( $fpath(N^U) )
-	(( $+INCYG )) || (( $#notmine )) && compinitargs+=( -i )
+	(( $+INCYG )) || (( $#notmine )) && compinitargs+=( -u )
 }
 compinit $compinitargs
 [ -n "$INCYG" -a -n "$INWIN7" ] && export CYGWIN=nontsec
