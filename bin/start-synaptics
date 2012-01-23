@@ -13,3 +13,4 @@ xinput list-props $dev | while read line ; do
 done
 xinput set-prop $dev "$props[Synaptics Finger]" 10 15 256
 xinput set-prop $dev "$props[Synaptics Tap Action]" 0 0 0 0 1 3 2
+xinput set-prop $dev "$props[Synaptics Two-Finger Scrolling]" 1 1
