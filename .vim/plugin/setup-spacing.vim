@@ -126,22 +126,48 @@ fun! SetupSpacing(...)
 	endif
 	let b:setup_spacing = 1
 	if a:0 && a:1 < 2
-		let tabby = (a:1 ? 1 : 0)
-	else
-		let detected = DetectSpacing()
-		if len(detected)
-			call call('SetupTabstop', detected)
-			return
+		for [t, default] in { "tabbed": [ 4, 0 ], "spaced": [ 2, 1 ] }
+			if !exists('g:setup_spacing_default_{t}')
+				let g:setup_spacing_default_{t} = default
+			endif
+		endfor
+		let type = (a:1 ? 'tabbed' : 'spaced')
+		if exists('g:setup_spacing_default_{type}')
+			call call('SetupTabstop', g:setup_spacing_default_{type})
 		endif
-		if !exists('g:disable_detectindent')
-			return
-		endif
-		let tabby = -1 != match(expand('<afile>:p'),expand('~/bin/'))
+		return
 	endif
-	let b:tabby_spacing = tabby
-	if tabby
-		call SetupTabstop(4,0)
-	else
-		call SetupTabstop(3,1)
+	let scores = []
+	let detected = DetectSpacing()
+	if len(detected)
+		call add(scores, { "score": 10, "params": detected })
+	endif
+	if exists('g:setup_spacing_filetypes')
+		let by_ft = get(g:setup_spacing_filetypes, &ft, [])
+		if len(by_ft)
+			call add(scores, { "score": 5, "params": by_ft })
+		endif
+	endif
+	if exists('g:setup_spacing_paths')
+		for [pattern, params] in g:setup_spacing_paths
+			if -1 != match(expand('<afile>:p'), expand(pattern))
+				call add(scores, { "score": 7, "params": params })
+			endif
+		endfor
+	endif
+	if exists('g:setup_spacing_default')
+		call add(scores, { "score": 1, "params": g:setup_spacing_default })
+	endif
+	let max_score = 0
+	let params = []
+	for i in scores
+		if i.score <= max_score
+			continue
+		endif
+		let max_score = i.score
+		let params = i.params
+	endfor
+	if len(params)
+		call call('SetupTabstop', params)
 	endif
 endfun
