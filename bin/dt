@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 require 'fileutils'
 require 'optparse'
+require 'etc'
 
 abort unless system('dtach --version > /dev/null')
 
@@ -21,9 +22,9 @@ end
 parser.order!(ARGV)
 
 @dir ||= ENV['DTACH_DIR']
-@dir ||= ENV['HOME'] + '/.dtach'
+@dir ||= '/var/run/dtach.' + Etc.getlogin
 
-FileUtils.mkdir_p(@dir) unless File.directory?(@dir)
+FileUtils.mkdir_p(@dir, :mode => 01700)
 
 def socks
 	ret = []
