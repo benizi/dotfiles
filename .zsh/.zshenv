@@ -25,7 +25,9 @@ if (( $+RUBYOPT )) ; then
 fi
 
 # find owner of Zsh files (different behavior if root)
-owner="$(stat -L -c %U ${(%):-"%x"})"
+local -a stat_flags
+(( $+INOSX )) && stat_flags=( -f %Su ) || stat_flags=( -c %U )
+owner="$(stat -L $stat_flags ${(%):-"%x"})"
 
 zsh_dirs=(~$owner ~)
 typeset -U zsh_dirs
