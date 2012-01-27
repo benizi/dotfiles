@@ -2,6 +2,7 @@
 case $0 in
 	*.*) _profile=$0:e ;;
 	*chromium*|*xdg-open|*sensible-browser) ;;
+	*scratch) argv+=( --scratch ) ;;
 	*) _profile=$0:t ;;
 esac
 function warn () { echo "\e[31m$*\e[0m" >&2 }
