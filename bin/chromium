@@ -8,7 +8,7 @@ function warn () { echo "\e[31m$*\e[0m" >&2 }
 function die () { warn $* ; exit 1 }
 _dry=false
 _plugins=true
-unset _url _ua
+unset _url _ua _scratch
 _logging=false
 _userscripts=true
 #_ipv6=true
@@ -79,6 +79,7 @@ while [ $# -gt 0 ] ; do
 		-profile*|--profile*) _profile=${arg/*=}
 			if [ "$arg" = "$_profile" ] ; then _profile="$1" ; shift ; fi
 			[ -z "$_profile" ] && die "Bad argument: $arg" ;;
+		--scratch) _scratch=true ;;
 		--firefox) _ua='Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.4) Gecko/20100527 SUSE/3.6.4-2.2 Firefox/3.6.4' ;;
 		--default) _profile=Default ;;
 		-dry|--dry) _dry=true ;;
@@ -86,6 +87,44 @@ while [ $# -gt 0 ] ; do
 		*) _args+=( $arg ) ;;
 	esac
 done
+
+setup_colors () {
+	set +e
+	pushd $_profdir
+	mkdir Default
+	cat > Default/Preferences <<PREFS
+{
+	"extensions": {
+		"settings": {
+			"abcdef": {
+				"theme": {
+					"colors": {
+						"frame": [ 255, 0, 0 ],
+						"toolbar": [ 255, 0, 0 ]
+					}
+				}
+			}
+		},
+		"theme": {
+			"id": "abcdef"
+		}
+	}
+}
+PREFS
+	popd
+}
+
+cleanup_tmp () { [[ $_profdir = *scratch* ]] && rm -rf $_profdir }
+if (( $+_scratch )) ; then
+	(( $+_profile || $+_profdir )) && die "Can't use --scratch with --profile/--profdir"
+	_profile=SCRATCH
+	_profdir=$(mktemp -t -d chromium-scratch.XXXXXXXX)
+	(( $+_profdir )) || die "Couldn't create tmp dir?"
+	trap cleanup_tmp EXIT INT TERM
+	touch $_profdir/'First Run'
+	setup_colors
+fi
+
 : ${_profile=Default}
 : ${_profdir=$_profile}
 if ! [[ $_profdir = */* ]] ; then
@@ -108,6 +147,8 @@ for flag in $_flags ; do
 done
 _echo=()
 $_dry && _echo=(echo)
+_exec=()
+(( $+_scratch )) || _exec=(exec)
 if [[ -n "$_url" ]] ; then
 	if $_remote ; then
 		_args+=( --remote "$_url" )
@@ -116,7 +157,7 @@ if [[ -n "$_url" ]] ; then
 	fi
 fi
 find_exe
-_cmd=( $_echo exec $exe $_args )
+_cmd=( $_echo $_exec $exe $_args )
 if $_logging ; then
 	_logfile=~/logs/errors-chromium-${_logext}-$(date +%Y-%m-%d-%H%M%S)
 	if $_dry ; then
