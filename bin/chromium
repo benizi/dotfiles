@@ -82,7 +82,7 @@ while [ $# -gt 0 ] ; do
 		--firefox) _ua='Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.4) Gecko/20100527 SUSE/3.6.4-2.2 Firefox/3.6.4' ;;
 		--default) _profile=Default ;;
 		-dry|--dry) _dry=true ;;
-		http:*|https:*|ftp:*) _url=$arg ;;
+		http:*|https:*|ftp:*|file:*|/*) _url=$arg ;;
 		*) _args+=( $arg ) ;;
 	esac
 done
