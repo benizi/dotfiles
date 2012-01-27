@@ -93,10 +93,13 @@ if ! [[ $_profdir = */* ]] ; then
 		_profdir=$loc/$_profile
 		[[ -e $_profdir ]] && break
 	done
-	[[ $_profile = Default ]] && _profdir=$_profdir:h
+	if [[ $_profile = Default ]] ; then
+		_profdir=$_profdir:h
+		[[ -e $_profdir ]] || unset _profdir
+	fi
 fi
 _logext=$_profdir:t
-_args+=( --user-data-dir=$_profdir )
+(( $+_profdir )) && _args+=( --user-data-dir=$_profdir )
 (( $+_ua )) && _args+=( --user-agent=$_ua )
 : ${_plugins=true}
 : ${_logext=default}
