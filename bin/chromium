@@ -88,6 +88,21 @@ while [ $# -gt 0 ] ; do
 	esac
 done
 
+unzip_theme () {
+	local theme=$1
+	set +e
+	pushd $_profdir
+	unzip -l -p =(perl -Mbytes -we '$/ = 4;
+	<> eq "Cr24" or die "Not a CRX";
+	2 == unpack "V", scalar <> or die "Not version 2";
+	$/ = 8;
+	($pklen, $siglen) = unpack "VV", scalar <>;
+	$/ = \$_ and <> for $pklen, $siglen;
+	$/ = 4096;
+	print while <>' $theme)
+	popd
+}
+
 setup_defaults () {
 	set +e
 	pushd $_profdir
