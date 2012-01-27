@@ -1,7 +1,7 @@
 #!/bin/zsh
 case $0 in
 	*.*) _profile=$0:e ;;
-	*chromium*) ;;
+	*chromium*|*xdg-open|*sensible-browser) ;;
 	*) _profile=$0:t ;;
 esac
 function warn () { echo "\e[31m$*\e[0m" >&2 }
