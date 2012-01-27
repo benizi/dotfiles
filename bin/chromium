@@ -125,7 +125,7 @@ if $_logging ; then
 		exit
 	fi
 	[[ -d $_logfile:h ]] || mkdir -p $_logfile:h
-	elif (( $+commands[tai64n] )) ; then
+	if (( $+commands[tai64n] )) ; then
 		$_cmd |& tai64n > $_logfile
 	else
 		$_cmd |& perl -pwe '$|=1; s/^/time . "\t"/e' > $_logfile
