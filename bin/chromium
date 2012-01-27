@@ -88,29 +88,115 @@ while [ $# -gt 0 ] ; do
 	esac
 done
 
-setup_colors () {
+setup_defaults () {
 	set +e
 	pushd $_profdir
-	mkdir Default
-	cat > Default/Preferences <<PREFS
+	touch 'First Run'
+	local theme_id=bfjgbcjfpbbfepcccpaffkjofcmglifg
+	local theme_dir=Default/Extensions/${theme_id}
+	local k image
+	mkdir -p $theme_dir/i
+	local -a image_colors colors tints properties settings
+	local -A image_color color tint propertie h image_dims
+	image_color=(
+		toolbar \#f99
+		frame \#fcc
+		ntp_background \#ccf
+		# button_background \#f00
+	)
+	image_dims=(
+		toolbar 190x190
+		frame 32x190
+		ntp_background 190x190
+		button_background 32x32
+	)
+	propertie=(
+		ntp_background_repeat repeat
+	)
+	color=(
+		# bookmark_text '[ 0, 0, 0 ]'
+		# frame '[ 255, 117, 117 ]'
+		ntp_background '[ 255, 192, 192 ]'
+		# ntp_link '[ 0, 0, 0 ]'
+		ntp_section '[ 255, 192, 192, 0.4 ]'
+		# ntp_section_link '[ 0, 0, 0 ]'
+		# ntp_section_text '[ 0, 0, 0 ]'
+		# ntp_text '[ 255, 0, 0 ]'
+		ntp_header '[ 255, 216, 216 ]'
+		# tab_background_text '[ 0, 0, 0 ]'
+		# tab_text '[ 0, 255, 0 ]'
+		toolbar '[ 255, 192, 192 ]'
+		# control_background '[ 0, 255, 0 ]'
+		# button_background '[ 255, 0, 0 ]
+	)
+	tint=(
+		# buttons '[ 0.5, 1, 0.5 ]'
+		toolbar '[ 0.9, -1, 0.5 ]'
+		# frame '[ 0.3, -1, -1 ]'
+		# frame_inactive '[ 0.25, 0.5, -1 ]'
+		# background_tab '[ 1, 1, 0.5 ]
+	)
+	if (( $+commands[convert] )) ; then
+		for k in ${(k)image_color} ; do
+			image=i/$k.png
+			out=png:$theme_dir/$image
+			dim=$image_dims[$k]
+			case ${style:-plain} in
+				plasma) img=plasma: ;;
+				plain) img=xc:$image_color[$k] ;;
+				hexagons) dim=15x15 ; img=( pattern:hexagons -fill $image_color[$k] -opaque black ) ;;
+			esac
+			cmd=( convert -size $dim $img $out )
+			#cmd=( convert rose: +matte $out )
+			$cmd || echo "Failed: $cmd"
+			images+=( "\"theme_$k\": \"$image\"" )
+		done
+		#convert $theme_dir/i/* +append x:
+	fi
+	for k in color tint propertie ; do
+		p=${k}s
+		h=( ${(Pkv)k} )
+		for l in ${(k)h} ; do
+			n=${(P)#p}
+			(( n += 1 ))
+			v=${h[$l]}
+			[[ $v = \[* ]] || v="\"$v\""
+			typeset $p"[$n]"="\"$l\": $v"
+		done
+	done
+	for k in images colors tints properties ; do
+		(( ${#${(P)k}} )) || continue
+		settings+=( "\"$k\": { ${(Pj:,:)k} }" )
+	done
+	cat > Default/Preferences <<PREFSJSON
 {
+	"browser": {
+		"skip_first_run_ui": true,
+		"show_welcome_page": false,
+		"import_search_engine": false,
+		"import_history": false,
+		"import_bookmarks": false,
+		"create_all_shortcuts": false,
+		"make_chrome_default": false
+	},
 	"extensions": {
 		"settings": {
-			"abcdef": {
-				"theme": {
-					"colors": {
-						"frame": [ 255, 0, 0 ],
-						"toolbar": [ 255, 0, 0 ]
-					}
-				}
+			"${theme_id}": {
+				"manifest": {
+					"key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQClY8uVLNLboHrzx5431OElszuH0FpiLCZyl1ZzU5HCYYA4t6ReRvaUG7HTNWpeUUUUki73XqgJV13qv/SeawOlmBzxt3MRDPBpcOFd7LzZTwz7dXJXGbTx+gh0b4VJve+pXSgLAF88sRm/YEOU/m52Gw8qCXTvK2tT2bA+JY2cmwIDAQAB",
+					"name": "",
+					"theme": { ${(j:,:)settings} },
+					"version": "1.0"
+				},
+				"path": "${theme_id}",
+				"location": 1,
+				"state": 1
 			}
 		},
-		"theme": {
-			"id": "abcdef"
-		}
+		"theme": { "id": "${theme_id}" }
 	}
 }
-PREFS
+PREFSJSON
 	popd
 }
 
@@ -121,8 +207,7 @@ if (( $+_scratch )) ; then
 	_profdir=$(mktemp -t -d chromium-scratch.XXXXXXXX)
 	(( $+_profdir )) || die "Couldn't create tmp dir?"
 	trap cleanup_tmp EXIT INT TERM
-	touch $_profdir/'First Run'
-	setup_colors
+	setup_defaults
 fi
 
 : ${_profile=Default}
