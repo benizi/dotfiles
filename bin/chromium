@@ -33,8 +33,8 @@ fi
 
 find_exe () {
 	unset exe
-	if [[ -f /opt/google/chrome/chrome ]] ; then
-		exe=/opt/google/chrome/chrome
+	if [[ -f $_official ]] ; then
+		exe=$_official
 	else
 		path=( ${path/${${(%):-"%x"}:h}} )
 		for command in chromium chromium-bin chrome ; do
