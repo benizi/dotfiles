@@ -89,8 +89,8 @@ done
 : ${_profile=Default}
 : ${_profdir=$_profile}
 if ! [[ $_profdir = */* ]] ; then
-	for loc in google-chrome chromium ; do
-		_profdir=$HOME/.config/$loc/$_profile
+	for loc in $_config_dirs ; do
+		_profdir=$loc/$_profile
 		[[ -e $_profdir ]] && break
 	done
 	[[ $_profile = Default ]] && _profdir=$_profdir:h
