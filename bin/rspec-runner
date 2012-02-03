@@ -1,0 +1,72 @@
+#!/usr/bin/env ruby
+require 'inotify'
+require 'find'
+
+@i = Inotify.new
+@watched = {}
+
+def add(name)
+  @watched[name] ||=
+    begin
+      @i.add_watch(name, Inotify::MODIFY | Inotify::CREATE | Inotify::DELETE | Inotify::MOVE)
+      true
+    end
+end
+
+def should_be_added(e)
+  base = File.basename(e)
+  prune = false
+  prune = true if base == '.git'
+  prune = true unless File.directory?(e) or base =~ /\.rb$/
+  !prune
+end
+
+
+Find.find(ARGV[0] || Dir.pwd) do |e|
+  if !should_be_added(e)
+    Find.prune
+    return
+  end
+
+  begin
+    #puts "Adding #{e}"
+    add(e)
+  rescue
+    puts "Failed to add #{e}: #{$!}"
+  end
+end
+
+@last_run = 0
+
+def time
+  Time.now.strftime('%Y-%m-%d %H:%M:%S')
+end
+
+def header(text)
+  printf("%s> %-20s <%s\n", '=' * 30, text, '=' * 30)
+end
+
+def run(*cmd)
+  header cmd.join(' ')
+  system *cmd
+  header time
+end
+
+def run_rspec
+  now = Time.now.to_f
+  return if now - @last_run < 5
+  @last_run = now
+  run *%w{rspec -f p}
+end
+
+def run_loop
+  @i.each_event do |ev|
+    if should_be_added(ev.name)
+      add(ev.name)
+      run_rspec
+    end
+  end
+end
+
+run_rspec
+run_loop
