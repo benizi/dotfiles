@@ -80,6 +80,10 @@ fun! DetectSpacing()
 		endif
 	endfor
 
+	if !len(line_indents) " can't tell
+		return []
+	end
+
 	let diffs = {}
 	let significant = 0
 	for i in range(len(line_indents)-1)
