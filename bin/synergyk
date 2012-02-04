@@ -1,7 +1,13 @@
 #!/usr/bin/env ruby
 require 'optparse'
+require 'open3'
+require 'socket'
+require 'tempfile'
 opts = {
-	:runit => $0 =~ /serv/,
+	:mode => $0 =~ /serv/ ? :server : :print,
+	:port => 24800,
+	:host => Socket.gethostname,
+	:include_self => true,
 }
 parser = OptionParser.new do |o|
 	o.on('-u','--up') { opts[:up] = true }
@@ -10,6 +16,8 @@ parser = OptionParser.new do |o|
 	o.on('-r','--right') { opts[:right] = true }
 	o.on('-v','--vertical') { opts[:up] = true ; opts[:down] = true }
 	o.on('--dry-run') { opts[:dry] = true }
+	o.on('--runit','--server') { opts[:mode] = :server }
+	o.on('--killer') { opts[:mode] = :killer }
 end
 parser.parse!(ARGV)
 
@@ -47,6 +55,7 @@ host_info.each do |info|
 	hosts << host
 	other_names.each { |a| alia[host] << a }
 end
+hosts << opts[:host] if opts[:include_self] and not hosts.include?(opts[:host])
 
 if ![:up, :down, :left, :right].detect { |dir| opts[dir] }
 	opts[:left] = true
@@ -81,23 +90,60 @@ end
 SECTION
 end
 
-puts section 'screens', screens.map { |s|
-	opt = screen_opts[s]
-	"#{s}:" +
-		case opt.size
-		when 0
-			""
-		else
-			"\n" + (opt.map { |k,v| "#{k} = #{v}" }.join("\n")).indent
-		end
-}.join("\n")
-
-puts section 'links', links.map { |screen,to|
-	screen + ":\n" + to.map { |dir,what| "#{dir} = #{what}" }.join("\n").indent
-}.join("\n")
-
-if alia.detect { |k,v| !v.empty? }
-	puts section 'aliases', alia.map { |host,al|
-		host + ":\n" + al.join("\n").indent
+def config(screens, screen_opts, links, alia)
+	cfg = ''
+	cfg += section 'screens', screens.map { |s|
+		opt = screen_opts[s]
+		"#{s}:" +
+			case opt.size
+			when 0
+				""
+			else
+				"\n" + (opt.map { |k,v| "#{k} = #{v}" }.join("\n")).indent
+			end
 	}.join("\n")
+
+	cfg += section 'links', links.map { |screen,to|
+		screen + ":\n" + to.map { |dir,what| "#{dir} = #{what}" }.join("\n").indent
+	}.join("\n")
+
+	if alia.detect { |k,v| !v.empty? }
+		cfg += section 'aliases', alia.map { |host,al|
+			host + ":\n" + al.join("\n").indent
+		}.join("\n")
+	end
+
+	cfg
+end
+
+config_text = config(screens, screen_opts, links, alia)
+case opts[:mode]
+when :print
+	print config_text
+when :killer
+	cmd = "sudo lsof -Fp -Pni :#{opts[:port]}"
+	pids = []
+	IO.popen(cmd).lines.each do |line|
+		next unless line =~ /^p(\d+)/
+		pid << $1.to_i
+	end
+	kill('HUP', *pids)
+when :server
+	threads = []
+	screens.each do |host,host_opts|
+		next if host == opts[:host]
+		threads << Thread.new(host, opts[:port]) do |server,port|
+			system("ssh -o Ciphers=blowfish-cbc -NR #{port}:localhost:#{port} #{server}")
+		end
+	end
+	threads << Thread.new do
+		system('xclip < /dev/null')
+		Tempfile.open(['synergy','.conf']) do |file|
+			file.write(config_text)
+			file.close
+			system("cat #{file.path}")
+			system("synergys -f -c #{file.path}")
+		end
+	end
+	threads.map(&:join)
 end
