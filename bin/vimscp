@@ -1,0 +1,72 @@
+#!/usr/bin/ruby
+
+require 'optparse'
+
+opts = {
+	:new_okay => false,
+	:dry_run => false,
+	:protocol => 'sftp',
+}
+optparse = OptionParser.new do |opt|
+	opt.on('--host HOSTNAME') { |h| opts[:host] = h }
+	opt.on('-n','--new') { opts[:new_okay] = true }
+	opt.on('-r','--lr','--reverse') { opts[:reverse] = true }
+	opt.on('--dry','--dry-run') { opts[:dry_run] = true }
+	opt.on('-c CMD','-e CMD') { |c| opts[:cmd] ||= [] ; opts[:cmd] << c }
+end
+optparse.parse!(ARGV)
+
+opts[:file] ||= ARGV.shift
+optparse.abort('Need a file') unless opts[:file]
+opts[:host] ||= ARGV.shift
+opts[:host] ||= ENV['DEFAULT_SSH']
+optparse.abort('Need a host') unless opts[:host]
+opts[:cmd] ||= [ 'vimdiff' ]
+
+file = File.expand_path(opts[:file])
+host = opts[:host]
+
+unless opts[:new_okay] or File.exist?(file)
+	optparse.abort('File doesn\'t exist')
+end
+
+if file.start_with?(ENV['HOME'])
+	short = file[ENV['HOME'].length+1..-1]
+else
+	short = file
+end
+
+remote = "#{opts[:protocol]}://#{host}/#{short}"
+
+files = [ file, remote ]
+files = files.reverse if opts[:reverse]
+
+cmd = opts[:cmd].dup + files
+puts cmd
+if opts[:dry_run]
+	puts "(DRY)"
+else
+	begin
+		Kernel.exec(*cmd)
+	rescue Exception => e
+		abort "Error running #{cmd.join(' ')}:\n#{e}"
+	end
+end
+__END__
+Original from .zsh_functions
+function vimscp () {
+	(( $#argv )) || { echo need a path ; return 1 }
+	local host infile=$1
+	shift
+	if (( $#argv )) ; then host=$1 ; shift ; else host=$DEFAULT_SSH ; fi
+	(( $#host )) || { echo need a host ; return 1 }
+	local actualfile
+	actualfile=( $infile(N+A) )
+	(( $#actualfile )) || { echo "couldn't find file: $infile" ; return 1 }
+	local file=$actualfile[1]
+	local short homeless=${file#$HOME/}
+	[[ $file = $homeless ]] && short=$file || short=$homeless
+	[[ $host = benizi.com ]] && short=${short#www/}
+	local remote=scp://$host/$short
+	vimdiff $file $remote "$@"
+}
