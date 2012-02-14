@@ -116,6 +116,26 @@ def config(screens, screen_opts, links, alia)
 	cfg
 end
 
+def spawn_ssh(server, port)
+	fork do
+		trap('INT') { exit }
+		system("ssh -o Ciphers=blowfish-cbc -NR #{port}:localhost:#{port} #{server} 'DISPLAY=:0 synergyc -f localhost'")
+	end
+end
+
+def spawn_synergy(config_text)
+	fork do
+		trap('INT') { exit }
+		#system('xclip < /dev/null')
+		Tempfile.open(['synergy','.conf']) do |file|
+			file.write(config_text)
+			file.close
+			system("cat #{file.path}")
+			system("synergys -f -c #{file.path}")
+		end
+	end
+end
+
 config_text = config(screens, screen_opts, links, alia)
 case opts[:mode]
 when :print
@@ -127,23 +147,22 @@ when :killer
 		next unless line =~ /^p(\d+)/
 		pid << $1.to_i
 	end
-	kill('HUP', *pids)
+	Process.kill('HUP', *pids)
 when :server
-	threads = []
+	pids = []
 	screens.each do |host,host_opts|
 		next if host == opts[:host]
-		threads << Thread.new(host, opts[:port]) do |server,port|
-			system("ssh -o Ciphers=blowfish-cbc -NR #{port}:localhost:#{port} #{server}")
-		end
+		pids << spawn_ssh(host, opts[:port])
 	end
-	threads << Thread.new do
-		system('xclip < /dev/null')
-		Tempfile.open(['synergy','.conf']) do |file|
-			file.write(config_text)
-			file.close
-			system("cat #{file.path}")
-			system("synergys -f -c #{file.path}")
-		end
+	pids << spawn_synergy(config_text)
+	trap('INT') do
+		Process.kill('INT', *pids)
+		exit
 	end
-	threads.map(&:join)
+	while true
+		if pid = Process.wait(-1, Process::WUNTRACED)
+			pids.delete(pid)
+		end
+		exit if pids.empty?
+	end
 end
