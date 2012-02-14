@@ -118,6 +118,7 @@ end
 
 def spawn_ssh(server, port)
 	fork do
+		system("ssh #{server} synergyk --killer")
 		trap('INT') { exit }
 		system("ssh -o Ciphers=blowfish-cbc -NR #{port}:localhost:#{port} #{server} 'DISPLAY=:0 synergyc -f localhost'")
 	end
@@ -141,13 +142,17 @@ case opts[:mode]
 when :print
 	print config_text
 when :killer
-	cmd = "sudo lsof -Fp -Pni :#{opts[:port]}"
-	pids = []
-	IO.popen(cmd).lines.each do |line|
-		next unless line =~ /^p(\d+)/
-		pid << $1.to_i
+	[ "sudo lsof -Fp -Pni :#{opts[:port]}", "sudo lsof -Fp -c synergyc" ].each do |cmd|
+		pids = []
+		IO.popen(cmd).lines.each do |line|
+			next unless line =~ /^p(\d+)/
+			pids << $1.to_i
+		end
+		next if pids.empty?
+		Process.kill('TERM', *pids)
+		puts "Killed #{pids.join(', ')}"
+		sleep(1)
 	end
-	Process.kill('HUP', *pids)
 when :server
 	pids = []
 	screens.each do |host,host_opts|
@@ -155,14 +160,15 @@ when :server
 		pids << spawn_ssh(host, opts[:port])
 	end
 	pids << spawn_synergy(config_text)
-	trap('INT') do
-		Process.kill('INT', *pids)
-		exit
-	end
+	$shutdown = false
+	trap('INT') { $shutdown = Time.now }
 	while true
-		if pid = Process.wait(-1, Process::WUNTRACED)
+		if pid = Process.wait(-1, Process::WUNTRACED | Process::WNOHANG)
 			pids.delete(pid)
 		end
 		exit if pids.empty?
+		next unless $shutdown
+		next unless Time.now - $shutdown > 10
+		abort "Couldn't kill: #{pids.map(&:to_s).join(' ')}"
 	end
 end
