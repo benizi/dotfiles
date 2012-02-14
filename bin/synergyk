@@ -162,7 +162,7 @@ when :server
 	pids << spawn_synergy(config_text)
 	$shutdown = false
 	trap('INT') { $shutdown = Time.now }
-	while true
+	while sleep 0.1
 		if pid = Process.wait(-1, Process::WUNTRACED | Process::WNOHANG)
 			pids.delete(pid)
 		end
