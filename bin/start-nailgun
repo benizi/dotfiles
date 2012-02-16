@@ -1,0 +1,2 @@
+#!/bin/zsh
+CLASSPATH=$HOME/lib/nailgun-server-2.3.1.jar ~/hg/vimclojure/vim/bin/ng-server
