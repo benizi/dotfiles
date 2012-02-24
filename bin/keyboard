@@ -13,6 +13,7 @@ GetOptions(
 	'dry' => \(my $dry_run = 0),
 	'extra=s@' => \my @extra,
 	'ion!' => \(my $ion = `pgrep ion3`),
+	'mod3' => \(my $mod3),
 	'modmap=s' => \(my $modmap = "$ENV{HOME}/.xmodmap"),
 	'M|justmod' => \(my $just_modmap = 0),
 ) or die 'options';
@@ -59,9 +60,9 @@ if (!$just_modmap) {
 	push @cmd, @extra;
 	run_it @cmd;
 }
-if ($just_modmap or -f $modmap) {
+if ($mod3 or $just_modmap or -f $modmap) {
 	run_it xmodmap => $modmap if -f $modmap;
-	my ($old, $use) = map "mod$_", $ion ? (4, 3) : (3, 4);
+	my ($old, $use) = map "mod$_", ($ion or $mod3) ? (4, 3) : (3, 4);
 	run_it xmodmap => -e => "remove $old = Super_L";
 	run_it xmodmap => -e => "add $use = Super_L";
 }
