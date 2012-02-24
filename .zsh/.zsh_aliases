@@ -53,6 +53,7 @@ alias g=git
 alias gv=gvim
 alias v=vim
 alias vi=v
+alias em='emacs -nw'
 
 # global aliases
 alias -g L='| less'
