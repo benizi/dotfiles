@@ -1,17 +1,17 @@
 " different locations if running as root
-let s:home = '~'
+let owner_home = '~'
 let s:script = shellescape(expand('~/.vimrc'))
 if executable('stat') && system('stat -c %F '.s:script) =~ 'link'
-	let s:home .= split(system('stat -L -c %U '.s:script))[0]
+	let owner_home .= split(system('stat -L -c %U '.s:script))[0]
 endif
 
 " Get directory under the set of 'bundled' files
 fun! s:BundleDir(...)
-	return join(extend([s:home.'/.vim-bundle'],a:000),'/')
+	return join(extend([owner_home.'/.vim-bundle'],a:000),'/')
 endfun
 
 " Add various directories to &rtp, with their '/after' dirs
-let s:dirs = [ s:home.'/.vim', s:home.'/.vim.local' ]
+let s:dirs = [ owner_home.'/.vim', owner_home.'/.vim.local' ]
 \ + map(['vim-addon-manager','pathogen'],'s:BundleDir(v:val)')
 for dir in map(s:dirs, 'expand(v:val)')
 	if isdirectory(dir)
@@ -41,7 +41,7 @@ endtry
 
 " fix it so ~/.vim{.local,} and ~/after/.vim{,.local} are in the right places
 let s:rtp = split(&rtp, ',')
-let s:special_dirs = map([ '/.vim', '/.vim.local' ], 'expand(s:home.v:val)')
+let s:special_dirs = map([ '/.vim', '/.vim.local' ], 'expand(owner_home.v:val)')
 for [ dir, after ] in map(copy(s:special_dirs), '[v:val, 0]')
 	\ + map(reverse(copy(s:special_dirs)), '[v:val + "/after", 1]')
 	if index(s:rtp, dir) < 0
@@ -220,8 +220,8 @@ endif
 set backupdir=~/.vim-tmp//,~/.tmp//,~/tmp//,/tmp//
 set directory=~/.vim-tmp//,~/.tmp//,~/tmp//,/tmp//
 "^^ from http://items.sjbach.com/319/configuring-vim-right ***
-if filereadable(expand(s:home.'/.vimrc.local'))
-	exe 'source '.s:home.'/.vimrc.local'
+if filereadable(expand(owner_home.'/.vimrc.local'))
+	exe 'source '.owner_home.'/.vimrc.local'
 endif
 if exists("g:alpine")
 	let alpinevim=globpath(&rtp,"alpine.vim")
