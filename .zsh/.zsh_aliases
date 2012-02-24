@@ -116,6 +116,9 @@ hash_if_exist () {
 	hash -d $1=$2
 }
 hash_if_exist xkb /usr/share/X11/xkb
+hash_if_exist \L /usr/local
+hash_if_exist cellar /usr/local/Cellar
+hash_if_exist g ~/git
 
 local _win_root _win_docset _win_inet _win_down _win_doc
 [ -n "$INCYG" ] && _win_root=/cygdrive/c || _win_root=/mnt/acer2k3
