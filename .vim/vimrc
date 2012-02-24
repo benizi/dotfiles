@@ -103,6 +103,13 @@ set isf-==
 " hlsearch
 set hls
 
+" settings for TOhtml
+let g:html_no_progress=1
+let g:html_use_css=1
+let g:html_number_lines=1
+let g:html_ignore_folding=1
+let g:html_dynamic_folds=0
+
 if isdirectory(expand("~/.vim-tmp")) < 1
 	if exists("*mkdir")
 		call mkdir(expand("~/.vim-tmp"), "p", 0700)
