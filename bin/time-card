@@ -1,8 +1,16 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
+
+ENV['TZ'] = 'America/New_York'
+begin
+	Encoding.default_external = 'BINARY'
+rescue
+end
 
 require 'pp'
 require 'ostruct'
 require 'optparse'
+require 'tempfile'
+require 'open3'
 
 opts = OpenStruct.new
 use = { :histfile => false, :vimtrack => false, :chromium => false }
@@ -72,20 +80,47 @@ if use[:histfile]
 	end
 end
 
+def vim_rtp
+	temp = Tempfile.new(['vim-rtp.', '.txt'])
+	vim = [ 'vim' ]
+	vim << '+:call append(0, split(&rtp, ","))'
+	vim << '+$d'
+	vim << '+wq'
+	vim << temp.path
+	Open3.popen3(*vim) { |i,o,e| i.close ; o.close ; e.read }
+	temp.read.split("\n")
+end
+
 if use[:vimtrack]
+	read_any = false
+	tried = []
 	begin
 		require 'rubygems'
 		require 'dbi'
-		dbh = DBI.connect('DBI:SQLite3:' + (ENV['HOME'] or abort 'home?') + '/.vim.local/timetrack.sqlite3')
-		sth = dbh.prepare('select time from edited_files')
-		sth.execute
-		while r = sth.fetch
-			all_times << [ 'vim', Time.at(r[0].to_i) ]
+		vimdirs = vim_rtp
+		if !vimdirs or vimdirs.empty?
+			vimdirs = %w{.vim .vim.local}.map { |base| File.join(Dir.home, base) }
 		end
-		sth.finish
-		dbh.disconnect
-	rescue
-		puts "Couldn't read Vim tracking"
+		vimdirs.each do |dir|
+			file = dir + '/timetrack.sqlite3'
+			next unless File.exists?(file)
+			tried << file
+			begin
+				dbh = DBI.connect('DBI:SQLite3:' + file)
+				sth = dbh.prepare('select time from edited_files')
+				sth.execute
+				while r = sth.fetch
+					all_times << [ 'vim', Time.at(r[0].to_i) ]
+				end
+				sth.finish
+				dbh.disconnect
+				read_any = true
+			rescue
+				puts "Failed to read #{file}"
+			end
+		end
+	rescue Exception => e
+		puts "Couldn't read Vim tracking from:\n#{tried.join("\n")}" unless read_any
 	end
 end
 
@@ -95,6 +130,7 @@ if use[:chromium]
 		require 'open3'
 		@dbfiles = []
 		dirs = ['google-chrome','chromium'].map { |d| ENV['HOME'] + '/.config/' + d }
+		dirs = dirs.select { |dir| File.exists?(dir) }
 		Find.find(*dirs) do |path|
 			case File.basename(path)
 			when 'History'
@@ -197,7 +233,7 @@ times.keys.sort.each do |wk|
 		x = {}
 		h.each do |k,v|
 			hr = k[0,2].to_i
-			newk = hr < 9 ? "..:" << k[3,2] : hr > 21 ? ">>:" << k[3,2] : k # (9..20).include?(hr) ? k : "xx:xx"
+			newk = hr < 9 ? "..:" << k[3,2] : hr > 21 ? ">>:" << k[3,2] : k
 			x[newk] ||= 0
 			x[newk] += v
 		end
@@ -227,7 +263,7 @@ times.keys.sort.each do |wk|
 			keys.each_with_index do |x,i|
 				hourline << (i > 2 ? ' ' : i > 0 ? '' : x[0,2])
 				minuteline << (i > 0 ? x[3,2] : '  ')
-				timeline << (h[x].to_i > 0 ? sprintf((val_to_chr h[x]) * 1) : ' ')
+				timeline << (h[x].to_i > 0 ? val_to_chr(h[x]) : ' ')
 			end
 		end
 
