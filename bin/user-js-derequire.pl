@@ -1,6 +1,32 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+my $cache_dir = "$ENV{HOME}/.derequire-cache";
+
+sub cached_name {
+   my $url = shift;
+   for ($url) {
+      y#\x00-\x1f/#-#s;
+   }
+   $url;
+}
+
+sub get {
+   my $url = shift;
+   my $file = join '/', $cache_dir, cached_name $url;
+   unless (-d $cache_dir) {
+      system { "mkdir" } "mkdir", "-p", $cache_dir
+         and die "Couldn't create cache dir: $cache_dir: $!";
+   }
+   unless (-f $file and -C $file < 1) {
+      my @wget = (wget => -O => $file => $url);
+      system { $wget[0] } @wget
+         and die "Couldn't run @wget: $!";
+   }
+   open my $f, '<', $file or die "<$url: $!";
+   undef local $/;
+   <$f>
+}
 
 my (@header, @rest);
 while (<>) {
@@ -17,7 +43,7 @@ my @url;
 : 0)} @header;
 chomp(my @req = map {
    ("/* {{{1 required $_ */",
-   readpipe("GET $_"),
+   get($_),
    "/* }}}1 required $_ */")
 } @url);
 print "$_\n" for @header, @req, @rest
