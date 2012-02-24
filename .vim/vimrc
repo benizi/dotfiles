@@ -12,7 +12,7 @@ endfun
 
 " Add various directories to &rtp, with their '/after' dirs
 let s:dirs = [ s:home.'/.vim', s:home.'/.vim.local' ]
-\ + map(['vim-addon-manager','vim-pathogen','pathogen'],'s:BundleDir(v:val)')
+\ + map(['vim-addon-manager','pathogen'],'s:BundleDir(v:val)')
 for dir in map(s:dirs, 'expand(v:val)')
 	if isdirectory(dir)
 		if index(split(&rtp,','), dir) < 0
