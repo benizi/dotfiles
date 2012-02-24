@@ -2,16 +2,18 @@
 use strict;
 use warnings;
 use bytes;
-#use open ':std', ':bytes';
 binmode STDIN;
 binmode STDOUT;
+use File::Basename;
 
 use Getopt::Long qw/:config pass_through/;
 GetOptions(
-	'filename=s' => \(my $filename = 'changed-files'),
+	'filename=s' => \(my $filename),
 	'revision=i' => \(my $revision = 0),
 	'force' => \(my $force = 0),
 ) or die 'options';
+@ARGV and $filename //= basename $ARGV[0];
+$filename //= 'changed-files';
 
 my $content = do { undef local $/; <> };
 my $maybe_binary = $content =~ /[^\t\r\n\x20-\x7e]/;
@@ -21,20 +23,20 @@ if (-t 0 and -t 2 and $maybe_binary and not $force) {
 	die "Not outputting binary diff\n" unless $yn =~ /^y/i;
 }
 
-my $lines = ($content =~ s/((?:\r(?!\n)|\r?\n(?!\Z)))/$1+/g);
-my $no_newline = $content !~ /\n$/;
-$lines++ if $no_newline;
+my $lines = 1 + ($content =~ s/((?:\r(?!\n)|\r?\n))(?!\Z)/$1+/g);
+my $no_newline = $content !~ /[\r\n]\Z/;
+$lines = "1,$lines" unless $lines == 1;
 
-my $tab = "\t";
-print <<HEADER;
+chomp(my $header = <<HEADER);
 Index: $filename
 ===================================================================
---- $filename$tab(revision $revision)
-+++ $filename$tab(revision $revision)
-\@\@ -0,0 +1,$lines \@\@
+--- $filename\t(revision $revision)
++++ $filename\t(revision $revision)
+\@\@ -0,0 +$lines \@\@
 +$content
 HEADER
-$no_newline and print "\\ No newline at end of file\n";
+print $header;
+$no_newline and print "\n\\ No newline at end of file\n";
 if ($maybe_binary) {
 	print <<BINARY;
 
