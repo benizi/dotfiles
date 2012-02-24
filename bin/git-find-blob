@@ -1,12 +1,14 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use Getopt::Long;
+use Getopt::Long qw/:config pass_through/;
 my (@args, @sha1s);
 GetOptions(
 	'first' => \(my $stop_at_first = 0),
 	'stdin' => \(my $sha1_from_stdin),
+	'missing' => \(my $missing_to_stdout = 0),
 	'name-only' => \(my $name_only = 0),
+	'list' => \(my $list_mode = $0 =~ /list/),
 	'<>' => sub {
 		@_ = grep {!(
 			/^[\da-f]{40}$/ ? (push @sha1s, $_) :
@@ -14,11 +16,47 @@ GetOptions(
 		push @args, @_;
 	},
 ) or die 'options';
+push @args, splice @ARGV;
 
 push @sha1s, <STDIN> if $sha1_from_stdin;
 chomp @sha1s;
 
 use Memoize;
+sub ls_tree {
+	my ($tree) = @_;
+	my @ret;
+	open my $ls_tree, "git ls-tree $tree|" or die "git ls-tree|: $!";
+	while (<$ls_tree>) {
+		chomp;
+		my ($mode, $type, $sha, $name) = /\A([0-7]{6}) (\S+) (\S+)\t(.*)\Z/;
+		# hmm... push @ret, join "\x00", $mode, $type, $sha, $name;
+		$name .= "/$sha" if $type eq 'tree';
+		push @ret, $name;
+	}
+	join "\x00", @ret;#sort @ret;
+}
+memoize 'ls_tree';
+
+sub file_list {
+	my ($tree, @path) = @_;
+	my @ret;
+	for (split /\x00/, ls_tree $tree) {
+		my ($name, $sha) = split m{/};
+		push @ret, $sha ? file_list($sha, @path, $name) : join "/", @path, $name;
+	}
+	@ret;
+}
+
+if ($list_mode) {
+	chomp(my @trees = `git rev-list @args`);
+	my %files;
+	my $done = 0;
+	my $total = @trees;
+	$files{$_}++ for map { $done++; warn "$done/$total\n"; file_list($_) } @trees;
+	print "$_\n" for sort keys %files;
+	exit;
+}
+
 sub check_tree {
 	my ($seeking, $tree, @path) = @_;
 	my @ret;
@@ -39,7 +77,7 @@ sub rev_name {
 }
 
 my %seeking = map {; $_ => 1 } @sha1s;
-@args = ('--all') unless @args;
+@args = qw/--reverse --all/ unless @args;
 for my $rev (readpipe("git rev-list @args")) {
 	for my $sha (grep $seeking{$_}, @sha1s) {
 		my @paths = check_tree $sha, $rev;
@@ -50,4 +88,10 @@ for my $rev (readpipe("git rev-list @args")) {
 			$seeking{$sha} = 0 if $stop_at_first;
 		}
 	}
+}
+
+my $out_to = $missing_to_stdout ? \*STDOUT : \*STDERR;
+for my $sha (sort grep $seeking{$_}, @sha1s) {
+	$name_only or print $out_to "$sha\t";
+	print $out_to "missing\n";
 }
