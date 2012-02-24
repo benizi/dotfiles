@@ -12,7 +12,7 @@ fun! SetupTabstop(width, expand, ...)
 	let &l:sts = a:0 ? a:1 : a:width
 	let &l:sw = a:width
 	let &l:et = a:expand ? 1 : 0
-	let &listchars = 'tab:'.(a:expand ? '»·' : '  ').',trail:·'
+	let &l:listchars = 'tab:'.(a:expand ? '»·' : '  ').',trail:·'
 	" if not mixed tabs+spaces, hilight as errors
 	if (! &l:sts) || (&l:sts == &l:ts)
 		call matchadd('Error', '^\t\+\ ')
