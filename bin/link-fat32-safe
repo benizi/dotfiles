@@ -9,7 +9,9 @@ GetOptions(
 	'out=s' => \(my $out_dir),
 	'include=s@' => \my @include,
 	'dry-run' => \(my $dry_run),
+	'verbose+' => \(my $verbose = 0),
 ) or die 'options';
+$verbose++ if $dry_run;
 @include = ('*.mp3') unless @include;
 my %replace = ( '*' => '.*', '.' => '\\.' );
 my $rep = join '|', map quotemeta, reverse sort keys %replace;
@@ -35,10 +37,21 @@ for (@files) {
 		y/*"\/\\[]:;|=?/_/;
 	}
 	1 while $base =~ s{\.(?=.+\.)}{_};
-	while (length $base > 128) {
-		#print "$base\n->";
-		$base =~ s{^\S+\s*(?:\W+\s*)?}{};
-		#print "$base\n";
+	$base =~ s{^(.* - )((?:\d\d|100) - )}{$2$1};
+	if (length $base > 128) {
+		$verbose and print "$base\n->";
+		$base =~ s/\.([^.]+)$//;
+		my $ext = $1;
+		my @b = split ' ', $base;
+		my $new_base = '';
+		while (my $part = shift @b) {
+			last if length($new_base) + length($part) > 128;
+			$new_base .= (length $new_base) ? ' ' : '';
+			$new_base .= $part;
+		}
+		$new_base .= ".$ext";
+		$base = $new_base;
+		$verbose and print "$base\n";
 	}
 	my $dir = join '/', $out_dir, @parts;
 	if ($dry_run) {
