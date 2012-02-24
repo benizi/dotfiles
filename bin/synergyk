@@ -142,9 +142,9 @@ case opts[:mode]
 when :print
 	print config_text
 when :killer
-	[ "sudo lsof -Fp -Pni :#{opts[:port]}", "sudo lsof -Fp -c synergyc" ].each do |cmd|
+	[ "-Pni :#{opts[:port]}", "-c synergyc" ].each do |opts|
 		pids = []
-		IO.popen(cmd).lines.each do |line|
+		IO.popen("lsof -Fp #{opts}").lines.each do |line|
 			next unless line =~ /^p(\d+)/
 			pids << $1.to_i
 		end
