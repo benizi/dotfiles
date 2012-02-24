@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+use utf8;
 use open qw/:std :utf8/;
 use Encode 'decode_utf8';
 $_ = do { my $v = eval { decode_utf8($_, Encode::FB_CROAK); }; $v // $_ } for @ARGV;
@@ -19,7 +20,7 @@ GetOptions(
 $show_number //= 1-$square;
 chomp($text = do { undef local $/; <STDIN> }) if $stdin;
 ($show_number, $split) = (0, '') if $raw;
-my $X = $text || 'X';
+my $X = $text || 'X'; # ╬▛░▒▓█
 $text ||= $X if $raw;
 my @escapes = @esc ? @esc : qw/48;5;16 0;1 48;5;231;7/;
 
