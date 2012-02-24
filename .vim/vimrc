@@ -120,6 +120,11 @@ fun! OpenOrNewUnderCursor()
 endfun
 nnoremap <C-w>f :call OpenOrNewUnderCursor()<CR>
 
+cno %% <C-R>=expand('%:h').'/'<cr>
+" easy new %:h
+nma <Leader>n :new %%
+nma <Leader>e :e %%
+
 " Ctrl+Arrow = window movement
 map <C-Left> <C-W>h
 map <C-Down> <C-W>j
