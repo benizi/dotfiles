@@ -33,15 +33,18 @@ local ssh_ensure_running_script=$reply[1]
 ssh_ensure_running () {
 	if $FORCE || [[ -O $ssh_ensure_running_script ]] ; then
 		local _run=false
-		[ -n "$SSH_AUTH_SOCK" ] && [ -e "$SSH_AUTH_SOCK" ] && return
-		ssh_re_source
-		[ -z "$SSH_AGENT_PID" ] && _run=true
-		$_run || [ -n "$SSH_AUTH_SOCK" ] || [ -e $SSH_AUTH_SOCK ] || _run=true
-		$_run || kill -0 $SSH_AGENT_PID 2>/dev/null || _run=true
-		$_run || [ -z "$INLIN" ] || grep -q ssh-agent /proc/$SSH_AGENT_PID/cmdline 2>/dev/null || _run=true
-		$_run && ssh_restart
-		ssh-add -l &> /dev/null
-		[[ $? = 2 ]] && ssh_restart
+		if [ -n "$SSH_AUTH_SOCK" ] && [ -e "$SSH_AUTH_SOCK" ] ; then
+			:
+		else
+			ssh_re_source
+			[ -z "$SSH_AGENT_PID" ] && _run=true
+			$_run || [ -n "$SSH_AUTH_SOCK" ] || [ -e $SSH_AUTH_SOCK ] || _run=true
+			$_run || kill -0 $SSH_AGENT_PID 2>/dev/null || _run=true
+			$_run || [ -z "$INLIN" ] || grep -q ssh-agent /proc/$SSH_AGENT_PID/cmdline 2>/dev/null || _run=true
+			$_run && ssh_restart
+			ssh-add -l &> /dev/null
+			[[ $? = 2 ]] && ssh_restart
+		fi
 		ssh-add -l | grep -vq no.identities || ssh_find_add
 	fi
 }
