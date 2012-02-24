@@ -31,9 +31,6 @@ aug NoEditUnsaveable
 	au!
 	au BufWinEnter * let &modifiable = !&readonly
 aug END
-" make 'l' and 'h' open the fold on the current line
-nnoremap <expr> l foldclosed(".")==-1 ? "l" : "zv"
-nnoremap <expr> h foldclosed(".")==-1 ? "h" : "zv"
 " keep visual mode selection when indenting
 vmap > >gv
 vmap < <gv
@@ -43,6 +40,15 @@ aug StdinNotModified
 	au!
 	au VimEnter * if !bufname('') && (strlen(&fenc) || &bin) | se nomod | endif
 aug END
+" improve horizontal scrolling (opens folds, alt+{l,h} = faster)
+fun! OpenFoldOrDo(action)
+	return foldclosed('.') == -1 ? a:action : 'zv'
+endfun
+nnoremap <expr> l OpenFoldOrDo('l')
+nnoremap <expr> h OpenFoldOrDo('h')
+nnoremap <expr> <esc>l OpenFoldOrDo('30l')
+nnoremap <expr> <esc>h OpenFoldOrDo('30h')
+
 
 " record macros into register 'q', playback with Q
 nnoremap Q @q
