@@ -11,6 +11,7 @@ optparse = OptionParser.new do |o|
 	o.on('-f','--force') { opt[:overwrite] = true }
 	o.on('--out TYPE','-d TYPE','--dest TYPE') { |t| opt[:out] = t.to_sym }
 	o.on('--dry','--dry-run') { opt[:dry] = true }
+	o.on('-q','--quiet','--silent') { opt[:quiet] = true }
 end
 optparse.parse!(ARGV)
 
@@ -91,17 +92,17 @@ end
 until todo.empty?
 	filename, newfn, src_type = todo.pop
 	next if already?(newfn, opt)
-	cat = has_program?('pv') ? 'pv' : 'cat'
+	cat = (opt[:quiet] or !has_program?('pv')) ? 'cat' : 'pv'
 	decomp = TYPES[src_type.to_sym][:prog]
 	comp = OUT[:prog]
 	cmd = "#{cat} < #{filename} | #{decomp} -d | #{comp} > #{newfn}"
-	puts "Creating #{newfn} from #{filename}\n{ #{cmd} }"
+	puts "Creating #{newfn} from #{filename}\n{ #{cmd} }" unless opt[:quiet] and not opt[:dry]
 	next if opt[:dry]
 
 	if system(cmd)
 		old_size, new_size = File.size(filename), File.size(newfn)
 		File.unlink(filename) if File.new(newfn).is?(:xz)
-		puts <<REPORT
+		puts <<REPORT unless opt[:quiet]
 Original: #{old_size} #{filename}
 New     : #{new_size} #{newfn}
 Savings : #{old_size - new_size} = #{sprintf("%.2f%%", (100.0 * (old_size - new_size) / old_size))}
