@@ -31,9 +31,6 @@ aug NoEditUnsaveable
 	au!
 	au BufWinEnter * let &modifiable = !&readonly
 aug END
-" keep visual mode selection when indenting
-vmap > >gv
-vmap < <gv
 
 " When editing stdin, set it initially to unmodified
 aug StdinNotModified
@@ -49,6 +46,14 @@ nnoremap <expr> h OpenFoldOrDo('h')
 nnoremap <expr> <esc>l OpenFoldOrDo('30l')
 nnoremap <expr> <esc>h OpenFoldOrDo('30h')
 
+if &diff
+	nnoremap > :.diffput <bar> diffupdate<cr>
+	nnoremap < :.diffput <bar> diffupdate<cr>
+else
+	" keep visual mode selection when indenting
+	vmap > >gv
+	vmap < <gv
+endif
 
 " record macros into register 'q', playback with Q
 nnoremap Q @q
