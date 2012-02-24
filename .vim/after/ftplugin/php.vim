@@ -16,4 +16,6 @@ fun! MyFoldText()
    return '+'.v:folddashes.' '.(1 + v:foldend - v:foldstart).' lines ['.v:foldstart.'-'.v:foldend.']: '.substitute(foldtext(),'^[+\-]*\s*\d*\s*lines:\s*','','')
 endfun
 setl fdt=MyFoldText()
+" highlight very long lines (> the default 3000 chars)
+setl smc=0
 nmap <LocalLeader>p :let @/='\%(\*\/\s*\)\@<!\n\zs\s*\%(public\<bar>private\<bar>protected\<bar>static\<bar>final\<bar>var\<bar>abstract\)' <bar> norm nzv<CR>
