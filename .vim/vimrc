@@ -7,6 +7,8 @@ for dir in map([ '~/.vim', '~/.vim.local' ], 'expand(v:val)')
 endfor
 set noexpandtab softtabstop=4 tabstop=4 shiftwidth=4
 set list listchars=tab:\ \ ,trail:·
+let g:mapleader = ','
+let g:maplocalleader = g:mapleader
 if $TERM =~ 'rxvt' || $TERM =~ 'xterm'
 	set mouse=a
 endif
