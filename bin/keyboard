@@ -27,7 +27,8 @@ sub run_it {
 	$_ = (length) ? $_ : "''" for @flat;
 	print "@flat\n";
 	$dry_run and return;
-	IPC::Run::run grep ref(), @_ ? @_ : [@_];
+	@_ = [@_] unless grep ref, @_;
+	&IPC::Run::run;
 }
 my %defaults = (
 	'' => {
