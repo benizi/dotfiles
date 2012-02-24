@@ -21,6 +21,11 @@ filetype plugin indent on
 syntax enable
 syntax sync maxlines=2000
 set foldmethod=marker
+aug NoInsertFolding
+	au!
+	au InsertEnter * let b:oldfdm = &l:fdm | setl fdm=manual
+	au InsertLeave * let &l:fdm = b:oldfdm
+aug END
 " ensure that unsaveable buffers are also uneditable
 aug NoEditUnsaveable
 	au!
