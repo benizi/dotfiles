@@ -14,6 +14,7 @@ Options:
 	--mac                           Handle Mac (bare CR) line endings
 	--keep                          Keep the temporary files
 	--no-pager                      Don't automatically page the output
+	-u #                            Number of lines of context (0 = unlimited)
 USAGE
 }
 GetOptions(
@@ -22,11 +23,16 @@ GetOptions(
 	'mac' => \(my $handle_bare_cr = 0),
 	'keep' => \(my $keep = 0),
 	'pager!' => \(my $pager = 1),
+	'u=s' => \(my $unified_lines),
 ) or usage;
 usage if @ARGV and @ARGV != 2;
 my $input;
 if (@ARGV) {
 	my @cmd = (diff => -ur => @ARGV);
+	if (defined $unified_lines) {
+		$unified_lines = -1 unless $unified_lines;
+		splice @cmd, 1, 0, '-U', $unified_lines;
+	}
 	my ($yay, $err, $full, $stdout, $stderr) = run command => \@cmd, verbose => 0;
 	$input = join "\n", @$stdout;
 } else {
