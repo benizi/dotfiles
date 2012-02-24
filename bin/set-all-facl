@@ -11,7 +11,7 @@ GetOptions(
 	'verbose+' => \(my $verbose = 0),
 	'defaults!' => \(my $defaults = 1),
 	'sudo!' => \(my $do_sudo = 1),
-	'recurse|recursive|R!' => \(my $recursive = 1),
+	'recurse|recursive|R!' => \(my $recursive = 0),
 	'<>' => sub {
 		for (@_) {
 			/^[dug]:/ ? (push @perms, $_) :
