@@ -30,7 +30,7 @@ endfun
 fun! DetectSpacing()
 	let expand_tabs = exists('g:spacing_expand_tabs') ? g:spacing_expand_tabs : 0
 	let default_spacing = exists('g:spacing_default') ? g:spacing_default : 4
-	let max_lines = exists('g:spacing_max_lines') ? g:spacing_max_lines : 100
+	let max_lines = exists('g:spacing_max_lines') ? g:spacing_max_lines : 1000
 	let max_consider = exists('g:spacing_max_spaces') ? g:spacing_max_spaces : 8
 
 	let ret = []
@@ -43,38 +43,72 @@ fun! DetectSpacing()
 		return ret
 	endif
 
-	let okay = map(range(max_consider+1), 0)
 	let chars_scanned = 0
-	let lines_scanned = 0
-	for lnum in range(0,max_lines)
+	let indented_lines = 0
+	let tab_indented = 0
+	let line_indents = []
+	for lnum in range(1,min([max_lines,line('$')]))
 		let line = getline(lnum)
 		let chars_scanned += len(line)
-		let lines_scanned += 1
+
+		" ignore lines whose first significant syntax item is a comment
+		let is_comment = 0
+		for col in range(1,strlen(line))
+			let item = synIDattr(synIDtrans(synID(lnum, col, 0)), "name")
+			if item =~? 'region' || item ==? 'none' || item == ''
+				continue
+			endif
+			let is_comment = (item =~? 'comment')
+			break
+		endfor
 
 		let ws = matchlist(line, '^\(\s*\)')
-		if len(ws)
-			if len(matchlist(line, '^\t'))
-				let okay[0] += 1
-			elseif len(ws[1])
-				for n in range(1,max_consider)
-					let okay[n] += (len(ws[1]) % n) ? 0 : 1
-				endfor
+		if !is_comment
+			if strlen(ws[1])
+				let indented_lines += 1
+				if len(matchlist(line, '^\t'))
+					let tab_indented += 1
+				endif
 			endif
+			call add(line_indents, {'num':lnum,'indent':strlen(ws[1])})
 		endif
 
 		if chars_scanned > max_lines * 100
 			break
 		endif
 	endfor
-	let mx = max(okay)
-	let mxi = max(map(copy(okay), 'v:val == mx ? v:key : 0'))
-	if mx < lines_scanned / 4 " can't tell
+
+	let diffs = {}
+	let significant = 0
+	for i in range(len(line_indents)-1)
+		let a = line_indents[i]
+		let b = line_indents[i+1]
+		if a.num + 1 != b.num " skip disjoint sections
+			continue
+		endif
+		let d = abs(a.indent - b.indent)
+		if d
+			let significant += 1
+			let diffs[d] = get(diffs, d) + 1
+		endif
+	endfor
+
+	if !indented_lines || !len(keys(diffs)) " can't tell
 		return []
 	endif
-	if okay[0] > mx / 2 " mostly indented with tabs
+
+	if tab_indented > indented_lines / 3 " mostly tabs
 		return [ default_spacing, 0 ]
 	endif
-	return []
+
+	let mx = max(values(diffs))
+	let mxi = max(map(copy(diffs), 'v:val == mx ? v:key : 0'))
+
+	if mx < significant / 4 " can't tell
+		return []
+	endif
+
+	return [ mxi, 1 ]
 endfun
 
 fun! SetupSpacingAutocmd()
