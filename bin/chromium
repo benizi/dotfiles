@@ -5,12 +5,13 @@ esac
 function warn () { echo "\e[31m$*\e[0m" >&2 }
 function die () { warn $* ; exit 1 }
 _dry=false
-unset _plugins
-unset _url
+_plugins=false
+unset _url _ua
 _logging=false
 _userscripts=true
+_ipv6=true
 _args=()
-_flags=( plugins logging user-scripts )
+_flags=( plugins logging user-scripts ipv6 )
 while [ $# -gt 0 ] ; do
 	arg=$1 ; shift
 	for l in $_flags ; do
@@ -31,18 +32,29 @@ while [ $# -gt 0 ] ; do
 		-profile*|--profile*) _profile=${arg/*=}
 			if [ "$arg" = "$_profile" ] ; then _profile="$1" ; shift ; fi
 			[ -z "$_profile" ] && die "Bad argument: $arg" ;;
+		--firefox) _ua='Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.4) Gecko/20100527 SUSE/3.6.4-2.2 Firefox/3.6.4' ;;
+		--default) _profile=Default ;;
 		-dry|--dry) _dry=true ;;
-		-*) _args+=( $arg ) ;;
-		[a-z\-]*:*) _url=$arg ;;
+		http:*|https:*|ftp:*) _url=$arg ;;
+		*) _args+=( $arg ) ;;
 	esac
 done
-if [ -n "$_profile" ] ; then
-	: ${_plugins=true}
-	_profdir=$_profile
-	[[ $_profdir = */* ]] || _profdir=$HOME/.config/chromium/$_profile
-	_logext=$_profdir:t
-	_args=( --user-data-dir=$_profdir )
+: ${_profile=Default}
+case $_profile in
+	Default) _plugins=false ;;
+	*) _plugins=true ;;
+esac
+: ${_profdir=$_profile}
+if ! [[ $_profdir = */* ]] ; then
+	for loc in google-chrome chromium ; do
+		_profdir=$HOME/.config/$loc/$_profile
+		[[ -e $_profdir ]] && break
+	done
+	[[ $_profile = Default ]] && _profdir=$_profdir:h
 fi
+_logext=$_profdir:t
+_args+=( --user-data-dir=$_profdir )
+(( $+_ua )) && _args+=( --user-agent=$_ua )
 : ${_plugins=false}
 : ${_logext=default}
 for flag in $_flags ; do
@@ -51,15 +63,28 @@ done
 _echo=()
 $_dry && _echo=(echo)
 [[ -n "$_url" ]] && _args+=( --remote "$_url" )
-(( $+commands[chromium-bin] )) && exe=chromium-bin || exe=chrome
+unset exe
+if [[ -f /opt/google/chrome/chrome ]] ; then
+	exe=/opt/google/chrome/chrome
+else
+	path=( ${path/${${(%):-"%x"}:h}} )
+	for command in chromium chromium-bin chrome ; do
+		(( $+commands[$command] )) || continue
+		exe==$command
+		break
+	done
+fi
+(( $+exe )) || { echo "Couldn't find chromium/chrome" >&2 ; exit 1 }
 _cmd=( $_echo exec $exe $_args )
 if $_logging ; then
 	_logfile=~/logs/errors-chromium-${_logext}-$(date +%Y-%m-%d-%H%M%S)
 	if $_dry ; then
 		echo LOG file: $_logfile
 		echo $_cmd
-	else
+	elif (( $+commands[tai64n] )) ; then
 		$_cmd |& tai64n > $_logfile
+	else
+		$_cmd |& perl -pwe '$|=1; s/^/time . "\t"/e' > $_logfile
 	fi
 else
 	$_cmd
