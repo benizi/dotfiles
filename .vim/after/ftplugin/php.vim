@@ -5,7 +5,7 @@ if s:i >= 0 && line('$') > 1
 	let leads = map(lines,'strlen(matchstr(v:val,"^\\s*"))')[0:1]
 	let g:PHP_default_indenting = (leads[1] > leads[0]) ? 1 : 0
 else
-	let g:PHP_default_indenting = 1
+	let g:PHP_default_indenting = 0
 endif
 let g:PHP_vintage_case_default_indent = 1
 let php_folding = 2
