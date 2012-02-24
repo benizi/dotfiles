@@ -30,6 +30,7 @@ my %default_other = (
 	'bhaskell-pc' => 'hp',
 	'bhaskell-laplin' => 'b',
 	'averatec' => 'hp',
+	'bhaskell-mb' => 'pgh.benizi.com',
 );
 
 if (@ARGV) {
@@ -38,8 +39,10 @@ if (@ARGV) {
 	@ARGV = ("$ENV{HOME}/.ssh/known_hosts");
 	!/^#/ and undef @hosts{map split(/,/), (split)[0]} while <>;
 	@ARGV = ("$ENV{HOME}/.ssh/config");
-	/^Host\s/ and undef @hosts{(split)} while <>;
-	@hosts = grep !/^[\d\[*|]/, grep !/Host/, sort keys %hosts;
+	/^Host(?:Name)?\s/ and undef @hosts{(split)} while <>;
+	@hosts = grep !/^[\d\[*|]/, grep !/Host/,
+		sort { length $a <=> length $b or $a cmp $b }
+		keys %hosts;
 }
 if ($just_one or not @hosts) {
 	if (open my $default, '<', "$ENV{HOME}/.default.ssh") {
