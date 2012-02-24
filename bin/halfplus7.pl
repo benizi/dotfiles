@@ -48,8 +48,10 @@ sub set_bday {
 	$hp7 = DateCalc($hp7, "-7 years");
 	$tm7 = DateCalc($now, "-".($sec*2)." sec");
 	$tm7 = DateCalc($tm7, "+14 years");
-	warn "Date should be born after  ", UnixDate($tm7, '%C'), $/;
-	warn "Date should be born before ", UnixDate($hp7, '%C'), $/;
+	for (['after ',$tm7],['before',$hp7]) {
+		my ($l, $t) = @$_;
+		warn "Date should be born ", $l, UnixDate($t, '%C'), " ", Delta_Format(DateCalc($t, $now), approx => 0, '%yt'), $/;
+	}
 	warn "You're $sec seconds old\n";
 }
 
