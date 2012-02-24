@@ -164,6 +164,9 @@ let g:html_number_lines=1
 let g:html_ignore_folding=1
 let g:html_dynamic_folds=0
 
+" sample python indent munger - au BufWritePre *.py %s/^\( \{8}\)\+/\=substitute(submatch(0), repeat(' ', 8), repeat(' ', 4), 'g')/e
+" sample python indent munger - au BufWritePost *.py u
+
 if isdirectory(expand("~/.vim-tmp")) < 1
 	if exists("*mkdir")
 		call mkdir(expand("~/.vim-tmp"), "p", 0700)
