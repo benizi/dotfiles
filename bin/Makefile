@@ -19,5 +19,9 @@ x-is-active:	src/X11/x-is-active.c
 	gcc -Wall $(shell pkg-config --cflags x11) -o $@.tmp $< $(shell pkg-config --libs x11)
 	mv $@.tmp $@
 
+NOW:	src/NOW.c
+	gcc -Wall -I../include -L../lib -o $@.tmp $< -lmyc
+	mv $@.tmp $@
+
 echo:
 	echo $(basename $(allsource))
