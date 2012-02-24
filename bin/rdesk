@@ -28,6 +28,10 @@ $opt{server} //= shift @ARGV;
 shift @ARGV if @ARGV and $ARGV[0] eq '--';
 warn "Extra options: (@ARGV)\n" if @ARGV;
 $opt{extra} = [@ARGV];
+$opt{graphics} //= do {
+	my $xinerama = find_prog 'x-xinerama-info';
+	$xinerama and `$xinerama --first` =~ /^(\d+x\d+\+-?\d+\+-?\d+)$/ ? $1 : undef;
+};
 
 my (%rev_alias, %ip);
 my %defaults = (
