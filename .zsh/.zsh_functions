@@ -118,6 +118,7 @@ with-mail () {
 	reminder $txt
 	return $ret
 }
+
 shredx () {
 	local arg
 	local -a shred delete dirlist
@@ -132,4 +133,10 @@ shredx () {
 	done
 	find $dirlist -type f $shred $delete || return 1
 	(( $#delete )) && find $dirlist -empty -delete
+}
+
+rsync-build () {
+	sudo find /var/tmp/build-root/ -type f -iname \*.rpm \
+	| perl -lpwe 's!(/.?RPMS)!/.$1!' \
+	| xargs -iZ rsync -RPtv Z /usr/src/packages/
 }
