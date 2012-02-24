@@ -65,7 +65,7 @@ alias -g LS='| less -S'
 alias pf='ps -ef'
 alias pfg='ps -ef | grep'
 if [[ $commands[alpine] != /usr/local/bin/alpine ]] ; then
-	alias alpine='titlep ALPINE ; alpine-svn -bail -p $PINERC'
+	(( $+commands[alpine-svn] )) && alias alpine='titlep ALPINE ; alpine-svn -bail -p $PINERC'
 fi
 (( $+commands[parallel] )) && pvim () {
 	parallel -uXj1 vim "$@"
