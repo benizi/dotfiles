@@ -190,18 +190,37 @@ hash_if_exist ht /srv/www/htdocs
 
 (( $+commands[xwininfo] )) && alias x-click-id='xwininfo | grep Window.id | cut -f4 -d" "'
 
-() {
 if (( $+functions[rbenv] )) ; then
-	local ver="$(rbenv version-name)"
-	case $ver in
-		system) ;;
-		*)
-			hash_if_exist rb ~/.rbenv/versions/$ver
-			hash_if_exist gem ~/.rbenv/versions/$ver/lib/ruby/gems/*/gems(N[1])
-			;;
-	esac
+	setup_rbenv_directory_aliases () {
+		local ver="$(rbenv version-name)"
+		case $ver in
+			system) ;;
+			*)
+				hash_if_exist -r rb ~/.rbenv/versions/$ver
+				hash_if_exist -r gem ~/.rbenv/versions/$ver/lib/ruby/gems/*/gems(N[1])
+				;;
+		esac
+	}
+	setup_rbenv_directory_aliases
+	chpwd_functions+=( setup_rbenv_directory_aliases )
+else
+	setup_rbenv () {
+		(( $+commands[git] )) || { warn "Needs git" ; return }
+		mkdir -p ~/git/
+		git clone git://github.com/sstephenson/rbenv.git ~/.rbenv
+		local rbuild=~/git/ruby-build
+		git clone git://github.com/sstephenson/ruby-build.git $rbuild
+		pushd $rbuild
+		PREFIX=~ sh install.sh
+		popd
+	}
+	command_not_found_handlers+=( rbenv_not_found_handler )
+	rbenv_not_found_handler () {
+		[[ $1 = rbenv ]] || return 1
+		warn "rbenv is not installed. Run setup_rbenv to install."
+		print -z setup_rbenv
+	}
 fi
-}
 
 () {
 local dir
