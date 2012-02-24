@@ -33,6 +33,8 @@ local -A added
 local n=0 git_dir= o
 while (( $#test_git && n < 20 )) ; do
 	local d=$test_git[1]
+	# avoid issues with Cygwin/MSYS treating // specially
+	[[ $d = / ]] && d=''
 	shift test_git
 	n=$(( n + 1 ))
 	for o in $d/{.hg,.svn,CVS} ; do
