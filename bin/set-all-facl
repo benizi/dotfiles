@@ -17,7 +17,7 @@ GetOptions(
 	'<>' => sub {
 		for (@_) {
 			/^[dug]:/ ? (push @perms, $_) :
-			/^:...$/ ? ($permbits = $_) :
+			(/^:(...)$/ or /^([r\-][w\-][x\-])$/i) ? ($permbits = $1) :
 			push @args, $_;
 		}
 	},
