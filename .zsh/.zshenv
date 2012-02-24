@@ -18,7 +18,11 @@ if is-at-least 4.3.9 && (( ! $+INSOL )) ; then
 else
 	A () { reply=("$(perl -MCwd=realpath -we 'print realpath shift' $REPLY)") }
 fi
-zsh_dirs=(~)
+
+# find owner of Zsh files (different behavior if root)
+owner="$(stat -L -c %U ${(%):-"%x"})"
+
+zsh_dirs=(~$owner ~)
 typeset -U zsh_dirs
 is-at-least 4.3.9 && zshenv=${(%):-"%x"} || zshenv=${(%):-"%N"}
 zsh_dirs+=( $zshenv:h $zshenv(+A:h) )
@@ -56,11 +60,11 @@ for user in benhaskell bhaskell USC/bhaskell ; do
 done
 pathtest+=( $HOME/python/bin ~/.local/bin $HOME/bin )
 (( $+INSOL )) && pathtest+=( /usr/xpg4/bin )
-pathtest+=( {/usr{/local,},}/{s,}bin /opt/bin )
+pathtest+=( {/{usr,opt}{/local,},}/{s,}bin )
 pathtest+=( $HOME/bin/dslinux/bin /usr/games/bin /home/bhaskell/wn/bin /home/bhaskell/qmail/bin /var/qmail/bin /usr/kde/4.0/bin /usr/X11R6/bin )
 pathtest+=( $path )
 pathtest+=( /people/bhaskell/bin )
-pathtest=( ~/.gem/ruby/*/bin(N) $^pathtest )
+pathtest=( ~/.rbenv/bin ~/.gem/ruby/*/bin(N) $^pathtest )
 path=( ${^pathtest}(N-/) )
 }
 
@@ -79,7 +83,7 @@ if_exists () {
 }
 (( UID )) && umask 077 || umask 022
 export WORDCHARS='*?_-.[]~&;!#$%^(){}<>'
-if_exists PERL5LIB ~/Usable
+if_exists PERL5LIB ~$owner/Usable
 LD_LIBRARY_PATH=$HOME/lib${LD_LIBRARY_PATH+:$LD_LIBRARY_PATH}
 typeset -T LD_LIBRARY_PATH ld_library_path
 typeset -U ld_library_path
@@ -88,8 +92,8 @@ if_exists MOZ5PROF ~/.mozilla/firefox/default
 if_exists AXIS2_HOME /opt/axis2-1.3
 export auto_proxy=http://localhost/proxy.pac
 if_exists MATLAB ~/MATLAB/7.4/lib/matlab7
-if_exists PYTHONSTARTUP -f ~/.python/startup
-if_exists PYTHONPATH ~/python{,/lib/python*}(N)
-if_exists CLOJURE_EXT ~/git/clojure
-if_exists M2_HOME ~/maven
+if_exists PYTHONSTARTUP -f ~$owner/.python/startup
+if_exists PYTHONPATH ~$owner/python{,/lib/python*}(N)
+if_exists CLOJURE_EXT ~$owner/git/clojure
+if_exists M2_HOME ~$owner/maven
 run_local_versions
