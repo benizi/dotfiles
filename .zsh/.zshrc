@@ -54,6 +54,12 @@ for dir in $zsh_dirs ; do
 	popd
 	setopt nonullglob
 done
+
+(( $+RUBYOPT )) && warn "RUBYOPT is set ($RUBYOPT)... shouldn't be"
+unset RUBYOPT
+rvmsource=~/.rvm/scripts/rvm
+[[ -x $rvmsource ]] && . $rvmsource
+
 cat ${^zsh_dirs}/{.zsh,}reminder{,s} 2>/dev/null
 run_local_versions ${(%):-"%x"}
 #screen -ls 2>/dev/null | grep -q Detached && exec screen -rr

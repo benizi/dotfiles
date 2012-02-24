@@ -97,3 +97,25 @@ if_exists PYTHONPATH ~$owner/python{,/lib/python*}(N)
 if_exists CLOJURE_EXT ~$owner/git/clojure
 if_exists M2_HOME ~$owner/maven
 run_local_versions
+
+(( $+commands[rbenv] )) && eval "$(rbenv init -)"
+
+setup_ruby () {
+	[[ -o interactive || -o login ]] || return
+	local rvmsource=~/.rvm/scripts/rvm do_rvm=false do_rbenv=false
+	if (( $+commands[rvm-or-rbenv] )) ; then
+		local rvm="$(rvm-or-rbenv -s)"
+		[[ $rvm = *rbenv* ]] && do_rbenv=true
+		[[ $rvm = *rvm* ]] && do_rvm=true
+	else
+		[[ -e ~/.rbenv ]] && do_rbenv=true
+		[[ -e ~/.rvm ]] && do_rvm=true
+	fi
+	$do_rbenv && eval "$(rbenv init -)"
+	if $do_rvm && [[ -x $rvmsource ]] ; then
+		unset RUBYOPT
+		. $rvmsource
+	fi
+}
+
+# setup_ruby
