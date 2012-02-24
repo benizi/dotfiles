@@ -9,11 +9,11 @@ endfun
 
 fun! SetupTabstop(width, expand, ...)
 	let &l:ts = a:width
-	let &l:sts = a:0 > 2 ? a:3 : 0
+	let &l:sts = a:0 > 2 ? a:3 : a:width
 	let &l:sw = a:width
 	let &l:et = a:expand ? 1 : 0
 	" if not mixed tabs+spaces, hilight as errors
-	if ! &l:sts
+	if (! &l:sts) || (&l:sts == &l:ts)
 		call matchadd('Error', '^\t\+\ ')
 		call matchadd('Error', '^\ \+\t')
 		hi Error cterm=reverse
