@@ -55,6 +55,14 @@ aug NoEditUnsaveable
 	au BufWinEnter * let &modifiable = !&readonly
 aug END
 
+" Default foldtext to include byte length
+fun! FoldTextWithOffsets()
+	let txt = foldtext()
+	let txt = substitute(txt, ':', printf(':%5d', line2byte(v:foldend+1)-line2byte(v:foldstart)).' bytes:','')
+	return txt
+endfun
+se fdt=FoldTextWithOffsets()
+
 " When editing stdin, set it initially to unmodified
 aug StdinNotModified
 	au!
