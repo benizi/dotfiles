@@ -70,6 +70,9 @@ if (( $+commands[prb] )) ; then
 elif (( $+functions[rbenv] )) ; then
 	_extra+=( "$(rbenv version-name)" )
 fi
+if [[ "$LD_PRELOAD" = *proxychains* ]] && [[ -n "$PROXY_SOCKS5" ]] ; then
+	_extra+=( "socks:$PROXY_SOCKS5" )
+fi
 (( $#_extra )) && __extra="[$_extra]" || __extra=''
 PROMPT='%{${PSCOLOR}'$_ps_color'%}%32<...<%n@%m'$_screen' %~%<<'$__extra$_pschar'%{$NOCOLOR%} '
 }
