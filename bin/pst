@@ -4,6 +4,7 @@ use warnings;
 use open ':std', ':utf8';
 use utf8;
 use Encode qw/decode_utf8 FB_CROAK/;
+use POSIX 'strftime';
 # like pstree -aclpuU, but without the need to filter so much.
 use Getopt::Long qw/:config no_ignore_case bundling/;
 my (@cmds, @pids);
@@ -19,6 +20,9 @@ GetOptions(
 	'kids' => \(my $all_kids),
 	'B|before=i' => \(my $parent_levels),
 	'P' => \(my $print_pids),
+	't+' => \(my $print_time),
+	'tr|time-relative' => \(my $time_relative = 0),
+	'tf|time-format=s' => \(my $time_format),
 	'T' => \(my $use_tasks),
 	'E' => \(my $show_env),
 	'max-env=i' => \(my $max_env = 32),
@@ -28,6 +32,7 @@ GetOptions(
 	'U' => \(my $show_user),
 	'g=s' => \(my $group),
 	'G' => \(my $show_group),
+	'q' => \(my $quiet),
 	'<>' => sub {
 		for (@_) {
 			/^\d+$/ ? push @pids, $_
@@ -35,6 +40,9 @@ GetOptions(
 		}
 	},
 ) or die 'options';
+$time_format //= $time_relative ? 'relative' : '%Y-%m-%d %H:%M:%S';
+my $print_target_pids;
+$print_target_pids //= 0 if $quiet;
 $_ = $_ ? '(?i)' : '' for $case_insensitive;
 @cmds = ('vim') if $vim and not @cmds;
 $show_args //= !$vim;
@@ -88,6 +96,7 @@ if ($use_tasks) {
 	}
 	push @procs, @tasks;
 }
+my $boot_time = (slurp "/proc/stat") =~ /btime (\d+)/ ? $1 : 0;
 for my $p (@procs) {
 	my ($pid, $dir) = @$p{qw/pid dir/};
 	my ($uid, $gid) = (stat $dir)[4,5];
@@ -101,6 +110,9 @@ for my $p (@procs) {
 		$$p{invalid} = 1;
 		next;
 	}
+	$$p{start} = (split ' ', $$p{stat})[21] // 0;
+	$$p{start} /= 100;
+	$$p{start} += $boot_time;
 	$$p{cmdline} = "($$p{taskname})" if !length $$p{cmdline};
 	$$p{argv} = [ split "\0", $$p{cmdline}, -1 ];
 	$$p{cmd} = $$p{argv}[0] // '';
@@ -111,15 +123,17 @@ my %procs;
 $procs{$$_{pid}} = $_ for @procs;
 push @{$procs{$$_{parentish}}{kids}}, $_ for grep $$_{parentish}, grep $$_{parentish} ne $$_{pid}, @procs;
 $$_{parentish} and $$_{parent} = $procs{$$_{parentish}} for @procs;
+my $any_filters;
 for (
-	[0=>cmd=>@cmds],
+	[1=>cmd=>@cmds],
 	[1=>cmdline=>grep $grep_args, @cmds],
 	[0=>pid=>map '^'.$_.'$', @pids],
-	[0=>user=>grep length, $user],
-	[0=>group=>grep length, $group],
+	[0=>user=>grep length, grep defined, $user],
+	[0=>group=>grep length, grep defined, $group],
 ) {
 	my ($filter_self, $field, @vals) = @$_;
 	for my $v (@vals) {
+		$any_filters++;
 		@$_{qw/marked target/} = (1, 1) for
 			grep { !$filter_self or $$_{pid} != $$ }
 			grep $$_{$field} =~ /$case_insensitive$v/, @procs;
@@ -136,9 +150,10 @@ $_ = $_ < 0 ? $maxdepth : $_ for $parent_levels, $kid_levels;
 ($levels) = (sort { $a <=> $b } grep defined, 0, $parent_levels, $kid_levels, $levels)[-1];
 
 my @m = grep $$_{marked}, @procs;
-my $print_target_pids = @m;
+my $any_marked = @m;
+$print_target_pids //= $any_marked || $verbose;
 if (!@m) {
-	exit 1 if @pids or @cmds;
+	exit 1 if $any_filters;
 	@m = ($procs{1});
 }
 
@@ -229,9 +244,24 @@ for my $r (@roots) {
 		my $t = $toprint[$i];
 		my $n = $$t{node};
 		my @info;
-		push @info, $$n{target} ? $$n{pid} : '' if $print_target_pids;
+		push @info, ($$n{target} or !$any_marked) ? $$n{pid} : '' if $print_target_pids;
 		push @info, $$n{user} if $show_user;
 		push @info, $$n{group} if $show_group;
+		if ($print_time) {
+			my $time = $$n{start} // 0;
+			if ($time_format eq 'relative') {
+				$time = time - $time if $time;
+				$time = int $time;
+			} else {
+				$time = strftime $time_format, localtime $time;
+			}
+			my $blank = 0;
+			$blank = 1 unless ($$n{target} or !$any_marked) or $print_pids or !$print_target_pids;
+			$blank = 0 if $print_time > 1;
+			$blank = 1 if !defined $$n{start};
+			$time =~ s/./ /g if $blank;
+			push @info, $time;
+		}
 		push @info, @$n{qw/pid ppid pgid sid status/} if $print_pids;
 		print join "\t", map $_//'', @info, '' if @info;
 		if ($$t{lev}) {
