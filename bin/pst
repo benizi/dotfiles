@@ -128,7 +128,7 @@ push @{$procs{$$_{parentish}}{kids}}, $_ for grep $$_{parentish}, grep $$_{paren
 $$_{parentish} and $$_{parent} = $procs{$$_{parentish}} for @procs;
 my $any_filters;
 for (
-	[1=>cmd=>@cmds],
+	[0=>cmd=>@cmds],
 	[1=>cmdline=>grep $grep_args, @cmds],
 	[0=>pid=>map '^'.$_.'$', @pids],
 	[0=>user=>grep length, grep defined, $user],
