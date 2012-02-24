@@ -137,8 +137,26 @@ else
 fi
 
 hash_if_exist () {
-	[[ -d $2 ]] || return 1
-	hash -d $1=$2
+	local arg name dir remove=false
+	unset name
+	unset dir
+	for arg ; do
+		case $arg in
+			-r) remove=true ;;
+			*)
+				if (( ! $+name )) ; then
+					name=$arg
+				elif (( ! $+dir )) ; then
+					dir=$arg
+				fi
+				;;
+		esac
+	done
+	if [[ -d $dir ]] ; then
+		hash -d $name=$dir
+	elif $remove ; then
+		hash -d $name=
+	fi
 }
 hash_if_exist xkb /usr/share/X11/xkb
 hash_if_exist \L /usr/local
