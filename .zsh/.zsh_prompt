@@ -70,6 +70,9 @@ if (( $+commands[prb] )) ; then
 elif (( $+functions[rbenv] )) ; then
 	_extra+=( "$(rbenv version-name)" )
 fi
+if [[ "$DISPLAY" = localhost:[[:digit:]]*.0 ]] ; then
+	(( ${${DISPLAY#localhost:}%.0} > 9 )) && _extra+=( ssh-x11 )
+fi
 if [[ "$LD_PRELOAD" = *proxychains* ]] && [[ -n "$PROXY_SOCKS5" ]] ; then
 	_extra+=( "socks:$PROXY_SOCKS5" )
 fi
