@@ -1,7 +1,11 @@
 function! DottedLCD(filename)
-	let l:dir=substitute(a:filename,'\(.*\)/./.*$','\1','')
-	if l:dir != a:filename
-		exe ":lcd ".l:dir
+	" ignore netrw filenames
+	if a:filename =~ '^[a-z]\+:'
+		return
+	endif
+	let dir=substitute(a:filename,'\(.*\)/./.*$','\1','')
+	if dir != a:filename
+		exe ":lcd ".dir
 	endif
 endfun
 
