@@ -6,17 +6,23 @@
 #include "bitblock.h"
 
 int main(int argc, char **argv) {
-	int i, use_unicode = 0;
+	int i, use_unicode = 0, verbose = 0;
 	Display *disp = XOpenDisplay(NULL);
 	XkbStateRec kbstate;
 	for (i = 1; i < argc; i++) {
 		if (!strcmp(argv[i], "-u")) {
 			use_unicode = 1;
+		} else if (!strcmp(argv[i], "-v")) {
+			verbose = 1;
 		}
 	}
 	if (!disp) return 1;
 	if (!XkbGetState(disp, XkbUseCoreKbd, &kbstate)) {
-		if (use_unicode) {
+		if (verbose) {
+			for (i = 0; i < 7; i++)
+				if (((kbstate.mods >> i) & 1))
+					printf("Mod%d active\n", i);
+		} else if (use_unicode) {
 			printbyteblock(kbstate.mods);
 		} else
 			for (i=7; i>=0; i--)
