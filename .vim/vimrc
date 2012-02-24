@@ -104,6 +104,9 @@ map <esc>m <C-W>_
 map <esc>- <C-W>-
 map <esc>= <C-W>+
 
+" alt+backspace on commandline removes one dir
+cmap <esc><bs> <C-w><C-w>
+
 " pastetoggle
 se pastetoggle=<F7>
 
