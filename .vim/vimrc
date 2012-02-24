@@ -66,7 +66,7 @@ set winminheight=0
 set backspace=2
 
 " treat '*' in visual mode similarly to normal mode
-vmap * y/<C-R>=substitute(tolower(getreg('"')), '\([/$~^*]\)', '\\\1', 'g')<CR><CR>
+vmap * y/<C-R>=substitute(tolower(getreg('"')), '\([/$~^*\[\]\\]\)', '\\\1', 'g')<CR><CR>
 
 " window mappings
 map <esc>m <C-W>_
