@@ -71,6 +71,7 @@ pathtest+=( $HOME/bin/dslinux/bin /usr/games/bin /home/bhaskell/wn/bin /home/bha
 pathtest+=( $path )
 pathtest+=( /people/bhaskell/bin )
 pathtest=( ~/.rbenv/bin $^pathtest )
+pathtest=( ~/prb-bin $^pathtest )
 path=( ${^pathtest}(N-/) )
 }
 
@@ -110,7 +111,24 @@ if_exists CLOJURE_EXT ~$owner/git/clojure
 if_exists M2_HOME ~$owner/maven
 run_local_versions
 
-(( $+commands[rbenv] )) && eval "$(rbenv init -)"
+use_prb=false
+if (( $+commands[rbenv] )) ; then
+	if ! $use_prb ; then
+		eval "$(rbenv init -)"
+	else
+		path=( ~g/prb/shims ~g/prb/bin ~/.rbenv/shims $path )
+		[[ -o interactive ]] && . ~/.rbenv/completions/rbenv.zsh
+		rbenv rehash 2>/dev/null
+		rbenv () {
+			cmd=$1
+			shift
+			case "$cmd" in
+				shell) eval `rbenv sh-$cmd "$@"` ;;
+				*) command rbenv $cmd "$@" ;;
+			esac
+		}
+	fi
+fi
 
 setup_ruby () {
 	[[ -o interactive || -o login ]] || return
