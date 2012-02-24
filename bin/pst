@@ -5,18 +5,25 @@ use open ':std', ':utf8';
 use utf8;
 use Encode qw/decode_utf8 FB_CROAK/;
 # like pstree -aclpuU, but without the need to filter so much.
-use Getopt::Long;
+use Getopt::Long qw/:config no_ignore_case/;
 my (@cmds, @pids);
 GetOptions(
 	'cmd=s' => \@cmds,
 	'pid=s@' => \@pids,
+	'grep-args!' => \(my $grep_args = 1),
+	'v|verbose+' => \(my $verbose = 0),
+	'VIM' => \(my $vim = $0 =~ /pstv/),
+	'a|show-args!' => \(my $show_args),
 	'C|l|level=i' => \(my $levels),
 	'A|after=i' => \(my $kid_levels),
 	'kids' => \(my $all_kids),
 	'B|before=i' => \(my $parent_levels),
 	'P' => \(my $print_pids),
 	'T' => \(my $use_tasks),
+	'E' => \(my $show_env),
+	'max-env=i' => \(my $max_env = 32),
 	'F' => \(my $show_files = $0 =~ /pstf/),
+	'i' => \(my $case_insensitive),
 	'<>' => sub {
 		for (@_) {
 			/^\d+$/ ? push @pids, $_
@@ -24,6 +31,10 @@ GetOptions(
 		}
 	},
 ) or die 'options';
+$_ = $_ ? '(?i)' : '' for $case_insensitive;
+@cmds = ('vim') if $vim and not @cmds;
+$show_args //= !$vim;
+$show_env //= $verbose;
 $all_kids = 1 unless @pids or @cmds;
 my $default_parent_levels =
 	(grep defined, $levels, $kid_levels, $parent_levels) ? 0 : -1;
@@ -94,12 +105,15 @@ $procs{$$_{pid}} = $_ for @procs;
 push @{$procs{$$_{parentish}}{kids}}, $_ for grep $$_{parentish}, grep $$_{parentish} ne $$_{pid}, @procs;
 $$_{parentish} and $$_{parent} = $procs{$$_{parentish}} for @procs;
 for (
-	[cmd=>@cmds],
-	[pid=>map '^'.$_.'$', @pids],
+	[0=>cmd=>@cmds],
+	[1=>cmdline=>grep $grep_args, @cmds],
+	[0=>pid=>map '^'.$_.'$', @pids],
 ) {
-	my ($field, @vals) = @$_;
+	my ($filter_self, $field, @vals) = @$_;
 	for my $v (@vals) {
-		@$_{qw/marked target/} = (1, 1) for grep $$_{$field} =~ $v, @procs;
+		@$_{qw/marked target/} = (1, 1) for
+			grep { !$filter_self or $$_{pid} != $$ }
+			grep $$_{$field} =~ /$case_insensitive$v/, @procs;
 	}
 }
 
@@ -145,20 +159,62 @@ for my $r (@roots) {
 		unshift @q, map [$lev+1, $k[$_], $_==$#k?1:0], 0..$#k;
 		$$this{haskid} = 0+@k;
 		push @toprint, $this;
-		if ($show_files and $$node{target}) {
+		my @extra;
+		if ($show_args and $verbose) {
+			push @extra, argv => [map "$_=$$node{argv}[$_]", 0..$#{$$node{argv}}];
+		}
+		if (($show_files and ($$node{target} or $all_kids))
+			or ($vim and $$node{target})) {
 			my %fds = map {
 				$_ => linky("$$node{dir}/fd/$_")
 			} number_files "$$node{dir}/fd";
-			push @toprint, map {
-				lev => $lev+1,
-				node => {
-					pid => $_+0,
-					cmd => "$_: $fds{$_}",
-				},
-			}, sort { $a <=> $b } keys %fds;
-			$toprint[-1]{last} = 1 if keys %fds;
-			$$this{haskid} ||= 0+keys %fds;
+			if ($show_files) {
+				my @files = map "$_: $fds{$_}", sort { $a <=> $b } keys %fds;
+				push @extra, files => [@files] if @files;
+			}
+			if ($vim) {
+				my @vim =
+					map m{^(.*)\.sw\w$} ? $1 : $_,
+					map join('/', split /%/, $_, -1),
+					map { (split m{/}, $_, -1)[-1] }
+					grep m{tmp/%},
+					sort values %fds;
+				push @extra, "open swap files" => [@vim] if @vim;
+			}
 		}
+		if ($show_env and $$node{target}) {
+			my @e;
+			for (split /\0/, slurp "$$node{dir}/environ", -1) {
+				push @e, [split /=/, $_, 2];
+			}
+			for (@e) {
+				$$_[1] = substr($$_[1], 0, $max_env).'...' if 3 + $max_env < length $$_[1];
+				$$_[1] =~ s{([^\x20-\x7e])}{sprintf "%%%02x", ord $1}ge;
+			}
+			push @extra, env => [
+				map join("=", @$_),
+				sort {
+					$$a[0] cmp $$b[0]
+						or
+					$$a[1] cmp $$b[1]
+				} @e
+			];
+		}
+		my $had_extra = @extra;
+		while (my ($k, $v) = splice @extra, 0, 2) {
+			# header and nodes for each extra thing
+			push @toprint, {
+				lev => $lev + 1,
+				haskid => (0+@$v) ? 1 : 0,
+				last => @extra ? 0 : !$$this{haskid},
+				node => { cmd => "» $k «" },
+			}, map {
+				lev => $lev+2,
+				node => { cmd => $_ },
+			}, @$v;
+			$toprint[-1]{last} = 1 if @$v;
+		}
+		$$this{haskid} ||= 1 if $had_extra;
 	}
 	for my $i (0..$#toprint) {
 		my $t = $toprint[$i];
@@ -166,7 +222,7 @@ for my $r (@roots) {
 		my @info;
 		push @info, $$n{target} ? $$n{pid} : '' if $print_target_pids;
 		push @info, @$n{qw/pid ppid pgid sid status/} if $print_pids;
-		print join "\t", @info, '' if @info;
+		print join "\t", map $_//'', @info, '' if @info;
 		if ($$t{lev}) {
 			for my $l (1..$$t{lev}-1) {
 				my ($prev) = (grep $$_{lev} == $l, reverse @toprint[0..$i-1]);
@@ -180,6 +236,14 @@ for my $r (@roots) {
 			print " ";
 		}
 		print $$n{task} ? "«$$n{taskname}»" : $$n{cmd};
+		if ($show_args and not $verbose) {
+			my $arg_sep = ' ';
+			my @argv = @{$$n{argv} // []};
+			if (@argv) {
+				print "${arg_sep}{", $argv[0], "}" if $argv[0] ne $$n{cmd};
+			}
+			print "$arg_sep$_" for @argv[1..$#argv];
+		}
 		print "\n";
 	}
 }
