@@ -56,12 +56,21 @@ where collid = ?
 SQL
 }
 BEGIN { $just_out{current}++; }
-sub current {
+sub _old_current { # takes an oddly-long time to update
 	$current // _single(<<SQL, {}, currlist);
 select value
 from CollectionAttributes
 where key='position'
 and collid=?
+SQL
+}
+sub current {
+	$current // _single(<<SQL, {});
+select id
+from media
+where key='laststarted'
+order by intval desc
+limit 1;
 SQL
 }
 sub _next_prev {
@@ -82,6 +91,7 @@ group by al.value
 order by position$desc
 limit 1
 SQL
+
 	$id // ($rev ? total : 0);
 }
 sub albumnext { _next_prev 0 }
