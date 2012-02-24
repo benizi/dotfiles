@@ -14,7 +14,7 @@ sub blue ($) { _color 34, $_[0] }
 sub varval { my ($var, $val) = @_; red($var).blue("=")."<".green($val).">" }
 my $logfile;
 sub lprint { print @_; $logfile and print $logfile @_ }
-sub info { lprint ":"; lprint " ", varval splice @_, 0, 2 while @_; lprint "\n"}
+sub info { lprint " :"; lprint " ", varval splice @_, 0, 2 while @_; lprint "\n"}
 sub status { lprint blue "@_"; lprint "\n" }
 sub mydie { lprint red "@_"; lprint "\n"; exit 1 }
 
@@ -42,12 +42,23 @@ my @options_help = (
 	'add-to-world' => \(my $world = 0), '', 'Add packages to \'world\' set',
 	'help|?' => \(my $do_help = 0), '', 'Show usage information',
 	'_recursive' => \(my $_recursive = 0), 'INTERNAL', '',
+	'pretend' => \(my $pretend = 0), '',
+		'Only show the output from pretending to install',
+	'pm!' => \(my $do_package_management = 1), '',
+		'Add --no to just set stuff up without installing',
 	'<>' => sub {
 		die usage("CTARGET defined more than once") if defined $ctarget;
 		$ctarget = shift;
 		$ctarget_implicit = $ctarget;
 	}, 'INTERNAL', '',
 );
+sub drysub (&@) {
+	my ($sub, @args) = @_;
+	@args = 'sub' unless @args;
+	info SUBBING => "@args";
+	$dry and return;
+	$sub->() or mydie "Error running @args";
+}
 sub dryrun {
 	my @cmd = @{$_[0]};
 	info RUNNING => "@cmd";
@@ -111,8 +122,10 @@ use Memoize;
 memoize 'repo_dir';
 sub repo_dir {
 	my $repo_name = shift;
-	run [ paludis => '--configuration-variable', $repo_name, 'location' ],
-		'>', \my $dir, '2>', \my $errors;
+	run [ cave => 'print-repository-metadata' => $repo_name ],
+		'2>', \my $errors,
+		'|', [ perl => -lnwe => 'print $1 if /^location=(.+)$/' ],
+		'>', \my $dir;
 	mydie $errors if $errors;
 	chomp($dir);
 	$dir;
@@ -122,8 +135,26 @@ sub repo_pack_dir {
 	my ($repo, $cat, $pack) = @_;
 	File::Spec->catfile(repo_dir($repo), $cat, $pack);
 }
+
+sub ensure_category_exists {
+	my $catfile = repo_pack_dir $cross_repo, qw/profiles categories/;
+	my %cats = ($cross_cat => 1);
+	if (open my $f, '<', $catfile) {
+		while (<$f>) {
+			chomp;
+			$cats{$_}++;
+		}
+	}
+	drysub {
+		open my $f, '+>', $catfile or die "+>$catfile: $!";
+		print $f "$_\n" for sort keys %cats;
+		close $f;
+	} "+> $catfile";
+}
+
 sub create_cross_pack {
 	my ($cat, $pack) = @_;
+	ensure_category_exists;
 	my $out_dir = repo_pack_dir $cross_repo, $cross_cat, $pack;
 	info OUT_DIR => $out_dir;
 	my @search = map repo_pack_dir($_, $cat, $pack), split /,/, $source_repo;
@@ -153,13 +184,21 @@ sub set_pkg_use {
 	my ($tmphandle, $tmpnam) = tempfile;
 	my $use_conf = "$config_dir/use.conf.d";
 	my $conf = "$use_conf/auto.$cross_repo.conf";
-	my @old;
-	chomp(@old = do { local @ARGV = $conf; <> }) if -f $conf;
-	@old = grep index($_, $P), grep index($_, $generic), @old;
-	print $tmphandle "$_\n" for @old, $use_line;
 	dryrun [ mkdir => -p => $use_conf ];
-	dryrun [ mv => $tmpnam, $conf ];
-	unlink $tmpnam if -f $tmpnam;
+	my @old;
+	if (open my $f, '<', $conf) {
+		while (<$f>) {
+			next unless index $_, $P;
+			next unless index $_, $generic;
+			chomp;
+			push @old, $_;
+		}
+	}
+	drysub {
+		open my $f, '+>', $conf or die "+>$conf: $!";
+		print $f "$_\n" for @old, $use_line;
+		close $f;
+	} "+>$conf";
 }
 
 sub install {
@@ -182,13 +221,14 @@ sub install {
 	setup_use_dir;
 	create_cross_pack $cat, $pack;
 	set_pkg_use $cross_cat, $pack, [@this_use], [@cross_opts], $version;
-	dryrun [ paludis =>
-		$upgrade ? (qw/--dl-reinstall always --dl-upgrade always/)
-		: $upgrade_if_changed ? (qw/--dl-reinstall if-use-changed/)
-		: (),
-		'--dl-deps-default', 'discard',
+	return status "Just setting up: $label" unless $do_package_management;
+	dryrun [ cave => resolve =>
+		$upgrade ? (qw/--keep-targets never/)
+		: $upgrade_if_changed ? ()
+		: (qw/--keep-targets if-same/),
 		grep(!$world, '-1'),
-		'--install', P $cross_cat, $pack, $version
+		grep(!$pretend, '--execute'),
+		P $cross_cat, $pack, $version
 	];
 	status "Success: $label";
 }
@@ -234,6 +274,7 @@ sub setup_ctarget {
 	for ($ctarget) {
 		if (/^avr/) { splice @kernel; $max = 'libc'; @libs = qw{dev-embedded avr-libc}; @guse = @guse_disable; $def_headers = 0 }
 		elsif (/-cygwin/) { @guse_disable = grep !/nocxx/, @guse_disable }
+		elsif (/mingw/ and (/^x86_64/ or /w64/)) { splice @kernel; @libs = qw{dev-util mingw64-runtime}; push @guse_disable_stage2, '-fortran' }
 		elsif (/^mingw/ or /-mingw/) { $def_headers = 1; @kernel = qw{dev-util w32api}; @libs = qw{dev-util mingw-runtime} }
 		elsif (/^msp430$/) { $max = 'binutils' }
 		elsif (/^nios2$/) { $$_[-1] .= '-nios2' for \@binutils, \@gcc }
