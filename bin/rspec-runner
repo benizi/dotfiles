@@ -1,38 +1,43 @@
 #!/usr/bin/env ruby
+require 'rubygems'
 require 'inotify'
 require 'find'
 
-@i = Inotify.new
-@watched = {}
+$exit = false
+
+def run_first? ; true ; end
+def per_file? ; false ; end
 
 def add(name)
-  @watched[name] ||=
-    begin
-      @i.add_watch(name, Inotify::MODIFY | Inotify::CREATE | Inotify::DELETE | Inotify::MOVE)
-      true
-    end
+  $watched = {} unless defined? $watched
+  $dirs = {} unless defined? $dirs
+  $watched[name] ||= $i.add_watch(name, Inotify::MODIFY | Inotify::CREATE | Inotify::DELETE | Inotify::MOVE)
+  $dirs[$watched[name]] = name
 end
 
 def should_be_added(e)
   base = File.basename(e)
   prune = false
   prune = true if base == '.git'
-  prune = true unless File.directory?(e) or base =~ /\.rb$/
+  prune = true unless File.directory?(e) or base =~ /\.(?:rb|feature)$/ or base === ['Gemfile','Rakefile']
   !prune
 end
 
 
-Find.find(ARGV[0] || Dir.pwd) do |e|
-  if !should_be_added(e)
-    Find.prune
-    return
-  end
+def setup_watchers(dir)
+  $i = Inotify.new
+  Find.find(dir) do |e|
+    if !should_be_added(e)
+      Find.prune
+      return
+    end
 
-  begin
-    #puts "Adding #{e}"
-    add(e)
-  rescue
-    puts "Failed to add #{e}: #{$!}"
+    begin
+      #puts "Adding #{e}"
+      add(e)
+    rescue
+      puts "Failed to add #{e}: #{$!}"
+    end
   end
 end
 
@@ -42,31 +47,92 @@ def time
   Time.now.strftime('%Y-%m-%d %H:%M:%S')
 end
 
-def header(text)
-  printf("%s> %-20s <%s\n", '=' * 30, text, '=' * 30)
+def header(text, *color)
+  color = [ 34 ] if color.empty?
+  "#{'='*5}> #{text}".colorize(*color)
+end
+
+class String
+  def colorize(*props)
+    self.lines.map { |l| "\e[#{props.join(';')}m#{l}\e[0m" }.join('')
+  end
 end
 
 def run(*cmd)
-  header cmd.join(' ')
-  system *cmd
-  header time
+  start = Time.now
+  puts header(cmd.join(' '))
+  ret = system *cmd
+  ended = Time.now
+  delta = ended - start
+  puts header("#{delta} @ #{ended}")
+  ret
 end
 
-def run_rspec
+def run_rspec(*files)
   now = Time.now.to_f
   return if now - @last_run < 5
   @last_run = now
-  run *%w{rspec -f p}
+  cmd = %w{rspec -f p} + files
+  ret = run *cmd
+  files.empty? ? ret : run_rspec
 end
 
-def run_loop
-  @i.each_event do |ev|
+def watch_events
+  $i.each_event do |ev|
     if should_be_added(ev.name)
       add(ev.name)
-      run_rspec
+      dir = $dirs[ev.wd]
+      path = "#{dir}/#{ev.name}"
+      $run = (per_file? and path =~ %r{/spec/}) ? [path] : []
+      #puts ev.inspect
+      #puts "Name=#{ev.name} Dir=#{$dirs[ev.wd]} Files=#{$run.join(', ')}"
+    end
+    break if $exit
+  end
+end
+
+def raw_terminal
+  system('stty cbreak -echo')
+end
+
+def reset_terminal
+  system('stty -cbreak echo')
+end
+
+raw_terminal
+END { reset_terminal }
+
+$run = run_first? ? [] : false
+
+threads = []
+
+threads << Thread.new do
+  until $exit
+    if IO.select([$stdin],[],[],0.1)
+      case $stdin.getc
+      when ?q
+        $exit = true
+        reset_terminal
+      else
+        $run = []
+      end
     end
   end
 end
 
-run_rspec
-run_loop
+threads << Thread.new do
+  setup_watchers(ARGV[0] || Dir.pwd)
+  watch_events
+end
+
+threads << Thread.new do
+  until $exit
+    sleep 0.1
+    if $run
+      run_rspec(*$run)
+      $run = false
+    end
+  end
+end
+
+threads.map(&:join)
