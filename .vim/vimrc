@@ -97,6 +97,9 @@ set modeline
 set ignorecase
 set smartcase
 
+" complete filenames after equals signs
+set isf-==
+
 " hlsearch
 set hls
 map <esc>h :noh<cr>
