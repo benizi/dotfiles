@@ -11,9 +11,54 @@ _plugins=true
 unset _url _ua
 _logging=false
 _userscripts=true
-_ipv6=true
+#_ipv6=true
+unset _ipv6
 _args=()
 _flags=( plugins logging user-scripts ipv6 )
+
+if [[ -d /Applications ]] ; then
+	_official="/Applications/Chrome.app/Contents/MacOS/Google Chrome"
+	_config_dirs=(
+		~/Library/Application\ Support/Google/Chrome
+	)
+	_remote=false
+else
+	_official=/opt/google/chrome/chrome
+	_config_dirs=(
+		~/.config/google-chrome
+		~/.config/chromium
+	)
+	_remote=true
+fi
+
+find_exe () {
+	unset exe
+	if [[ -f /opt/google/chrome/chrome ]] ; then
+		exe=/opt/google/chrome/chrome
+	else
+		path=( ${path/${${(%):-"%x"}:h}} )
+		for command in chromium chromium-bin chrome ; do
+			(( $+commands[$command] )) || continue
+			exe==$command
+			break
+		done
+	fi
+	(( $+exe )) || { echo "Couldn't find chromium/chrome" >&2 ; exit 1 }
+}
+
+# check for chromedriver invocation
+unset noparse
+for arg ; do
+	case "$arg" in
+		*TestingInterface*) noparse=true ;;
+	esac
+done
+
+if (( $+noparse )) ; then
+	find_exe
+	exec $exe $@
+fi
+
 while [ $# -gt 0 ] ; do
 	arg=$1 ; shift
 	for l in $_flags ; do
@@ -60,25 +105,23 @@ for flag in $_flags ; do
 done
 _echo=()
 $_dry && _echo=(echo)
-[[ -n "$_url" ]] && _args+=( --remote "$_url" )
-unset exe
-if [[ -f /opt/google/chrome/chrome ]] ; then
-	exe=/opt/google/chrome/chrome
-else
-	path=( ${path/${${(%):-"%x"}:h}} )
-	for command in chromium chromium-bin chrome ; do
-		(( $+commands[$command] )) || continue
-		exe==$command
-		break
-	done
+if [[ -n "$_url" ]] ; then
+	if $_remote ; then
+		_args+=( --remote "$_url" )
+	else
+		exec $_echo open $_url
+	fi
 fi
-(( $+exe )) || { echo "Couldn't find chromium/chrome" >&2 ; exit 1 }
+find_exe
 _cmd=( $_echo exec $exe $_args )
 if $_logging ; then
 	_logfile=~/logs/errors-chromium-${_logext}-$(date +%Y-%m-%d-%H%M%S)
 	if $_dry ; then
 		echo LOG file: $_logfile
 		echo $_cmd
+		exit
+	fi
+	[[ -d $_logfile:h ]] || mkdir -p $_logfile:h
 	elif (( $+commands[tai64n] )) ; then
 		$_cmd |& tai64n > $_logfile
 	else
