@@ -102,7 +102,6 @@ set isf-==
 
 " hlsearch
 set hls
-map <esc>h :noh<cr>
 
 if isdirectory(expand("~/.vim-tmp")) < 1
 	if exists("*mkdir")
