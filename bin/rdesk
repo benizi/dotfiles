@@ -22,6 +22,7 @@ GetOptions(
 	'verbose+' => \(my $verbose = 0),
 	'disk' => \(my $add_disk = 0),
 	'sound' => \(my $add_sound = 0),
+	'executable|cmd=s' => \$rdesktop,
 	'seamless|A' => \(my $seamless),
 ) or die 'options';
 $opt{server} //= shift @ARGV;
