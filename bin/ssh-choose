@@ -2,14 +2,27 @@
 use strict;
 use warnings;
 use Sys::Hostname;
-use IPC::Run 'run';
+use IPC::Cmd 'run_forked';
 use Getopt::Long qw/:config pass_through/;
 GetOptions(
 	'1' => \(my $just_one),
 	'r' => \(my $do_exec),
 	'v' => \(my $verbose),
 	'dry-run' => \(my $dry),
+	'ssh-script!' => \(my $ssh_script = 1),
 );
+
+sub ssh_script {
+	my $script = "$ENV{HOME}/ssh-script";
+	return unless -f $script;
+	return unless open my $f, '<', $script;
+	local $_;
+	while (<$f>) {
+		next unless /^(SSH_[^=]+)=([^;]+);/;
+		$ENV{$1} = $2;
+	}
+}
+
 $verbose //= $dry;
 my ($hosts, @hosts, %hosts);
 my %default_other = (
@@ -43,7 +56,8 @@ my $out;
 if ($just_one) {
 	$out = $hosts;
 } else {
-	run [ 'dmenu' ], \$hosts, \$out, \my $err;
+	$out = run_forked dmenu => { child_stdin => $hosts };
+	chomp($out = $$out{stdout}) if $out;
 }
 chomp $out;
 exit 1 unless length $out;
@@ -51,4 +65,5 @@ my @cmd = ('urxvt', '-e', 'ssh', split ' ', $out);
 print "@cmd\n" if $verbose;
 exit if $dry;
 open STDERR, '>', '/dev/null';
+ssh_script if $ssh_script;
 exec { $cmd[0] } @cmd;
