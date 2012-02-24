@@ -12,6 +12,8 @@ GetOptions(
 	'defaults!' => \(my $defaults = 1),
 	'sudo!' => \(my $do_sudo = 1),
 	'recurse|recursive|R!' => \(my $recursive = 0),
+	'u|user' => \(my $do_current_user = 0),
+	'g|group' => \(my $do_current_group = 0),
 	'<>' => sub {
 		for (@_) {
 			/^[dug]:/ ? (push @perms, $_) :
@@ -20,6 +22,8 @@ GetOptions(
 		}
 	},
 ) or die 'options';
+push @perms, grep $do_current_user, "u:".getpwuid $<;
+push @perms, grep $do_current_group, "g:".getgrgid $(;
 @perms = map {; ("d:$_", $_) } @perms if $defaults;
 /^(?:d:.*:.*:.*|[ug]:.*:.*)$/ or $_ .= ":$permbits" for @perms;
 @perms or die "No default/user/group permissions specified\n";
