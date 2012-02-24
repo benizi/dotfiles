@@ -63,3 +63,12 @@ cat ${^zsh_dirs}/{.zsh,}reminder{,s} 2>/dev/null
 run_local_versions ${(%):-"%x"}
 #screen -ls 2>/dev/null | grep -q Detached && exec screen -rr
 #[ -n "$SSH_CLIENT" ] && [ "$TERM" != "screen" ] && exec screen -RR -- zsh -l
+
+typeset -a command_not_found_handlers
+command_not_found_handler () {
+	local fn
+	for fn in $command_not_found_handlers ; do
+		$fn "$@" && return
+	done
+	return 1
+}
