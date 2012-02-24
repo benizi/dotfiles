@@ -1,8 +1,8 @@
 #!/bin/zsh
 if (( $#argv )) ; then rev=$1 ; shift ; else rev=HEAD ; fi
+if (( $#argv )) ; then branch=$1 ; shift ; else branch=master ; fi
 rev=$(git rev-parse $rev)
-git branch | grep -q '^\* master$' && onmaster=true || onmaster=false
-merge_base=$(git merge-base $rev master)
+merge_base=$(git merge-base $rev $branch)
 [[ $rev = $merge_base ]] && merge_base=$(git rev-parse $merge_base\~1)
 case $0:t in
 	git-lm) sub=log ;;
