@@ -8,6 +8,7 @@ case $ZSH_UNAME in
 	*CYGWIN*) export INCYG=true ;;
 	*FreeBSD*) export INBSD=true ;;
 	*SunOS*) export INSOL=true ;;
+	*Darwin*) export INOSX=true ;;
 	*) export INLIN=true ;;
 esac
 # simulate file(:A) as file(+A) if needed
