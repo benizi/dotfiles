@@ -1,4 +1,3 @@
-" vim:set ts=4:
 if exists('g:loaded_setup_spacing')
 	finish
 endif
