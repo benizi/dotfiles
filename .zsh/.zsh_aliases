@@ -119,6 +119,10 @@ hash_if_exist xkb /usr/share/X11/xkb
 hash_if_exist \L /usr/local
 hash_if_exist cellar /usr/local/Cellar
 hash_if_exist g ~/git
+hash_if_exist mac /mnt/mac/Users/bhaskell
+hash_if_exist bac /mnt/mac/backups/bhaskell-hp/home/USC/bhaskell
+hash_if_exist build /usr/src/packages
+hash_if_exist spec /usr/src/packages/SPECS
 
 local _win_root _win_docset _win_inet _win_down _win_doc
 [ -n "$INCYG" ] && _win_root=/cygdrive/c || _win_root=/mnt/acer2k3
