@@ -21,11 +21,8 @@ autoload -Uz age
 	done
 }
 zmodload zsh/mathfunc 2>/dev/null
-if [ -f ~/.zcompdump.debugging ] ; then
-	rm -f ~/.zcompdump
-	fpath=( ${^zsh_dirs}/Completion(N/) ~/git/zsh/Completion/**/*(N/) $fpath )
-fi
-fpath+=( $^zsh_dirs/autoload(N/) )
+fpath=( ${^zsh_dirs}/Completion(N/) ~$owner/git/zsh/Completion/**/*(N/) $fpath $^zsh_dirs/autoload(N/) )
+[[ -f ~/.zcompdump.debugging ]] && rm -f ~/.zcompdump
 compinitargs=( -d ~/.zcompdump )
 () {
 	local -a notmine
