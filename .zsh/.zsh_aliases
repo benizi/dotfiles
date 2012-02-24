@@ -32,13 +32,7 @@ local lscolor="ls --color=auto"
 (( $+INOSX )) && lscolor="ls -G"
 (( $+INOSX )) && lscolor="$lscolor -e"
 
-# really-short list
-alias g=git
 alias l="$lscolor -trl"
-alias gv=gvim
-alias v=vim
-alias vi=v
-
 alias ll="$lscolor -trlL"
 alias lll="$lscolor -trl | less"
 alias la="$lscolor -trlA"
@@ -49,6 +43,12 @@ alias lss="$lscolor -Srl"
 alias lsr="$lscolor -Sl"
 alias lsl=l
 }
+
+# really-short list
+alias g=git
+alias gv=gvim
+alias v=vim
+alias vi=v
 
 # global aliases
 alias -g L='| less'
