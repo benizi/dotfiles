@@ -1,16 +1,28 @@
 #!/usr/bin/ruby
 
-rev = IO.popen('git rev-parse HEAD') { |io| io.read.chomp }
-repo = File.basename(Dir.pwd)
+require 'optparse'
+
+opts = {
+}
+optparse = OptionParser.new do |o|
+	o.on('--project NAME') { |n| opts[:repo] = n }
+	o.on('--rev REVISION') { |r| opts[:rev] = r }
+	o.on('--prefix PREFIX') { |p| opts[:prefix] = p }
+	o.on('--destrev SUFFIX') { |s| opts[:suffix] = s }
+end
+optparse.parse!(ARGV)
+
+opts[:rev] ||= IO.popen('git rev-parse HEAD') { |io| io.read.chomp }
+opts[:repo] ||= ARGV.shift || File.basename(Dir.pwd)
 
 def run(cmd)
 	warn "CMD=«#{cmd}»"
 	system(cmd)
 end
 
-case repo
+case opts[:repo]
 when 'zsh'
-	dest = "/tmp/zsh-r#{rev[0,8]}"
+	dest = opts[:dest] || "/tmp/zsh-r#{opts[:suffix] || opts[:rev][0,8]}"
 	ENV['CFLAGS'] = '-g'
 	ENV['LIBLDFLAGS'] = ''
 	ENV['EXELDFLAGS'] = ''
@@ -19,6 +31,11 @@ when 'zsh'
 	run 'make -j5'
 	run 'make install'
 	puts
+when 'vim'
+	ENV['prefix'] = opts[:prefix] || "/tmp/vim-r#{opts[:rev][0,8]}"
+	ENV['keep'] = '1'
+	ENV['verbose'] = '1'
+	run 'bisect-vim'
 else
-	abort "Don't know how to make this repo\nvi =git-make +#{__LINE__}"
+	abort "Don't know how to make this repo (#{opts[:repo]})\nvi =git-make +#{__LINE__}"
 end
