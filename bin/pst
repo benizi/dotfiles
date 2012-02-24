@@ -20,6 +20,7 @@ GetOptions(
 	'kids' => \(my $all_kids),
 	'B|before=i' => \(my $parent_levels),
 	'P' => \(my $print_pids),
+	'cwd|dir' => \(my $print_cwd),
 	't+' => \(my $print_time),
 	'tr|time-relative' => \(my $time_relative = 0),
 	'tf|time-format=s' => \(my $time_format),
@@ -277,6 +278,7 @@ for my $r (@roots) {
 			print " ";
 		}
 		print $$n{task} ? "«$$n{taskname}»" : $$n{cmd};
+		print " [$$n{cwd}]" if $print_cwd;
 		if ($show_args and not $verbose) {
 			my $arg_sep = ' ';
 			my @argv = @{$$n{argv} // []};
