@@ -46,6 +46,9 @@ nnoremap <expr> h OpenFoldOrDo('h')
 nnoremap <expr> <esc>l OpenFoldOrDo('30l')
 nnoremap <expr> <esc>h OpenFoldOrDo('30h')
 
+" map \z to a kind of 'reset the folds'
+nnoremap <Leader>z zMzvz.
+
 if &diff
 	nnoremap > :.diffput <bar> diffupdate<cr>
 	nnoremap < :.diffput <bar> diffupdate<cr>
