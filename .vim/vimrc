@@ -37,6 +37,13 @@ nnoremap <expr> h foldclosed(".")==-1 ? "h" : "zv"
 " keep visual mode selection when indenting
 vmap > >gv
 vmap < <gv
+
+" When editing stdin, set it initially to unmodified
+aug StdinNotModified
+	au!
+	au VimEnter * if !bufname('') && (strlen(&fenc) || &bin) | se nomod | endif
+aug END
+
 " record macros into register 'q', playback with Q
 nnoremap Q @q
 " allow fully-collapsed windows
