@@ -1,11 +1,12 @@
 #!/usr/bin/python
-import pygtk
+# simple program for setting a window's icon dynamically
 import gtk
 import warnings
 from sys import argv, exit
 from struct import pack, unpack
 from optparse import OptionParser
 
+# parse some options
 parser = OptionParser()
 parser.add_option("--graphic", "--img", "--image", type="string",
 	dest="imagefile", metavar="FILE",
@@ -15,6 +16,8 @@ parser.add_option("--id", type="int", dest="window_id",
 parser.add_option("-v","--verbose")
 parser.add_option("-s","--silent","-q","--quiet")
 (options, args) = parser.parse_args()
+
+# allow image file and window ID to be given positionally
 if not options.imagefile and len(args):
 	options.imagefile = args[0]
 	args = args[1:]
@@ -22,22 +25,26 @@ if not options.window_id and len(args):
 	options.window_id = int(args[0], 0)
 	args = args[1:]
 
+# really simple error handling
 def err(msg=None):
 	if msg and not options.silent:
 		print msg
 	exit(1)
 
+# use GDK to load a graphics file into an array of pixels
 pixmap = gtk.gdk.pixbuf_new_from_file(options.imagefile)
 if not pixmap:
 	err("Couldn't load pixmap")
-
 warnings.filterwarnings('ignore','PyArray_FromDimsAndDataAndDescr',DeprecationWarning)
 pixels = pixmap.get_pixels_array()
 
+# prop will contain an array of 32-bit integers
+# starting with width, height, then pixel information
 prop = []
 prop += [len(pixels[0])]
 prop += [len(pixels   )]
 
+# pixel information is stored in the odd order: alpha, red, green, blue
 for row in pixels:
 	for p in row:
 		p = p.tolist()
@@ -49,12 +56,16 @@ for row in pixels:
 			argb += p[i] << (8 * (len(p)-i-1))
 		prop += unpack("i",pack("I",argb))
 
+# grab a handle to the window, then delete and reset its _NET_WM_ICON
 window = gtk.gdk.window_foreign_new(options.window_id)
 if not window:
 	err("Couldn't open window")
 window.property_delete("_NET_WM_ICON")
 window.property_change("_NET_WM_ICON","CARDINAL",32,gtk.gdk.PROP_MODE_REPLACE,prop)
 
+# many window managers need a hint that the icon has changed
+# bits 2, 3, and 5 of the WM_HINTS flags int are, respectively:
+# IconPixmapHint, IconWindowHint, and IconMaskHint
 wmhints = window.property_get("WM_HINTS")
 if wmhints:
 	wmhints_type,wmhints_fmt,wmhints_tuple=wmhints
