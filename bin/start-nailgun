@@ -1,2 +1,8 @@
 #!/bin/zsh
-CLASSPATH=$HOME/lib/nailgun-server-2.3.1.jar ~/hg/vimclojure/vim/bin/ng-server
+ver=2.3.1
+jar=server-$ver.jar
+url=http://clojars.org/repo/vimclojure/server/$ver/$jar
+lib=$HOME/lib/nailgun-$jar
+mkdir -p $lib:h
+[[ -f $lib ]] || curl -o $lib $url
+CLASSPATH=$lib ~/hg/vimclojure/vim/bin/ng-server
