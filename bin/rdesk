@@ -24,7 +24,7 @@ $opt{extra} = [@ARGV];
 my (%rev_alias, %ip);
 my %defaults = (
 	'' => {
-		graphics => '95%',
+		graphics => '100%',
 		depth => 16,
 		user => $ENV{LOGNAME},
 		extra => [ '-z' ],
