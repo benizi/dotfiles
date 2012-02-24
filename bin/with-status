@@ -28,5 +28,5 @@ else
 fi
 mess="$msg"
 [[ $returned != "0" ]] && mess="[!$returned]: $mess"
-mess="$mess [time: $(( endtime - starttime ))]"
+[[ "$cmd" = true ]] || mess="$mess [time: $(( endtime - starttime ))]"
 $msgcmd $mess || print -r $'\a'$mess
