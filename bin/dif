@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use Getopt::Long qw/:config pass_through/;
 use IPC::Cmd 'run';
+use Digest::MD5 'md5_hex';
 sub usage {
 	die <<USAGE;
 $0 [options]                -- stdin mode
@@ -34,7 +35,7 @@ if (@ARGV) {
 		splice @cmd, 1, 0, '-U', $unified_lines;
 	}
 	my ($yay, $err, $full, $stdout, $stderr) = run command => \@cmd, verbose => 0;
-	$input = join "\n", @$stdout;
+	$input = join '', @$stdout;
 } else {
 	warn "Reading diff from terminal\n" if -t 0;
 	$input = do { undef local $/; <> };
@@ -112,6 +113,7 @@ use ColorDiff;
 ColorDiff::Split('punc');
 #ColorDiff::Split('words');
 my (@files, @filenames);
+my @md5s = map Digest::MD5->new, 1, 2;
 if ($create_files) {
 	eval 'use File::Temp; 1' or die "$@";
 	for ("diff-000-before.XXXXXXXX", "diff-001-after.XXXXXXXX") {
@@ -127,6 +129,7 @@ if ($create_files) {
 }
 for (0..$#A) {
 	my ($l, $r) = ($A[$_],$B[$_]);
+	$md5s[$$_[0]]->add(join '', @{$$_[1]}) for [0,$l],[1,$r];
 	if (@$l and ref($$l[0])) {
 		my @lr = ($l, $r) = map shift(@$_), $l, $r;
 		if ($$l{filename}) {
@@ -170,6 +173,8 @@ for (0..$#A) {
 		}
 	}
 }
+my ($md1, $md2) = map $_->hexdigest, @md5s;
+warn "MD5's are equal\n" if $md1 eq $md2;
 sub close_files { close $_ for @files; @files = () }
 sub unlink_files { $keep or unlink $_ for @filenames; @filenames = () }
 close_files;
