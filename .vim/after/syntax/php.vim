@@ -1,4 +1,3 @@
-syn region phpComment start=+/\*+ end=+\*/+ contained extend contains=phpTodo fold
 if version >= 600
 	syn clear phpHereDoc
 	syn case match
@@ -10,3 +9,28 @@ if version >= 600
 	syn case ignore
 endif
 match Error /\/\*\*@#[\-+]/
+
+sil! syn clear phpComment
+sil! syn clear phpMultiLineComment
+sil! syn clear phpDocComment
+sil! syn clear phpDocCommentShared
+sil! syn clear phpDocCommentSharedTag
+
+syn region phpDocCommentShared matchgroup=phpDocCommentSharedTag start=~/\*\*#@+\_.\{-}\*/~ end=~/\*\*#@-\*/~ contains=@phpClTop containedin=phpRegion transparent fold
+
+syn region phpDocComment start=+/\*\*\(#@[+\-]\)\@!+ end=+\*/+ contained containedin=phpRegion contains=phpTodo,phpDocTag fold
+
+syn region phpMultiLineComment start=+/\*\*\@!+ end=+\*/+ contained containedin=phpRegion contains=phpTodo fold
+syn match phpMultiLineComment +/\*\*/+ contained containedin=phpRegion
+
+syn match phpComment /#.\{-}\(?>\|$\)\@=/ contained contains=phpTodo
+syn match phpComment +//.\{-}\(?>\|$\)\@=+ contained contains=phpTodo
+
+syn match phpDocTag /\ \@<=@\w\+/ contained
+
+syn cluster phpClTop add=phpDocComment,phpDocCommentShared,phpMultiLineComment
+
+hi def link phpDocComment Special
+hi def link phpMultiLineComment Comment
+hi def link phpDocTag Keyword
+hi def link phpDocCommentSharedTag Identifier
