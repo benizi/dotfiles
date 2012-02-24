@@ -1,5 +1,6 @@
 # Deal with pathological path on Windows 7 Cygwin
 (( $path[(Ie)/bin] )) || export PATH=$PATH:/bin
+setopt no_global_rcs
 # Set up system-specific vars
 export ZSH_UNAME=$(uname)
 case $ZSH_UNAME in
