@@ -22,7 +22,7 @@ end
 parser.order!(ARGV)
 
 @dir ||= ENV['DTACH_DIR']
-@dir ||= '/var/run/dtach.' + Etc.getlogin
+@dir ||= '/tmp/dtach.' + Etc.getlogin
 
 FileUtils.mkdir_p(@dir, :mode => 01700)
 
