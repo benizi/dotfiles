@@ -65,6 +65,11 @@ if (( $#git_dir )) ; then
 	_extra+=( ${(j.:.)pretty_git} )
 fi
 [[ ! -e $PWD ]] && _extra+=( "!deleted!" )
+if (( $+commands[prb] )) ; then
+	_extra+=( "$(prb version --short)" )
+elif (( $+functions[rbenv] )) ; then
+	_extra+=( "$(rbenv version-name)" )
+fi
 (( $#_extra )) && __extra="[$_extra]" || __extra=''
 PROMPT='%{${PSCOLOR}'$_ps_color'%}%32<...<%n@%m'$_screen' %~%<<'$__extra$_pschar'%{$NOCOLOR%} '
 }
