@@ -3,3 +3,5 @@ env -u LD_PRELOAD xinit =minecraft -- :8 &
 export DISPLAY=:8
 x-is-active -wait
 xclock -name blue -geometry +1920+0 &
+twm &
+display -geometry +1920+300 ~/Downloads/StandardLogicGates.png
