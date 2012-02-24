@@ -53,7 +53,11 @@ if ($just_distcc) {
 }
 sub qs { local $_ = @_ ? shift : $_; s{([\"\'\$\`])}{\\$1}g; $_ }
 if (!@cmd) {
-	print qq{export $_="}.qs($ENV{$_}).qq{"\n} for grep !(($pre{$_}//42) eq $ENV{$_}), keys %ENV;
+	while (my ($k, $v) = each %ENV) {
+		next unless defined $v;
+		next if $v eq ($pre{$k} // 42);
+		print qq{export $k="}.qs($v).qq{"\n};
+	}
 } else {
 	unshift @cmd, 'pump' if $pump;
 	exec { $cmd[0] } @cmd;
