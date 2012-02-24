@@ -6,7 +6,7 @@ function ssh_find_add () {
 	local -a ids envargs
 	ids=( ${(f):-"$(ssh_find)"} )
 	(( $#ids )) || return
-	(( $+INSOL )) && envargs=( DISPLAY= ) || envargs=( -u DISPLAY )
+	(( $+INSOL || $+INOSX )) && envargs=( DISPLAY= ) || envargs=( -u DISPLAY )
 	pushd ~/.ssh || return
 	env $envargs ssh-add $ids
 	popd
