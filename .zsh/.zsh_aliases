@@ -78,6 +78,20 @@ fi
 	parallel -uXj1 vim "$@"
 	stty --file $TTY sane
 }
+
+vimrecover () {
+	local l s
+	local -A swapped
+	for l in ~/.vim-tmp/%*.sw?(N.) ; do
+		s=${l:t:r:gs.[%]./.}
+		pid=$(perl -Mbytes -nwe 'BEGIN { $/ = \2; } print unpack s => $_ if 13..13' $l)
+		kill -0 $pid 2>/dev/null && continue
+		(( $+swapped[$s] )) && continue
+		v +'map q :qa<CR>' $s || break
+		swapped+=( $s 1 )
+	done
+}
+
 alias nacroread='acroread -openInNewWindow'
 alias noagent='env -u SSH_AGENT_PID -u SSH_AUTH_SOCK'
 alias ssh-noagent='noagent ssh'
