@@ -27,7 +27,10 @@ endif
 set hidden
 set laststatus=2 ruler
 aug filetypedetect
-	au BufNewFile,BufRead *.markdown setf markdown
+	au! BufNewFile,BufRead *.md
+	au BufNewFile,BufRead *.markdown,*.md,*.mkd setf markdown
+	au BufNewFile,BufRead *.cron setf crontab
+	au BufNewFile,BufRead *.watchr setf ruby
 aug END
 filetype plugin indent on
 syntax enable
