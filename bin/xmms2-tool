@@ -118,6 +118,32 @@ sub random { _random 0 }
 sub randomnext { _random 0 }
 sub randomprev { _random 1 }
 
+sub _get_config { chomp(my $ret = `nyxmms2 server config $_[0]`); (split ' ', $ret)[-1] }
+sub _rpt { _get_config "playlist.repeat_$_[0]" }
+BEGIN { $just_out{repeat_status}++; }
+sub repeat_status {
+	my ($r1, $ra) = map _rpt($_), qw/one all/;
+	$r1 ? "<1>" : $ra ? "<->" : "-->";
+}
+BEGIN { $just_out{repeat}++; }
+sub repeat {
+	my ($r1, $ra) = map _rpt($_), qw/one all/;
+	my ($s1, $sa);
+	if (!$r1 and !$ra) {
+		$sa = 1;
+	} elsif ($ra and !$r1) {
+		$s1 = 1;
+	} else {
+		($sa, $s1) = (0, 0);
+	}
+	for ([all=>$sa],[one=>$s1]) {
+		my ($which, $doit) = @$_;
+		$doit // next;
+		system "nyxmms2 server config playlist.repeat_$which $doit";
+	}
+	repeat_status
+}
+
 my %dispatch;
 $dispatch{$_} = eval "\\&$_" for grep /[a-z]/, grep !/::$/, grep !/^_/, grep !exists($A{$_}), keys %::;
 my $value = ($dispatch{$opt} || sub { die "Unknown option: $opt\n" })->();
