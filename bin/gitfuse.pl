@@ -220,6 +220,20 @@ sub getattr {
 	}
 	@ret;
 }
+sub _revs_in_interval {
+	my @YmdHMS = @_;
+	my @time_args;
+	if (@YmdHMS) {
+		my @since = (@YmdHMS, @date_defaults[@YmdHMS..$#date_defaults]);
+		my @until = (@YmdHMS, @date_defaults[@YmdHMS..$#date_defaults]);
+		$until[$#YmdHMS]++;
+		@time_args =
+			map sprintf('--%s=%04d-%02d-%02d %02d:%02d:%02d', @$_),
+			[ after => @since ],
+			[ before => @until ];
+	}
+	$git->command('rev-list', '--all', @time_args);
+}
 sub getdir {
 	&_de;
 	my $fn = shift;
@@ -233,20 +247,11 @@ sub getdir {
 		close $d;
 	} elsif ($fn =~ m{^/\.bydate((?:/\d+){0,6})$}) {
 		my (@YmdHMS) = split '/', substr $1, 1;
-		my @time_args;
-		if (@YmdHMS) {
-			my @since = (@YmdHMS, @date_defaults[@YmdHMS..$#date_defaults]);
-			my @until = (@YmdHMS, @date_defaults[@YmdHMS..$#date_defaults]);
-			$until[$#YmdHMS]++;
-			push @time_args, map sprintf('--%s=%04d-%02d-%02d %02d:%02d:%02d', @$_),
-				[ after => @since ],
-				[ before => @until ];
-		}
-		if (my @revs = $git->command('rev-list', '--all', @time_args)) {
+		if (my @revs = _revs_in_interval @YmdHMS) {
 			my ($beg, $end) = map [(localtime $_)[reverse 0..5]], map _sha1_commit_time($_), @revs[-1,0];
 			$$_[0] += 1900 for $beg, $end;
 			$$_[1] += 1 for $beg, $end;
-			@files = map sprintf("%02d", $_), ($$beg[@YmdHMS]..$$end[@YmdHMS]);
+			@files = map sprintf("%02d", $_), grep _revs_in_interval(@$beg[0..$#YmdHMS],$_), ($$beg[@YmdHMS]..$$end[@YmdHMS]);
 		}
 	} else {
 		push @files, map $$_{name}, _lsfile "$fn/";
