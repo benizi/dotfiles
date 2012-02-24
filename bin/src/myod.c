@@ -356,7 +356,7 @@ int main (int argc, char **argv, char **inenv) {
 		close(0);
 		if (dup2(pfd[0],0) == -1) { perror("dup2"); return 3; }
 		close(pfd[0]);
-		execle("/usr/bin/less", "--", "-", NULL, env);
+		execle("/usr/bin/less", "--", "-", NULL, inenv);
 		printf("Bad exec\n");
 		return 5;
 	}
