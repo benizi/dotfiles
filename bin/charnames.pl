@@ -41,6 +41,7 @@ sub info {
 	local $_ = @_ ? shift : $_;
 	my $c = $_;
 	$show_all or $c =~ s/([[:^print:]])/sprintf "\\u%04x", ord $1/ge;
+	my $u = join ',', map sprintf("%02x", $_), unpack "C0C*", pack "C0U", ord;
 	my $x = sprintf "%04x", ord;
 	my $uni = charinfo(ord);
 	my $n = charnames::viacode(ord);
@@ -48,7 +49,7 @@ sub info {
 	return if $nonascii and $c =~ /[\x20-\x7e]/;
 	return if $nonlatin and $script =~ /^(?:common|latin)$/i;
 	my $h = ($script eq 'Han') ? $han->Mandarin($_) : '';
-	print join "\t", $c, $x, $n||$h||'(no info)';
+	print join "\t", $c, $u, $x, $n||$h||'(no info)';
 	print "\n";
 }
 
