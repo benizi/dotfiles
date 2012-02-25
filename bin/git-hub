@@ -1,15 +1,9 @@
 #!/usr/bin/env ruby
-require 'optparse'
 require 'json'
 require 'uri'
 require 'net/https'
 require 'rubygems'
 require 'git'
-
-opts = {}
-parser = OptionParser.new do |o|
-end
-parser.parse!(ARGV)
 
 $g = Git.open(`git rev-parse --show-toplevel`.chomp)
 
