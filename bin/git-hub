@@ -76,7 +76,7 @@ def remote_projdir
 end
 
 def projdir
-	File.dirname(gdir)
+	File.basename($g.instance_eval('@working_directory.to_s'))
 end
 
 def host ; 'github.com' ; end
@@ -93,8 +93,8 @@ def show_url(owner, name)
 	api_url('repos', "show/#{owner}/#{name}")
 end
 
-def create_url(owner, name)
-	api_url('repos', "create/#{owner}/#{name}")
+def create_url
+	api_url('repos', 'create')
 end
 
 def section(host = nil)
@@ -174,7 +174,8 @@ def die_with(response)
 	abort msg(response)
 end
 
-class Commands
+module Commands
+	extend self
 	def fork(*args)
 		p :remote => remote
 		owner = args.shift || remote_owner
@@ -191,31 +192,61 @@ class Commands
 		end
 	end
 
-	def hub(*args)
-		case args[0]
-		when nil
-			args = %w{help}
+	def create(*args)
+		project = args.shift || projdir
+		props = {
+			:name => project,
+			:login => user,
+			:token => token,
+		}
+		response = post(create_url) do |req|
+			req.set_form_data(props)
 		end
-		cmd = args.shift.to_sym
-		cmd = :help unless Commands.respond_to?(cmd)
-		Commands.send(cmd, *args)
+		if response.is_a? Net::HTTPSuccess
+			$g.add_remote('gh', "gh:#{user}/#{project}")
+		else
+			abort <<-FAILED
+Failed to create #{project}:
+Request URL: #{create_url}
+Request data: #{props.inspect}
+Response:
+#{response.body}
+			FAILED
+		end
 	end
 
 	def usage(error = nil)
 		warn "Error: #{error}" if error
-		cmd = $0 =~ /\bgit-([\w\-]+)$/ ? $1 : $0
-		abort <<USAGE
-Usage: git #{cmd} [options] [user [project]]
+		case cmd
+		when 'hub', 'create'
+			abort <<-USAGE
+Usage: git hub command [options]
+			USAGE
+		when 'fork'
+			abort <<-USAGE
+Usage: git fork [user [project]]
 Default is to auto-detect
-USAGE
+			USAGE
+		else
+			abort "Unknown command... #{cmd}"
+		end
 	end
 	alias :help :usage
+
+	def cmd
+		@cmd ||= $0 =~ /\bgit-([\w\-]+)$/ ? $1 : $0
+	end
+
+	def cmd=(cmd)
+		@cmd = cmd
+	end
 end
 
-cmd = ARGV.shift
-commands = Commands.new
+cmd = File.basename($0).gsub(/^git-/, '')
+Commands.cmd = cmd if cmd
+cmd = ARGV.shift if cmd == 'hub'
 if cmd
-	commands.send(cmd, *ARGV)
+	Commands.send(cmd, *ARGV)
 else
-	commands.usage('No command specified')
+	Commands.usage('No command specified')
 end
