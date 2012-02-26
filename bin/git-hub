@@ -121,7 +121,7 @@ def token(host = nil)
 	github host, 'token'
 end
 
-def request(url, method)
+def request(url, method, &block)
 	url = URI(url) unless url.respond_to? :host
 	req = Net::HTTP.const_get(method).new(url.request_uri)
 	#req.basic_auth "#{user(url.host)}/token", token(url.host)
@@ -141,12 +141,12 @@ def request(url, method)
 	http.start { http.request(req) }
 end
 
-def post(url)
-	request(url, :Post)
+def post(url, &block)
+	request(url, :Post, &block)
 end
 
-def get(url)
-	request(url, :Get)
+def get(url, &block)
+	request(url, :Get, &block)
 end
 
 def do_fork(owner, name)
