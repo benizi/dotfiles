@@ -104,7 +104,8 @@ def section(host = nil)
 end
 
 def github(host, key, die_on_empty = true)
-	val = gconf(section(host), key)
+	actual = host ? host.gsub!(/^api\./, '') : nil
+	val = gconf(section(actual), key)
 	if !val or val.empty?
 		warn "No github #{key}?"
 		abort if die_on_empty
