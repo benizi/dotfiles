@@ -195,11 +195,7 @@ module Commands
 
 	def create(*args)
 		project = args.shift || projdir
-		props = {
-			:name => project,
-			:login => user,
-			:token => token,
-		}
+		props = { :name => project }
 		response = post(create_url) do |req|
 			req.set_form_data(props)
 		end
