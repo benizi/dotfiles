@@ -25,9 +25,14 @@ if (( $+RUBYOPT )) ; then
 fi
 
 # find owner of Zsh files (different behavior if root)
-local -a stat_flags
-(( $+INOSX )) && stat_flags=( -f %Su ) || stat_flags=( -c %U )
-owner="$(stat -L $stat_flags ${(%):-"%x"})"
+if zmodload -F zsh/stat b:zstat 2>/dev/null ; then
+	owner="$(zstat -s +uid ${(%):-"%x"})"
+else
+	echo "Failed to load zstat" >&2
+	local -a stat_flags
+	(( $+INOSX )) && stat_flags=( -f %Su ) || stat_flags=( -c %U )
+	owner="$(stat -L $stat_flags ${(%):-"%x"})"
+fi
 
 zsh_dirs=(~$owner ~)
 typeset -U zsh_dirs
