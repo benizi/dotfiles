@@ -3,8 +3,9 @@ use strict;
 use warnings;
 use Getopt::Long;
 my @perms;
+my @web_users = qw/wwwrun apache httpd lighttpd nginx/;
 my @args;
-my $permbits = 'rwX';
+my $permbits;
 GetOptions(
 	'permbit=s' => \$permbits,
 	'n|dry-run' => \(my $dry = 0),
@@ -14,9 +15,11 @@ GetOptions(
 	'recurse|recursive|R!' => \(my $recursive = 0),
 	'u|user' => \(my $do_current_user = 0),
 	'g|group' => \(my $do_current_group = 0),
+	'w|webusers|webservers' => \(my $do_web_users = 0),
 	'<>' => sub {
 		for (@_) {
 			/^[dug]:/ ? (push @perms, $_) :
+			/^o::/ ? (push @perms, $_) :
 			(/^:(...)$/ or /^([r\-][w\-][x\-])$/i) ? ($permbits = $1) :
 			push @args, $_;
 		}
@@ -24,8 +27,13 @@ GetOptions(
 ) or die 'options';
 push @perms, grep $do_current_user, "u:".getpwuid $<;
 push @perms, grep $do_current_group, "g:".getgrgid $(;
+if ($do_web_users) {
+	my @web_perms = map "u:$_", grep scalar getpwnam $_, @web_users;
+	push @perms, map "$_:".($permbits // 'r-X'), @web_perms;
+}
 @perms = map {; ("d:$_", $_) } @perms if $defaults;
-/^(?:d:.*:.*:.*|[ug]:.*:.*)$/ or $_ .= ":$permbits" for @perms;
+$permbits //= 'rwX';
+/^(?:d:.*:.*:.*|[ug]:.*:.*|o::...)$/ or $_ .= ":$permbits" for @perms;
 @perms or die "No default/user/group permissions specified\n";
 @args or die "No files/directories specified\n";
 my (@with_defaults, @no_defaults);
