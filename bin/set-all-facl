@@ -6,6 +6,7 @@ my @perms;
 my @web_users = qw/wwwrun apache httpd lighttpd nginx/;
 my @args;
 my $permbits;
+my $mask;
 GetOptions(
 	'permbit=s' => \$permbits,
 	'n|dry-run' => \(my $dry = 0),
@@ -16,15 +17,18 @@ GetOptions(
 	'u|user' => \(my $do_current_user = 0),
 	'g|group' => \(my $do_current_group = 0),
 	'w|webusers|webservers' => \(my $do_web_users = 0),
+	'mask' => \$mask,
 	'<>' => sub {
 		for (@_) {
 			/^[dug]:/ ? (push @perms, $_) :
 			/^o::/ ? (push @perms, $_) :
+			/^m::/ ? ($mask = $_) :
 			(/^:(...)$/ or /^([r\-][w\-][x\-])$/i) ? ($permbits = $1) :
 			push @args, $_;
 		}
 	},
 ) or die 'options';
+push @perms, $mask // 'm::rwx';
 push @perms, grep $do_current_user, "u:".getpwuid $<;
 push @perms, grep $do_current_group, "g:".getgrgid $(;
 if ($do_web_users) {
@@ -33,7 +37,7 @@ if ($do_web_users) {
 }
 @perms = map {; ("d:$_", $_) } @perms if $defaults;
 $permbits //= 'rwX';
-/^(?:d:.*:.*:.*|[ug]:.*:.*|o::...)$/ or $_ .= ":$permbits" for @perms;
+/^(?:d:.*:.*:.*|[ugm]:.*:.*|o::...)$/ or $_ .= ":$permbits" for @perms;
 @perms or die "No default/user/group permissions specified\n";
 @args or die "No files/directories specified\n";
 my (@with_defaults, @no_defaults);
