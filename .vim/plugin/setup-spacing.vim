@@ -132,7 +132,7 @@ fun! SetupSpacing(...)
 	endif
 	let b:setup_spacing = 1
 	if a:0 && a:1 < 2
-		for [t, default] in { "tabbed": [ 4, 0 ], "spaced": [ 2, 1 ] }
+		for [t, default] in items({ 'tabbed': [ 4, 0 ], 'spaced': [ 2, 1 ] })
 			if !exists('g:setup_spacing_default_{t}')
 				let g:setup_spacing_default_{t} = default
 			endif
