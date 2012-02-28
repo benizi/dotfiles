@@ -32,7 +32,6 @@ fun! DetectSpacing()
 	let expand_tabs = exists('g:spacing_expand_tabs') ? g:spacing_expand_tabs : 0
 	let default_spacing = exists('g:spacing_default') ? g:spacing_default : 4
 	let max_lines = exists('g:spacing_max_lines') ? g:spacing_max_lines : 1000
-	" TODO - fix this
 	let max_consider = exists('g:spacing_max_spaces') ? g:spacing_max_spaces : 5
 
 	let ret = []
@@ -93,6 +92,9 @@ fun! DetectSpacing()
 			continue
 		endif
 		let d = abs(a.indent - b.indent)
+		if d > max_consider
+			continue
+		endif
 		if d
 			let significant += 1
 			let diffs[d] = get(diffs, d) + 1
