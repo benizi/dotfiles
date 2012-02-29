@@ -171,11 +171,13 @@ begin
 rescue Exception => e
 	content ||= "(unknown)"
 	puts <<FAIL
+<pre>
 Failed to render Markdown.
 Error:
 #{e}
 Content:
 #{content}
+</pre>
 FAIL
 end
 
