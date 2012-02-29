@@ -1,0 +1,14 @@
+# all root dirs and files
+/*
+
+# except...
+!/.zsh*
+!/.vim*
+/.vim-bundle
+/.vim-tmp
+!/bin
+!/perl-lib
+!/Usable
+
+!/.git*
+/.gitk

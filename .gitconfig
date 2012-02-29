@@ -1,0 +1,116 @@
+[core]
+	excludesfile = /home/bhaskell/.gitignore.global
+[color]
+	ui = auto
+[sendemail]
+	confirm = always
+	chainreplyto = no
+[merge]
+	tool = vimdiff
+[push]
+	default = tracking
+[guitool "Display"]
+	cmd = display $FILENAME
+	needsfile = yes
+	noconsole = yes
+[guitool "gqView"]
+	cmd = gqview $FILENAME
+	needsfile = yes
+	noconsole = yes
+[user]
+	name = Benjamin R. Haskell
+	email = bhaskell@4moms.com
+[post-review]
+	username = bhaskell
+	passfile = imap-pass-mail
+	autopublish = false
+	targets = g.LSE
+[check-email]
+	default = benizi@benizi.com
+[disable]
+	reset = true
+[pack]
+	windowMemory = 1g
+[alias]
+	alias = "!a() { pattern=. ; extrased=\"\" ; args=() ; for arg ; do case $arg in --name-only) extrased=\"s/=.*$//\" ; pattern=. ;; *) pattern=\"^$arg=\" ;; esac ; done ; git config --get-regexp '^alias\\.' | sed \"s/alias.//; s/ /=/; $extrased\" | grep \"$pattern\" ; } ; a"
+	# allow "git git cmd" typo:
+	git = "!git"
+	k = !gitk
+	ka = "!gitk --all"
+	g = !gitg
+	ga = !gitg --all
+	# s = shell -- simple interactive shell
+	s = "!d() { d=\"$(git rev-parse --show-toplevel)\" ; b=\"$(git config --get alias.bc >/dev/null && git bc)\" ; d=\"$d${b:+[branch:$b]}\" ; } ; s() { d ; unset cmdprefix ; while echo -e \"$d git${cmdprefix:+ $cmdprefix}> \\c\" ; do read cmd ; handled=true ; case $cmd in \\!*) eval ${cmd#\\!} ;; /*) cd $cmd ;; \"\") [ -z \"$cmdprefix\" ] && break ; echo \"(locked, not quitting: q/quit)\" ; handled=false ;; q|quit) break ;; \\?) git help ${cmdprefix:---all} ;; prefix*) cmdprefix=\"${cmd#prefix }\" ;; lock*) cmdprefix=\"${cmd#lock }\" ;; noprefix*|unprefix*|unlock*) unset cmdprefix ;; *) handled=false ;; esac ; d ; $handled && continue ; git $cmdprefix $cmd ; done ; echo ; } ; s"
+#	st = diff --name-status
+#	st = ls-files -tdom --exclude-standard .
+	st = "!git sta --directory"
+	sta = "!st() { noredo=false ; for arg ; do case $arg in -c) noredo=true ;; esac ; done ; git nopipe ls-files -tdom --no-empty-directory --exclude-standard \"$@\" | grep . || $noredo || git st -c \"$@\" ; } ; st"
+	stc = diff --cached --name-status
+	svnrevtags = "!git log --all -z --pretty=format:'%H%n%s%n%b' | perl -ln0e 'open STDOUT, qq{>.git/refs/tags/r$2} and print $1 if /\\A(.{40}).*git-svn-id:\\s\\S+\\@(\\d+)/s'"
+	svnup = "!svnup () { git svn fetch && git com && git merge --ff-only git-svn && git slg ; } ; svnup"
+	b = branch
+	t = tag
+	ab = "! : archive branch ; ab() { if [ $# -lt 1 ] ; then echo \"Usage: git ab branch [tag]\" >&2 ; exit 1 ; fi ; branch=$1 ; shift ; if [ $# -gt 0 ] ; then tag=$1 ; else tag=$branch ; fi ; git tag \"$tag\" \"$branch\" && git branch -D \"$branch\" ; } ; ab"
+	base = diff-base
+	base-range = "!ra () { [[ $# -gt 0 ]] || set -- HEAD ; b=\"$(git diff-base \"$@\")\" ; echo $b..$1 ; } ; ra"
+	# TODO: fix --contains version, any/all
+	bc = "!bc () { if [[ $# -eq 0 ]] ; then git branch | grep '^[*]' | cut -c3- ; return ; fi ; bargs=() ; revs=() ; any=true ; found=() ; for arg ; do case \"$arg\" in --any) any=true ;; --all) any=false ;; -*) bargs+=( \"$arg\" ) ;; *) revs+=( \"$arg\" ) ;; esac ; done ; for rev in \"${revs[@]}\" ; do toprocess=\"${toprocess:+$toprocess /// }`git branch \"${bargs[@]}\" --contains $rev | cut -c3-`\" ; done ; thispass=( $toprocess ) ; for c in \"${thispass[@]}\" ; do echo $c ; done ; } ; bc"
+	bd = branch -d
+	bdm = "! : branch delete merged ; bdm () { set +e ; for branch in $(git branch | grep -v '^\\*' | cut -c3- | grep -v master | grep -v development) ; do git branch -d \"$branch\" >/dev/null 2>&1 && echo Deleted $branch || echo Did not delete $branch ; done ; } ; bdm"
+	# co = "! : checkout or clone ; co () { if [ $# -eq 1 ] && [ \"$1\" = [a-z]*:* ] ; then git clone \"$1\" ; else git checkout \"$@\" ; fi ; } ; co"
+	com = checkout master
+	cod = checkout development
+	comb = checkout master -b
+	codb = checkout development -b
+	ci = "!git check-email && git commit"
+	cia = "!git ci --amend"
+	cin = "!git ci --no-verify"
+	f = fetch --all
+	h = help
+	rc = rebase --continue
+	re = rebase
+	rea = rebase --abort
+	refeature = "!usage() { echo \"Usage: git refeature branch [onto]\" >&2 ; [[ $# -gt 0 ]] && echo \"$@\" >&2 ; exit 1 ; } ; rf () { unset branch onto ; case $# in 1) branch=$1 onto=master ;; 2) branch=$1 onto=$2 ;; *) usage ;; esac ; base=\"$(git merge-base $branch $onto)\" ; [[ -z \"$base\" ]] && usage \"Couldn't find base for $branch onto $onto\" ; cmd=( git rebase --onto $onto $base $branch ) ; ${cmd[@]} || echo \"${cmd[@]} failed\" ; } ; rf"
+	rem = rebase master
+	red = rebase development
+	ri = rebase --interactive
+	rim = rebase --interactive master
+	rid = rebase --interactive development
+	up = pull --ff-only
+	exec = "!sh -c"
+	wip = "! : work in progress ; wip() { all=\"\" ; amend=\"\" ; args=() ; for arg ; do case \"$arg\" in -a|--amend) amend=--amend ;; *) args+=( \"$arg\" ) ;; esac ; done ; git diff --cached --name-only | grep -q . || all=\"-a\" ; msg=\"wip\" ; set -- \"${args[@]}\" ; if [ -n \"$amend\" ] ; then msg=\"\" ; elif [ $# -gt 0 ] ; then msg=\"wip: $*\" ; fi ; if [ -n \"$amend\" ] ; then msg=\"-CHEAD\" ; else msg=\"-m$msg\" ; fi ; git commit $all $amend \"$msg\" ; if [ -z \"$all\" ] && git diff --name-only | grep -q . ; then echo \"Staged changes were WIPed. Run again to WIP the rest.\" ; fi ; } ; wip"
+	a = "!git check-email && git add"
+	ap = "!git a -p"
+	au = "!git a -u"
+	d = diff
+	dchanged = "!gd() { namey=() ; args=() ; for arg ; do case \"$arg\" in --name*) namey+=( $arg ) ;; *) args+=( $arg ) ;; esac ; done ; git diff --name-status $args | perl -lnwe 'print if s/^M\\s+//' | xargs git diff $namey $args -- ; } ; gd"
+	dn = "!usage() { echo \"Usage: git dn [REV [default:HEAD]] [NUP [default:1]]\" >&2 ; [[ $# -gt 0 ]] && echo \"$@\" >&2 ; exit 1 ; } ; dn() { args=() ; opts=() ; justopts=false ; for v ; do if $justopts ; then opts+=( $v ) ; continue ; fi ; case $v in --) justopts=true ;; -*) opts+=( $v ) ;; *) args+=( $v ) ;; esac ; done ; set -- \"${args[@]}\" ; [[ $# -eq 0 ]] && set -- HEAD 1 ; if [[ $# -eq 1 ]] ; then case $1 in [[:digit:]]*) rev=HEAD ; nup=$1 ;; *) git rev-parse --revs-only $1 | grep -q . || usage \"Bad revision: $1\" ; rev=$1 nup=1 ;; esac ; elif [[ $# -eq 2 ]] ; then rev=$1 ; nup=$2 ; else usage ; fi ; case $nup in [[:digit:]]*) ;; *) usage \"Non-numeric nup: $nup\" ;; esac ; git diff \"$rev\"\\~\"$nup\"..\"$rev\" \"${opts[@]}\" ; } ; dn"
+	dc = diff --cached
+	dcn = diff --cached --name-only
+	dt = difftool
+	wouldcommit = "!wood () { tmp=.git/wouldcommit ; ret=false ; git nopipe svn dcommit -n | perl -lnwe 'BEGIN{ $err=-1; } next unless s/diff-tree/log --name-status/ and s/(?<=~1) /../; $err = 0 if $err < 0; print; s/^/git /; $_ = `$_`; chomp; print; $err = 1 if /NEEDS/; END { exit $err; }' > $tmp && [ -s $tmp ] && ret=true ; ${PAGER:-less} < $tmp ; rm $tmp ; $ret && echo git svn dcommit || echo Unfixed comment remains ; $ret ; } ; wood"
+	unadd = reset HEAD
+	wrapped = "!wrapped() { cd $(git unwrappeddir) ; disabled=$(git config --bool disable.$1); ${disabled:-false} && echo \"git $1 has been disabled\" && return; git \"$@\"; }; wrapped"
+	unwrappeddir = "!f() { pid=$$ ; for l in {1..5} ; do pid=$(perl -lanwe 'print $F[3]' /proc/$pid/stat) ; done ; readlink /proc/$pid/cwd ; } ; f"
+	nopipe = "!trap '' PIPE ; git"
+	svnlog = "!lg() { filename=changed-files ; revision=0 ; args=() ; while [[ $# -gt 0 ]] ; do found=false ; for option in filename revision ; do case \"$1\" in --$option*) found=true ; case \"$1\" in *=*) typeset $option=${1#*=} ;; *) shift ; typeset $option=$1 ;; esac ; shift ;; esac ; done ; $found && continue ; args+=( $1 ) ; shift ; done ; git log ${args[@]} | perl -lnwe 'BEGIN { ($fn,$rev) = splice @ARGV; } push @f, $_; END { print qq<Index: $fn>; print q.=. x 67; print qq<$_ $fn   (revision $rev)> for qw/--- +++/; print qq<\\@\\@ -0,0 +1,>, 0+@f, qq< \\@\\@>; print qq<+$_> for @f; }' $filename $revision | ${PAGER:-less} ; } ; lg"
+	svnrev = "!revs() { [[ $# -gt 0 ]] || set -- $(cat) ; git rev-parse \"$@\" | perl -Mbytes -lwe 'open my $f, q.<., shift or die; %revs = reverse unpack q.(NH40)*., do { undef local $/; <$f> }; chomp, print $revs{$_}//q.unknown. while <>' .git/svn/git-svn/.rev_map.* ; } ; revs"
+	treesize = "!sizeit() { [[ $# -gt 0 ]] || set -- HEAD ; git nopipe ls-tree -l -r \"$@\" | grep -v branch/ | perl -lanwe '$t+=$F[3];END{print$t}' ; } ; sizeit"
+	savings = "!saved() { rev=$1 ; shift ; verbose=$1 ; shift ; before=$(git treesize $rev~1) ; after=$(git treesize $rev) ; args=() ; format=format:%n%s ; [[ $verbose -gt 0 ]] && format='format:%n%s%n%n%w(80,4,4)%b' ; [[ $verbose -eq 1 ]] && format=t$format ; [[ $verbose -gt 1 ]] && args=( --name-status ) ; git log -1 --pretty=\"$format\" $args $rev ; [[ $verbose -gt 1 ]] && echo ; perl -lwe '($before,$after)=splice @ARGV; $saved = $before - $after; @l=qw/From To Saved/; @c = ($before, $after, $saved); s/(?<=\\d)(?=(?:\\d\\d\\d)+\\b)/,/g for @c; $_.=q.:. for @l; ($ll,$cl) = map +(sort { $a <=> $b } map length, @$_)[-1], \\@l, \\@c; print sprintf q<%-*s %*s>, $ll, $l[$_], $cl, $c[$_] for 0..$#l' $before $after ; } ; doit() { args=() ; verbose=0 ; for arg ; do case \"$arg\" in -v|--verbose) verbose=$((verbose + 1)) ;; *) args+=( \"$arg\" ) ;; esac ; done ; git rev-list --reverse \"$args\" | while read rev ; do saved $rev $verbose ; done ; } ; doit"
+	lgbase = "!lg() { withuser=\" %Cblue<%aE>%Creset\" ; set -- --users \"$@\" ; args=\"\" ; for arg ; do case $arg in -no-u|--no-u|--no-users) userstuff=\"\" ;; -u|--users) userstuff=\"$withuser\" ;; *) args+=( \"$arg\" ) ;; esac ; done ; git log --graph --pretty=format:\"%Cred%h%Creset -%C(yellow)%d%Creset$userstuff %s %Cgreen(%ar)%Creset\" --abbrev-commit --date=relative ${args[@]} | perl -lpwe \"BEGIN{\\$SIG{PIPE}=undef;} s/(wip)(?![ie])/\\e[32;7m\\$1\\e[0m/ig\" | ${PAGER:-less} ; } ; lg"
+	lg = "!git nopipe lgbase --branches"
+	slg = "!git nopipe log --graph --pretty=format:'%Cred%h%Creset%Cgreen=SVN%H=%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset %Cblue<%aE>%Creset' --abbrev-commit --date=relative --all | perl -MFile::Find -lpwe 'BEGIN{ @d=grep -d, q<.git/svn>; if (@d) { @maps=(); find sub { /^\\.rev_map/ and push @maps, qq{$File::Find::dir/$_}; }, q<.git/svn>; %revs=reverse unpack q<(NH40)*>, join q<>, map { open $f, q.<., $_; do { undef local $/; <$f> } } grep -r, @maps; $_=qq{(r$_)} for values %revs; } } s!=SVN(\\w+)=!$revs{$1}||qq..!e; s|<([^\\@]+)\\@[^>]+>(?!.*<)|<$1>|' | ${PAGER:-less}"
+	ag = all lg -15
+	bmf = bind-mount-fixer
+	# apply a Review Board patch and commit the changed files
+	rbpatch = "!patchy() { base=$1 ; shift; patch=$1 ; shift ; dry=() ; reverse=() ; for arg ; do case \"$arg\" in --dry*) dry+=( --dry-run ) ;; -R|--rev*) reverse+=( -R ) ;; esac ; done ; cd $base ; patch-eol-fixer.pl -p0 < $patch | patch -p0 $dry $reverse && patch-eol-fixer.pl --filenames -z -p0 < $patch | xargs -0 git add $dry && git commit -m \"rbpatch\" $dry ; } ; patchy"
+	patch = format-patch --stdout
+	email = "!TZ=America/New_York git send-email --annotate ${EMAIL+--from='Benjamin R. Haskell <'$EMAIL'>'}"
+	check-email = "!check () { email=$(git config --get user.email) ; locpart=${email%@*} ; domain=${email#*@} ; domain=${domain%.*} ; [[ \"$locpart\" != \"$domain\" ]] && return 0 ; echo \"Email <$email> is of the form (thing)@(thing).(rest)\" ; return 1 ; } ; check"
+	email-zsh = "!email () { git check-email || return 1 ; email=$(git config --get user.email) ; git email --envelope-sender='<'$email'>' --cc=\"$user <\"$email'>' --to='Zsh Workers <zsh-workers@zsh.org>' \"$@\" ; } ; email"
+	graphviz = "!f() { echo 'digraph git {' ; git log --pretty='format:  %h -> { %p }' \"$@\" | sed 's/[0-9a-f][0-9a-f]*/\"&\"/g' ; echo '}'; }; f"
+[github]
+	user = benizi
+	token = "f1e16775462d45c3c324dbef2e84c508"
+[heroku]
+	account = 4moms

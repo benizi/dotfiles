@@ -1,0 +1,11 @@
+# Vim-related
+.*.sw?
+.VimballRecord
+*timetrack.sqlite3
+# EMACS temp files
+*~
+.svn
+cscope.out
+proxychains.conf
+.irbrc
+log/newrelic*
