@@ -25,13 +25,15 @@ host_info = ARGV.dup
 
 hosts = []
 screens = []
+displays = []
 links = {}
 alia = Hash.new { |h,k| h[k] = [] }
 screen_opts = Hash.new { |h,k| h[k] = Hash.new { |hh,kk| hh[kk] = {} } }
 
 host_info.each do |info|
-	host, host_opts = info.split(':')
+	host, host_opts = info.split(':', 2)
 	host, *other_names = host.split('=')
+	display = ':0'
 
 	if host_opts
 		screen_opts[host] ||= {}
@@ -46,6 +48,8 @@ host_info.each do |info|
 				screen_opts[host]['ctrl'] = 'super'
 				screen_opts[host]['super'] = 'alt'
 				screen_opts[host]['alt'] = 'ctrl'
+			when /^disp(?:lay)?=(.+)/i
+				display = $1
 			else
 				warn "Unknown option: #{opt}"
 			end
@@ -54,6 +58,7 @@ host_info.each do |info|
 
 	hosts << host
 	other_names.each { |a| alia[host] << a }
+	displays << display
 end
 hosts << opts[:host] if opts[:include_self] and not hosts.include?(opts[:host])
 
@@ -116,11 +121,11 @@ def config(screens, screen_opts, links, alia)
 	cfg
 end
 
-def spawn_ssh(server, port)
+def spawn_ssh(server, port, display)
 	fork do
 		system("ssh #{server} synergyk --killer")
 		trap('INT') { exit }
-		system("ssh -o Ciphers=blowfish-cbc -NR #{port}:localhost:#{port} #{server} 'DISPLAY=:0 synergyc -f localhost'")
+		system("ssh -o Ciphers=blowfish-cbc -R #{port}:localhost:#{port} #{server} 'DISPLAY=#{display} synergyc -f localhost'")
 	end
 end
 
@@ -155,9 +160,10 @@ when :killer
 	end
 when :server
 	pids = []
-	screens.each do |host,host_opts|
+	pids << spawn_synergy(config_text)
+	screens.zip(displays).each do |host,display|
 		next if host == opts[:host]
-		pids << spawn_ssh(host, opts[:port])
+		pids << spawn_ssh(host, opts[:port], display)
 	end
 	pids << spawn_synergy(config_text)
 	$shutdown = false
