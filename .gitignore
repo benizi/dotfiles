@@ -3,9 +3,12 @@
 
 # except...
 !/.zsh*
+*.historyfile
+
 !/.vim*
 /.vim-bundle
 /.vim-tmp
+/.viminfo
 !/bin
 !/perl-lib
 !/Usable
