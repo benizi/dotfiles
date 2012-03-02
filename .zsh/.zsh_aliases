@@ -54,6 +54,17 @@ alias gv=gvim
 alias v=vim
 alias vi=v
 alias em='emacs -nw'
+be () {
+	local dir=$PWD
+	local -a bundler
+	bundler=()
+	while true ; do
+		[[ -f $dir/Gemfile ]] && bundler=( bundle exec ) && break
+		[[ $dir = / ]] && break
+		dir=$dir:h
+	done
+	$bundle "$@"
+}
 
 # global aliases
 alias -g L='| less'
@@ -125,7 +136,7 @@ fi
 
 # fix completion for some alia
 compdef _ssh ssh-noagent
-compdef _precommand noagent hidessh noproxy with-depot with-status proxychains
+compdef _precommand noagent hidessh noproxy with-depot with-status proxychains be
 
 alias Z=' exec sudo su -l bhaskell'
 hash -d afs=/afs/cs.cmu.edu/user/bhaskell/protected
