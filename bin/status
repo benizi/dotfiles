@@ -1,0 +1,78 @@
+#!/bin/zsh
+(( $+WMII_TERM )) && wmii=true || wmii=false
+date="$(date +'%s %Y-%m-%d %H:%M:%S')"
+epoch=${date%% *}
+date=${date#* }
+out=( $date )
+typeset -A files
+files+=( messages '' )
+files+=( warnings '' )
+for f in ${(k)files} ; do
+	file=$HOME/$f
+	color=$files[$f]
+	if [[ -f $file ]] ; then
+		for msg in ${(f):-"$(<$file)"} ; do
+			out=( $color$msg $out )
+		done
+	fi
+done
+if (( $+commands[uptime] )) ; then
+	up=( $(uptime) )
+	up=( $up[-3] )
+	out=( "${(j:│:)up:gs/,//}" $out )
+fi
+
+if (( $+commands[battery] )) ; then
+	spinner=${${:-'-/|\\'}[1 + ($date[-1] % 4)]}
+	battery -p | read plugged pct
+	bat=$pct
+	if [[ $pct -gt 0 && $pct -lt 11 ]] && ! $plugged ; then
+		for i in {1..20} ; do
+			bat="$spinner$bat$spinner"
+		done
+	fi
+	out=( $bat $out )
+fi
+
+(( $+commands[x-kbstate] )) && out=( "$(x-kbstate -u)" $out )
+if (( $+commands[nyxmms2] )) && [[ ! -f $HOME/.no-xmms2-status ]] ; then
+	song="$(nyxmms2 current 2>/dev/null || nyxmms2 status)"
+	#song="$(nyxmms2 status)"
+	# song=${song/Playing \(/▶ }
+	[[ $song = Playing* ]] && playing=true || playing=false
+	song=${song/Playing \(/\\->}
+	song=${song/Paused \(/II}
+	song=${song/Stopped \(/[]}
+	song=${song/\): / }
+	if $playing && false ; then
+		timing=${song%% *}
+		song=${song#* }
+		song=$timing$song[(($epoch % $#song)),-1]
+	else
+		unset inp
+		while [[ "$song" != "$inp" ]] ; do
+			inp=$song
+			song=${inp//  / }
+		done
+		a=0
+		while (( $#song > 40 && a < 10 )) ; do
+			song=${song% │ [^│]*}
+			(( a = a + 1 ))
+		done
+		a=0
+		while (( $#song > 40 && a < 10 )) ; do
+			song=${song% - *}
+			(( a = a + 1 ))
+		done
+	fi
+	out=( $song $out )
+fi
+toprint="${(j:│:)out}"
+unset inp
+while [[ "$toprint" != "$inp" ]] ; do
+	inp="$toprint"
+	toprint="${inp//  / }"
+done
+$wmii && toprint="label $toprint"
+print -n -r - $toprint
+$wmii && echo
