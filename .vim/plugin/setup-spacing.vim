@@ -17,8 +17,9 @@ fun! SetupTabstop(width, expand, ...)
 	if (! &l:sts) || (&l:sts == &l:ts)
 		call matchadd('Error', '^\t\+\ ')
 		call matchadd('Error', '^\ \+\t')
-		hi Error cterm=reverse
 	endif
+	call matchadd('Error', '^\%(.*\%#\)\@!.*\S\zs[\t ]\+$')
+	hi Error cterm=reverse
 endfun
 
 fun! SetInModeline(var)
