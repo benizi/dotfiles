@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby
+require 'redcarpet'
+require 'socket'
+require 'fcgi'
+
+class FCGI
+	def self::default_connection
+		@server ||=
+			begin
+				sock = "/var/run/nginx.markdown-fcgi.sock"
+				File.unlink(sock) rescue nil
+				server = UNIXServer.new(sock)
+				system("set-all-facl -w :rwX #{sock}")
+				server
+			end
+	end
+end
+
+$stderr.puts "Ready?"
+
+FCGI.each do |req|
+	o = req.out
+	file = req.env['SCRIPT_FILENAME']
+	$stderr.puts "Request for #{file}"
+	begin
+		rendered = %x{ruby ~bhaskell/bin/markdown.rb #{file}}
+		o.print "Content-Type: text/html\r\n\r\n"
+		o.print rendered
+	rescue Exception => e
+		o.print "Content-Type: text/plain\r\n\r\n"
+		o.puts "Error rendering as Markdown"
+		o.puts "Error message: #{e}"
+	end
+	req.finish
+end
+
+=begin
+FCGI.each_cgi do |cgi|
+	puts cgi.header
+	puts "YAY"
+end
+=end
