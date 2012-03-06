@@ -23,6 +23,7 @@ stop () {
 }
 
 case "$1" in
+  restart) stop ; start ;;
   stop) stop ;;
   *) start ;;
 esac
