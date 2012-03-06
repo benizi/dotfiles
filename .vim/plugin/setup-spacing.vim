@@ -18,7 +18,9 @@ fun! SetupTabstop(width, expand, ...)
 		call matchadd('Error', '^\t\+\ ')
 		call matchadd('Error', '^\ \+\t')
 	endif
-	call matchadd('Error', '^\%(.*\%#\)\@!.*\S\zs[\t ]\+$')
+	if &l:ft != 'mail'
+		call matchadd('Error', '^\%(.*\%#\)\@!.*\S\zs[\t ]\+$')
+	end
 	hi Error cterm=reverse
 endfun
 
