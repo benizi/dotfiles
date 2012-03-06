@@ -2,6 +2,7 @@
 require 'redcarpet'
 require 'socket'
 require 'fcgi'
+require 'cgi'
 
 class FCGI
 	def self::default_connection
@@ -22,14 +23,20 @@ FCGI.each do |req|
 	o = req.out
 	file = req.env['SCRIPT_FILENAME']
 	$stderr.puts "Request for #{file}"
-	begin
-		rendered = %x{ruby ~bhaskell/bin/markdown.rb #{file}}
-		o.print "Content-Type: text/html\r\n\r\n"
-		o.print rendered
-	rescue Exception => e
+	params = req.env['QUERY_STRING'] ? CGI::parse(req.env['QUERY_STRING']) : {}
+	if params.has_key?('source')
 		o.print "Content-Type: text/plain\r\n\r\n"
-		o.puts "Error rendering as Markdown"
-		o.puts "Error message: #{e}"
+		o.puts File.open(file).read
+	else
+		begin
+			rendered = %x{ruby ~bhaskell/bin/markdown.rb --no-additions --github-style --title #{File.basename(file)} #{file}}
+			o.print "Content-Type: text/html\r\n\r\n"
+			o.print rendered
+		rescue Exception => e
+			o.print "Content-Type: text/plain\r\n\r\n"
+			o.puts "Error rendering as Markdown"
+			o.puts "Error message: #{e}"
+		end
 	end
 	req.finish
 end
