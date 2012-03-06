@@ -14,7 +14,7 @@ require 'cgi'
 require 'optparse'
 opts = {
 	:additions => true,
-	:github => false,
+	:github => true,
 }
 optparse = OptionParser.new do |o|
 	o.on('--no-additions') { opts[:additions] = false }
@@ -127,8 +127,8 @@ CSS
 when 'pygments'
 	if opts[:github]
 		puts <<CSS
-<link rel="stylesheet" type="text/css" href="https://a248.e.akamai.net/assets.github.com/stylesheets/bundles/github-c2f83c57a14d5e54d816673f52563d987fe2821f.css">
-<link rel="stylesheet" type="text/css" href="https://a248.e.akamai.net/assets.github.com/stylesheets/bundles/github2-34d96ae148c427d3106177152ac475d7df36c780.css">
+<link rel="stylesheet" type="text/css" href="/css/github.css">
+<link rel="stylesheet" type="text/css" href="/css/github2.css">
 CSS
 	else
 		puts <<CSS
@@ -146,6 +146,19 @@ puts <<HEADER
 </head>
 <body#{opts[:github] ? ' class="markdown-body"' : ''}>
 HEADER
+
+if opts[:github]
+	puts <<GITHUB_HEADER
+<div class="site">
+<div class="container">
+<div id="slider">
+<div class="frames">
+<div class="frame frame-center">
+<div id="readme" class="announce instapaper_body md">
+<span class="name"><span class="icon"></span>#{h title}</span>
+<article class="markdown-body">
+GITHUB_HEADER
+end
 
 class HighlightedHTML < Redcarpet::Render::HTML
 	def block_code(code, language)
@@ -179,6 +192,18 @@ Content:
 #{content}
 </pre>
 FAIL
+end
+
+if opts[:github]
+	puts <<GITHUB_FOOTER
+</article>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+GITHUB_FOOTER
 end
 
 puts <<FOOTER
