@@ -1,0 +1,17 @@
+#!/bin/zsh
+dir=${1:-$PWD}
+while true ; do
+  isdir=true
+  for sub in app db config ; do
+    [[ -d $dir/$sub ]] && continue
+    isdir=false
+    break
+  done
+  if $isdir ; then
+    printf "%s" $dir
+    exit 0
+  fi
+  [[ $dir = / ]] && break
+  dir=$dir:h
+done
+exit 1
