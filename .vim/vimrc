@@ -180,6 +180,9 @@ map <C-Right> <C-W>l
 map <C-j> <C-W>j
 map <C-k> <C-W>k
 
+" ZZ = ZZ for all windows
+nnoremap ZZ :windo x<CR>
+
 set ofu=syntaxcomplete#Complete
 set nostartofline
 imap <C-@> <C-Space>
