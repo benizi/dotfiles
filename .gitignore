@@ -4,6 +4,7 @@
 # except...
 !/.zsh*
 *.historyfile
+.zsh*/*-history
 
 !/.vim*
 /.vim-bundle
