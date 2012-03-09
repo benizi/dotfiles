@@ -17,9 +17,9 @@ for f in ${(k)files} ; do
 	fi
 done
 if (( $+commands[uptime] )) ; then
-	up=( $(uptime) )
-	up=( $up[-3] )
-	out=( "${(j:│:)up:gs/,//}" $out )
+	up=${${:-$(uptime)}[-3]:s/,//}
+	(( up > 10 )) && up=" !!! LOAD $up LOAD !!! "
+	out=( load:$up $out )
 fi
 
 if (( $+commands[battery] )) ; then
@@ -32,7 +32,7 @@ if (( $+commands[battery] )) ; then
 		done
 	fi
 	[[ $pct -lt 10 ]] && ! $plugged && (( $+commands[osd] )) && (osd -d 2 $bat &)
-	out=( $bat $out )
+	out=( bat:$bat $out )
 fi
 
 (( $+commands[x-kbstate] )) && out=( "$(x-kbstate -u)" $out )
