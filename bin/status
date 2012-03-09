@@ -31,7 +31,7 @@ if (( $+commands[battery] )) ; then
 			bat="$spinner$bat$spinner"
 		done
 	fi
-	[[ $pct -lt 10 ]] && (( $+commands[osd] )) && (osd -d 2 $bat &)
+	[[ $pct -lt 10 ]] && ! $plugged && (( $+commands[osd] )) && (osd -d 2 $bat &)
 	out=( $bat $out )
 fi
 
