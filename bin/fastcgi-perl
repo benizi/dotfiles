@@ -8,6 +8,7 @@ use Getopt::Long;
 GetOptions(
 	'foreground' => \(my $foreground = 0),
 	'exec!' => \(my $require_executable = 1),
+	'stop|kill' => \(my $kill = 0),
 ) or die 'options';
 
 unless ($foreground) { # daemonize
@@ -24,7 +25,19 @@ BEGIN { *CORE::GLOBAL::exit = sub { my $rc = @_ ? shift : 0; die "fakeexit\nrc=$
 eval 'exit';
 exit if $@ and not $@ =~ /^fakeexit/;
 
-main();
+my $sock_dir = '/var/run/nginx';
+my $sock_path = "$sock_dir/perl.sock";
+my $pid_path = "$sock_dir/perl.pid";
+my $time_to_exit = 0;
+
+if ($kill) {
+	local @ARGV = grep -e, $pid_path;
+	die "No PID file found at $pid_path\n" unless @ARGV;
+	chomp(my ($pid) = <>);
+	kill INT => $pid;
+} else {
+	main();
+}
 
 # bhaskell-specific
 sub setfacl {
@@ -33,10 +46,11 @@ sub setfacl {
 }
 
 sub main {
-	my $sock_dir = '/var/run/nginx';
-	my $sock_path = "$sock_dir/perl-fcgi.sock";
 	make_path $sock_dir;
 	setfacl -u => -w => $sock_dir;
+	if (open my $pid_file, '>', $pid_path) {
+		print $pid_file $$;
+	}
 
 	#my $socket = FCGI::OpenSocket '127.0.0.1:8999', 10; #use IP sockets
 	my $socket = FCGI::OpenSocket $sock_path, 10; #use UNIX sockets - user running this script must have w access to the 'nginx' folder!!
@@ -46,6 +60,7 @@ sub main {
 	my $request = FCGI::Request \*STDIN, \*STDOUT, \*STDERR, $req_params, $socket;
 	request_loop($request, $req_params);
 	FCGI::CloseSocket $socket;
+	unlink $pid_path;
 }
 
 sub request_loop {
