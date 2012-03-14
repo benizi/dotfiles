@@ -5,6 +5,7 @@
 !/.zsh*
 *.historyfile
 .zsh*/*-history
+.zsh*/reminder*
 
 !/.vim*
 /.vim-bundle
