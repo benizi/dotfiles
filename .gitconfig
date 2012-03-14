@@ -25,8 +25,6 @@
 	passfile = imap-pass-mail
 	autopublish = false
 	targets = g.LSE
-[check-email]
-	default = benizi@benizi.com
 [disable]
 	reset = true
 [pack]
@@ -106,7 +104,7 @@
 	rbpatch = "!patchy() { base=$1 ; shift; patch=$1 ; shift ; dry=() ; reverse=() ; for arg ; do case \"$arg\" in --dry*) dry+=( --dry-run ) ;; -R|--rev*) reverse+=( -R ) ;; esac ; done ; cd $base ; patch-eol-fixer.pl -p0 < $patch | patch -p0 $dry $reverse && patch-eol-fixer.pl --filenames -z -p0 < $patch | xargs -0 git add $dry && git commit -m \"rbpatch\" $dry ; } ; patchy"
 	patch = format-patch --stdout
 	email = "!TZ=America/New_York git send-email --annotate ${EMAIL+--from='Benjamin R. Haskell <'$EMAIL'>'}"
-	check-email = "!check () { email=$(git config --get user.email) ; locpart=${email%@*} ; domain=${email#*@} ; domain=${domain%.*} ; [[ \"$locpart\" != \"$domain\" ]] && return 0 ; echo \"Email <$email> is of the form (thing)@(thing).(rest)\" ; return 1 ; } ; check"
+	check-email = "!echo Need to install git-check-email"
 	email-zsh = "!email () { git check-email || return 1 ; email=$(git config --get user.email) ; git email --envelope-sender='<'$email'>' --cc=\"$user <\"$email'>' --to='Zsh Workers <zsh-workers@zsh.org>' \"$@\" ; } ; email"
 	graphviz = "!f() { echo 'digraph git {' ; git log --pretty='format:  %h -> { %p }' \"$@\" | sed 's/[0-9a-f][0-9a-f]*/\"&\"/g' ; echo '}'; }; f"
 [github]
