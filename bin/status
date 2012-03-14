@@ -17,7 +17,15 @@ for f in ${(k)files} ; do
 	fi
 done
 
-out=( mem:$(awk '/MemTotal/ { tot = $2 } /MemFree/ { print int( (tot - $2) / 1024 ) }' /proc/meminfo) $out )
+out=(
+	$(awk '
+function report(t,f){ return kb(t-f) "/" kb(t) }
+function kb(b){return int(b/1024)}
+/MemTotal/{memtot=$2} /MemFree/{print "mem:" report(memtot,$2)}
+/SwapTotal/{stot=$2} /SwapFree/{print "swp:" report(stot,$2)}
+' /proc/meminfo)
+	$out
+)
 
 if (( $+commands[uptime] )) ; then
 	up=${${:-$(uptime)}[-3]:s/,//}
