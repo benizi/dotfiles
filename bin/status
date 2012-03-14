@@ -16,6 +16,9 @@ for f in ${(k)files} ; do
 		done
 	fi
 done
+
+out=( mem:$(awk '/MemTotal/ { tot = $2 } /MemFree/ { print int( (tot - $2) / 1024 ) }' /proc/meminfo) $out )
+
 if (( $+commands[uptime] )) ; then
 	up=${${:-$(uptime)}[-3]:s/,//}
 	(( up > 10 )) && up=" !!! LOAD $up LOAD !!! "
