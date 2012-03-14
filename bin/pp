@@ -8,6 +8,7 @@ GetOptions(
 	'tabs' => \(my $tabs = 0),
 	'xml' => \(my $is_xml = 0),
 	'json' => \(my $is_json = $0 =~ /j/),
+	'linear' => \(my $json_per_line = 0),
 ) or die 'options';
 $^I = $bak if $in_place;
 if (!$is_json) {
@@ -31,7 +32,11 @@ if (!$is_json) {
 	my $json = JSON->new;
 	$json->indent(1);
 	$json->space_after(1);
-	my $print = $json->encode($json->decode(do { undef local $/; <> }));
-	$print =~ s{^((?:   )+)}{" " x (length($1)/3)}gem;
-	print $print;
+	undef local $/ unless $json_per_line;
+	while (<>) {
+		chomp;
+		my $print = $json->encode($json->decode($_));
+		$print =~ s{^((?:   )+)}{" " x (length($1)/3)}gem;
+		print $print;
+	}
 }
