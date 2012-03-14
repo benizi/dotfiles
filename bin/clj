@@ -13,7 +13,7 @@ if [ -f project.clj ] ; then
 fi
 cp+=( $CLOJURE_JAR $PWD )
 
-(( $# )) && exec java -cp $CP clojure.main $1 -- $@
+(( $# )) && exec java -cp $CP clojure.main $@
 
 cmd=()
 if (( ! $# )) ; then
