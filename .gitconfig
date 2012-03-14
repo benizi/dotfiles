@@ -86,6 +86,7 @@
 	dc = diff --cached
 	dcn = diff --cached --name-only
 	dt = difftool
+	pwn = "! : fix ownership ; pwn () { git check-email ; owner=$(git config user.email) ; git filter-branch --env-filter 'export GIT_AUTHOR_EMAIL='$owner \"$@\" ; } ; pwn"
 	wouldcommit = "!wood () { tmp=.git/wouldcommit ; ret=false ; git nopipe svn dcommit -n | perl -lnwe 'BEGIN{ $err=-1; } next unless s/diff-tree/log --name-status/ and s/(?<=~1) /../; $err = 0 if $err < 0; print; s/^/git /; $_ = `$_`; chomp; print; $err = 1 if /NEEDS/; END { exit $err; }' > $tmp && [ -s $tmp ] && ret=true ; ${PAGER:-less} < $tmp ; rm $tmp ; $ret && echo git svn dcommit || echo Unfixed comment remains ; $ret ; } ; wood"
 	unadd = reset HEAD
 	wrapped = "!wrapped() { cd $(git unwrappeddir) ; disabled=$(git config --bool disable.$1); ${disabled:-false} && echo \"git $1 has been disabled\" && return; git \"$@\"; }; wrapped"
