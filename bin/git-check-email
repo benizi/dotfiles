@@ -1,0 +1,83 @@
+#!/bin/zsh
+
+(( $# )) && verbose=false || verbose=true
+
+warn () { echo "$@" >&2 }
+die () { warn "$@" ; exit 1 }
+
+gconf () {
+  local att arg bool=false default
+  unset att default
+  local -a args
+  args=( git config --get )
+  for arg ; do
+    case $arg in
+      --bool) bool=true ; args+=( $arg ) ;;
+      --*) args+=( $arg ) ;;
+      *)
+        if (( ! $+att )) ; then
+          att=$arg
+        elif (( ! $+default )) ; then
+          default=$arg
+        else
+          die "Unknown argument: $arg"
+        fi
+        ;;
+    esac
+  done
+  args+=( $att )
+  ret="$($args)"
+  if [[ -z $ret ]] ; then
+    if (( ! $+default )) ; then
+      $bool && default=false || default=
+    fi
+    ret=$default
+  fi
+  printf "%s" $ret
+}
+
+gcset () {
+  local -a cmd
+  cmd=( git config "$@" )
+  $verbose && warn "Setting [$cmd]"
+  $cmd
+}
+
+fail () {
+  warn "$@"
+  set-email
+}
+
+get-default () {
+  gconf check-email.default $(gconf user.email)
+}
+
+get-email () { gconf user.email }
+
+set-email () {
+  local mail default=$(get-default)
+  printf "Set email to [%s]: " $default
+  read mail
+  [[ -z $mail ]] && mail=$default
+  [[ $mail = *@* ]] || mail=$mail@benizi.com
+  gcset user.email $mail
+  gcset --bool check-email.updated 1
+}
+
+check () {
+  local email=$(gconf user.email)
+  local default_ok=$(gconf --bool check-email.default-ok)
+  local default=$(gconf check-email.default)
+  local already_updated=$(gconf --bool check-email.updated)
+  $already_updated && exit
+  if [[ -z $default ]] || [[ $email = $default ]] ; then
+    $default_ok && exit 0
+    fail "Email <$email> is still set to default"
+  fi
+  locpart=${email%@*}
+  domain=${email#*@}
+  domain=${domain%.*}
+  [[ $locpart = $domain ]] && fail "Email <$email> is of the form (thing)@(thing).(rest)"
+}
+
+(( $# )) && fail "$@" || check
