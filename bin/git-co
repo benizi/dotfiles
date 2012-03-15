@@ -1,0 +1,20 @@
+#!/bin/zsh
+unset cloneit
+exec=( exec )
+case $# in
+  1|2)
+    case $1 in
+      *:*)
+        revlike=${1%%:*}
+        rev=$(git rev-list --no-walk $revlike -- 2>/dev/null)
+        # [[ -z $rev ]] && echo "[$revlike] not a revision" >&2
+        [[ -z $rev ]] && cloneit=true
+        ;;
+    esac
+    ;;
+esac
+if (( $+cloneit )) ; then
+  echo "[$1] looks like a repo, so cloning." >&2
+  $exec git clone "$@"
+fi
+$exec git checkout "$@"
