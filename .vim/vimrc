@@ -98,7 +98,7 @@ aug END
 " ensure that unsaveable buffers are also uneditable
 aug NoEditUnsaveable
 	au!
-	au BufWinEnter * let &modifiable = !&readonly
+	au BufWinEnter * if !exists('b:swapname') | let &modifiable = !&readonly | endif
 aug END
 
 " Default foldtext to include byte length
