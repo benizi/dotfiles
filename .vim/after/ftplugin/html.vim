@@ -1,3 +1,4 @@
+finish
 fun! s:FindBase()
 	for line in getline(0,'$')
 		let m = matchlist(line, '<base[^>]*href=\([''"]\)\([^''"]*\)\1')
