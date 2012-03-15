@@ -17,7 +17,6 @@ GetOptions(
 	'server=s' => \$opt{server},
 	'username|user|u=s' => \$opt{user},
 	'password|pass|p=s' => \$opt{pass},
-	'byip' => \(my $use_ips = 0),
 	'defaults=s' => \(my $defaults_from = ''),
 	'dry' => \(my $dry = 0),
 	'verbose+' => \(my $verbose = 0),
@@ -59,8 +58,6 @@ for (grep -f, "$ENV{HOME}/.config/rdesk") {
 	next unless open my $f, '<', $_;
 	eval join '', <$f>;
 }
-
-$use_ips ? s/:.*$// : s/^.*:// for values %ip;
 
 my %alias;
 while (my ($val, $arr) = each %rev_alias) { $alias{$_} = $val for @$arr; }
