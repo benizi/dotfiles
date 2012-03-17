@@ -19,7 +19,10 @@ fun! SetupTabstop(width, expand, ...)
 		call matchadd('Error', '^\ \+\t')
 	endif
 	if &l:ft != 'mail'
+		" trailing whitespace, except for the current cursor position
 		call matchadd('Error', '\S\zs[\t ]\+\%#\@!$')
+		" tabs anywhere but leading
+		call matchadd('Error', '\%(^\|\t\)\@<!\t')
 	end
 	hi Error cterm=reverse
 endfun
