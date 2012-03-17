@@ -155,3 +155,23 @@ setup_ruby () {
 }
 
 # setup_ruby
+
+typeset -A dns_servers
+dns_servers=(
+	Google-a 8.8.8.8
+	Google-b 8.8.4.4
+	Dnsadvantage-a 156.154.70.1
+	Dnsadvantage-b 156.154.71.1
+	OpenDNS-a 208.67.222.222
+	OpenDNS-b 208.67.220.220
+	Norton-a 198.153.192.1
+	Norton-b 198.153.194.1
+	Verizon-a 4.2.2.1
+	Verizon-b 4.2.2.2
+	Verizon-c 4.2.2.3
+	Verizon-d 4.2.2.4
+	Verizon-e 4.2.2.5
+	Verizon-f 4.2.2.6
+	Scrubit-a 67.138.54.100
+	Scrubit-b 207.225.209.66
+)
