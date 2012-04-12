@@ -1,0 +1,12 @@
+#!/bin/zsh
+wmii-active || screen-detached .-lxpanel
+screen-detached .-nm-applet
+screen-detached -polkit /usr/lib/polkit-gnome-authentication-agent-1
+start-fastcgi-servers
+keyboard
+start-xrandr
+start-synaptics
+dropbox start
+openSUSE-mounts --mount
+screen-detached -nailgun start-nailgun
+for iface in /proc/sys/net/ipv4/conf/*/log_martians ; {echo 0 | sudo tee $iface &> /dev/null}
