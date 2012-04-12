@@ -228,6 +228,18 @@ set directory=~/.vim-tmp//,~/.tmp//,~/tmp//,/tmp//
 if filereadable(expand(s:home.'/.vimrc.local'))
 	exe 'source '.s:home.'/.vimrc.local'
 endif
+
+let g:no_time_tracking = 1
+
+"" Ctrl-P settings
+" default to horizontal open
+let g:ctrlp_prompt_mappings = {
+	\ 'AcceptSelection("h")': ['<cr>'],
+	\ 'AcceptSelection("e")': ['<c-x>'],
+	\ }
+" no path management ( == use cwd)
+let g:ctrlp_working_path_mode = 0
+
 if exists("g:alpine")
 	let alpinevim=globpath(&rtp,"alpine.vim")
 	if filereadable(alpinevim)
