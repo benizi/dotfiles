@@ -63,7 +63,7 @@
 	ci = "!git check-email && git commit"
 	cia = "!git ci --amend"
 	cin = "!git ci --no-verify"
-	f = fetch --all
+	f = "! : fetch all ; f () { if git remote -v | grep -q \\.git/hgremote ; then git hg fetch ; fi ; git fetch --all ; } ; f"
 	h = help
 	rc = rebase --continue
 	re = rebase
