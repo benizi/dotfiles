@@ -240,6 +240,8 @@ let g:ctrlp_prompt_mappings = {
 " no path management ( == use cwd)
 let g:ctrlp_working_path_mode = 0
 
+let g:NERDDefaultAlign = 'left'
+
 if exists("g:alpine")
 	let alpinevim=globpath(&rtp,"alpine.vim")
 	if filereadable(alpinevim)
