@@ -7,6 +7,7 @@ $exit = false
 
 def run_first? ; true ; end
 def per_file? ; false ; end
+def html? ; false ; end
 
 def add(name)
   $watched = {} unless defined? $watched
@@ -20,6 +21,7 @@ def should_be_added(e)
   prune = false
   prune = true if base == '.git'
   prune = true unless File.directory?(e) or base =~ /\.(?:rb|feature)$/ or base === ['Gemfile','Rakefile']
+  prune = false if e =~ /\/app\//
   !prune
 end
 
@@ -49,7 +51,7 @@ end
 
 def header(text, *color)
   color = [ 34 ] if color.empty?
-  "#{'='*5}> #{text}".colorize(*color)
+  puts "#{'='*5}> #{text}".colorize(*color)
 end
 
 class String
@@ -60,11 +62,11 @@ end
 
 def run(*cmd)
   start = Time.now
-  puts header(cmd.join(' '))
+  header(cmd.join(' '))
   ret = system *cmd
   ended = Time.now
   delta = ended - start
-  puts header("#{delta} @ #{ended}")
+  header("#{delta} @ #{ended}")
   ret
 end
 
@@ -73,6 +75,7 @@ def run_rspec(*files)
   return if now - @last_run < 5
   @last_run = now
   cmd = %w{rspec -f p} + files
+  cmd = %w{bundle exec} + cmd if File.exist?("Gemfile")
   ret = run *cmd
   files.empty? ? ret : run_rspec
 end
@@ -104,6 +107,20 @@ END { reset_terminal }
 
 $run = run_first? ? [] : false
 
+if html?
+  require 'sinatra'
+  get '/' do
+    cmd = %w{rspec -f h}
+    cmd = %w{bundle exec} + cmd if File.exist?("Gemfile")
+    i = IO.popen(cmd.join(' '))
+    stream do |out|
+      while line = i.readline
+        out << line
+      end
+    end
+  end
+else
+
 threads = []
 
 threads << Thread.new do
@@ -121,7 +138,10 @@ threads << Thread.new do
 end
 
 threads << Thread.new do
-  setup_watchers(ARGV[0] || Dir.pwd)
+  spec_dir = File.expand_path('spec', ARGV[0] || Dir.pwd)
+  app_dir = File.expand_path('../app', spec_dir)
+  setup_watchers(spec_dir)
+  setup_watchers(app_dir)
   watch_events
 end
 
@@ -136,3 +156,4 @@ threads << Thread.new do
 end
 
 threads.map(&:join)
+end
