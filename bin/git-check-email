@@ -62,6 +62,7 @@ set-email () {
   [[ $mail = *@* ]] || mail=$mail@benizi.com
   gcset user.email $mail
   gcset --bool check-email.updated 1
+  exit 0
 }
 
 check () {
@@ -78,6 +79,7 @@ check () {
   domain=${email#*@}
   domain=${domain%.*}
   [[ $locpart = $domain ]] && fail "Email <$email> is of the form (thing)@(thing).(rest)"
+  exit 0
 }
 
 if (( $# )) ; then fail "$@" ; else check ; fi
