@@ -1,0 +1,3 @@
+#!/bin/zsh
+xscreensaver -lock &
+sudo pm-suspend
