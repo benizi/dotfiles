@@ -42,7 +42,7 @@
 #	st = diff --name-status
 #	st = ls-files -tdom --exclude-standard .
 	st = "!git sta --directory"
-	sta = "!st() { noredo=false ; for arg ; do case $arg in -c) noredo=true ;; esac ; done ; git nopipe ls-files -tdom --no-empty-directory --exclude-standard \"$@\" | grep . || $noredo || git st -c \"$@\" ; } ; st"
+	sta = "!do_ls() { git nopipe ls-files -tdom --no-empty-directory --exclude-standard \"$@\" ; } ; st() { noredo=false ; dir=\"\" ; actual_args=false ; for arg ; do case $arg in -c) noredo=true ;; --directory) ;; *) actual_args=true ;; esac ; done ; do_ls \"$@\" | grep . && return 0 ; $noredo && return 0 ; if ! $actual_args ; then echo \"$(do_ls -c \"$@\" | wc -l) cached files\" ; return 0 ; fi ; st -c \"$@\" ; } ; st"
 	stc = diff --cached --name-status
 	svnrevtags = "!git log --all -z --pretty=format:'%H%n%s%n%b' | perl -ln0e 'open STDOUT, qq{>.git/refs/tags/r$2} and print $1 if /\\A(.{40}).*git-svn-id:\\s\\S+\\@(\\d+)/s'"
 	svnup = "!svnup () { git svn fetch && git com && git merge --ff-only git-svn && git slg ; } ; svnup"
