@@ -77,6 +77,7 @@ pathtest+=( $path )
 pathtest+=( /people/bhaskell/bin )
 pathtest=( ~/.rbenv/bin $^pathtest )
 pathtest=( ~/prb-bin $^pathtest )
+pathtest=( ~/brew/bin $^pathtest )
 path=( ${^pathtest}(N-/) )
 }
 
