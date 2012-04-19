@@ -1,1 +1,267 @@
-git-hub
+#!/usr/bin/env ruby
+require 'json'
+require 'uri'
+require 'net/https'
+require 'rubygems'
+require 'git'
+
+$g = Git.open(`git rev-parse --show-toplevel`.chomp)
+
+module GitHub
+	class Project
+		attr_accessor :kind, :owner, :repo, :url
+		def self.parse_url(url = nil)
+			kind, owner, repo =
+				case url
+				when %r{^(?:gh:)?([^/]+)/([^/]+)(?:\.git)?$}
+					[ 'gh', $1, $2 ]
+				when %r{^(git@|https?://)github\.com/([^/]+)/([^/]+)(?:\.git)?$},
+					%r{^(hub)://([^/]+)/([^/]+)$}
+					[ $1, $2, $3 ]
+				end
+			{ :kind => kind, :owner => owner, :repo => repo, :url => url } if kind
+		end
+
+		def initialize(url = nil)
+			if info = self.class.parse_url(url)
+				info.each do |k,v|
+					att = (k.to_s + '=').to_sym
+					self.send(att, v)
+				end
+			end
+		end
+	end
+end
+
+def git(*args)
+	`git #{args.join ' '}`.chomp
+end
+
+def gconf(*parts)
+	$g.config[parts.join('.')]
+end
+
+def gdir
+	$g.repo
+end
+
+def remote
+	$g.remotes.each do |r|
+		next unless GitHub::Project.parse_url(r.url)
+		return GitHub::Project.new(r.url)
+	end
+	nil
+end
+
+def remote_url
+	r = remote
+	return r.url if r
+end
+
+def remotes
+	$g.remotes.inject({}) do |h,r|
+		h[r] = GitHub::Project.parse_url(r.url)
+		h
+	end
+end
+
+def remote_owner
+	r = remote
+	r.owner if r
+end
+
+def remote_projdir
+	r = remote
+	r.repo if r
+end
+
+def projdir
+	File.basename($g.instance_eval('@working_directory.to_s'))
+end
+
+def host ; 'github.com' ; end
+
+def api_url(resource, action)
+	URI("https://#{host}/api/v2/json/#{resource}/#{action}")
+end
+
+def fork_url(owner, name)
+	api_url('repos', "fork/#{owner}/#{name}")
+end
+
+def show_url(owner, name)
+	api_url('repos', "show/#{owner}/#{name}")
+end
+
+def create_url
+	api_url('repos', 'create')
+end
+
+def delete_url(repo)
+	api_url('repos', "delete/#{repo}")
+end
+
+def section(host = nil)
+	host = '' if host == 'github.com'
+	host = %Q{."#{host}"} if host and not host.empty?
+	"github#{host}"
+end
+
+def github(host, key, die_on_empty = true)
+	actual = host ? host.gsub!(/^api\./, '') : nil
+	val = gconf(section(actual), key)
+	if !val or val.empty?
+		warn "No github #{key}?"
+		abort if die_on_empty
+	end
+	val
+end
+
+def user(host = nil)
+	github host, 'user'
+end
+
+def token(host = nil)
+	github host, 'token'
+end
+
+def request(url, method, &block)
+	url = URI(url) unless url.respond_to? :host
+	req = Net::HTTP.const_get(method).new(url.request_uri)
+	#req.basic_auth "#{user(url.host)}/token", token(url.host)
+	u = user url.host
+	abort "No user?" if !u or u.empty?
+	u = "#{u}/token"
+	t = token url.host
+	abort "No token?" if !t or t.empty?
+	req.basic_auth u, t
+
+	http = Net::HTTP.new(url.host, url.port)
+	if http.use_ssl = defined?(::OpenSSL)
+		http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+	end
+
+	yield req if block_given?
+	http.start { http.request(req) }
+end
+
+def post(url, &block)
+	request(url, :Post, &block)
+end
+
+def get(url, &block)
+	request(url, :Get, &block)
+end
+
+def do_fork(owner, name)
+	url = fork_url(owner, name)
+	response = post(url)
+	die_with response unless Net::HTTPSuccess === response
+	response
+end
+
+def repo_exist?(owner, name)
+	Net::HTTPSuccess === get(show_url(owner, name))
+end
+
+def msg(response)
+	<<RESPONSE
+#{response.code} #{response.msg}
+#{response.body}
+RESPONSE
+end
+
+def verbose
+	true
+end
+
+def die_with(response)
+	abort msg(response)
+end
+
+module Commands
+	extend self
+	def fork(*args)
+		p :remote => remote
+		owner = args.shift || remote_owner
+		project = args.shift || remote_projdir || projdir
+		# project.gsub!(/(?<!\.git)$/, '.git')
+		usage "Need owner" unless owner
+		usage "Need remote project" unless project
+		puts fork_url(owner, project)
+		if repo_exist?(user, project)
+			puts "Already exists: #{show_url(user, project)}"
+			puts msg(get(show_url(user,project))) if verbose
+		else
+			puts msg(do_fork owner, project)
+		end
+	end
+
+	def create(*args)
+		project = args.shift || projdir
+		props = { :name => project }
+		response = post(create_url) do |req|
+			req.set_form_data(props)
+		end
+		if response.is_a? Net::HTTPSuccess
+			$g.add_remote('gh', "gh:#{user}/#{project}")
+		else
+			abort <<-FAILED
+Failed to create #{project}:
+Request URL: #{create_url}
+Request data: #{props.inspect}
+Response:
+#{response.body}
+			FAILED
+		end
+	end
+
+	def delete(*args)
+		project = args.shift || projdir
+		repo = project =~ %r{/} ? project : "#{user}/#{project}"
+		delete_token = nil
+		del = delete_url(repo)
+		response = post(del)
+		unless response.is_a? Net::HTTPSuccess
+			abort "Failed to delete #{repo}:\n#{response.body}"
+		end
+		deleted = post(del) do |request|
+			req.set_form_data(JSON.parse(response.body))
+		end
+	end
+
+	def usage(error = nil)
+		warn "Error: #{error}" if error
+		case cmd
+		when 'hub', 'create'
+			abort <<-USAGE
+Usage: git hub command [options]
+			USAGE
+		when 'fork'
+			abort <<-USAGE
+Usage: git fork [user [project]]
+Default is to auto-detect
+			USAGE
+		else
+			abort "Unknown command... #{cmd}"
+		end
+	end
+	alias :help :usage
+
+	def cmd
+		@cmd ||= $0 =~ /\bgit-([\w\-]+)$/ ? $1 : $0
+	end
+
+	def cmd=(cmd)
+		@cmd = cmd
+	end
+end
+
+cmd = File.basename($0).gsub(/^git-/, '')
+Commands.cmd = cmd if cmd
+cmd = ARGV.shift if cmd == 'hub'
+if cmd
+	Commands.send(cmd, *ARGV)
+else
+	Commands.usage('No command specified')
+end
