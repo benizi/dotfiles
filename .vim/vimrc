@@ -69,8 +69,13 @@ else
 	endif
 endif
 if &t_Co > 16
-	colorscheme dual-converted
-	au ColorScheme * hi StatusLineNC ctermfg=252 ctermbg=24
+	let s:colors = 'jellybeans'
+	exe 'colo' s:colors
+	if s:colors == 'dual-converted'
+		au ColorScheme * hi StatusLineNC ctermfg=252 ctermbg=24
+	elseif s:colors == 'jellybeans'
+		sil! !printf '\e]12;8\a'
+	en
 endif
 set hidden
 set laststatus=2 ruler
