@@ -54,16 +54,17 @@ alias gv=gvim
 alias v=vim
 alias vi=v
 alias em='emacs -nw'
-be () {
+be cap () {
 	local dir=$PWD
-	local -a bundler
-	bundler=()
+	local -a bundle
+	bundle=()
 	while true ; do
-		[[ -f $dir/Gemfile ]] && bundler=( bundle exec ) && break
+		[[ -f $dir/Gemfile ]] && bundle=( bundle exec ) && break
 		[[ $dir = / ]] && break
 		dir=$dir:h
 	done
-	$bundle "$@"
+	[[ $0 == be ]] || bundle+=( $0 )
+	command $bundle "$@"
 }
 
 # global aliases
