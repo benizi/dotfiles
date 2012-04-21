@@ -246,10 +246,3 @@ let g:ctrlp_prompt_mappings = {
 let g:ctrlp_working_path_mode = 0
 
 let g:NERDDefaultAlign = 'left'
-
-if exists("g:alpine")
-	let alpinevim=globpath(&rtp,"alpine.vim")
-	if filereadable(alpinevim)
-		exe "source ".alpinevim
-	endif
-endif
