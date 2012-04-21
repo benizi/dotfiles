@@ -1,0 +1,73 @@
+#!/bin/sh
+
+error () {
+  printf "\n\e[31m*** %s ***\e[0m\n\n" "$@" >&2
+}
+
+die () {
+  error "$@"
+  usage
+  error "$@"
+  exit
+}
+
+usage () {
+  cat >&2 <<USAGE
+Usage:
+  $(basename "$0") host port [options] [cmd [args]]
+
+  cmd defaults to \$SHELL [$SHELL]
+
+Options:
+  -N/--no-quit/--no-close   Don't close the connection after the command exits
+  -r/--reuse                Don't open a new connection (implies --no-close)
+  --help/--usage            Print this help and exit
+USAGE
+  if [[ $# -gt 0 ]] ; then
+    exit $1
+  fi
+}
+
+reuse=false
+close=true
+while [ $# -gt 0 ] ; do
+  case "$1" in
+    -r|--reuse) reuse=true ; close=false ;;
+    -N|--no-quit|--no-close) close=false ;;
+    -h|-help|--help|-u|--usage) usage 0 ;;
+    *)
+      if [[ -z "$host" ]] ; then
+        host=$1
+      elif [[ -z "$port" ]] ; then
+        port=$1
+      else
+        break
+      fi
+      ;;
+  esac
+  shift
+done
+
+if [[ -z "$host" ]] || [[ -z "$port" ]] ; then
+  die 'Need to specify host and port'
+fi
+
+control_dir=$HOME/.ssh/sockets
+control=$control_dir/port-forward-$port
+mkdir -p $control_dir || error "Could not create control path: $control_dir"
+
+if ! $reuse ; then
+  ssh -fN -o ExitOnForwardFailure=yes \
+    -o ControlMaster=yes \
+    -o ControlPath=$control \
+    -D $port $host || error 'Port forwarding failed'
+fi
+
+if [ $# -eq 0 ] ; then
+  set -- $SHELL
+fi
+PROXY_SOCKS5=$port proxychains "$@"
+ret=$?
+
+$close && ssh -o ControlPath=$control -O exit $host
+exit $ret
