@@ -3,11 +3,15 @@
 let s:acceptable_ext = {
   \ 'clojure': [ 'clj' ],
   \ 'perl': [ 'pl' ],
-  \ 'ruby': [ 'rb' ],
+  \ 'puppet': [ 'pp' ],
+  \ 'ruby': [ 'rb', 'Gemfile' ],
   \ }
 
 fun! StatusLineFiletype()
   let ext = expand('%:e')
+  if !strlen(ext)
+    let ext = expand('%:t')
+  end
   if ext == &l:ft
     return ''
   end
