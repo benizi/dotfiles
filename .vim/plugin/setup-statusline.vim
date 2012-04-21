@@ -11,3 +11,5 @@ let s:extra='%{(exists("g:stl_extra")&&len(g:stl_extra))?":".join(map(copy(g:stl
 let s:cole = exists('&cole') ? '%{(!&l:cole)?"":"[cole:".&l:cole."]"}' : ''
 let s:current = '%{bufnr("%") == actual_curbuf ? "" : "--"}'
 let &stl=s:current.'%<%f'.s:typ.s:extra.' %h%m%r'.s:ff.s:km.'%='.s:cole.s:tabstops.(&ruler?' ':'').(&ruler ? '(%l,%c%V) %P' : '').'/%{line("$")}'
+
+com! ResetStatusLine run plugin/setup-statusline.vim
