@@ -1,0 +1,41 @@
+#!/bin/zsh
+unset dry
+unset cycle
+for arg ; do
+	case "$arg" in
+		--dry*) dry=true ;;
+		--cycle) cycle=true ;;
+	esac
+done
+if xrandr | grep -q '^LVDS-*[123]' ; then
+	eval "$(xrandr | perl -lnwe 'BEGIN{@k=qw/int ext/} print join "=", (shift @k), $1 if /^([A-Z]\S+) (?:dis)?connected/; exit unless @k')"
+	int=LVDS-1
+	ext=DP-1
+	int_mode=1920x1080
+	ext_mode=1920x1080
+elif xrandr | grep -q DisplayPort ; then
+	int=LVDS
+	int_mode=1440x900
+	ext=DisplayPort-0
+	ext_mode=1920x1080
+else
+	int=LVDS1
+	int_mode=1440x900
+	ext=HDMI1
+	ext_mode=1920x1080
+fi
+
+doit () {
+	print -r - $argv
+	(( $+dry )) || $argv
+}
+
+xrandr | grep -q $ext.disconnected && onlylap=true || onlylap=false
+cmd=( xrandr --output $int --mode $int_mode )
+if $onlylap ; then
+	cmd+=( --output $ext --off )
+	doit $cmd
+else
+	(( $+cycle )) && doit $cmd --output $ext --off
+	doit $cmd --output $ext --mode $ext_mode --right-of $int
+fi
