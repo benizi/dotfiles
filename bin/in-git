@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+base_dir = File.expand_path("~/git")
+Dir.chdir(base_dir)
+dirs = Dir["*"].sort
+choice = IO.popen('dmenu', 'r+') do |io|
+  io.write((dirs + []).join("\n"))
+  io.close_write
+  io.read.chomp
+end
+exit if choice.empty?
+Dir.chdir(choice)
+exec('urxvt')
