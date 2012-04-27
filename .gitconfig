@@ -65,6 +65,7 @@
 	cin = "!git ci --no-verify"
 	f = "! : fetch all ; f () { if git remote -v | grep -q \\.git/hgremote ; then git hg fetch ; fi ; git fetch --all ; } ; f"
 	h = help
+	ls = ls-files
 	rc = rebase --continue
 	re = rebase
 	rea = rebase --abort
