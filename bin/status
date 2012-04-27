@@ -21,8 +21,11 @@ out=(
 	$(awk '
 function report(t,f){ return kb(t-f) "/" kb(t) }
 function kb(b){return int(b/1024)}
-/MemTotal/{memtot=$2} /MemFree/{print "mem:" report(memtot,$2)}
-/SwapTotal/{stot=$2} /SwapFree/{print "swp:" report(stot,$2)}
+{ kind[$1] = $2 }
+END {
+print "mem:" report(kind["MemTotal:"], kind["MemFree:"] + kind["Cached:"])
+print "swp:" report(kind["SwapTotal:"], kind["SwapFree:"])
+}
 ' /proc/meminfo)
 	$out
 )
