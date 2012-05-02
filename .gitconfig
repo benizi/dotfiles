@@ -40,6 +40,8 @@
 		end\n\
 		File.open(%(%A), %(w)) {|f| f.write(b)}\n\
 		exit 1 if b.include?(%(<)*%L)'"
+[cd]
+	cd = "[[ -n \"$GIT_PREFIX\" ]] && cd \"$GIT_PREFIX\""
 [alias]
 	alias = "!a() { pattern=. ; extrased=\"\" ; args=() ; for arg ; do case $arg in --name-only) extrased=\"s/=.*$//\" ; pattern=. ;; *) pattern=\"^$arg=\" ;; esac ; done ; git config --get-regexp '^alias\\.' | sed \"s/alias.//; s/ /=/; $extrased\" | grep \"$pattern\" ; } ; a"
 	# allow "git git cmd" typo:
@@ -52,8 +54,8 @@
 	s = "!d() { d=\"$(git rev-parse --show-toplevel)\" ; b=\"$(git config --get alias.bc >/dev/null && git bc)\" ; d=\"$d${b:+[branch:$b]}\" ; } ; s() { d ; unset cmdprefix ; while echo -e \"$d git${cmdprefix:+ $cmdprefix}> \\c\" ; do read cmd ; handled=true ; case $cmd in \\!*) eval ${cmd#\\!} ;; /*) cd $cmd ;; \"\") [ -z \"$cmdprefix\" ] && break ; echo \"(locked, not quitting: q/quit)\" ; handled=false ;; q|quit) break ;; \\?) git help ${cmdprefix:---all} ;; prefix*) cmdprefix=\"${cmd#prefix }\" ;; lock*) cmdprefix=\"${cmd#lock }\" ;; noprefix*|unprefix*|unlock*) unset cmdprefix ;; *) handled=false ;; esac ; d ; $handled && continue ; git $cmdprefix $cmd ; done ; echo ; } ; s"
 #	st = diff --name-status
 #	st = ls-files -tdom --exclude-standard .
-	st = "!git sta --directory"
-	sta = "!do_ls() { git nopipe ls-files -tdom --no-empty-directory --exclude-standard \"$@\" ; } ; st() { noredo=false ; dir=\"\" ; actual_args=false ; for arg ; do case $arg in -c) noredo=true ;; --directory) ;; *) actual_args=true ;; esac ; done ; do_ls \"$@\" | grep . && return 0 ; $noredo && return 0 ; if ! $actual_args ; then echo \"$(do_ls -c \"$@\" | wc -l) cached files\" ; return 0 ; fi ; st -c \"$@\" ; } ; st"
+	st = "!eval `git cd` ; git sta --directory"
+	sta = "!eval `git cd` ; do_ls() { git nopipe ls-files -tdom --no-empty-directory --exclude-standard \"$@\" ; } ; st() { noredo=false ; dir=\"\" ; actual_args=false ; for arg ; do case $arg in -c) noredo=true ;; --directory) ;; *) actual_args=true ;; esac ; done ; do_ls \"$@\" | grep . && return 0 ; $noredo && return 0 ; if ! $actual_args ; then echo \"$(do_ls -c \"$@\" | wc -l) cached files\" ; return 0 ; fi ; st -c \"$@\" ; } ; st"
 	stc = diff --cached --name-status
 	svnrevtags = "!git log --all -z --pretty=format:'%H%n%s%n%b' | perl -ln0e 'open STDOUT, qq{>.git/refs/tags/r$2} and print $1 if /\\A(.{40}).*git-svn-id:\\s\\S+\\@(\\d+)/s'"
 	svnup = "!svnup () { git svn fetch && git com && git merge --ff-only git-svn && git slg ; } ; svnup"
@@ -89,9 +91,10 @@
 	up = pull --ff-only
 	exec = "!sh -c"
 	wip = "! : work in progress ; wip() { all=\"\" ; amend=\"\" ; args=() ; for arg ; do case \"$arg\" in -a|--amend) amend=--amend ;; *) args+=( \"$arg\" ) ;; esac ; done ; git diff --cached --name-only | grep -q . || all=\"-a\" ; msg=\"wip\" ; set -- \"${args[@]}\" ; if [ -n \"$amend\" ] ; then msg=\"\" ; elif [ $# -gt 0 ] ; then msg=\"wip: $*\" ; fi ; if [ -n \"$amend\" ] ; then msg=\"-CHEAD\" ; else msg=\"-m$msg\" ; fi ; git commit $all $amend \"$msg\" ; if [ -z \"$all\" ] && git diff --name-only | grep -q . ; then echo \"Staged changes were WIPed. Run again to WIP the rest.\" ; fi ; } ; wip"
-	a = "!git check-email && git add"
-	ap = "!git a -p"
-	au = "!git a -u"
+	a = "!eval `git cd` ; git check-email && git add"
+	ap = "!eval `git cd` ; git a -p"
+	au = "!eval `git cd` ; git a -u"
+	cd = config cd.cd
 	d = diff
 	dchanged = "!gd() { namey=() ; args=() ; for arg ; do case \"$arg\" in --name*) namey+=( $arg ) ;; *) args+=( $arg ) ;; esac ; done ; git diff --name-status $args | perl -lnwe 'print if s/^M\\s+//' | xargs git diff $namey $args -- ; } ; gd"
 	dn = "!usage() { echo \"Usage: git dn [REV [default:HEAD]] [NUP [default:1]]\" >&2 ; [[ $# -gt 0 ]] && echo \"$@\" >&2 ; exit 1 ; } ; dn() { args=() ; opts=() ; justopts=false ; for v ; do if $justopts ; then opts+=( $v ) ; continue ; fi ; case $v in --) justopts=true ;; -*) opts+=( $v ) ;; *) args+=( $v ) ;; esac ; done ; set -- \"${args[@]}\" ; [[ $# -eq 0 ]] && set -- HEAD 1 ; if [[ $# -eq 1 ]] ; then case $1 in [[:digit:]]*) rev=HEAD ; nup=$1 ;; *) git rev-parse --revs-only $1 | grep -q . || usage \"Bad revision: $1\" ; rev=$1 nup=1 ;; esac ; elif [[ $# -eq 2 ]] ; then rev=$1 ; nup=$2 ; else usage ; fi ; case $nup in [[:digit:]]*) ;; *) usage \"Non-numeric nup: $nup\" ;; esac ; git diff \"$rev\"\\~\"$nup\"..\"$rev\" \"${opts[@]}\" ; } ; dn"
@@ -103,7 +106,7 @@
 	unadd = reset HEAD
 	wrapped = "!wrapped() { cd $(git unwrappeddir) ; disabled=$(git config --bool disable.$1); ${disabled:-false} && echo \"git $1 has been disabled\" && return; git \"$@\"; }; wrapped"
 	unwrappeddir = "!f() { pid=$$ ; for l in {1..5} ; do pid=$(perl -lanwe 'print $F[3]' /proc/$pid/stat) ; done ; readlink /proc/$pid/cwd ; } ; f"
-	nopipe = "!trap '' PIPE ; git"
+	nopipe = "!eval `git cd` ; trap '' PIPE ; git"
 	svnlog = "!lg() { filename=changed-files ; revision=0 ; args=() ; while [[ $# -gt 0 ]] ; do found=false ; for option in filename revision ; do case \"$1\" in --$option*) found=true ; case \"$1\" in *=*) typeset $option=${1#*=} ;; *) shift ; typeset $option=$1 ;; esac ; shift ;; esac ; done ; $found && continue ; args+=( $1 ) ; shift ; done ; git log ${args[@]} | perl -lnwe 'BEGIN { ($fn,$rev) = splice @ARGV; } push @f, $_; END { print qq<Index: $fn>; print q.=. x 67; print qq<$_ $fn   (revision $rev)> for qw/--- +++/; print qq<\\@\\@ -0,0 +1,>, 0+@f, qq< \\@\\@>; print qq<+$_> for @f; }' $filename $revision | ${PAGER:-less} ; } ; lg"
 	svnrev = "!revs() { [[ $# -gt 0 ]] || set -- $(cat) ; git rev-parse \"$@\" | perl -Mbytes -lwe 'open my $f, q.<., shift or die; %revs = reverse unpack q.(NH40)*., do { undef local $/; <$f> }; chomp, print $revs{$_}//q.unknown. while <>' .git/svn/git-svn/.rev_map.* ; } ; revs"
 	treesize = "!sizeit() { [[ $# -gt 0 ]] || set -- HEAD ; git nopipe ls-tree -l -r \"$@\" | grep -v branch/ | perl -lanwe '$t+=$F[3];END{print$t}' ; } ; sizeit"
