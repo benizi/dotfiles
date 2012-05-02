@@ -44,3 +44,8 @@ __git_files () {
 	# with the current PREFIX
 	__git_tree_files ${PREFIX:-.} HEAD
 }
+
+_git-co () {
+	_git-checkout "$@"
+	_git-clone "$@"
+}
