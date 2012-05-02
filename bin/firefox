@@ -1,23 +1,32 @@
 #!/bin/zsh
-profile=
-if [ -n "$0:e" ] ; then profile=$0:e ; fi
-args=()
-[[ -n "$profile" ]] && args=(-no-remote -P $profile)
-#exec aoss /usr/bin/firefox-bin $argv
-while [ $# -gt 0 ] ; do
-	arg=$1
-	shift
-	case $arg in
-		http*)	args+=(-remote "openURL($arg)") ;;
-		*) args+=($arg) ;;
-	esac
+kill=false
+debugging=true
+unset found_rspec
+pst -P $$ | while read line ; do
+  [[ $line = */rspec* ]] || continue
+  print -l - $line | read pid rest
+  found_rspec=$pid
 done
-for bin in /usr/bin/firefox /opt/firefox/firefox-bin ; do
-	[ ! -x $bin ] && continue
-	args=( $bin $args )
-	break
+if (( ! $+SELENIUM_POPUP )) && (( $+found_rspec )) ; then
+  if $kill ; then
+    kill -9 $found_rspec
+    exit 1
+  fi
+  screen-detached -xvfb Xvfb :1 -screen 0 1920x1080x24
+  export DISPLAY=:1
+  x-is-active -maxtry 10 -v || exit 1
+fi
+if $debugging ; then
+  date >> ~/firefox.log
+  for arg ; do
+    printf "%s\n" $arg >> ~/firefox.log
+  done
+  pst $$ >> ~/firefox.log
+fi
+newpath=()
+for p in $path ; do
+  [[ $p = $0:h ]] && continue
+  newpath+=( $p )
 done
-logfile=~/firefox-launcher.log
-echo GOT $0 $argv >> $logfile
-echo exec $args >> $logfile
-SKIP_ARGB_VISUALS=1 exec $args
+path=( $newpath )
+exec firefox "$@"
