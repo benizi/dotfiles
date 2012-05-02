@@ -117,6 +117,7 @@ function term_with_title () {
 	return 0
 }
 function preexec () {
+	__last_command=$1
 	term_with_title || return
 	fancytitle "$1 $TITLESEP "
 }

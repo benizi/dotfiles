@@ -72,3 +72,18 @@ command_not_found_handler () {
 	done
 	return 1
 }
+
+trap '
+	local dir= choose=
+	set -- ${=__last_command}
+	if (( $# == 1 )) && [[ $1 == */* ]] ; then
+		dir=${~1}
+		if [[ ! -e $dir ]] ; then
+			if read -q "choose?Create $1 [y/N]? " ; then
+				if mkdir -p $dir ; then
+					cd $dir
+				fi
+			fi
+		fi
+	fi
+' ZERR
