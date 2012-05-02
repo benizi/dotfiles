@@ -172,7 +172,12 @@ fun! OpenOrNewUnderCursor()
 endfun
 nnoremap <C-w>f :call OpenOrNewUnderCursor()<CR>
 
-cno %% <C-R>=expand('%:h').'/'<cr>
+fun! CurrentDir()
+	let dir = expand('%:h').'/'
+	return dir =~ '^\.\?/$' ? '' : dir
+endf
+
+cno %% <C-R>=CurrentDir()<cr>
 " easy new %:h
 nma <Leader>n :new %%
 nma <Leader>e :e %%
