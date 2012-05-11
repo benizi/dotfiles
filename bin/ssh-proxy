@@ -1,13 +1,13 @@
 #!/bin/sh
 
-error () {
-  printf "\n\e[31m*** %s ***\e[0m\n\n" "$@" >&2
+warn () {
+  printf "\e[31m*** %s ***\e[0m\n" "$@" >&2
 }
 
 die () {
-  error "$@"
+  warn "$@"
   usage
-  error "$@"
+  warn "$@"
   exit
 }
 
@@ -54,13 +54,13 @@ fi
 
 control_dir=$HOME/.ssh/sockets
 control=$control_dir/port-forward-$port
-mkdir -p $control_dir || error "Could not create control path: $control_dir"
+mkdir -p $control_dir || warn "Could not create control path: $control_dir"
 
 if ! $reuse ; then
   ssh -fN -o ExitOnForwardFailure=yes \
     -o ControlMaster=yes \
     -o ControlPath=$control \
-    -D $port $host || error 'Port forwarding failed'
+    -D $port $host || warn 'Port forwarding failed'
 fi
 
 if [ $# -eq 0 ] ; then
