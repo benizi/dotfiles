@@ -60,6 +60,17 @@ control_dir=$HOME/.ssh/sockets
 control=$control_dir/port-forward-$port
 mkdir -p $control_dir || warn "Could not create control path: $control_dir"
 
+if [[ -e $control ]] && ! $quit ; then
+  if ! $reuse ; then
+    warn "Control socket already exists, setting reuse=true"
+    reuse=true
+  fi
+  if $close ; then
+    warn "Control socket already exists, setting close=false"
+    close=false
+  fi
+fi
+
 if ! $reuse && ! $quit ; then
   ssh -fN -o ExitOnForwardFailure=yes \
     -o ControlMaster=yes \
