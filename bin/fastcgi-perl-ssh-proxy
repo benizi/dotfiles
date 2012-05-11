@@ -16,11 +16,11 @@ doit () {
   $@
 }
 
+# stop the old server
+doit screen -r fastcgi-perl -X quit
+
+# start the new one
 cmd=()
-if (( $+stop )) ; then
-  doit screen -r fastcgi-perl -X quit
-else
-  cmd=( ssh-proxy $host $port -N )
-fi
+(( $+stop )) || cmd=( ssh-proxy $host $port -N )
 cmd+=( screen-detached -fastcgi-perl fastcgi-perl -f --no-exec )
 doit $cmd
