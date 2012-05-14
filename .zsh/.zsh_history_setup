@@ -10,3 +10,77 @@ else
 	[[ ! -f $HISTFILE ]] && touch $HISTFILE && chown --reference=${(%):-%N} $HISTFILE
 fi
 TRAPUSR1 () { fc -W $zsh_dirs[-1]/emergency-zsh-backup-$(date +%Y%m%d-%H%M%S)-$$ }
+
+json_string () {
+	local ret='' uni=
+	for (( i = 1 ; i <= ${#1} ; i++ )) ; do
+		l=${1[i]}
+		case "$l" in
+			[\\\"]) ret+='\'$l ;;
+			$'\b') ret+='\b' ;;
+			$'\f') ret+='\f' ;;
+			$'\n') ret+='\n' ;;
+			$'\r') ret+='\r' ;;
+			$'\t') ret+='\t' ;;
+			*) uni=$(( #l ))
+				if (( uni < 0x20 || uni > 0x7e )) ; then
+					ret+='\u'$(printf "%04x" $uni)
+				else
+					ret+=$l
+				fi
+				;;
+		esac
+	done
+	printf '"%s"' $ret
+}
+
+json_object () {
+	local ret= key= val= i=
+	i=0
+	while (( $# > 0 )) ; do
+		key=$1
+		(( $# > 1 )) && val=$2 || val=''
+		shift $(( ($# > 1) ? 2 : 1 ))
+		(( i++ )) && ret+=,
+		ret+=$(json_string $key)
+		ret+=:
+		ret+=$(json_string $val)
+	done
+	printf '{%s}' $ret
+}
+
+couchdb_uri () {
+	printf 'http://localhost:5984/%s' $1
+}
+
+couchdb_request () {
+	local method=$1
+	local uri=$(couchdb_uri $2)
+	local -a args
+	args=( -X $method )
+	[[ $method = GET ]] || args+=( --data-binary @- )
+	args+=( -H 'Content-Type: application/json' )
+	curl $args $uri
+}
+
+couchdb_get () {
+	couchdb_request GET "$@"
+}
+
+couchdb_post couchdb_add_doc () {
+	couchdb_request POST "$@"
+}
+
+couchdb_put couchdb_create_db () {
+	couchdb_request PUT "$@"
+}
+
+zmodload zsh/datetime
+
+history_add_couchdb () {
+	# print -sr -- ${1%%$'\n'}
+	json_object host $HOST pwd $PWD cmd ${1%%$'\n'} time $EPOCHSECONDS \
+		| couchdb_add_doc history/ &>/dev/null &!
+	return 0
+}
+zshaddhistory_functions=( history_add_couchdb )
