@@ -40,6 +40,8 @@
 		end\n\
 		File.open(%(%A), %(w)) {|f| f.write(b)}\n\
 		exit 1 if b.include?(%(<)*%L)'"
+[difftool "image-diff"]
+	cmd = "ls -l \"$LOCAL\" \"$REMOTE\" ; convert \"$LOCAL\" -write mpr:orig +delete \"$REMOTE\" -write mpr:new +delete '(' mpr:orig mpr:new -compose Difference -composite -write mpr:diff +delete ')' '(' mpr:diff -auto-level -write mpr:norm +delete ')' '(' mpr:diff mpr:orig -append ')' '(' mpr:norm mpr:new -append ')' +append x:"
 [cd]
 	cd = "[[ -n \"$GIT_PREFIX\" ]] && cd \"$GIT_PREFIX\""
 [alias]
@@ -78,6 +80,7 @@
 	cin = "!git ci --no-verify"
 	f = "! : fetch all ; f () { if git remote -v | grep -q \\.git/hgremote ; then git hg fetch ; fi ; git fetch --all ; } ; f"
 	h = help
+	image-diff = difftool --tool=image-diff --no-prompt
 	ini = "!eval `git cd` ; ini () { git init \"$@\" && git check-email ; } ; ini"
 	ls = ls-files
 	rc = rebase --continue
