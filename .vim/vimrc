@@ -268,5 +268,9 @@ let g:ctrlp_prompt_mappings = {
 	\ }
 " no path management ( == use cwd)
 let g:ctrlp_working_path_mode = 0
+let g:ctrlp_custom_ignore = {
+	\ 'dir': '\.git$\|\.hg$\|\.svn$\|tmp$',
+	\ 'file': '\.o$',
+	\ }
 
 let g:NERDDefaultAlign = 'left'
