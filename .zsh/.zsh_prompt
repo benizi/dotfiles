@@ -38,7 +38,12 @@ while (( $#test_git && n < 20 )) ; do
 	shift test_git
 	n=$(( n + 1 ))
 	for o in $d/{.hg,.svn,CVS} ; do
-		[[ -d $o ]] && other_vcs+=( $o )
+		if [[ -d $o ]] ; then
+			case $o:t in
+				.svn|CVS) [[ -d $o:h:h/$o:t ]] || other_vcs+=( $o:h ) ;;
+				*) other_vcs+=( $o ) ;;
+			esac
+		fi
 	done
 	[[ -d $d/.git ]] && git_dir=$d/.git && break
 	local -a add
