@@ -162,11 +162,30 @@ cmap <esc><bs> <C-w><C-w>
 " pastetoggle
 se pastetoggle=<F7>
 
+" Try adding extensions to the detected filename under the cursor
+fun! OpenGlobUnderCursor()
+	let paths = split(globpath(&path, expand('<cfile>').'.*'), '\n')
+	if len(paths) && filereadable(paths[0])
+		exe ':new '.fnameescape(paths[0])
+		return 1
+	end
+	return 0
+endf
+
 " Let C-w f open a nonexistent file if it fails to find one
 fun! OpenOrNewUnderCursor()
+	" If we're going to get a directory, try with extensions
+	let paths = split(globpath(&path, expand('<cfile>')), '\n')
+	if len(paths) && isdirectory(paths[0]) && OpenGlobUnderCursor()
+		return
+	end
 	try
 		wincmd f
 	catch
+		" If we failed, try files with extensions
+		if OpenGlobUnderCursor()
+			return
+		end
 		new <cfile>
 	endtry
 endfun
