@@ -75,7 +75,7 @@ pathtest+=( {/{usr,opt}{/local,},}/{s,}bin )
 pathtest+=( $HOME/bin/dslinux/bin /usr/games/bin /home/bhaskell/wn/bin /home/bhaskell/qmail/bin /var/qmail/bin /usr/kde/4.0/bin /usr/X11R6/bin )
 pathtest+=( $path )
 pathtest+=( /people/bhaskell/bin )
-pathtest=( ~/.rbenv/bin $^pathtest )
+pathtest=( ~$owner/.rbenv/bin $^pathtest )
 pathtest=( ~/prb-bin $^pathtest )
 pathtest=( ~/brew/bin $^pathtest )
 path=( ${^pathtest}(N-/) )
@@ -122,22 +122,30 @@ fi
 run_local_versions
 
 use_prb=false
+setup_rbenv_function=false
 if (( $+commands[rbenv] )) ; then
 	if ! $use_prb ; then
-		eval "$(rbenv init -)"
+		if (( UID )) ; then
+			eval "$(rbenv init -)"
+		else
+			export RBENV_ROOT=~$owner/.rbenv
+			path=( $RBENV_ROOT/shims $path )
+			setup_rbenv_function=true
+		fi
 	else
-		path=( ~g/prb/shims ~g/prb/bin ~/.rbenv/shims $path )
-		[[ -o interactive ]] && . ~/.rbenv/completions/rbenv.zsh
+		path=( ~g/prb/shims ~g/prb/bin ~$owner/.rbenv/shims $path )
+		[[ -o interactive ]] && . ~$owner/.rbenv/completions/rbenv.zsh
 		rbenv rehash 2>/dev/null
-		rbenv () {
-			cmd=$1
-			shift
-			case "$cmd" in
-				shell) eval `rbenv sh-$cmd "$@"` ;;
-				*) command rbenv $cmd "$@" ;;
-			esac
-		}
+		setup_rbenv_function=true
 	fi
+	$setup_rbenv_function && rbenv () {
+		cmd=$1
+		shift
+		case "$cmd" in
+			shell) eval `rbenv sh-$cmd "$@"` ;;
+			*) command rbenv $cmd "$@" ;;
+		esac
+	}
 fi
 
 setup_ruby () {
