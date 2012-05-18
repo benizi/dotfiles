@@ -1,6 +1,6 @@
 #!/bin/zsh
 kill=false
-debugging=true
+debugging=false
 unset found_rspec
 pst -P $$ | while read line ; do
   [[ $line = */rspec* ]] || continue
