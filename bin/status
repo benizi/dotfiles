@@ -39,6 +39,7 @@ fi
 if (( $+commands[battery] )) ; then
 	spinner=${${:-'-/|\\'}[1 + ($date[-1] % 4)]}
 	battery -p | read plugged pct
+	$plugged && plugmark='+' || plugmark=''
 	bat=$pct
 	if [[ $pct -gt 0 && $pct -lt 11 ]] && ! $plugged ; then
 		for i in {1..20} ; do
@@ -46,7 +47,7 @@ if (( $+commands[battery] )) ; then
 		done
 	fi
 	[[ $pct -lt 10 ]] && ! $plugged && (( $+commands[osd] )) && (osd -d 2 $bat &)
-	out=( bat:$bat $out )
+	out=( bat:$plugmark$bat $out )
 fi
 
 (( $+commands[x-kbstate] )) && out=( "$(x-kbstate -u)" $out )
