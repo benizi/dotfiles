@@ -75,7 +75,7 @@
 	cod = checkout development
 	comb = checkout master -b
 	codb = checkout development -b
-	ci = "!git check-email && git commit"
+	ci = "!eval `git cd` ; git check-email && git commit"
 	cia = "!git ci --amend"
 	cin = "!git ci --no-verify"
 	f = "! : fetch all ; f () { if git remote -v | grep -q \\.git/hgremote ; then git hg fetch ; fi ; git fetch --all ; } ; f"
