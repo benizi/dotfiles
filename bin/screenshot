@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+filename = IO.popen('dmenu', 'r+') do |io|
+  io.puts(Time.now.strftime('%Y-%m-%d-%H%M%S'))
+  io.close_write
+  io.read.chomp
+end
+exit if filename.empty?
+filename += '.png' unless filename =~ /\.\w+$/
+filename = "#{ENV['HOME']}/screenshot-#{filename}"
+system('import', filename)
