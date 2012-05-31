@@ -231,6 +231,9 @@ set smartcase
 " complete filenames after equals signs
 set isf-==
 
+" make increment work when numbers have leading 0's
+se nf=hex
+
 " hlsearch
 set hls
 " turn off highlighting when refreshing the screen
