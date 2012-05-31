@@ -8,17 +8,20 @@ let s:acceptable_ext = {
   \ }
 
 fun! StatusLineFiletype()
-  let ext = expand('%:e')
-  if !strlen(ext)
-    let ext = expand('%:t')
-  end
-  if ext == &l:ft
-    return ''
-  end
-  let acceptable = get(s:acceptable_ext, &l:ft, [])
-  if index(acceptable, ext) >= 0
-    return ''
-  end
+  try
+    let ext = expand('%:e')
+    if !strlen(ext)
+      let ext = expand('%:t')
+    end
+    if ext == &l:ft
+      return ''
+    end
+    let acceptable = get(s:acceptable_ext, &l:ft, [])
+    if index(acceptable, ext) >= 0
+      return ''
+    end
+  catch
+  endtry
   return ' <'.&l:ft.'>'
 endf
 
