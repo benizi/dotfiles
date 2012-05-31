@@ -142,7 +142,13 @@ def request(url, method, &block)
 	end
 
 	yield req if block_given?
-	http.start { http.request(req) }
+	http.start { http.request(req) }.tap do |ret|
+		ret.instance_eval do
+			def json
+				JSON.parse(self.body, :symbolize_names => true)
+			end
+		end
+	end
 end
 
 def post(url, &block)
@@ -181,6 +187,21 @@ end
 
 module Commands
 	extend self
+
+	def account(*args)
+		case args.shift
+		when 'keys'
+			for_user = args.shift || user
+			get(api_url('repos', "show/#{for_user}")).json[:repositories].each do |repo|
+				info = get(api_url('repos', "keys/#{repo[:owner]}/#{repo[:name]}")).json
+				keys = info[:public_keys]
+				next if keys.empty?
+				keys.each { |k| puts "#{repo[:name]}\t#{k[:title]}\t#{k[:key]}" }
+			end
+		else
+		end
+	end
+
 	def fork(*args)
 		p :remote => remote
 		owner = args.shift || remote_owner
@@ -198,7 +219,14 @@ module Commands
 	end
 
 	def create(*args)
-		project = args.shift || projdir
+		case args.size
+		when 2
+			user, project = args
+		when 1
+			project = args.first
+		else
+			project = projdir
+		end
 		props = { :name => project }
 		response = post(create_url) do |req|
 			req.set_form_data(props)
