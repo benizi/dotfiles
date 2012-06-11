@@ -1,0 +1,99 @@
+#!/bin/zsh
+
+warn () { echo $'\e[31m'$*$'\e[0m' >&2 }
+die () { warn "$@" ; exit 1 }
+
+unset dir use_port
+action=start
+while (( $# )) ; do
+  arg=$1
+  shift
+  case $arg in
+    --start) action=start ;;
+    --stop) action=stop ;;
+    --print) action=port ;;
+    --port=*) use_port=${arg//*=} ;;
+    --port) (( $# )) || die "--port needs an argument" ; use_port=$1 ; shift ;;
+    *)
+      if [[ -d $arg ]] && (( ! $+dir )) ; then
+        dir=$arg
+      fi
+      ;;
+  esac
+done
+(( $+dir )) || dir=$PWD
+warn $action nailgun for $dir${use_port:+on port $use_port}
+
+name_munge () {
+  local changed=$1
+  changed=${changed//[\/]/.}
+  printf "%s" $changed
+}
+
+screen_name () {
+  local screenname=nailgun-$(name_munge $dir)-nailgun
+  screenname=${screenname//-./-}
+  printf "%s" $screenname
+}
+
+create_tmpdir () {
+  if ! [[ -d $tmpdir ]] ; then
+    mkdir -p $tmpdir
+    chmod 1700 $tmpdir
+  fi
+}
+
+tmpdir=/tmp/nailgun.$USER
+create_tmpdir
+
+port_number () {
+  (( $+use_port )) && { printf "%s" $use_port ; return }
+  local file= name= fp= port=2113 screenname=$(screen_name)
+  local -A by_name by_port
+  for file in $tmpdir/*(N.) ; do
+    name=$file:t
+    fp=$(( 0 + $(<$file) ))
+    by_name[$name]=$fp
+    by_port[$fp]=$name
+  done
+  if (( $+by_name[$screenname] )) ; then
+    port=$by_name[$screenname]
+  else
+    while (( $+by_port[$port] )) ; do
+      (( port += 1 ))
+    done
+  fi
+  printf "%s" $port
+}
+
+already_running () {
+  [[ -f $tmpdir/$(screen_name) ]]
+}
+
+run_action () {
+  local screenname=$(screen_name) action=$1
+  case $action in
+    start)
+      port=$(port_number)
+      already_running && die "Already running on port $(run_action port)"
+      cmd=( screen-detached -$screenname start-nailgun $port )
+      printf "%s\n" $port > $tmpdir/$screenname
+      cd $dir
+      $cmd
+      ;;
+    stop)
+      cmd=( screen -dr -S $screenname -X quit )
+      $cmd
+      rm -f $tmpdir/$screenname
+      ;;
+    port)
+      [[ -f $tmpdir/$screenname ]] || die "No port"
+      cat $tmpdir/$screenname
+      ;;
+    *)
+      die "Unknown action: $action"
+      ;;
+  esac
+}
+
+run_action $action
