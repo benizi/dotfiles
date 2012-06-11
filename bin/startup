@@ -8,7 +8,6 @@ start-xrandr
 start-synaptics
 dropbox start
 openSUSE-mounts --mount
-screen-detached -nailgun start-nailgun
 for iface in /proc/sys/net/ipv4/conf/*/log_martians ; {echo 0 | sudo tee $iface &> /dev/null}
 pulseaudio --check || pulseaudio --start
 xset -b
