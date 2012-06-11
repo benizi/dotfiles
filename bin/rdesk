@@ -8,7 +8,7 @@ sub find_prog {
 	my $prog = shift;
 	(grep -x, map "$_/$prog", File::Spec->path)[0]
 }
-my ($rdesktop) = grep defined, map find_prog($_), qw/rdesktop xfreerdp/;
+my ($rdesktop) = grep defined, map find_prog($_), qw/xfreerdp rdesktop/;
 $rdesktop // die "Couldn't find rdesktop program\n";
 use Getopt::Long qw/:config pass_through/;
 my %opt;
@@ -120,8 +120,16 @@ my @rcmd = (
 	@extra,
 	$opt{server},
 );
+my @invalid_args;
+if ($rdesktop =~ /xfreerdp/) {
+	for (reverse 0..$#rcmd-1) {
+		unshift @invalid_args, splice @rcmd, $_, 2 if $rcmd[$_] eq '-r';
+	}
+}
+if (@invalid_args) {
+	warn "Invalid arguments when using $rdesktop: (@invalid_args)\n";
+}
 warn "@rcmd\n";
 $dry and exit;
-system { 'rm' } rm => -rf => "$ENV{HOME}/.rdesktop";
 exec { $rcmd[0] } @rcmd;
 die "Couldn't exec(",join(",",@rcmd),")\n";
