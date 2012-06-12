@@ -121,9 +121,19 @@ my @rcmd = (
 	$opt{server},
 );
 my @invalid_args;
+my $has_password = 0;
 if ($rdesktop =~ /xfreerdp/) {
 	for (reverse 0..$#rcmd-1) {
-		unshift @invalid_args, splice @rcmd, $_, 2 if $rcmd[$_] eq '-r';
+		if ($rcmd[$_] eq '-r') {
+			unshift @invalid_args, splice @rcmd, $_, 2;
+		} elsif ($rcmd[$_] eq '-p') {
+			$has_password = 1;
+		}
+	}
+	if (!$has_password) {
+		chomp(my $pass = `dmenu --secret -p 'rdesk password:' < /dev/null`);
+		die "Aborted due to empty password\n" unless $pass =~ /\S/;
+		splice @rcmd, 1, 0, '-p', $pass;
 	}
 }
 if (@invalid_args) {
