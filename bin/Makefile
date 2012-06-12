@@ -28,6 +28,10 @@ x-is-active:	src/X11/x-is-active.c
 	$(CC) $(CFLAGS) $(shell pkg-config --cflags x11) -o $@.tmp $< $(shell pkg-config --libs x11)
 	mv $@.tmp $@
 
+x-xinerama-info-xlib:	src/X11/x-xinerama-info-xlib.c
+	$(CC) $(CFLAGS) $(shell pkg-config --cflags x11) -o $@.tmp $< $(shell pkg-config --libs x11) -lXinerama
+	mv $@.tmp $@
+
 x-ungrab:	src/X11/x-ungrab.c
 	$(CC) $(CFLAGS) $(shell pkg-config --cflags x11) -o $@.tmp $< $(shell pkg-config --libs x11)
 	mv $@.tmp $@
