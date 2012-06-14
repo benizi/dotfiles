@@ -76,7 +76,7 @@ command_not_found_handler () {
 trap '
 	local dir= choose=
 	set -- ${=__last_command}
-	if (( $# == 1 )) && [[ $1 == */* ]] ; then
+	if (( $# == 1 )) && [[ $1 == */* ]] && [[ $1 != "<"* ]] ; then
 		dir=${~1}
 		if [[ ! -e $dir ]] ; then
 			if read -q "choose?Create $1 [y/N]? " ; then
