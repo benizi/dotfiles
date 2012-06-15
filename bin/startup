@@ -1,5 +1,4 @@
 #!/bin/zsh
-wmii-active || screen-detached .-lxpanel
 screen-detached .-nm-applet
 screen-detached -polkit /usr/lib/polkit-gnome-authentication-agent-1
 start-fastcgi-servers
