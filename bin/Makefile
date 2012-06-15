@@ -20,6 +20,10 @@ x-active-id:	src/X11/x-active-id.c
 	$(CC) $(CFLAGS) -o $@.tmp $< $(shell pkg-config --cflags --libs xcb-atom)
 	mv $@.tmp $@
 
+x-atom-name:	src/X11/x-atom-name.c
+	$(CC) $(CFLAGS) $(shell pkg-config --cflags x11) -o $@.tmp $< $(shell pkg-config --libs x11)
+	mv $@.tmp $@
+
 x-xinerama-info:	src/X11/x-xinerama-info.c
 	$(CC) $(CFLAGS) -o $@.tmp $< $(shell pkg-config --cflags --libs xcb-xinerama)
 	mv $@.tmp $@
