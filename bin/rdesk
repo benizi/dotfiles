@@ -35,8 +35,13 @@ sub auto_geometry {
 	return unless my $xinerama = find_prog 'x-xinerama-info';
 	my $g = `$xinerama --first` =~ /^(\d+x\d+\+-?\d+\+-?\d+)$/ ? $1 : undef;
 	my ($w, $h, $x, $y) = $g =~ /^(\d+)x(\d+)([+\-]\d+)([+\-]\d+)$/;
-	return unless my $wininfo = find_prog 'xwininfo';
-	return unless my ($bar_height) = `$wininfo -root -children -size` =~ /no name\): \(\)  ${w}x(?!$h)(\d+)\Q$x$y\E/m;
+	my $bar_height = 0;
+	if (my $xprop = find_prog 'xprop') {
+		($bar_height) = `$xprop -root DWM_BAR_HEIGHT` =~ /= (\d+)/m;
+	}
+	if (!$bar_height and my $wininfo = find_prog 'xwininfo') {
+		($bar_height) = `$wininfo -root -children -size` =~ /no name\): \(\)  ${w}x(?!$h)(\d+)\Q$x$y\E/m;
+	}
 	$h -= $bar_height;
 	$y += $bar_height;
 	sprintf "%dx%d", $w-4, $h-2;
