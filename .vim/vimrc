@@ -210,8 +210,21 @@ map <C-Right> <C-W>l
 map <C-j> <C-W>j
 map <C-k> <C-W>k
 
-" ZZ = ZZ for all windows
-nnoremap ZZ :windo x<CR>
+" ZZ = ZZ for all windows, prompt if more than four windows
+fun! QuitAll()
+	if winnr('$') > 4
+		let ans = confirm('Really quit?', "&Yes\n&One\n&No")
+		if ans == 2
+			x
+			return
+		elseif ans == 3
+			echom 'Cancelled'
+			return
+		end
+	end
+	windo x
+endf
+nn ZZ :call QuitAll()<CR>
 
 set ofu=syntaxcomplete#Complete
 set nostartofline
