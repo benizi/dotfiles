@@ -290,3 +290,6 @@ let g:ctrlp_custom_ignore = {
 	\ }
 
 let g:NERDDefaultAlign = 'left'
+
+" ;; -> Esc in insert mode
+im ;; <Esc>
