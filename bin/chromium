@@ -239,6 +239,7 @@ _exec=()
 (( $+_scratch )) || _exec=(exec)
 if [[ -n "$_url" ]] ; then
 	if $_remote ; then
+		(( $+commands[dwm-activate] )) && dwm-activate browser &
 		_args+=( --remote "$_url" )
 	else
 		exec $_echo open $_url
