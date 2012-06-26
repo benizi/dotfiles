@@ -1,0 +1,9 @@
+#!/bin/zsh
+dir=$HOME
+for arg ; do
+  [[ -d "$arg" ]] || continue
+  dir=$arg
+  break
+done
+cd $dir
+urxvt
