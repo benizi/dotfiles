@@ -18,6 +18,7 @@ GetOptions(
 	'module=s' => \(my $module),
 	'checkpoint=i' => \(my $checkpoint = 100),
 	'debug+' => \(my $debug = 0),
+	'gitref=s' => \(my $git_base_ref = 'refs/origin'),
 	'<>' => sub {
 		my $arg = shift;
 		die "Bad argument $arg" if $cvsps_log;
@@ -31,6 +32,7 @@ $0 [options] [filename]
 	--cvsroot=CVSROOT            CVSROOT (defaults to \$CVSROOT)
 	--module=module              Relative root
     --debug                      Print debugging information
+    --gitref=REF                 Git reference to import (default: refs/origin)
 USAGE
 @ARGV and $cvsps_log //= shift;
 $cvsps_log // die "Need --in FILE\n";
@@ -83,7 +85,7 @@ R
 }
 
 # TODO - bhaskell - 2010-03-22 - add branch mappings
-sub branch_map { 'refs/origin/'.shift }
+sub branch_map { "$git_base_ref/".shift }
 
 sub author_map {
 	my $cvsauthor = shift;
