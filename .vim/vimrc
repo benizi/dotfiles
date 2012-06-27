@@ -31,10 +31,12 @@ fun! InGUI()
 endf
 
 " keep some plugins around w/o loading by default...
-let g:pathogen_disabled = ['powerline']
-if !has('gui') || !has('gui_running')
+let g:pathogen_disabled = []
+if !InGUI()
+	call add(g:pathogen_disabled, 'powerline')
 	call add(g:pathogen_disabled, 'CSApprox')
 endif
+
 try
 	call vam#ActivateAddons() " set up VAM functions
 	call pathogen#infect(s:BundleDir()) " activate everything
