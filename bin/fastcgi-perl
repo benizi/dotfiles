@@ -1,4 +1,6 @@
 #!/usr/bin/env perl
+# Original author: Denis S. Filimonov
+# Original source: http://www.ruby-forum.com/topic/145858#645832
 use strict;
 use warnings;
 use FCGI;
