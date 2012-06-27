@@ -303,6 +303,9 @@ if InGUI()
 		se go-=m go-=T
 	endf
 	au GUIEnter * call SetupGUI()
+else
+	" use degraded 256-color palette for Solarized
+	let g:solarized_termcolors = 256
 end
 
 " ;; -> Esc in insert mode
