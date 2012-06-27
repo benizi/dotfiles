@@ -26,6 +26,10 @@ endfor
 let g:mapleader = ','
 let g:maplocalleader = g:mapleader
 
+fun! InGUI()
+	return has('gui') && has('gui_running')
+endf
+
 " keep some plugins around w/o loading by default...
 let g:pathogen_disabled = ['powerline']
 if !has('gui') || !has('gui_running')
@@ -73,7 +77,7 @@ if &t_Co > 16
 	exe 'colo' s:colors
 	if s:colors == 'dual-converted'
 		au ColorScheme * hi StatusLineNC ctermfg=252 ctermbg=24
-	elseif s:colors == 'jellybeans'
+	elseif s:colors == 'jellybeans' && !InGUI()
 		sil! !printf '\e]12;8\a'
 	en
 endif
@@ -290,6 +294,14 @@ let g:ctrlp_custom_ignore = {
 	\ }
 
 let g:NERDDefaultAlign = 'left'
+
+if InGUI()
+	fun! SetupGUI()
+		let &gfn = 'DejaVu Sans Mono 14'
+		se go-=m go-=T
+	endf
+	au GUIEnter * call SetupGUI()
+end
 
 " ;; -> Esc in insert mode
 im ;; <Esc>
