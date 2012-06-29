@@ -307,6 +307,3 @@ else
 	" use degraded 256-color palette for Solarized
 	let g:solarized_termcolors = 256
 end
-
-" ;; -> Esc in insert mode
-im ;; <Esc>
