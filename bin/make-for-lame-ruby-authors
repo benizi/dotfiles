@@ -1,0 +1,28 @@
+#!/bin/zsh
+newpath=()
+for p in $path ; do
+  [[ $p = $HOME/bin ]] || newpath+=( $p )
+done
+path=( $newpath )
+args=()
+
+[[ $0:t = make ]] && make=true || make=false
+
+did_cflag=false
+while (( $# )) ; do
+  arg=$1
+  shift
+  case $arg in
+    CFLAGS=*) args+=( "$arg -Wno-error" ) ; did_cflag=true ;;
+    -j|--jobs) shift ;;
+    -j*|--jobs*) ;;
+    *) args+=( $arg ) ;;
+  esac
+done
+
+$make && ! $did_cflag && args=( "CFLAGS=$CFLAGS -Wno-error -fPIC" -j8 $args )
+
+to_run=( $0:t $args )
+
+#print -l - "$(date)" $to_run >> ~/makelog
+exec $to_run
