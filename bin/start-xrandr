@@ -1,12 +1,16 @@
 #!/bin/zsh
 unset dry
 unset cycle
-unset mirrored
+ext_pos=--left-of
 for arg ; do
 	case "$arg" in
 		--dry*) dry=true ;;
 		--cycle) cycle=true ;;
-		--clone) mirrored=true ;;
+		--clone) ext_pos=--same-as ;;
+		-l|--left) ext_pos=--left-of ;;
+		-r|--right) ext_pos=--right-of ;;
+		-a|--above) ext_pos=--above ;;
+		-b|--below) ext_pos=--below ;;
 	esac
 done
 if xrandr | grep -q '^LVDS-*[123]' ; then
@@ -39,11 +43,5 @@ if $onlylap ; then
 	doit $cmd
 else
 	(( $+cycle )) && doit $cmd --output $ext --off
-	cmd+=( --output $ext --mode $ext_mode )
-	if (( $+mirrored )) ; then
-		cmd+=( --same-as $int )
-	else
-		cmd+=( --right-of $int )
-	fi
-	doit $cmd
+	doit $cmd --output $ext --mode $ext_mode $ext_pos $int
 fi
