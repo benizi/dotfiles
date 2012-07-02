@@ -138,6 +138,27 @@ nnoremap <expr> <esc>h OpenFoldOrDo('30h')
 " map \z to a kind of 'reset the folds'
 nnoremap <Leader>z zMzvz.
 
+" map z= to 'set fold level equal to the fold I'm on'
+fun! SetFoldEqual()
+	let start = line('.')
+	let foldstart = foldclosed('.')
+	let fdl = foldlevel(foldstart > 0 ? foldstart : '.')
+	let lnum = 1
+	while 1
+		if foldclosed(lnum) < 0 && foldlevel(lnum) >= fdl
+			exe lnum
+			norm zc
+			let lnum = foldclosedend(lnum)
+		end
+		if lnum >= line('$')
+			break
+		end
+		let lnum += 1
+	endw
+	exe start
+endf
+nn <silent> z= :call SetFoldEqual()<CR>
+
 if &diff
 	nnoremap > :.diffput <bar> diffupdate<cr>
 	nnoremap < :.diffput <bar> diffupdate<cr>
