@@ -6,5 +6,11 @@ filename = IO.popen('dmenu', 'r+') do |io|
 end
 exit if filename.empty?
 filename += '.png' unless filename =~ /\.\w+$/
-filename = "#{ENV['HOME']}/screenshot-#{filename}"
+dir = ENV['HOME'].dup
+if File.directory?("#{dir}/screenshots")
+  dir << '/screenshots'
+else
+  filename = "screenshots-#{filename}"
+end
+filename = "#{dir}/#{filename}"
 system('import', filename)
