@@ -180,6 +180,7 @@ hash_if_exist mac /mnt/mac/Users/bhaskell
 hash_if_exist bac /mnt/mac/backups/bhaskell-hp/home/USC/bhaskell
 hash_if_exist build /usr/src/packages
 hash_if_exist spec /usr/src/packages/SPECS
+hash_if_exist dwm ~$owner/hg/dwm
 
 local _win_root _win_docset _win_inet _win_down _win_doc
 [ -n "$INCYG" ] && _win_root=/cygdrive/c || _win_root=/mnt/acer2k3
