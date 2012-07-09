@@ -92,11 +92,11 @@ zmodload zsh/datetime
 history_add_couchdb () {
 	[[ $1 = ' '* ]] && return 0
 	# print -sr -- ${1%%$'\n'}
-	json_object host $HOST \
-		pwd $PWD \
-		cmd ${1%%$'\n'} \
-		time $EPOCHSECONDS \
-		pid $$ \
+	json_object host "$HOST" \
+		pwd "$PWD" \
+		cmd "${1%%$'\n'}" \
+		time "$EPOCHSECONDS" \
+		pid "$$" \
 		user "$USERNAME" \
 		| couchdb_add_doc history/ &>/dev/null &!
 	return 0
