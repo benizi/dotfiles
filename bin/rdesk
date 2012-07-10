@@ -128,11 +128,13 @@ my @rcmd = (
 my @invalid_args;
 my $has_password = 0;
 if ($rdesktop =~ /xfreerdp/) {
+	my $any_plugins = 0;
 	for (reverse 0..$#rcmd-1) {
 		if ($rcmd[$_] eq '-r') {
 			my $arg = $rcmd[$_+1];
 			if ($arg =~ /^disk:(\w+)=(.+)$/) {
 				splice @rcmd, $_, 2, '--plugin', 'rdpdr', '--data', "disk:$1:$2";
+				$any_plugins++;
 			} else {
 				unshift @invalid_args, splice @rcmd, $_, 2;
 			}
@@ -145,7 +147,7 @@ if ($rdesktop =~ /xfreerdp/) {
 		die "Aborted due to empty password\n" unless $pass =~ /\S/;
 		splice @rcmd, 1, 0, '-p', $pass;
 	}
-	splice @rcmd, -1, 0, '--';
+	splice @rcmd, -1, 0, '--' if $any_plugins;
 }
 if (@invalid_args) {
 	warn "Invalid arguments when using $rdesktop: (@invalid_args)\n";
