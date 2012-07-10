@@ -74,15 +74,23 @@ else
 		set background=light
 	endif
 endif
+
+fun! PostColorScheme()
+	if g:colors_name == 'dual-converted'
+		hi StatusLineNC ctermfg=252 ctermbg=24
+	elseif g:colors_name == 'jellybeans' && !InGUI()
+		sil! !printf '\e]12;8\a'
+		hi Search cterm=NONE ctermfg=0 ctermbg=220
+	end
+endf
+aug PostColorScheme
+	au! ColorScheme * call PostColorScheme()
+aug END
 if &t_Co > 16
 	let s:colors = 'jellybeans'
 	exe 'colo' s:colors
-	if s:colors == 'dual-converted'
-		au ColorScheme * hi StatusLineNC ctermfg=252 ctermbg=24
-	elseif s:colors == 'jellybeans' && !InGUI()
-		sil! !printf '\e]12;8\a'
-	en
-endif
+end
+
 set hidden
 set laststatus=2 ruler
 aug filetypedetect
