@@ -70,10 +70,13 @@ if (( $#git_dir )) ; then
 	_extra+=( ${(j.:.)pretty_git} )
 fi
 [[ ! -e $PWD ]] && _extra+=( "!deleted!" )
-if (( $+commands[prb] )) ; then
-	_extra+=( "$(prb version --short)" )
-elif (( $+functions[rbenv] )) ; then
-	_extra+=( "$(rbenv version-name)" )
+if (( $+ruby_manager )) ; then
+	case $ruby_manager in
+		prb) _extra+=( "prb:$(prb version --short)" ) ;;
+		rbenv) _extra+=( "rbenv:$(rbenv version-name)" ) ;;
+		rvm) _extra+=( "rvm:$(rvm current)" ) ;;
+		*) _extra+=( "$ruby_manager:?" ) ;;
+	esac
 fi
 if [[ "$DISPLAY" = localhost:[[:digit:]]*.0 ]] ; then
 	(( ${${DISPLAY#localhost:}%.0} > 9 )) && _extra+=( ssh-x11 )
