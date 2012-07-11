@@ -133,16 +133,17 @@ __clean_ruby_path () {
 }
 
 setup_ruby () {
-	local last_manager=~$owner/.ruby-manager
+	local save=true last_manager=~$owner/.ruby-manager
 	parent_ruby_manager=${PARENT_RUBY_MANAGER:-none}
 	if (( ! $+ruby_manager )) ; then
 		[[ -f $last_manager ]] && ruby_manager=$(<$last_manager) || ruby_manager=rbenv
 	fi
+	[[ $ruby_manager = *.once ]] && unset save && ruby_manager=$ruby_manager:r
 	if (( ! UID )) && [[ $ruby_manager = rvm ]] ; then
 		warn_rvm_root=true
 		ruby_manager=rbenv
 	fi
-	(( UID )) && echo $ruby_manager > $last_manager
+	(( UID )) && (( $+save )) && echo $ruby_manager > $last_manager
 
 	if [[ -o login ]] || [[ $ruby_manager != $parent_ruby_manager ]] ; then
 		__clean_ruby_path
