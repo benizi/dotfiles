@@ -134,6 +134,7 @@ __clean_ruby_path () {
 
 setup_ruby () {
 	local save=true last_manager=~$owner/.ruby-manager
+	(( $# )) && unset save && ruby_manager=$1
 	parent_ruby_manager=${PARENT_RUBY_MANAGER:-none}
 	if (( ! $+ruby_manager )) ; then
 		[[ -f $last_manager ]] && ruby_manager=$(<$last_manager) || ruby_manager=rbenv
