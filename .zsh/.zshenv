@@ -138,6 +138,10 @@ setup_ruby () {
 	if (( ! $+ruby_manager )) ; then
 		[[ -f $last_manager ]] && ruby_manager=$(<$last_manager) || ruby_manager=rbenv
 	fi
+	if (( ! UID )) && [[ $ruby_manager = rvm ]] ; then
+		warn_rvm_root=true
+		ruby_manager=rbenv
+	fi
 	(( UID )) && echo $ruby_manager > $last_manager
 
 	if [[ -o login ]] || [[ $ruby_manager != $parent_ruby_manager ]] ; then
