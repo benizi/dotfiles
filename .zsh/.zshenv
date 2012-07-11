@@ -75,8 +75,6 @@ pathtest+=( {/{usr,opt}{/local,},}/{s,}bin )
 pathtest+=( $HOME/bin/dslinux/bin /usr/games/bin /home/bhaskell/wn/bin /home/bhaskell/qmail/bin /var/qmail/bin /usr/kde/4.0/bin /usr/X11R6/bin )
 pathtest+=( $path )
 pathtest+=( /people/bhaskell/bin )
-pathtest=( ~$owner/.rbenv/bin $^pathtest )
-pathtest=( ~/prb-bin $^pathtest )
 pathtest=( ~/brew/bin $^pathtest )
 path=( ${^pathtest}(N-/) )
 }
@@ -121,52 +119,70 @@ if (( $+XAUTHLOCALHOSTNAME )) && (( ! $+XAUTHORITY )) ; then
 fi
 run_local_versions
 
-use_prb=false
-setup_rbenv_function=false
-if (( $+commands[rbenv] )) ; then
-	if ! $use_prb ; then
-		if (( UID )) ; then
-			eval "$(rbenv init -)"
-		else
-			export RBENV_ROOT=~$owner/.rbenv
-			path=( $RBENV_ROOT/shims $path )
-			setup_rbenv_function=true
-		fi
-	else
-		path=( ~g/prb/shims ~g/prb/bin ~$owner/.rbenv/shims $path )
-		[[ -o interactive ]] && . ~$owner/.rbenv/completions/rbenv.zsh
-		rbenv rehash 2>/dev/null
-		setup_rbenv_function=true
-	fi
-	$setup_rbenv_function && rbenv () {
-		cmd=$1
-		shift
-		case "$cmd" in
-			shell) eval `rbenv sh-$cmd "$@"` ;;
-			*) command rbenv $cmd "$@" ;;
+__clean_ruby_path () {
+	local dir
+	local -a new_path
+	new_path=()
+	for dir in $path ; do
+		case $dir in
+			~$owner/.rbenv*|~$owner/.rvm*) ;;
+			*) new_path+=( $dir ) ;;
 		esac
-	}
-fi
-
-setup_ruby () {
-	[[ -o interactive || -o login ]] || return
-	local rvmsource=~/.rvm/scripts/rvm do_rvm=false do_rbenv=false
-	if (( $+commands[rvm-or-rbenv] )) ; then
-		local rvm="$(rvm-or-rbenv -s)"
-		[[ $rvm = *rbenv* ]] && do_rbenv=true
-		[[ $rvm = *rvm* ]] && do_rvm=true
-	else
-		[[ -e ~/.rbenv ]] && do_rbenv=true
-		[[ -e ~/.rvm ]] && do_rvm=true
-	fi
-	$do_rbenv && eval "$(rbenv init -)"
-	if $do_rvm && [[ -x $rvmsource ]] ; then
-		unset RUBYOPT
-		. $rvmsource
-	fi
+	done
+	path=( $new_path )
 }
 
-# setup_ruby
+setup_ruby () {
+	parent_ruby_manager=${PARENT_RUBY_MANAGER:-none}
+	(( $+ruby_manager )) || ruby_manager=rbenv
+
+	if [[ -o login ]] || [[ $ruby_manager != $parent_ruby_manager ]] ; then
+		__clean_ruby_path
+	fi
+
+	# non-interactive setup
+	local -a extra_bin
+	case $ruby_manager in
+		rbenv)
+			extra_bin=( ~$owner/.rbenv/bin )
+			export RBENV_ROOT=~$owner/.rbenv
+			extra_bin=( $RBENV_ROOT/shims $extra_bin )
+
+			rbenv () {
+				cmd=$1
+				shift
+				case "$cmd" in
+					shell) eval `rbenv sh-$cmd "$@"` ;;
+					*) command rbenv $cmd "$@" ;;
+				esac
+			}
+			;;
+		prb)
+			extra_bin=( ~g/prb/shims ~g/prb/bin ~$owner/.rbenv/shims )
+			[[ -o interactive ]] && . ~$owner/.rbenv/completions/rbenv.zsh
+			rbenv rehash 2>/dev/null
+			;;
+	esac
+	(( $+use_prb )) && extra_bin=( ~$owner/prb-bin $extra_bin )
+
+	path=( $extra_bin $path )
+
+	if [[ -o interactive || -o login ]] ; then
+		case $ruby_manager in
+			rbenv)
+				local rbenv_comp=$RBENV_ROOT/libexec/../completions/rbenv.zsh
+				[[ -e $rbenv_comp ]] && . $rbenv_comp
+				;;
+			rvm)
+				local rvmsource=~$owner/.rvm/scripts/rvm
+				[[ -x $rvmsource ]] && . $rvmsource
+				;;
+		esac
+	fi
+	export PARENT_RUBY_MANAGER=$ruby_manager
+}
+
+setup_ruby
 
 typeset -A dns_servers
 dns_servers=(

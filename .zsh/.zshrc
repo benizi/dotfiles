@@ -56,9 +56,6 @@ done
 (( $+warn_rubyopt )) && warn "RUBYOPT was set ($warn_rubyopt)... shouldn't be"
 unset warn_rubyopt
 
-rvmsource=~/.rvm/scripts/rvm
-[[ -x $rvmsource ]] && . $rvmsource
-
 cat ${^zsh_dirs}/{.zsh,}reminder{,s} 2>/dev/null
 run_local_versions ${(%):-"%x"}
 #screen -ls 2>/dev/null | grep -q Detached && exec screen -rr
