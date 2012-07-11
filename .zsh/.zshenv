@@ -121,7 +121,7 @@ run_local_versions
 
 __clean_ruby_path () {
 	local dir
-	local -a new_path
+	local -a new_path funcs
 	new_path=()
 	for dir in $path ; do
 		case $dir in
@@ -130,6 +130,8 @@ __clean_ruby_path () {
 		esac
 	done
 	path=( $new_path )
+	funcs=( ${(k)functions[(I)*rvm*|*rbenv*]} )
+	(( $#funcs )) && unfunction $funcs
 }
 
 setup_ruby () {
