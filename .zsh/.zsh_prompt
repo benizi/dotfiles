@@ -73,7 +73,7 @@ fi
 if (( $+ruby_manager )) ; then
 	case $ruby_manager in
 		prb) _extra+=( "prb:$(prb version --short)" ) ;;
-		rbenv) _extra+=( "rbenv:$(rbenv version-name)" ) ;;
+		rbenv) _extra+=( "$(rbenv version-name)" ) ;;
 		rvm) _extra+=( "rvm:$(rvm current)" ) ;;
 		*) _extra+=( "$ruby_manager:?" ) ;;
 	esac
