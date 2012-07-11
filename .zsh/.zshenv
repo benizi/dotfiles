@@ -146,7 +146,7 @@ setup_ruby () {
 		warn_rvm_root=true
 		ruby_manager=rbenv
 	fi
-	(( UID )) && (( $+save )) && echo $ruby_manager > $last_manager
+	(( UID )) && (( $+save )) && (( $#ruby_manager )) && echo $ruby_manager > $last_manager
 
 	if [[ -o login ]] || [[ $ruby_manager != $parent_ruby_manager ]] ; then
 		__clean_ruby_path
