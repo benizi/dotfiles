@@ -143,7 +143,7 @@ if ($rdesktop =~ /xfreerdp/) {
 		}
 	}
 	if (!$has_password) {
-		chomp(my $pass = $dry ? '{pass}' : `dmenu --secret -p 'rdesk password:' < /dev/null`);
+		chomp(my $pass = $dry ? '{pass}' : `password-manager -h $opt{server} -u $opt{user} -P rdp`);
 		die "Aborted due to empty password\n" unless $pass =~ /\S/;
 		splice @rcmd, 1, 0, '-p', $pass;
 	}
