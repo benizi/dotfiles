@@ -152,7 +152,11 @@ if ($rdesktop =~ /xfreerdp/) {
 if (@invalid_args) {
 	warn "Invalid arguments when using $rdesktop: (@invalid_args)\n";
 }
-warn "@rcmd\n";
+my @no_pass = @rcmd;
+for my $i (0..$#no_pass-1) {
+	$no_pass[$i] eq '-p' and $no_pass[$i+1] =~ y/./*/;
+}
+warn "@no_pass\n";
 $dry and exit;
 exec { $rcmd[0] } @rcmd;
-die "Couldn't exec(",join(",",@rcmd),")\n";
+die "Couldn't exec(",join(",",@no_pass),")\n";
