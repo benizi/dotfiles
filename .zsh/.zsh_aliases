@@ -92,18 +92,30 @@ fi
 }
 
 vimrecover () {
-	local l s
+	local l s just_list
+	local -a lines extra
 	local -A swapped
+	(( $#argv )) && just_list=true
 	for l in ~/.vim-tmp/%*.sw?(N.) ; do
+		extra=()
 		s=${l:t:r:gs.[%]./.}
 		pid=$(perl -Mbytes -nwe 'BEGIN { $/ = \2; } print unpack s => $_ if 13..13' $l)
-		kill -0 $pid 2>/dev/null && continue
-		(( $+swapped[$s] )) && continue
-		[[ -d $s ]] && continue
-		[[ -e $s ]] || continue
-		v +'map q :qa<CR>' $s || break
+		if kill -0 $pid 2>/dev/null ; then
+			(( $+just_list )) && extra+=( "[PID:$pid still running]" ) || continue
+		fi
+		if (( $+swapped[$s] )) ; then
+			(( $+just_list )) && extra+=( "[already seen]" ) || continue
+		fi
+		if (( $+just_list )) ; then
+			extra=( $s $extra )
+			lines+=( ${(pj:\t:)extra} )
+		else
+			v +'map q :qa<CR>' $s || break
+		fi
 		swapped+=( $s 1 )
 	done
+	(( $+commands[tabulate.pl] )) && extra=( tabulate.pl ) || extra=( cat )
+	(( $+just_list )) && print -rl - $lines | $extra
 }
 
 alias nacroread='acroread -openInNewWindow'
