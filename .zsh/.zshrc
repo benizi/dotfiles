@@ -72,6 +72,18 @@ command_not_found_handler () {
 	return 1
 }
 
+auto_git_alias () {
+	[[ $1 = g* ]] || return 1
+	local al=${1#g}
+	shift
+	git config -l | grep -qF "alias.$al=" \
+		|| git help --all | awk '/---/ { ok=1 ; OFS="\n" ; ORS="" } /^ / { NF=NF+1 ; if (ok) print $0 }' | grep -qF $al \
+		|| return 1
+	git $al "$@"
+	return 0
+}
+command_not_found_handlers+=( auto_git_alias )
+
 trap '
 	local dir= choose=
 	set -- ${=__last_command}
