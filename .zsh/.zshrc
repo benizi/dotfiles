@@ -67,7 +67,7 @@ typeset -a command_not_found_handlers
 command_not_found_handler () {
 	local fn
 	for fn in $command_not_found_handlers ; do
-		$fn "$@" && return
+		$fn "$@" && return 0
 	done
 	return 1
 }
