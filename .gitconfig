@@ -47,7 +47,6 @@
 [alias]
 	alias = "!a() { pattern=. ; extrased=\"\" ; args=() ; for arg ; do case $arg in --name-only) extrased=\"s/=.*$//\" ; pattern=. ;; *) pattern=\"^$arg=\" ;; esac ; done ; git config --get-regexp '^alias\\.' | sed \"s/alias.//; s/ /=/; $extrased\" | grep \"$pattern\" ; } ; a"
 	# allow "git git cmd" typo:
-	git = "!git"
 	k = !gitk
 	ka = "!gitk --all"
 	g = !gitg
