@@ -326,6 +326,8 @@ let g:ctrlp_custom_ignore = {
 
 let g:NERDDefaultAlign = 'left'
 
+let g:rtn_open_with = 'new'
+
 if InGUI()
 	fun! SetupGUI()
 		let &gfn = 'DejaVu Sans Mono 14'
