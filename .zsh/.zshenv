@@ -125,12 +125,12 @@ __clean_ruby_path () {
 	new_path=()
 	for dir in $path ; do
 		case $dir in
-			~$owner/.rbenv*|~$owner/.rvm*) ;;
+			~$owner/.rbenv*|~$owner/.rvm*|~$owner/.rbfu*) ;;
 			*) new_path+=( $dir ) ;;
 		esac
 	done
 	path=( $new_path )
-	funcs=( ${(k)functions[(I)*rvm*|*rbenv*]} )
+	funcs=( ${(k)functions[(I)*rvm*|*rbenv*|*rbfu*]} )
 	(( $#funcs )) && unfunction $funcs
 }
 
@@ -169,6 +169,9 @@ setup_ruby () {
 				esac
 			}
 			;;
+		rbfu)
+			extra_bin=( ~$owner/.rbfu/bin )
+			;;
 		prb)
 			extra_bin=( ~g/prb/shims ~g/prb/bin ~$owner/.rbenv/shims )
 			[[ -o interactive ]] && . ~$owner/.rbenv/completions/rbenv.zsh
@@ -184,6 +187,11 @@ setup_ruby () {
 			rbenv)
 				local rbenv_comp=$RBENV_ROOT/libexec/../completions/rbenv.zsh
 				[[ -e $rbenv_comp ]] && . $rbenv_comp
+				;;
+			rbfu)
+				eval "$(rbfu --init)"
+				unalias rbfu-env
+				rbfu-env () { source rbfu "$@" }
 				;;
 			rvm)
 				local rvmsource=~$owner/.rvm/scripts/rvm
