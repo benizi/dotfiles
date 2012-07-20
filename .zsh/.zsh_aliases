@@ -62,6 +62,46 @@ be cap rspec ruby () {
 	command $bundle "$@"
 }
 
+rails () {
+	local base dir=$PWD warning
+	local -a rails rails_cmds
+	local -A rails3
+	unset warning
+	rails=()
+	rails3=( c console db dbconsole g generate d destroy r runner s server )
+	rails_cmds=( ${(kv)rails3} )
+	while true ; do
+		[[ -d $dir/app ]] && base=$dir && break
+		[[ $dir = / ]] && break
+		dir=$dir:h
+	done
+	if [[ -f $base/script/rails ]] ; then # rails 3
+		rails=( rails )
+	elif [[ -f $base/script/runner ]] && [[ $rails_cmds[(i)$1] -le $#rails_cmds ]] ; then # rails 2
+		if (( $+rails3[$1] )) ; then
+			rails=( $base/script/$rails3[$1] )
+		else
+			rails=( $base/script/$1 )
+		fi
+		shift
+		rails=( ruby $rails )
+	else
+		if ! "$(gem list -i rails -v '>= 3')" ; then
+			warning='Rails 2 being called'
+			rails=( rails )
+		else
+			rails=( rails )
+			[[ $1 = -* ]] || { warning='Implied Rails new' ; rails+=( new ) }
+		fi
+	fi
+	(( $+base )) || warning="Couldn't determine Rails app directory (implied command: $rails)"
+	if (( $+warning )) ; then
+		warn $warning
+		repeat 5 { printf . ; sleep 1 }
+	fi
+	be $rails "$@"
+}
+
 # global aliases
 alias -g LS='| less -S'
 alias -g LS2='|& less -S'
