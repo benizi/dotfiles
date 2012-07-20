@@ -38,7 +38,6 @@ local lscolor="ls --color=auto"
 
 alias l="$lscolor -trl"
 alias ll="$lscolor -trlL"
-alias lll="$lscolor -trl | less"
 alias la="$lscolor -trlA"
 alias lsd="$lscolor -trld"
 alias lsda="$lscolor -trldA"
