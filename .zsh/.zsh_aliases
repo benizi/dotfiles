@@ -37,14 +37,10 @@ local lscolor="ls --color=auto"
 (( $+INOSX )) && lscolor="ls -GO"
 
 alias l="$lscolor -trl"
-alias ll="$lscolor -trlL"
 alias la="$lscolor -trlA"
 alias lsd="$lscolor -trld"
-alias lsda="$lscolor -trldA"
-alias lso="$lscolor -tlA"
 alias lss="$lscolor -Srl"
 alias lsr="$lscolor -Sl"
-alias lsl=l
 }
 
 # really-short list
