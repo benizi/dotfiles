@@ -82,6 +82,7 @@
 	image-diff = difftool --tool=image-diff --no-prompt
 	ini = "!eval `git cd` ; ini () { git init \"$@\" && git check-email ; } ; ini"
 	ls = ls-files
+	pop = stash pop
 	rc = rebase --continue
 	re = rebase
 	rea = rebase --abort
