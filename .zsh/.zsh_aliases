@@ -49,7 +49,7 @@ alias gv=gvim
 alias v=vim
 alias vi=v
 alias em='emacs -nw'
-be cap () {
+be cap rspec ruby () {
 	local dir=$PWD
 	local -a bundle
 	bundle=()
