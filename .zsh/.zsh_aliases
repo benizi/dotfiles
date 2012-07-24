@@ -97,7 +97,7 @@ rails () {
 	(( $+base )) || warning="Couldn't determine Rails app directory (implied command: $rails)"
 	if (( $+warning )) ; then
 		warn $warning
-		repeat 5 { printf . ; sleep 1 }
+		read -q 'proceed?Continue (y/N)? ' || return 1
 	fi
 	be $rails "$@"
 }
