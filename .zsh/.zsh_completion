@@ -31,6 +31,24 @@ zstyle ':completion:*' separate-sections 'yes'
 zstyle ':completion:*' group-name ''
 zstyle ':completion:*' prompt 'errors: %e'
 
+_check_for_git_alias () {
+	[[ $words[1] = g?* ]] || return 1
+	local al=${words[1]#g}
+	valid_git_alias $al || valid_git_command $al || return 1
+	words[1]=(git $al)
+	((++CURRENT))
+	_normal
+}
+_add_git_commands () {
+	[[ $words[1] = g* ]] || return 1
+	local -a cmds
+	cmds=( g${(f)^:-"$(all_git_aliases ; all_git_commands)"} )
+	print -l cmds $cmds >&2
+	compadd -a cmds
+}
+zstyle ':completion:*' completer _check_for_git_alias _complete
+zstyle ':completion::complete:-command-::' completer _add_git_commands
+
 __git_files () {
 	# localize options as appropriate
 	local compadd_opts opts tag description

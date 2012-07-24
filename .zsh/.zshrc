@@ -72,13 +72,29 @@ command_not_found_handler () {
 	return 1
 }
 
+all_git_aliases () {
+	git config -l | awk -F'[.=]' '/^alias\./ { print $2 }'
+}
+
+valid_git_alias () {
+	git config -l | grep -qF "alias.$1="
+}
+
+all_git_commands () {
+	git help --all \
+		| awk '/---/ {ok=1; OFS="\n"; ORS=""} /^ / {NF=NF+1; if (ok) print $0}'
+	print -l ${${(k)commands[(I)git-*]}#git-}
+}
+
+valid_git_command () {
+	all_git_commands | grep -qF "$1" || (( $+commands[git-$1] ))
+}
+
 auto_git_alias () {
 	[[ $1 = g* ]] || return 1
 	local al=${1#g}
 	shift
-	git config -l | grep -qF "alias.$al=" \
-		|| git help --all | awk '/---/ { ok=1 ; OFS="\n" ; ORS="" } /^ / { NF=NF+1 ; if (ok) print $0 }' | grep -qF $al \
-		|| return 1
+	valid_git_alias $al || valid_git_command $al || return 1
 	git $al "$@"
 	return 0
 }
