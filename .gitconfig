@@ -94,6 +94,7 @@
 	rim = rebase --interactive master
 	rid = rebase --interactive development
 	riu = rebase --interactive @{upstream}
+	sm = submodule
 	up = pull --ff-only
 	exec = "!sh -c"
 	wip = "! : work in progress ; wip() { all=\"\" ; amend=\"\" ; args=() ; for arg ; do case \"$arg\" in -a|--amend) amend=--amend ;; *) args+=( \"$arg\" ) ;; esac ; done ; git diff --cached --name-only | grep -q . || all=\"-a\" ; msg=\"wip\" ; set -- \"${args[@]}\" ; if [ -n \"$amend\" ] ; then msg=\"\" ; elif [ $# -gt 0 ] ; then msg=\"wip: $*\" ; fi ; if [ -n \"$amend\" ] ; then msg=\"-CHEAD\" ; else msg=\"-m$msg\" ; fi ; git commit $all $amend \"$msg\" ; if [ -z \"$all\" ] && git diff --name-only | grep -q . ; then echo \"Staged changes were WIPed. Run again to WIP the rest.\" ; fi ; } ; wip"
