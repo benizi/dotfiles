@@ -58,6 +58,7 @@ be cap rake rspec ruby () {
 		[[ $dir = / ]] && break
 		dir=$dir:h
 	done
+	[[ $bundle[1] == bundle ]] && (( ! $+commands[bundle] )) && bundle=()
 	[[ $0 == be ]] || bundle+=( $0 )
 	command $bundle "$@"
 }
