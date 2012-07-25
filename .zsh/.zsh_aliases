@@ -256,7 +256,14 @@ hash_if_exist ht /srv/www/htdocs
 if (( $+functions[rbfu-env] )) ; then
 	setup_rbfu_version () {
 		local version
-		if [[ -f .rbfu-version ]] || [[ -f .ruby-version ]] ; then rbfu-env &> /dev/null ; fi
+		if [[ -f .rbfu-version ]] || [[ -f .ruby-version ]] ; then
+			rbfu-env &> /dev/null
+		elif [[ -f .rvmrc ]] ; then
+			version=${(f):-"$(<.rvmrc)"}
+			[[ $version = rvm\ * ]] && version=${version#rvm }
+			version=${version//.}
+			rbfu-env @$version &> /dev/null
+		fi
 	}
 	setup_rbfu_version
 	setup_rbfu_directory_aliases () {
