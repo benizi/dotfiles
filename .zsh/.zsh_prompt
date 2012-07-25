@@ -75,9 +75,7 @@ if (( $+ruby_manager )) ; then
 		prb) _extra+=( "prb:$(prb version --short)" ) ;;
 		rbenv) _extra+=( "$(rbenv version-name)" ) ;;
 		rvm) _extra+=( "rvm:$(rvm current)" ) ;;
-		rbfu) (( $+RBFU_RUBY_VERSION )) \
-			&& _extra+=( "rbfu:$RBFU_RUBY_VERSION" ) \
-			|| _extra+=( "rbfu" ) ;;
+		rbfu) _extra+=( ${RBFU_RUBY_VERSION:-rbfu} ) ;;
 		*) _extra+=( "$ruby_manager:?" ) ;;
 	esac
 fi
