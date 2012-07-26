@@ -192,6 +192,7 @@ setup_ruby () {
 				eval "$(rbfu --init)"
 				unalias rbfu-env
 				rbfu-env () { source rbfu "$@" }
+				[[ -f ~/.rbfu/default ]] && source rbfu "$(<~/.rbfu/default)" &> /dev/null
 				;;
 			rvm)
 				local rvmsource=~$owner/.rvm/scripts/rvm
