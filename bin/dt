@@ -8,7 +8,8 @@ abort unless system('dtach --version > /dev/null')
 @dir = nil
 
 opts = {
-	:mode => :new
+	:mode => :new,
+	:redraw => ENV['TERM'] =~ /^st/ ? 'winch' : 'ctrl_l',
 }
 parser = OptionParser.new do |o|
 	o.on('-n') { opts[:mode] = :detach }
@@ -87,6 +88,7 @@ when :new ; cmd << '-A'
 when :detach ; cmd << '-n'
 end
 cmd << sock
+cmd += %W{-r #{opts[:redraw]}}
 
 cmd += ARGV unless opts[:mode] == :resume
 
