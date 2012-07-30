@@ -182,17 +182,20 @@ setup_ruby () {
 
 	path=( $extra_bin $path )
 
+	case $ruby_manager in
+		rbfu)
+			eval "$(rbfu --init)"
+			unalias rbfu-env
+			rbfu-env () { source rbfu "$@" }
+			[[ -f ~/.rbfu/default ]] && source rbfu "$(<~/.rbfu/default)" &> /dev/null
+			;;
+	esac
+
 	if [[ -o interactive || -o login ]] ; then
 		case $ruby_manager in
 			rbenv)
 				local rbenv_comp=$RBENV_ROOT/libexec/../completions/rbenv.zsh
 				[[ -e $rbenv_comp ]] && . $rbenv_comp
-				;;
-			rbfu)
-				eval "$(rbfu --init)"
-				unalias rbfu-env
-				rbfu-env () { source rbfu "$@" }
-				[[ -f ~/.rbfu/default ]] && source rbfu "$(<~/.rbfu/default)" &> /dev/null
 				;;
 			rvm)
 				local rvmsource=~$owner/.rvm/scripts/rvm
