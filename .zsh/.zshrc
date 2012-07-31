@@ -102,6 +102,7 @@ command_not_found_handlers+=( auto_git_alias )
 
 trap '
 	local dir= choose= prompt3=
+	unset choose
 	local -a dirs
 	set -- ${=__last_command}
 	if (( $# == 1 )) && [[ $1 == */* ]] && [[ $1 != "<"* ]] ; then
@@ -113,7 +114,10 @@ trap '
 			select choose in No Create $dirs ; do break ; done
 			PROMPT3=$prompt3
 			[[ $choose = No ]] && return
-			[[ $choose != Create ]] && cd $choose && return
+			if [[ $choose != Create ]] ; then
+				cd $choose
+				return
+			fi
 		fi
 		if [[ ! -e $dir ]] ; then
 			if (( $+choose )) || read -q "choose?Create $1 [y/N]? " ; then
