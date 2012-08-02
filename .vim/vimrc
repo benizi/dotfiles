@@ -36,6 +36,10 @@ if !InGUI()
 	call add(g:pathogen_disabled, 'CSApprox')
 endif
 
+if $TERM =~ 'st-256color' || exists('$KONSOLE_DBUS_SERVICE')
+	se t_Co=1000
+end
+
 try
 	call vam#ActivateAddons() " set up VAM functions
 	call pathogen#infect(s:BundleDir()) " activate everything
@@ -85,8 +89,12 @@ endf
 aug PostColorScheme
 	au! ColorScheme * call PostColorScheme()
 aug END
-if &t_Co > 16
+if &t_Co > 256
+	let s:colors = 'railscasts'
+elseif &t_Co > 16
 	let s:colors = 'jellybeans'
+end
+if exists('s:colors')
 	exe 'colo' s:colors
 end
 
