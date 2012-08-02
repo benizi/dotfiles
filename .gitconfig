@@ -77,7 +77,7 @@
 	ci = "!eval `git cd` ; git check-email && git commit"
 	cia = "!git ci --amend"
 	cin = "!git ci --no-verify"
-	f = "! : fetch all ; f () { if git remote -v | grep -q \\.git/hgremote ; then git hg fetch ; fi ; git fetch --all ; } ; f"
+	f = "! : fetch all unless args given ; f () { if [[ $# -gt 0 ]] ; then git fetch \"$@\" ; return ; fi ; if git remote -v | grep -q \\.git/hgremote ; then git hg fetch ; fi ; git fetch --all ; } ; f"
 	h = help
 	image-diff = difftool --tool=image-diff --no-prompt
 	ini = "!eval `git cd` ; ini () { git init \"$@\" && git check-email ; } ; ini"
