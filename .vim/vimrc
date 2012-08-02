@@ -79,9 +79,10 @@ else
 endif
 
 fun! PostColorScheme()
-	if g:colors_name == 'dual-converted'
+	let colo = get(g:, 'colors_name', '')
+	if colo == 'dual-converted'
 		hi StatusLineNC ctermfg=252 ctermbg=24
-	elseif g:colors_name == 'jellybeans' && !InGUI()
+	elseif colo == 'jellybeans' && !InGUI()
 		sil! !printf '\e]12;8\a'
 		hi Search cterm=NONE ctermfg=0 ctermbg=220
 	end
