@@ -56,6 +56,7 @@ my %defaults = (
 	},
 	localhost => {
 		depth => 24,
+		extra => [ '-r', 'disk:shared=/home/bhaskell/shared' ],
 	},
 );
 
