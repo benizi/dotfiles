@@ -92,7 +92,10 @@ rails () {
 			rails=( rails )
 		else
 			rails=( rails )
-			[[ $1 = -* ]] || { warning='Implied Rails new' ; rails+=( new ) }
+			if [[ $1 != -* ]] && [[ $1 != new ]] ; then
+				warning='Implied Rails new'
+				rails+=( new )
+			fi
 		fi
 	fi
 	(( $+base )) || warning="Couldn't determine Rails app directory (implied command: $rails)"
