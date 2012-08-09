@@ -134,9 +134,16 @@ __clean_ruby_path () {
 	(( $#funcs )) && unfunction $funcs
 }
 
-setup_ruby () {
-	local save=true last_manager=~$owner/.ruby-manager
-	(( $# )) && unset save && ruby_manager=$1
+ruby-manager () {
+	local arg save last_manager=~$owner/.ruby-manager
+	unset save ruby_manager
+	for arg ; do
+		case $arg in
+			--save) save=true ;;
+			--once|--no-save) save=false ;;
+			*) (( $+save )) || save=false ; ruby_manager=$arg ;;
+		esac
+	done
 	parent_ruby_manager=${PARENT_RUBY_MANAGER:-none}
 	if (( ! $+ruby_manager )) ; then
 		[[ -f $last_manager ]] && ruby_manager=$(<$last_manager) || ruby_manager=rbenv
@@ -146,7 +153,7 @@ setup_ruby () {
 		warn_rvm_root=true
 		ruby_manager=rbenv
 	fi
-	(( UID )) && (( $+save )) && (( $#ruby_manager )) && echo $ruby_manager > $last_manager
+	(( UID )) && ${save:-true} && (( $#ruby_manager )) && echo $ruby_manager > $last_manager
 
 	if [[ -o login ]] || [[ $ruby_manager != $parent_ruby_manager ]] ; then
 		__clean_ruby_path
@@ -207,7 +214,7 @@ setup_ruby () {
 	export PARENT_RUBY_MANAGER=$ruby_manager
 }
 
-setup_ruby
+ruby-manager
 
 typeset -A dns_servers
 dns_servers=(
