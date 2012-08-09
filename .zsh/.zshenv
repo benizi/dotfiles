@@ -203,6 +203,7 @@ setup_ruby () {
 				;;
 		esac
 	fi
+	(( $+functions[ruby-manager-startup] )) && ruby-manager-startup
 	export PARENT_RUBY_MANAGER=$ruby_manager
 }
 
