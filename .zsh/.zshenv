@@ -148,7 +148,6 @@ ruby-manager () {
 	if (( ! $+ruby_manager )) ; then
 		[[ -f $last_manager ]] && ruby_manager=$(<$last_manager) || ruby_manager=rbenv
 	fi
-	[[ $ruby_manager = *.once ]] && unset save && ruby_manager=$ruby_manager:r
 	if (( ! UID )) && [[ $ruby_manager = rvm ]] ; then
 		warn_rvm_root=true
 		ruby_manager=rbenv
