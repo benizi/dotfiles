@@ -1,0 +1,6 @@
+#compdef ruby-manager
+
+_arguments \
+  '--save::Save choice for next invocation and for default' \
+  '--once::Do not save choice' \
+  '(- *):manager:( rbfu rbenv rvm )'
