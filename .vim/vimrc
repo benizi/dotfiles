@@ -32,9 +32,7 @@ endf
 
 " keep some plugins around w/o loading by default...
 let g:pathogen_disabled = []
-if !InGUI()
-	call add(g:pathogen_disabled, 'CSApprox')
-endif
+call add(g:pathogen_disabled, 'CSApprox')
 
 if $TERM =~ 'st-256color' || exists('$KONSOLE_DBUS_SERVICE')
 	se t_Co=1000
