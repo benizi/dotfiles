@@ -295,6 +295,12 @@ set hls
 " turn off highlighting when refreshing the screen
 nn <silent> <C-l> :nohls<CR><C-l>
 
+" mappings for tab navigation
+nn <silent> <Esc>t :tabnew<CR>
+nn <silent> <Esc>{ gT
+nn <silent> <Esc>} gt
+nn <silent> <Esc>w :windo q<CR>
+
 " settings for TOhtml
 let g:html_no_progress=1
 let g:html_use_css=1
