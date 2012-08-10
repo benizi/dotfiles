@@ -83,6 +83,11 @@ fun! PostColorScheme()
 	elseif colo == 'jellybeans' && !InGUI()
 		sil! !printf '\e]12;8\a'
 		hi Search cterm=NONE ctermfg=0 ctermbg=220
+	elseif colo == 'railscasts'
+		hi TabLine guibg=#0000cc gui=none,reverse guifg=#ffffff
+		hi TabLineSel guibg=#0000cc gui=none guifg=#ffffff
+		hi TabLineFill guibg=#0000cc gui=none,reverse guifg=#ffffff
+		hi Search gui=reverse guifg=#ff9900 guibg=#000000
 	end
 endf
 aug PostColorScheme
