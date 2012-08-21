@@ -112,6 +112,8 @@ TITLESEP='│' # ceçi n'est pas un pipe
 (( $+INCYG || $+STY )) && TITLESEP='|'
 [[ $TERM = (screen|cygwin)* ]] && TITLESEP='|'
 function fancytitle () {
+	(( $+terminfo[tsl] )) || return 0
+	[[ -n "$NOTITLE" ]] && return 0
 	local host c=$TITLESEP
 	host="%m $c "
 	case "$DISPLAY" in
@@ -121,19 +123,12 @@ function fancytitle () {
 	__i_am_admin && extra="ROOT $c "
 	printf "${TITLE}%s%s${ENDTITLE}" $1 "$(print -nP "$extra$host"'%~ $c %n${STY+ $c $STY}')"
 }
-function term_with_title () {
-	(( $+terminfo[tsl] )) || return 1
-	if [ -n "$NOTITLE" ] ; then return 1 ; fi
-	return 0
-}
 function preexec () {
 	__last_command=$1
-	term_with_title || return
 	fancytitle "$1 $TITLESEP "
 }
 function precmd () {
 	__setup_prompt
-	term_with_title || return
 	fancytitle ""
 }
 () {
