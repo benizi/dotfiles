@@ -101,6 +101,7 @@ if exists('s:colors')
 	exe 'colo' s:colors
 end
 
+se nu
 set hidden
 set laststatus=2 ruler
 aug filetypedetect
