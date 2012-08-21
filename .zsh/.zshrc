@@ -100,31 +100,32 @@ auto_git_alias () {
 }
 command_not_found_handlers+=( auto_git_alias )
 
-trap '
+TRAPZERR () {
 	local dir= choose= prompt3=
 	unset choose
 	local -a dirs
 	set -- ${=__last_command}
-	if (( $# == 1 )) && [[ $1 == */* ]] && [[ $1 != "<"* ]] ; then
-		dir=${~1}
-		dirs=( ${~:-$dir*}(-/N) )
-		if (( $#dirs )) ; then
-			prompt3=$PROMPT3
-			PROMPT3="Use one of these instead? "
-			select choose in No Create $dirs ; do break ; done
-			PROMPT3=$prompt3
-			[[ $choose = No ]] && return
-			if [[ $choose != Create ]] ; then
-				cd $choose
-				return
-			fi
+	(( $# == 1 )) || return
+	[[ $1 == */* ]] || return
+	[[ $1 == "<"* ]] && return
+	dir=${~1}
+	dirs=( ${~:-$dir*}(-/N) )
+	if (( $#dirs )) ; then
+		prompt3=$PROMPT3
+		PROMPT3="Use one of these instead? "
+		select choose in No Create $dirs ; do break ; done
+		PROMPT3=$prompt3
+		[[ $choose = No ]] && return
+		if [[ $choose != Create ]] ; then
+			cd $choose
+			return
 		fi
-		if [[ ! -e $dir ]] ; then
-			if (( $+choose )) || read -q "choose?Create $1 [y/N]? " ; then
-				if mkdir -p $dir ; then
-					cd $dir
-				fi
+	fi
+	if [[ ! -e $dir ]] ; then
+		if (( $+choose )) || read -q "choose?Create $1 [y/N]? " ; then
+			if mkdir -p $dir ; then
+				cd $dir
 			fi
 		fi
 	fi
-' ZERR
+}
