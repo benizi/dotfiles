@@ -302,7 +302,7 @@ nn <silent> <C-l> :nohls<CR><C-l>
 nn <silent> <Esc>t :tabnew<CR>
 nn <silent> <Esc>{ gT
 nn <silent> <Esc>} gt
-nn <silent> <Esc>w :windo q<CR>
+nn <silent> <Esc>w :bd<CR>
 
 " settings for TOhtml
 let g:html_no_progress=1
