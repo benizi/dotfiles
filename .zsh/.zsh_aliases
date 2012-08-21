@@ -107,6 +107,7 @@ rails () {
 }
 
 # global aliases
+alias -g L='| less'
 alias -g LS='| less -S'
 alias -g LS2='|& less -S'
 
