@@ -90,11 +90,14 @@ couchdb_put couchdb_create_db () {
 zmodload zsh/datetime
 
 history_add_couchdb () {
+	local cmd=
+	cmd=${1%%$'\n'}
 	[[ $1 = ' '* ]] && return 0
+	[[ -z "$cmd" ]] && return 0
 	# print -sr -- ${1%%$'\n'}
 	json_object host "$HOST" \
 		pwd "$PWD" \
-		cmd "${1%%$'\n'}" \
+		cmd "$cmd" \
 		time "$EPOCHSECONDS" \
 		pid "$$" \
 		user "$USERNAME" \
