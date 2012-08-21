@@ -155,7 +155,7 @@ if (@invalid_args) {
 }
 my @no_pass = @rcmd;
 for my $i (0..$#no_pass-1) {
-	$no_pass[$i] eq '-p' and $no_pass[$i+1] =~ y/./*/;
+	$no_pass[$i] eq '-p' and $no_pass[$i+1] = '{pass}';
 }
 warn "@no_pass\n";
 $dry and exit;
