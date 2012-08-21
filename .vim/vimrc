@@ -34,6 +34,7 @@ endf
 let g:pathogen_disabled = []
 call add(g:pathogen_disabled, 'CSApprox')
 
+" st and konsole support 24-bit color
 if $TERM =~ 'st-256color' || exists('$KONSOLE_DBUS_SERVICE')
 	se t_Co=1000
 end
