@@ -23,6 +23,8 @@ sub ssh_script {
 	}
 }
 
+sub term { ($ENV{TERM} // 'st') ? 'st' : 'urxvt' }
+
 $verbose //= $dry;
 my ($hosts, @hosts, %hosts);
 my %default_other = (
@@ -64,7 +66,7 @@ if ($just_one) {
 }
 chomp $out;
 exit 1 unless length $out;
-my @cmd = ('urxvt', '-e', 'env', 'TERM=xterm-256color', 'ssh', split ' ', $out);
+my @cmd = (term, '-e', 'env', 'TERM=xterm-256color', 'ssh', split ' ', $out);
 print "@cmd\n" if $verbose;
 exit if $dry;
 open STDERR, '>', '/dev/null';
