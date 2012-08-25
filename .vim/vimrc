@@ -48,19 +48,14 @@ catch
 	echomsg 'Perhaps pathogen or vim-addon-manager is not installed?'
 endtry
 
-" fix it so ~/.vim{.local,} and ~/after/.vim{,.local} are in the right places
-let s:rtp = split(&rtp, ',')
-let s:special_dirs = map([ '/.vim', '/.vim.local' ], 'expand(s:home.v:val)')
-for [ dir, after ] in map(copy(s:special_dirs), '[v:val, 0]')
-	\ + map(reverse(copy(s:special_dirs)), '[v:val + "/after", 1]')
-	if index(s:rtp, dir) < 0
-		continue
-	endif
-	let s:rtp = filter(copy(s:rtp), 'v:val != dir')
-	let s:rtp = after ? (s:rtp + [dir]) : ([dir] + s:rtp)
-endfor
-"echo join(s:rtp, ',')
-let &rtp = join(s:rtp, ',')
+let s:ng = expand(s:home.'/hg/vimclojure/client/ng')
+if executable(s:ng)
+	let vimclojure#WantNailgun = 1
+	let vimclojure#NailgunClient = s:ng
+endif
+
+let g:Powerline_symbols = 'unicode'
+let g:Powerline_cache_enabled = 0
 
 set noexpandtab softtabstop=4 tabstop=4 shiftwidth=4
 set list listchars=tab:\ \ ,trail:·
