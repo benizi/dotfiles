@@ -18,7 +18,9 @@
 	("marmalade" . "http://marmalade-repo.org/packages/")))
 (package-initialize)
 
-;(require 'color-theme-railscasts)
+;; Set color-theme if running in X
+(when (display-graphic-p)
+  (require 'color-theme-railscasts))
 
 ;; Lispy stuff
 (require 'paredit)
