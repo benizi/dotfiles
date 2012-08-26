@@ -1,6 +1,5 @@
 #!/bin/zsh
 unset cloneit
-exec=( exec )
 case $# in
   1|2)
     case $1 in
@@ -15,6 +14,7 @@ case $# in
 esac
 if (( $+cloneit )) ; then
   echo "[$1] looks like a repo, so cloning." >&2
-  $exec git clone "$@"
+  git clone "$@"
+else
+  git checkout "$@"
 fi
-$exec git checkout "$@"
