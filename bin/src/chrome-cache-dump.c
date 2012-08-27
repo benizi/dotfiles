@@ -237,9 +237,17 @@ int main(int argc, char **argv) {
   index = index_table("index", &n_entries);
   load_block_files();
 
+  CacheAddr inserted = 0;
   for (i = 0; i < n_entries; i++) {
-    CacheAddr c = index[i];
+    CacheAddr c;
     EntryStore e;
+    if (is_initialized(inserted)) {
+      i--;
+      c = inserted;
+      inserted = 0;
+    } else {
+      c = index[i];
+    }
     if (!is_initialized(c))
       continue;
     //printf("Cache entry %d:\n", i);
@@ -258,7 +266,8 @@ int main(int argc, char **argv) {
     }
     // printf(" Key = %s\n", key);
     if (is_initialized(e.next)) {
-      // TODO - handle pointer // printf(" Next = 0x%08X\n", e.next);
+      // printf(" Next = 0x%08X\n", e.next);
+      inserted = e.next;
     }
     //printf(" Created at = %lu\n", e.creation_time);
     for (j = 0; j < 4; j++) {
