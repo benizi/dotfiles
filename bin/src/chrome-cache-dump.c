@@ -166,7 +166,7 @@ static void dump_file(const CacheAddr c, const char *outname, const uint32 len) 
     }
   }
   close(ofd);
-  // printf("Dumped to %s\n", outname);
+  printf("Dumped %s\n", outname);
 }
 
 static int dir_exists(const char *dir) {
