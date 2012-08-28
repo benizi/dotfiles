@@ -346,7 +346,7 @@ let g:ctrlp_custom_ignore = {
 
 let g:NERDDefaultAlign = 'left'
 
-let g:rtn_open_with = 'new'
+let g:rtn_open_with = 'vnew'
 
 if InGUI()
 	fun! SetupGUI()
