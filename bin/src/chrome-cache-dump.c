@@ -236,6 +236,23 @@ int main(int argc, char **argv) {
   size_t n_entries;
   char *key;
   int i,j;
+  char **patterns;
+
+  patterns = (char **)calloc(argc, sizeof(char *));
+  if (!patterns) {
+    fprintf(stderr, "Couldn't calloc(%d, %ld) for patterns\n", argc, sizeof(char *));
+    exit(1);
+  }
+
+  for (i = 1, j = 0; i < argc; i++) {
+    if (!strcmp(argv[i], "--dry")) {
+      dry_run = 1;
+    } else {
+      patterns[j] = (char *)calloc(strlen(argv[i]) + 1, sizeof(char));
+      strcpy(patterns[j++], argv[i]);
+    }
+  }
+  patterns[j] = NULL;
 
   index = index_table("index", &n_entries);
   load_block_files();
@@ -277,7 +294,16 @@ int main(int argc, char **argv) {
       if (!is_initialized(e.data_addr[j]))
         continue;
       //printf("  Data stream %d = %d bytes at 0x%08X\n", j, e.data_size[j], e.data_addr[j]);
-      if (j == 1)
+      if (j != 1)
+        continue;
+      char **pat;
+      int matched = 0;
+      for (pat = patterns; *pat; pat++)
+        if (strstr(key, *pat))
+          matched++;
+      if (pat == patterns)
+        matched++;
+      if (matched)
         try_dumping(key, e.data_addr[j], e.data_size[j], e.creation_time);
     }
   }
