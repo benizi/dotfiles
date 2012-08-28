@@ -56,6 +56,13 @@ for my $ba (@escapes) {
 			}
 		}
 		print @$_, "\n" for @rows;
+		for (qw/100 110 010 011 001 101/) {
+			my $mult = [split //];
+			for my $n (grep !($_ % 6), 1..255) {
+				printf "\e[38;2;%d;%d;%dm%s\e[0m", (map $n * $_, @$mult), $X;
+			}
+			print "\n";
+		}
 	} else {
 		for (16..($grey?($c88?87:255):($c88?79:231))) {
 			print $c->($_, join '', grep($show_number, $_), $text, $split);
