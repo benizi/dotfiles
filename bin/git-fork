@@ -79,14 +79,14 @@ def projdir
 	File.basename($g.instance_eval('@working_directory.to_s'))
 end
 
-def host ; 'github.com' ; end
+def host ; 'api.github.com' ; end
 
-def api_url(resource, action)
-	URI("https://#{host}/api/v2/json/#{resource}/#{action}")
+def api_url(resource, action = nil)
+	URI("https://#{host}/#{resource}" + (action ? "/#{action}" : ''))
 end
 
 def fork_url(owner, name)
-	api_url('repos', "fork/#{owner}/#{name}")
+	api_url('repos', "#{owner}/#{name}/forks")
 end
 
 def show_url(owner, name)
@@ -188,6 +188,20 @@ end
 module Commands
 	extend self
 
+	def auth(*args)
+		case args.shift
+		when 'list'
+			get(api_url('authorizations')).each do |auths|
+				puts auths.json
+			end
+		else
+			response = post(api_url('authorizations')) do |req|
+				req.set_form_data(:note => "git-hub script")
+			end
+			require 'pry' ; binding.pry
+		end
+	end
+
 	def account(*args)
 		case args.shift
 		when 'keys'
@@ -210,6 +224,7 @@ module Commands
 		usage "Need owner" unless owner
 		usage "Need remote project" unless project
 		puts fork_url(owner, project)
+		puts "as #{user}"
 		if repo_exist?(user, project)
 			puts "Already exists: #{show_url(user, project)}"
 			puts msg(get(show_url(user,project))) if verbose
