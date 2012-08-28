@@ -3,6 +3,8 @@ require 'fileutils'
 require 'optparse'
 require 'etc'
 
+original_args = ARGV.dup
+
 abort unless system('dtach --version > /dev/null')
 
 @dir = nil
@@ -19,6 +21,7 @@ parser = OptionParser.new do |o|
 	o.on('-R') { opts[:mode] = :resume_or_new }
 	o.on('-l','-ls','--ls') { opts[:mode] = :list }
 	o.on('--dry-run') { opts[:dry] = true }
+	o.on('--_rerun') { opts[:rerun] = true }
 end
 parser.order!(ARGV)
 
@@ -104,5 +107,10 @@ INFO
 	exit
 end
 
-ENV['DTACH'] = sock
-exec(*cmd)
+started = Time.now
+exit if system(Hash[ENV].merge('DTACH' => sock), *cmd)
+if Time.now - started < 1 and File.exist?(sock) and not system(%Q{fuser -s #{sock}})
+	exit 1 if opts[:rerun]
+	cmd = %W[#{$0} --_rerun] + original_args
+	exec(*cmd) if File.unlink(sock)
+end
