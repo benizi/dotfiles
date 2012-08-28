@@ -10,6 +10,8 @@
 #include "chrome-cache-dump.h"
 #define EPOCH_1600 11644473600000000L
 
+static int dry_run = 0;
+
 static void date_from_uint64(const uint64 time64, struct timeval *time) {
   uint64 unix_time = time64 - EPOCH_1600;
   time->tv_sec = (unix_time / 1000000);
@@ -223,11 +225,15 @@ static void try_dumping(const char *key, const CacheAddr c, const uint32 len, co
   }
 
   if (!file_complete(outname, len)) {
+    if (dry_run) {
+      printf("Would dump %s\n", key);
+      return;
+    }
     mkdir_hier(outname);
     dump_file(c, outname, len);
   }
 
-  if (file_complete(outname, len))
+  if (file_complete(outname, len) && !dry_run)
     touch(outname, updated);
 }
 
