@@ -297,7 +297,15 @@ nn <silent> <C-l> :nohls<CR><C-l>
 nn <silent> <Esc>t :tabnew<CR>
 nn <silent> <Esc>{ gT
 nn <silent> <Esc>} gt
-nn <silent> <Esc>w :bd<CR>
+fun! CloseIfLastWindow()
+	let bufs = 0
+	tabdo windo let bufs += 1
+	echom 'nbufs=' bufs
+	if bufs == 1
+		q
+	end
+endf
+nn <silent> <Esc>w :bd <bar> call CloseIfLastWindow()<CR>
 
 " settings for TOhtml
 let g:html_no_progress=1
