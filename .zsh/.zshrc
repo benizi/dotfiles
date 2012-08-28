@@ -105,9 +105,9 @@ TRAPZERR () {
 	unset choose
 	local -a dirs
 	set -- ${=__last_command}
-	(( $# == 1 )) || return
-	[[ $1 == */* ]] || return
-	[[ $1 == "<"* ]] && return
+	(( $# == 1 )) || return 0
+	[[ $1 == */* ]] || return 0
+	[[ $1 == "<"* ]] && return 0
 	dir=${~1}
 	dirs=( ${~:-$dir*}(-/N) )
 	if (( $#dirs )) ; then
@@ -115,10 +115,10 @@ TRAPZERR () {
 		PROMPT3="Use one of these instead? "
 		select choose in No Create $dirs ; do break ; done
 		PROMPT3=$prompt3
-		[[ $choose = No ]] && return
+		[[ $choose = No ]] && return 0
 		if [[ $choose != Create ]] ; then
 			cd $choose
-			return
+			return 0
 		fi
 	fi
 	if [[ ! -e $dir ]] ; then
