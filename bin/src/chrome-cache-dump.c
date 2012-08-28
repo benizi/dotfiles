@@ -70,6 +70,8 @@ static CacheAddr *index_table(const char *filename, size_t *n_entries) {
 
   try_read(indexfile, table, table_len);
 
+  close(indexfile);
+
   return table;
 }
 
@@ -153,6 +155,7 @@ static void dump_file(const CacheAddr c, const char *outname, const uint32 len) 
       }
       write(ofd, buf, r);
     }
+    close(fd);
   } else {
     int bs = block_size_for_file_type(file_type(c));
     int l = 0;
