@@ -108,6 +108,7 @@ int main(int argc, char **argv) {
   int i, tried, verbose = 0, remove = 0, list = 0;
   int set_domain = 0, set_host = 0, set_server = 0;
   int set_protocol = 0, set_port = 0;
+  int dry = 0;
 
   char *user = default_user();
   char *domain = "thorleyindustries.com";
@@ -138,6 +139,9 @@ int main(int argc, char **argv) {
       remove = 1;
     } else if (ARG(l) || LARG(list)) {
       list = 1;
+    } else if (ARG(n) || LARG(dry)) {
+      dry = 1;
+      verbose++;
     } else if (ARG(k) || LARG(keyring)) {
       S_OPT(use_keyring);
     } else {
@@ -178,6 +182,8 @@ int main(int argc, char **argv) {
     VALUE(protocol);
 #undef VALUE
     printf("port: %d\n", port);
+    if (dry)
+      return 0;
   }
 
   if (!gnome_keyring_is_available()) {
