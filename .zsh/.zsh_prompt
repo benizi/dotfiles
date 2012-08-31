@@ -114,14 +114,16 @@ TITLESEP='│' # ceçi n'est pas un pipe
 function fancytitle () {
 	(( $+terminfo[tsl] )) || return 0
 	[[ -n "$NOTITLE" ]] && return 0
-	local host c=$TITLESEP
+	local host c=$TITLESEP title
 	host="%m $c "
 	case "$DISPLAY" in
 		:0*|localhost:*) [ -z "$SSH_CLIENT" ] && host="" ;;
 	esac
 	local extra=
 	__i_am_admin && extra="ROOT $c "
-	printf "${TITLE}%s%s${ENDTITLE}" $1 "$(print -nP "$extra$host"'%~ $c %n${STY+ $c $STY}')"
+	title="$1$(print -nP "$extra$host"'%~ $c %n${STY+ $c $STY}')"
+	[[ $title = ?(#c100,) ]] && title=${title[1,88]}...
+	printf "${TITLE}%s${ENDTITLE}" $title
 }
 function preexec () {
 	__last_command=$1
