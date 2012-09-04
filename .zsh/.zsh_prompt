@@ -1,7 +1,7 @@
 # TODO: vcs_info stuff
 # autoload -Uz vcs_info
 # zstyle ':vcs_info:*' disable cdv darcs mtn p4 svk tla
-function __i_am_admin () {
+__i_am_admin () {
 	local admin=1
 	[ -n "$INCYG" -a "$USERNAME" = "Administrator" ] && admin=0
 	[ -n "$INCYG" ] && [[ "$(id)" = *,0'(root)',* ]] && admin=0
@@ -9,7 +9,7 @@ function __i_am_admin () {
 	return $admin
 }
 
-function __setup_prompt () {
+__setup_prompt () {
 	setopt promptsubst
 	local _ps_color='$PSCOLORNORM'
 	(( $+termcap[Co] )) && (( $termcap[Co] > 8 )) || _ps_color='$PSCOLORLO'
@@ -112,7 +112,7 @@ prompt_shorten () {
 TITLESEP='│' # ceçi n'est pas un pipe
 (( $+INCYG || $+STY )) && TITLESEP='|'
 [[ $TERM = (screen|cygwin)* ]] && TITLESEP='|'
-function fancytitle () {
+fancytitle () {
 	(( $+terminfo[tsl] )) || return 0
 	[[ -n "$NOTITLE" ]] && return 0
 	local host c=$TITLESEP title
@@ -126,16 +126,16 @@ function fancytitle () {
 	[[ $title = ?(#c100,) ]] && title=${title[1,88]}...
 	printf "${TITLE}%s${ENDTITLE}" $title
 }
-function preexec () {
+preexec () {
 	__last_command=$1
 	fancytitle "$1 $TITLESEP "
 }
-function precmd () {
+precmd () {
 	__setup_prompt
 	fancytitle ""
 }
 () {
-	function zle-line-init zle-keymap-select {
+	zle-line-init zle-keymap-select () {
 		local -A seqs
 		if [[ $TERM = rxvt* ]] ; then
 			seqs+=( cmd $'\e]12;1\a' )
