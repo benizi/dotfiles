@@ -1,55 +1,55 @@
 function () {
-	local tobackup listfile BZF FILE fm lm
-	tobackup=( .historyfile )
-	for listfile in ${^zsh_dirs}/backup{,s}(.N) ; do
-		tobackup+=( "${(f)$(<$listfile)}" )
-	done
-	for f in $tobackup ; do
-		[[ -f $f ]] || f=~/$f
-		FILE=$f:h/.backup.$f:t
-		FILE=$FILE:gs/.././
-		# %Y.%U.%w = year-week-dayofweek
-		BZF="$FILE.`date +%Y.%j`.bz2"
-		if [ -f $f ] ; then
-			[[ -f $BZF ]] && continue
-			bzip2 < $f > $BZF
-			(( $+commands[md5sum] )) || continue
-			fm=`md5sum < $BZF`
-			for l in $FILE.*(On) ; do
-				[[ $l = $BZF ]] && continue
-				lm=`md5sum < $l`
-				if [[ "$fm" = "$lm" ]] ; then
-					rm $l
-				else
-					#echo keep $l "($lm != $fm)"
-					fm="$lm"
-					# break
-				fi
-			done
-		fi
-	done
+  local tobackup listfile BZF FILE fm lm
+  tobackup=( .historyfile )
+  for listfile in ${^zsh_dirs}/backup{,s}(.N) ; do
+    tobackup+=( "${(f)$(<$listfile)}" )
+  done
+  for f in $tobackup ; do
+    [[ -f $f ]] || f=~/$f
+    FILE=$f:h/.backup.$f:t
+    FILE=$FILE:gs/.././
+    # %Y.%U.%w = year-week-dayofweek
+    BZF="$FILE.`date +%Y.%j`.bz2"
+    if [ -f $f ] ; then
+      [[ -f $BZF ]] && continue
+      bzip2 < $f > $BZF
+      (( $+commands[md5sum] )) || continue
+      fm=`md5sum < $BZF`
+      for l in $FILE.*(On) ; do
+        [[ $l = $BZF ]] && continue
+        lm=`md5sum < $l`
+        if [[ "$fm" = "$lm" ]] ; then
+          rm $l
+        else
+          #echo keep $l "($lm != $fm)"
+          fm="$lm"
+          # break
+        fi
+      done
+    fi
+  done
 }
 _remove_prefixdups () {
-	local i a b len md5
-	local -a rm files
-	local cmd hasall=true
-	for cmd in md5sum bunzip2 head wc ; do
-		(( $+commands[$cmd] )) || hasall=false
-	done
-	$hasall || return 1
-	rm=( rm )
-	(( $+dry )) && rm=( echo $rm )
-	files=( $argv(Om) )
-	for (( i=1 ; i<$#files ; i+=1 )) ; do
-		a=$files[$i]
-		b=$files[$i+1]
-		len="$(bunzip2 -d < $a | LC_ALL=C wc -c)"
-		md5="$(bunzip2 -d < $a | md5sum)"
-		if [[ "$(bunzip2 -d < $b | head -c $len | md5sum)" != $md5 ]] ; then
-			echo nope $a not a prefix of $b
-			(( $+veryverbose )) && diff --side-by-side =(bunzip2 -d < $a) =(bunzip2 -d < $b) | less
-		else
-			$rm -v $a
-		fi
-	done
+  local i a b len md5
+  local -a rm files
+  local cmd hasall=true
+  for cmd in md5sum bunzip2 head wc ; do
+    (( $+commands[$cmd] )) || hasall=false
+  done
+  $hasall || return 1
+  rm=( rm )
+  (( $+dry )) && rm=( echo $rm )
+  files=( $argv(Om) )
+  for (( i=1 ; i<$#files ; i+=1 )) ; do
+    a=$files[$i]
+    b=$files[$i+1]
+    len="$(bunzip2 -d < $a | LC_ALL=C wc -c)"
+    md5="$(bunzip2 -d < $a | md5sum)"
+    if [[ "$(bunzip2 -d < $b | head -c $len | md5sum)" != $md5 ]] ; then
+      echo nope $a not a prefix of $b
+      (( $+veryverbose )) && diff --side-by-side =(bunzip2 -d < $a) =(bunzip2 -d < $b) | less
+    else
+      $rm -v $a
+    fi
+  done
 }

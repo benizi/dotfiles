@@ -1,0 +1,24 @@
+#compdef dt
+
+_dt () {
+  (( $+commands[dt] )) || return 1
+  local l m
+  local -a opts
+  local -A modes
+  modes=(
+    n detach
+    r resume
+    R resume-or-new
+  )
+  for m in ${(k)modes} ; do
+    opts+=( '('-${(k)^modes}")-${m}-[${modes[$m]} mode]" )
+  done
+  opts+=( '-S[name of dtach]:string:' )
+  opts+=( '(- -S):dtach[fifo]: __dtaches' )
+  opts+=( '*::args: _normal' )
+  _arguments $opts
+}
+
+__dtaches () {
+  compadd ${(f)"$(dt -ls)"} || return 1
+}

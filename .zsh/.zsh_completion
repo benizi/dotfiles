@@ -32,38 +32,38 @@ zstyle ':completion:*' group-name ''
 zstyle ':completion:*' prompt 'errors: %e'
 
 _check_for_git_alias () {
-	[[ $words[1] = g?* ]] || return 1
-	local al=${words[1]#g}
-	valid_git_alias $al || valid_git_command $al || return 1
-	words[1]=(git $al)
-	((++CURRENT))
-	_normal
+  [[ $words[1] = g?* ]] || return 1
+  local al=${words[1]#g}
+  valid_git_alias $al || valid_git_command $al || return 1
+  words[1]=(git $al)
+  ((++CURRENT))
+  _normal
 }
 _add_git_commands () {
-	[[ $words[1] = g* ]] || return 1
-	local -a cmds
-	cmds=( g${(f)^:-"$(all_git_aliases ; all_git_commands)"} )
-	print -l cmds $cmds >&2
-	compadd -a cmds
+  [[ $words[1] = g* ]] || return 1
+  local -a cmds
+  cmds=( g${(f)^:-"$(all_git_aliases ; all_git_commands)"} )
+  print -l cmds $cmds >&2
+  compadd -a cmds
 }
 zstyle ':completion:*' completer _check_for_git_alias _complete
 zstyle ':completion::complete:-command-::' completer _add_git_commands
 
 __git_files () {
-	# localize options as appropriate
-	local compadd_opts opts tag description
-	# ignore compadd-related options that __git_files passes along
-	zparseopts -D -E -a compadd_opts V: J: 1 2 n f X: M: P: S: r: R: q F:
-	# ignore git ls-files options that __git_files uses
-	zparseopts -D -E -a opts -- -cached -deleted -modified -others -ignored -unmerged -killed x+: --exclude+:
-	# __git_files expects a tag and a description
-	tag=$1 description=$2 ; shift 2
-	# but we ignore those and call __git_tree_files against the HEAD revision
-	# with the current PREFIX
-	__git_tree_files ${PREFIX:-.} HEAD
+  # localize options as appropriate
+  local compadd_opts opts tag description
+  # ignore compadd-related options that __git_files passes along
+  zparseopts -D -E -a compadd_opts V: J: 1 2 n f X: M: P: S: r: R: q F:
+  # ignore git ls-files options that __git_files uses
+  zparseopts -D -E -a opts -- -cached -deleted -modified -others -ignored -unmerged -killed x+: --exclude+:
+  # __git_files expects a tag and a description
+  tag=$1 description=$2 ; shift 2
+  # but we ignore those and call __git_tree_files against the HEAD revision
+  # with the current PREFIX
+  __git_tree_files ${PREFIX:-.} HEAD
 }
 
 _git-co () {
-	_git-checkout "$@"
-	_git-clone "$@"
+  _git-checkout "$@"
+  _git-clone "$@"
 }

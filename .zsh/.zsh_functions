@@ -1,18 +1,18 @@
 if zmodload zsh/zselect 2> /dev/null ; then
-	function sleep () {
-		local arg t ext
-		for arg ; do
-			case $arg in
-				(<->(.<->(#c,1))(#c,1)|.<->)) t=$(( arg * 100 )) ;;
-				*) ext=true ;;
-			esac
-		done
-		if (( $+ext )) ; then
-			command sleep "$@"
-			return $?
-		fi
-		zselect -t $t 2>/dev/null
-	}
+  function sleep () {
+    local arg t ext
+    for arg ; do
+      case $arg in
+        (<->(.<->(#c,1))(#c,1)|.<->)) t=$(( arg * 100 )) ;;
+        *) ext=true ;;
+      esac
+    done
+    if (( $+ext )) ; then
+      command sleep "$@"
+      return $?
+    fi
+    zselect -t $t 2>/dev/null
+  }
 fi
 function colormsg () { C=${1-RED} ; shift ; print -l "${(P)C}$*${NOCOLOR}" }
 function error () { colormsg RED $@ }
@@ -40,103 +40,103 @@ function sort-with-time () { with-time | sort -n }
 function sort-by-time () { sort-with-time | cut -f2- }
 function factor-pretty () { factor $1 | perl -lanwe '@b=(shift @F); @x=(1); while (@F) { $f = shift @F; if ($f eq $b[-1]) { $x[-1]++; } else { push @b, $f; push @x, 1; } } print join " ", map { $b[$_].($x[$_] eq 1 ? "" : "^$x[$_]") } 0..$#b' }
 function update-zsh () {
-	pushd ~
-	if [ -L .zshrc -o -L .zshenv ] ; then
-		echo "Linked (no-op)"
-	elif hg st -A .zshrc | grep -q . ; then
-		echo "In HG (no-op)"
-	else
-		wget -O - http://benizi.com/zsh.tbz2 | tar -jxvf -
-	fi
-	popd
+  pushd ~
+  if [ -L .zshrc -o -L .zshenv ] ; then
+    echo "Linked (no-op)"
+  elif hg st -A .zshrc | grep -q . ; then
+    echo "In HG (no-op)"
+  else
+    wget -O - http://benizi.com/zsh.tbz2 | tar -jxvf -
+  fi
+  popd
 }
 function lslvm () { for l in vgs pvs lvs ; do lvm $l ; done }
 if [ -n "$INCYG" ] ; then
-	function cyg () { reply=("$(cygpath -w $REPLY)") }
+  function cyg () { reply=("$(cygpath -w $REPLY)") }
 fi
 function real () { reply=("$(readlink -f $REPLY)") }
 function set-pulse-server () {
-	xprop -root -f PULSE_SERVER 8s -set PULSE_SERVER "$1"
+  xprop -root -f PULSE_SERVER 8s -set PULSE_SERVER "$1"
 }
 function unix2win () { eol.pl -pc | iconv -f UTF-8 -t UTF-16 }
 function win2unix () { iconv -f UTF-16 -t UTF-8 | eol.pl }
 function instagit () {
-	local email
-	local git
-	git=(git)
-	while [ $# -gt 0 ] ; do
-		case "$1" in
-			--dry*) git=(echo git)
-			;;
-			*)
-				if [ -z "$email" ] ; then
-					email="$1"
-				else
-					print -r Unknown argument "$1"
-				fi
-			;;
-		esac
-		shift
-	done
-	[ -n "$email" ] || read 'email?Email: '
-	[[ $email = *@* ]] || email=$email@benizi.com
-	$git init \
-	&& $git config user.email $email \
-	&& $git add . \
-	&& $git ci -a -m init
+  local email
+  local git
+  git=(git)
+  while [ $# -gt 0 ] ; do
+    case "$1" in
+      --dry*) git=(echo git)
+      ;;
+      *)
+        if [ -z "$email" ] ; then
+          email="$1"
+        else
+          print -r Unknown argument "$1"
+        fi
+      ;;
+    esac
+    shift
+  done
+  [ -n "$email" ] || read 'email?Email: '
+  [[ $email = *@* ]] || email=$email@benizi.com
+  $git init \
+  && $git config user.email $email \
+  && $git add . \
+  && $git ci -a -m init
 }
 function current-linux () { cd $(readlink -f /lib/modules/$(uname -r)/source) }
 function message () { notify-send -t 0 $argv }
 function uniq () { command uniq $argv | perl -lpwe 's/^\s*(\d+)\s/$1\t/' }
 function edit9 () {
-	emulate -L zsh
-	setopt err_return
-	local path9=$1 temp=$(mktemp -t edit9.XXXXXXXX)
-	(( $#path9 && $#temp )) || return 1
-	{
-		wmiir cat $path9 > $temp
-		${EDITOR:-vi} $temp
-		wmiir write $path9 < $temp
-	} always { rm $temp }
+  emulate -L zsh
+  setopt err_return
+  local path9=$1 temp=$(mktemp -t edit9.XXXXXXXX)
+  (( $#path9 && $#temp )) || return 1
+  {
+    wmiir cat $path9 > $temp
+    ${EDITOR:-vi} $temp
+    wmiir write $path9 < $temp
+  } always { rm $temp }
 }
 can-mail () {
-	(( $+commands[mail] )) && return 0
-	warn "Need to install mailx?"
-	return 1
+  (( $+commands[mail] )) && return 0
+  warn "Need to install mailx?"
+  return 1
 }
 reminder () {
-	can-mail || return 1
-	echo Mailed Reminder | mail -s "$*" $EMAIL
+  can-mail || return 1
+  echo Mailed Reminder | mail -s "$*" $EMAIL
 }
 with-mail () {
-	local txt ret
-	can-mail || return 1
-	$argv
-	ret=$?
-	txt="$argv"
-	(( ret )) && txt="[Ret: $ret] $txt"
-	reminder $txt
-	return $ret
+  local txt ret
+  can-mail || return 1
+  $argv
+  ret=$?
+  txt="$argv"
+  (( ret )) && txt="[Ret: $ret] $txt"
+  reminder $txt
+  return $ret
 }
 
 shredx () {
-	local arg
-	local -a shred delete dirlist
-	shred=( -exec shred -v {} \; )
-	delete=( -delete )
-	for arg ; do
-		case $arg in
-			-n|--dry*) shred=( -exec echo shred -v {} \; ) ;;
-			-k|--keep) delete=() ;;
-			*) dirlist+=( $arg ) ;;
-		esac
-	done
-	find $dirlist -type f $shred $delete || return 1
-	(( $#delete )) && find $dirlist -empty -delete
+  local arg
+  local -a shred delete dirlist
+  shred=( -exec shred -v {} \; )
+  delete=( -delete )
+  for arg ; do
+    case $arg in
+      -n|--dry*) shred=( -exec echo shred -v {} \; ) ;;
+      -k|--keep) delete=() ;;
+      *) dirlist+=( $arg ) ;;
+    esac
+  done
+  find $dirlist -type f $shred $delete || return 1
+  (( $#delete )) && find $dirlist -empty -delete
 }
 
 rsync-build () {
-	sudo find /var/tmp/build-root/ -type f -iname \*.rpm \
-	| perl -lpwe 's!(/.?RPMS)!/.$1!' \
-	| xargs -iZ rsync -RPtv Z /usr/src/packages/
+  sudo find /var/tmp/build-root/ -type f -iname \*.rpm \
+  | perl -lpwe 's!(/.?RPMS)!/.$1!' \
+  | xargs -iZ rsync -RPtv Z /usr/src/packages/
 }

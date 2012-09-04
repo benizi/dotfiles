@@ -15,10 +15,10 @@ export MAILCHECK=0
 autoload -U compinit
 autoload -Uz age
 () {
-	local fn
-	for fn in $^zsh_dirs/autoload/*(N:t) ; do
-		autoload -Uz $fn
-	done
+  local fn
+  for fn in $^zsh_dirs/autoload/*(N:t) ; do
+    autoload -Uz $fn
+  done
 }
 zmodload zsh/mathfunc 2>/dev/null
 fpath=( ${^zsh_dirs}/Completion(N/) ~$owner/git/zsh/Completion/**/*(N/) $fpath $^zsh_dirs/autoload(N/) )
@@ -26,9 +26,9 @@ debug=( ~$owner/.zcompdump.debug{,ging}(N) )
 (( $#debug )) && rm -f ~/.zcompdump
 compinitargs=( -d ~/.zcompdump )
 () {
-	local -a notmine
-	notmine=( $fpath(N^U) )
-	(( $+INCYG )) || (( $#notmine )) && compinitargs+=( -u )
+  local -a notmine
+  notmine=( $fpath(N^U) )
+  (( $+INCYG )) || (( $#notmine )) && compinitargs+=( -u )
 }
 compinit $compinitargs
 [ -n "$INCYG" -a -n "$INWIN7" ] && export CYGWIN=nontsec
@@ -40,17 +40,17 @@ export EDITOR=/usr/bin/vim
 export READNULLCMD=$PAGER
 
 for dir in $zsh_dirs ; do
-	setopt nullglob
-	pushd $dir 2> /dev/null || continue
-	files=(.zshrc-)
-	if [ -f .ZSHFILES ] ; then
-		files=($files `cat .ZSHFILES`)
-	else
-		files=($files *zsh_*~*.swp~*.zsh_history)
-	fi
-	for file in $files ; [ -r $file ] && source $file
-	popd
-	setopt nonullglob
+  setopt nullglob
+  pushd $dir 2> /dev/null || continue
+  files=(.zshrc-)
+  if [ -f .ZSHFILES ] ; then
+    files=($files `cat .ZSHFILES`)
+  else
+    files=($files *zsh_*~*.swp~*.zsh_history)
+  fi
+  for file in $files ; [ -r $file ] && source $file
+  popd
+  setopt nonullglob
 done
 
 (( $+warn_rubyopt )) && warn "RUBYOPT was set ($warn_rubyopt)... shouldn't be"
@@ -65,67 +65,67 @@ run_local_versions ${(%):-"%x"}
 
 typeset -a command_not_found_handlers
 command_not_found_handler () {
-	local fn
-	for fn in $command_not_found_handlers ; do
-		$fn "$@" && return 0
-	done
-	return 1
+  local fn
+  for fn in $command_not_found_handlers ; do
+    $fn "$@" && return 0
+  done
+  return 1
 }
 
 all_git_aliases () {
-	git config -l | awk -F'[.=]' '/^alias\./ { print $2 }'
+  git config -l | awk -F'[.=]' '/^alias\./ { print $2 }'
 }
 
 valid_git_alias () {
-	git config -l | grep -qF "alias.$1="
+  git config -l | grep -qF "alias.$1="
 }
 
 all_git_commands () {
-	git help --all \
-		| awk '/---/ {ok=1; OFS="\n"; ORS=""} /^ / {NF=NF+1; if (ok) print $0}'
-	print -l ${${(k)commands[(I)git-*]}#git-}
+  git help --all \
+    | awk '/---/ {ok=1; OFS="\n"; ORS=""} /^ / {NF=NF+1; if (ok) print $0}'
+  print -l ${${(k)commands[(I)git-*]}#git-}
 }
 
 valid_git_command () {
-	all_git_commands | grep -qF "$1" || (( $+commands[git-$1] ))
+  all_git_commands | grep -qF "$1" || (( $+commands[git-$1] ))
 }
 
 auto_git_alias () {
-	[[ $1 = g* ]] || return 1
-	local al=${1#g}
-	shift
-	valid_git_alias $al || valid_git_command $al || return 1
-	git $al "$@"
-	return 0
+  [[ $1 = g* ]] || return 1
+  local al=${1#g}
+  shift
+  valid_git_alias $al || valid_git_command $al || return 1
+  git $al "$@"
+  return 0
 }
 command_not_found_handlers+=( auto_git_alias )
 
 TRAPZERR () {
-	local dir= choose= prompt3=
-	unset choose
-	local -a dirs
-	set -- ${=__last_command}
-	(( $# == 1 )) || return 0
-	[[ $1 == */* ]] || return 0
-	[[ $1 == "<"* ]] && return 0
-	dir=${~1}
-	dirs=( ${~:-$dir*}(-/N) )
-	if (( $#dirs )) ; then
-		prompt3=$PROMPT3
-		PROMPT3="Use one of these instead? "
-		select choose in No Create $dirs ; do break ; done
-		PROMPT3=$prompt3
-		[[ $choose = No ]] && return 0
-		if [[ $choose != Create ]] ; then
-			cd $choose
-			return 0
-		fi
-	fi
-	if [[ ! -e $dir ]] ; then
-		if (( $+choose )) || read -q "choose?Create $1 [y/N]? " ; then
-			if mkdir -p $dir ; then
-				cd $dir
-			fi
-		fi
-	fi
+  local dir= choose= prompt3=
+  unset choose
+  local -a dirs
+  set -- ${=__last_command}
+  (( $# == 1 )) || return 0
+  [[ $1 == */* ]] || return 0
+  [[ $1 == "<"* ]] && return 0
+  dir=${~1}
+  dirs=( ${~:-$dir*}(-/N) )
+  if (( $#dirs )) ; then
+    prompt3=$PROMPT3
+    PROMPT3="Use one of these instead? "
+    select choose in No Create $dirs ; do break ; done
+    PROMPT3=$prompt3
+    [[ $choose = No ]] && return 0
+    if [[ $choose != Create ]] ; then
+      cd $choose
+      return 0
+    fi
+  fi
+  if [[ ! -e $dir ]] ; then
+    if (( $+choose )) || read -q "choose?Create $1 [y/N]? " ; then
+      if mkdir -p $dir ; then
+        cd $dir
+      fi
+    fi
+  fi
 }

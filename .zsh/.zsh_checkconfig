@@ -1,9 +1,9 @@
 function () {
-	local cfg cmd
-	for cmd in dt screen ; do
-		(( $+commands[$cmd] )) || warn "$cmd is not installed"
-	done
-	for cfg in .Xdefaults .gitconfig .screenrc .vim .vimrc ; do
-		[[ -e ~/$cfg ]] || warn "$cfg doesn't exist"
-	done
+  local cfg cmd
+  for cmd in dt screen ; do
+    (( $+commands[$cmd] )) || warn "$cmd is not installed"
+  done
+  for cfg in .Xdefaults .gitconfig .screenrc .vim .vimrc ; do
+    [[ -e ~/$cfg ]] || warn "$cfg doesn't exist"
+  done
 }

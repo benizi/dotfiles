@@ -5,10 +5,10 @@ alias rehash=' builtin rehash'
 
 # keep shell history separate
 () {
-	local shell
-	for shell in {ba,c,fi,k,tc,}sh ; do
-		alias $shell='HISTFILE=$zsh_dirs[-1]/'"${shell}-history $shell"
-	done
+  local shell
+  for shell in {ba,c,fi,k,tc,}sh ; do
+    alias $shell='HISTFILE=$zsh_dirs[-1]/'"${shell}-history $shell"
+  done
 }
 
 # no globbing for some commands
@@ -16,13 +16,13 @@ alias cave='noglob cave'
 () {
 local cmd
 for cmd in $commands[(I)find*] ; do
-	alias $cmd="noglob $cmd"
+  alias $cmd="noglob $cmd"
 done
 }
 'find' () {
-	integer i=${argv[(i)-*]}
-	(( $+INOSX && ! $#argv )) && argv=( . )
-	command find ${~argv[1,i-1]} "${(@)argv[i,-1]}"
+  integer i=${argv[(i)-*]}
+  (( $+INOSX && ! $#argv )) && argv=( . )
+  command find ${~argv[1,i-1]} "${(@)argv[i,-1]}"
 }
 alias ri='noglob ri'
 
@@ -50,60 +50,60 @@ alias v=vim
 alias vi=v
 alias em='emacs -nw'
 be cap rake rspec ruby () {
-	local dir=$PWD
-	local -a bundle
-	bundle=()
-	while true ; do
-		[[ -f $dir/Gemfile ]] && bundle=( bundle exec ) && break
-		[[ $dir = / ]] && break
-		dir=$dir:h
-	done
-	[[ $bundle[1] == bundle ]] && (( ! $+commands[bundle] )) && bundle=()
-	[[ $0 == be ]] || bundle+=( $0 )
-	command $bundle "$@"
+  local dir=$PWD
+  local -a bundle
+  bundle=()
+  while true ; do
+    [[ -f $dir/Gemfile ]] && bundle=( bundle exec ) && break
+    [[ $dir = / ]] && break
+    dir=$dir:h
+  done
+  [[ $bundle[1] == bundle ]] && (( ! $+commands[bundle] )) && bundle=()
+  [[ $0 == be ]] || bundle+=( $0 )
+  command $bundle "$@"
 }
 
 rails () {
-	local base dir=$PWD warning
-	local -a rails rails_cmds
-	local -A rails3
-	unset warning
-	rails=()
-	rails3=( c console db dbconsole g generate d destroy r runner s server )
-	rails_cmds=( ${(kv)rails3} )
-	while true ; do
-		[[ -d $dir/app ]] && base=$dir && break
-		[[ $dir = / ]] && break
-		dir=$dir:h
-	done
-	if [[ -f $base/script/rails ]] ; then # rails 3
-		rails=( rails )
-	elif [[ -f $base/script/runner ]] && [[ $rails_cmds[(i)$1] -le $#rails_cmds ]] ; then # rails 2
-		if (( $+rails3[$1] )) ; then
-			rails=( $base/script/$rails3[$1] )
-		else
-			rails=( $base/script/$1 )
-		fi
-		shift
-		rails=( ruby $rails )
-	else
-		if ! "$(gem list -i rails -v '>= 3')" ; then
-			warning='Rails 2 being called'
-			rails=( rails )
-		else
-			rails=( rails )
-			if [[ $1 != -* ]] && [[ $1 != new ]] ; then
-				warning='Implied Rails new'
-				rails+=( new )
-			fi
-		fi
-	fi
-	(( $+base )) || warning="Couldn't determine Rails app directory (implied command: $rails)"
-	if (( $+warning )) ; then
-		warn $warning
-		read -q 'proceed?Continue (y/N)? ' || return 1
-	fi
-	be $rails "$@"
+  local base dir=$PWD warning
+  local -a rails rails_cmds
+  local -A rails3
+  unset warning
+  rails=()
+  rails3=( c console db dbconsole g generate d destroy r runner s server )
+  rails_cmds=( ${(kv)rails3} )
+  while true ; do
+    [[ -d $dir/app ]] && base=$dir && break
+    [[ $dir = / ]] && break
+    dir=$dir:h
+  done
+  if [[ -f $base/script/rails ]] ; then # rails 3
+    rails=( rails )
+  elif [[ -f $base/script/runner ]] && [[ $rails_cmds[(i)$1] -le $#rails_cmds ]] ; then # rails 2
+    if (( $+rails3[$1] )) ; then
+      rails=( $base/script/$rails3[$1] )
+    else
+      rails=( $base/script/$1 )
+    fi
+    shift
+    rails=( ruby $rails )
+  else
+    if ! "$(gem list -i rails -v '>= 3')" ; then
+      warning='Rails 2 being called'
+      rails=( rails )
+    else
+      rails=( rails )
+      if [[ $1 != -* ]] && [[ $1 != new ]] ; then
+        warning='Implied Rails new'
+        rails+=( new )
+      fi
+    fi
+  fi
+  (( $+base )) || warning="Couldn't determine Rails app directory (implied command: $rails)"
+  if (( $+warning )) ; then
+    warn $warning
+    read -q 'proceed?Continue (y/N)? ' || return 1
+  fi
+  be $rails "$@"
 }
 
 # global aliases
@@ -119,43 +119,43 @@ alias -g LS2='|& less -S'
 (( $+commands[curl] )) && myip () { curl 'http://benizi.com/ip?raw=1' }
 
 (( $+commands[colorizediff-stdin.pl] )) && diffy () {
-	diff -ur "$@" | colorizediff-stdin.pl --files
+  diff -ur "$@" | colorizediff-stdin.pl --files
 }
 alias pf='ps -ef'
 alias pfg='ps -ef | grep'
 if [[ $commands[alpine] != /usr/local/bin/alpine ]] ; then
-	(( $+commands[alpine-svn] )) && alias alpine='titlep ALPINE ; alpine-svn -bail -p $PINERC'
+  (( $+commands[alpine-svn] )) && alias alpine='titlep ALPINE ; alpine-svn -bail -p $PINERC'
 fi
 (( $+commands[parallel] )) && pvim () {
-	parallel -uXj1 vim "$@"
-	stty --file $TTY sane
+  parallel -uXj1 vim "$@"
+  stty --file $TTY sane
 }
 
 vimrecover () {
-	local l s just_list
-	local -a lines extra
-	local -A swapped
-	(( $#argv )) && just_list=true
-	for l in ~/.vim-tmp/%*.sw?(N.) ; do
-		extra=()
-		s=${l:t:r:gs.[%]./.}
-		pid=$(perl -Mbytes -nwe 'BEGIN { $/ = \2; } print unpack s => $_ if 13..13' $l)
-		if kill -0 $pid 2>/dev/null ; then
-			(( $+just_list )) && extra+=( "[PID:$pid still running]" ) || continue
-		fi
-		if (( $+swapped[$s] )) ; then
-			(( $+just_list )) && extra+=( "[already seen]" ) || continue
-		fi
-		if (( $+just_list )) ; then
-			extra=( $s $extra )
-			lines+=( ${(pj:\t:)extra} )
-		else
-			v +'map q :qa<CR>' $s || break
-		fi
-		swapped+=( $s 1 )
-	done
-	(( $+commands[tabulate.pl] )) && extra=( tabulate.pl ) || extra=( cat )
-	(( $+just_list )) && print -rl - $lines | $extra
+  local l s just_list
+  local -a lines extra
+  local -A swapped
+  (( $#argv )) && just_list=true
+  for l in ~/.vim-tmp/%*.sw?(N.) ; do
+    extra=()
+    s=${l:t:r:gs.[%]./.}
+    pid=$(perl -Mbytes -nwe 'BEGIN { $/ = \2; } print unpack s => $_ if 13..13' $l)
+    if kill -0 $pid 2>/dev/null ; then
+      (( $+just_list )) && extra+=( "[PID:$pid still running]" ) || continue
+    fi
+    if (( $+swapped[$s] )) ; then
+      (( $+just_list )) && extra+=( "[already seen]" ) || continue
+    fi
+    if (( $+just_list )) ; then
+      extra=( $s $extra )
+      lines+=( ${(pj:\t:)extra} )
+    else
+      v +'map q :qa<CR>' $s || break
+    fi
+    swapped+=( $s 1 )
+  done
+  (( $+commands[tabulate.pl] )) && extra=( tabulate.pl ) || extra=( cat )
+  (( $+just_list )) && print -rl - $lines | $extra
 }
 
 alias nacroread='acroread -openInNewWindow'
@@ -170,21 +170,21 @@ alias wcc='LC_ALL=C wc'
 () {
 local jar
 for jar in /usr/share/java/saxon8.jar ; do
-	if [[ -f $jar ]] ; then
-		eval "xsltproc () { java -jar $jar - \"\$@\" }"
-		break
-	fi
+  if [[ -f $jar ]] ; then
+    eval "xsltproc () { java -jar $jar - \"\$@\" }"
+    break
+  fi
 done
 }
 alias z=' exec zsh'
 if (( $+commands[zu] )) ; then
-	: noop
+  : noop
 elif (( $+zsh_admin_mode )) ; then
-	alias zu='sudo ZDOTDIR=$HOME zsh -l'
+  alias zu='sudo ZDOTDIR=$HOME zsh -l'
 elif (( $+INOSX )) ; then
-	alias zu='sudo su - root -c "ZDOTDIR=$HOME zsh -l"'
+  alias zu='sudo su - root -c "ZDOTDIR=$HOME zsh -l"'
 else
-	alias zu='sudo su - -s =zsh -l'
+  alias zu='sudo su - -s =zsh -l'
 fi
 
 # fix completion for some alia
@@ -194,35 +194,35 @@ compdef _precommand noagent hidessh noproxy with-depot with-status proxychains b
 alias Z=' exec sudo su -l bhaskell'
 hash -d afs=/afs/cs.cmu.edu/user/bhaskell/protected
 if [ -n "$INCYG" ] ; then
-	alias sudo='runas /savecred /user:Administrator'
-	alias -g '/?=/\?'
-	hash -d c='/cygdrive/c'
-	hash -d progfiles=~c/'Program Files'
+  alias sudo='runas /savecred /user:Administrator'
+  alias -g '/?=/\?'
+  hash -d c='/cygdrive/c'
+  hash -d progfiles=~c/'Program Files'
 else
-	hash -d vdb=/var/db/pkg
+  hash -d vdb=/var/db/pkg
 fi
 
 hash_if_exist () {
-	local arg name dir remove=false
-	unset name
-	unset dir
-	for arg ; do
-		case $arg in
-			-r) remove=true ;;
-			*)
-				if (( ! $+name )) ; then
-					name=$arg
-				elif (( ! $+dir )) ; then
-					dir=$arg
-				fi
-				;;
-		esac
-	done
-	if [[ -d $dir ]] ; then
-		hash -d $name=$dir
-	elif $remove ; then
-		hash -d $name=
-	fi
+  local arg name dir remove=false
+  unset name
+  unset dir
+  for arg ; do
+    case $arg in
+      -r) remove=true ;;
+      *)
+        if (( ! $+name )) ; then
+          name=$arg
+        elif (( ! $+dir )) ; then
+          dir=$arg
+        fi
+        ;;
+    esac
+  done
+  if [[ -d $dir ]] ; then
+    hash -d $name=$dir
+  elif $remove ; then
+    hash -d $name=
+  fi
 }
 hash_if_exist xkb /usr/share/X11/xkb
 hash_if_exist \L /usr/local
@@ -258,58 +258,58 @@ hash_if_exist ht /srv/www/htdocs
 (( $+commands[xwininfo] )) && alias x-click-id='xwininfo | grep Window.id | cut -f4 -d" "'
 
 ruby-manager-startup () {
-	if (( $+functions[rbfu-env] )) ; then
-		setup_rbfu_version () {
-			local version
-			if [[ -f .rbfu-version ]] || [[ -f .ruby-version ]] ; then
-				rbfu-env &> /dev/null
-			elif [[ -f .rvmrc ]] ; then
-				version=${(f):-"$(<.rvmrc)"}
-				[[ $version = rvm\ * ]] && version=${version#rvm }
-				version=${version//.}
-				rbfu-env @$version &> /dev/null
-			fi
-		}
-		setup_rbfu_version
-		setup_rbfu_directory_aliases () {
-			hash_if_exist -r rb "${path[(r)*/.rbfu/rubies/*]}"
-			hash_if_exist -r gem $GEM_HOME/gems
-			hash_if_exist -r rdoc $GEM_HOME/doc
-		}
-		setup_rbfu_directory_aliases
-		chpwd_functions+=( setup_rbfu_version setup_rbfu_directory_aliases )
-	elif (( $+functions[rbenv] )) ; then
-		setup_rbenv_directory_aliases () {
-			local ver="$(rbenv version-name)"
-			case $ver in
-				system) ;;
-				*)
-					hash_if_exist -r rb ~/.rbenv/versions/$ver
-					hash_if_exist -r gem ~/.rbenv/versions/$ver/lib/ruby/gems/*/gems(N[1])
-					hash_if_exist -r rdoc ~/.rbenv/versions/$ver/lib/ruby/gems/*/doc(N[1])
-					;;
-			esac
-		}
-		setup_rbenv_directory_aliases
-		chpwd_functions+=( setup_rbenv_directory_aliases )
-	else
-		setup_rbenv () {
-			(( $+commands[git] )) || { warn "Needs git" ; return }
-			mkdir -p ~/git/
-			git clone git://github.com/sstephenson/rbenv.git ~/.rbenv
-			local rbuild=~/git/ruby-build
-			git clone git://github.com/sstephenson/ruby-build.git $rbuild
-			pushd $rbuild
-			PREFIX=~ sh install.sh
-			popd
-		}
-		command_not_found_handlers+=( rbenv_not_found_handler )
-		rbenv_not_found_handler () {
-			[[ $1 = rbenv ]] || return 1
-			warn "rbenv is not installed. Run setup_rbenv to install."
-			print -z setup_rbenv
-		}
-	fi
+  if (( $+functions[rbfu-env] )) ; then
+    setup_rbfu_version () {
+      local version
+      if [[ -f .rbfu-version ]] || [[ -f .ruby-version ]] ; then
+        rbfu-env &> /dev/null
+      elif [[ -f .rvmrc ]] ; then
+        version=${(f):-"$(<.rvmrc)"}
+        [[ $version = rvm\ * ]] && version=${version#rvm }
+        version=${version//.}
+        rbfu-env @$version &> /dev/null
+      fi
+    }
+    setup_rbfu_version
+    setup_rbfu_directory_aliases () {
+      hash_if_exist -r rb "${path[(r)*/.rbfu/rubies/*]}"
+      hash_if_exist -r gem $GEM_HOME/gems
+      hash_if_exist -r rdoc $GEM_HOME/doc
+    }
+    setup_rbfu_directory_aliases
+    chpwd_functions+=( setup_rbfu_version setup_rbfu_directory_aliases )
+  elif (( $+functions[rbenv] )) ; then
+    setup_rbenv_directory_aliases () {
+      local ver="$(rbenv version-name)"
+      case $ver in
+        system) ;;
+        *)
+          hash_if_exist -r rb ~/.rbenv/versions/$ver
+          hash_if_exist -r gem ~/.rbenv/versions/$ver/lib/ruby/gems/*/gems(N[1])
+          hash_if_exist -r rdoc ~/.rbenv/versions/$ver/lib/ruby/gems/*/doc(N[1])
+          ;;
+      esac
+    }
+    setup_rbenv_directory_aliases
+    chpwd_functions+=( setup_rbenv_directory_aliases )
+  else
+    setup_rbenv () {
+      (( $+commands[git] )) || { warn "Needs git" ; return }
+      mkdir -p ~/git/
+      git clone git://github.com/sstephenson/rbenv.git ~/.rbenv
+      local rbuild=~/git/ruby-build
+      git clone git://github.com/sstephenson/ruby-build.git $rbuild
+      pushd $rbuild
+      PREFIX=~ sh install.sh
+      popd
+    }
+    command_not_found_handlers+=( rbenv_not_found_handler )
+    rbenv_not_found_handler () {
+      [[ $1 = rbenv ]] || return 1
+      warn "rbenv is not installed. Run setup_rbenv to install."
+      print -z setup_rbenv
+    }
+  fi
 }
 
 ruby-manager-startup
@@ -318,9 +318,9 @@ ruby-manager-startup
 local dir
 local -a target
 for dir in ${^zsh_dirs}/(#i)[[:alpha:]]*(N@-/) ; do
-	[[ -e $dir ]] || continue
-	target=( $dir(+A) )
-	(( $#target )) || continue
-	hash -d ${dir:t}=$target[1]
+  [[ -e $dir ]] || continue
+  target=( $dir(+A) )
+  (( $#target )) || continue
+  hash -d ${dir:t}=$target[1]
 done
 }
