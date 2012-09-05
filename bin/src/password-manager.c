@@ -94,6 +94,27 @@ password_prompt(const char *user, const char *server, const char *domain, const 
   return password;
 }
 
+static void usage() {
+  printf("Usage: password-manager [options]\n");
+  printf("\n");
+  printf("Password attributes:\n");
+  printf("  -u/--user USERNAME\n");
+  printf("  -h/--host HOSTNAME | -s/--server SERVER | -d/--domain DOMAIN\n");
+  printf("     HOST = SERVER.DOMAIN\n");
+  printf("  -P/--protocol PROTOCOL | -p/--port PORTNUMBER \n");
+  printf("     PROTOCOL = numeric PORT\n");
+  printf("\n");
+  printf("  -k/--keyring KEYRING\n");
+  printf("\n");
+  printf("Run-mode options:\n");
+  printf("  -l/--list\n");
+  printf("  -R/--remove\n");
+  printf("  -n/--dry\n");
+  printf("\n");
+  printf("Output options:\n");
+  printf("  -v/--verbose\n");
+}
+
 #define ARG(X) (!strcmp(argv[i], "-" #X))
 #define LARG(X) (!strcmp(argv[i], "--" #X))
 #define CHECK_ARGS if (i + 1 == argc) { fprintf(stderr, "Missing a required argument\n"); return 1; }
@@ -144,6 +165,9 @@ int main(int argc, char **argv) {
       verbose++;
     } else if (ARG(k) || LARG(keyring)) {
       S_OPT(use_keyring);
+    } else if (LARG(help)) {
+      usage();
+      return 0;
     } else {
       fprintf(stderr, "Unknown argument: %s\n", argv[i]);
       return 1;
