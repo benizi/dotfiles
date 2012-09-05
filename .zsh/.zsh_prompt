@@ -9,25 +9,21 @@ __i_am_admin () {
   return $admin
 }
 
-__setup_prompt () {
-  setopt promptsubst
-  local _ps_color='$PSCOLORNORM'
-  (( $+termcap[Co] )) && (( $termcap[Co] > 8 )) || _ps_color='$PSCOLORLO'
-  __i_am_admin && _ps_color='${PSCOLORROOT-$INVERSE$BOLD'$_ps_color'}'
-  __i_am_admin && _pschar='#' || _pschar='$'
-  local _screen=""
+__prompt_screen () {
+  local _screen=''
   if [ -n "$STY" ] ; then
     _screen="$STY"
     [[ $_screen = [0-9]*.* ]] && _screen="${_screen[(ws:.:)2,-1]}"
     local _host=$(print -P '%m')
     [[ $_screen = *.$_host ]] && _screen=$_screen:r
-    _screen="[$_screen]"
   elif [ -n "$DTACH" ] ; then
-    _screen="[${DTACH:t}]"
+    _screen=${DTACH:t}
   fi
-  local -a _extra
+  printf %s $_screen
+}
 
-  local -a test_git other_vcs
+__prompt_vcs () {
+  local -a vcs_strings test_git other_vcs
   test_git=( $PWD(N) )
   other_vcs=()
   local -A added
@@ -57,7 +53,7 @@ __setup_prompt () {
   done
   if (( $#other_vcs )) ; then
     for n in $other_vcs ; do
-      _extra+=( $(cd -q $n ; print -P '%~') )
+      vcs_strings+=( $(cd -q $n ; print -P '%~') )
     done
   fi
   if (( $#git_dir )) ; then
@@ -68,28 +64,58 @@ __setup_prompt () {
     [[ "$branch" = master ]] || pretty_git+=( $branch )
     (( $#pretty_git )) || pretty_git+=( . )
     (( $#pretty_git > 1 && ${#pretty_git[1]} > 15 )) && pretty_git[1]=''
-    _extra+=( ${(j.:.)pretty_git} )
+    vcs_strings+=( ${(j.:.)pretty_git} )
   fi
-  [[ ! -e $PWD ]] && _extra+=( "!deleted!" )
+  printf %s $vcs_strings
+}
+
+__prompt_ruby_manager () {
   if (( $+ruby_manager )) ; then
     case $ruby_manager in
-      prb) _extra+=( "prb:$(prb version --short)" ) ;;
-      rbenv) _extra+=( "$(rbenv version-name)" ) ;;
-      rvm) _extra+=( "rvm:$(rvm current)" ) ;;
-      rbfu) _extra+=( ${RBFU_RUBY_VERSION:-rbfu} ) ;;
-      *) _extra+=( "$ruby_manager:?" ) ;;
+      prb) printf %s "prb:$(prb version --short)" ;;
+      rbenv) printf %s "$(rbenv version-name)" ;;
+      rvm) printf %s "rvm:$(rvm current)" ;;
+      rbfu) printf %s ${RBFU_RUBY_VERSION:-rbfu} ;;
+      *) printf %s "$ruby_manager:?" ;;
     esac
   fi
+}
+
+__setup_prompt () {
+  setopt promptsubst
+
+  local _ps_color='$PSCOLORNORM'
+  (( $+termcap[Co] )) && (( $termcap[Co] > 8 )) || _ps_color='$PSCOLORLO'
+  __i_am_admin && _ps_color='${PSCOLORROOT-$INVERSE$BOLD'$_ps_color'}'
+  __i_am_admin && _pschar='#' || _pschar='$'
+
+  local _screen="$(__prompt_screen)"
+  _screen=${_screen:+[$_screen]}
+
+  local -a _extra
+
+  _extra+=( "${(f):-"$(__prompt_vcs)"}" )
+
+  [[ ! -e $PWD ]] && _extra+=( "!deleted!" )
+
+  local _ruby_info="$(__prompt_ruby_manager)"
+
+  [[ -n $_ruby_info ]] && _extra+=( $_ruby_info )
+
   if [[ "$DISPLAY" = localhost:[[:digit:]]*.0 ]] ; then
     (( ${${DISPLAY#localhost:}%.0} > 9 )) && _extra+=( ssh-x11 )
   fi
+
   if [[ "$LD_PRELOAD" = *proxychains* ]] && [[ -n "$PROXY_SOCKS5" ]] ; then
     _extra+=( "socks:$PROXY_SOCKS5" )
   fi
+
   (( $+incognito_mode )) && _extra+=( '_^_' )
+
   (( $#_extra )) && __extra="[$_extra]" || __extra=''
   PROMPT='%{${PSCOLOR}'$_ps_color'%}%32<...<%n@%m'$_screen' %~%<<'$__extra$_pschar'%f%b '
 }
+
 prompt_shorten () {
   local in=$1
   if (( $#in > 15 )) ; then
