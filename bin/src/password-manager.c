@@ -43,9 +43,25 @@ key_listing(void)
 
     for (cid = ids; cid; cid = cid->next) {
       GnomeKeyringItemInfo *info;
-      if (gnome_keyring_item_get_info_sync(keyring, GPOINTER_TO_INT(cid->data), &info) == OK) {
+      GnomeKeyringResult result =
+        gnome_keyring_item_get_info_full_sync(keyring, GPOINTER_TO_INT(cid->data), GNOME_KEYRING_ITEM_INFO_SECRET, &info);
+      if (result == GNOME_KEYRING_RESULT_OK) {
         printf(" %s\n", gnome_keyring_item_info_get_display_name(info));
         gnome_keyring_item_info_free(info);
+      } else {
+#define CHECKIT(X) case GNOME_KEYRING_RESULT_ ## X: printf(#X "\n"); break
+        switch (result) {
+          CHECKIT(OK); // warning if not included
+          CHECKIT(DENIED);
+          CHECKIT(NO_KEYRING_DAEMON);
+          CHECKIT(ALREADY_UNLOCKED);
+          CHECKIT(NO_SUCH_KEYRING);
+          CHECKIT(BAD_ARGUMENTS);
+          CHECKIT(IO_ERROR);
+          CHECKIT(CANCELLED);
+          CHECKIT(KEYRING_ALREADY_EXISTS);
+          CHECKIT(NO_MATCH);
+        }
       }
     }
   }
