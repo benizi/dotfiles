@@ -40,6 +40,8 @@
 		end\n\
 		File.open(%(%A), %(w)) {|f| f.write(b)}\n\
 		exit 1 if b.include?(%(<)*%L)'"
+[difftool "dif"]
+	cmd = dif $LOCAL $REMOTE
 [difftool "image-diff"]
 	cmd = "ls -l \"$LOCAL\" \"$REMOTE\" ; convert \"$LOCAL\" -write mpr:orig +delete \"$REMOTE\" -write mpr:new +delete '(' mpr:orig mpr:new -compose Difference -composite -write mpr:diff +delete ')' '(' mpr:diff -auto-level -write mpr:norm +delete ')' '(' mpr:diff mpr:orig -append ')' '(' mpr:norm mpr:new -append ')' +append x:"
 [cd]
@@ -104,6 +106,7 @@
 	au = "!eval `git cd` ; git a -u"
 	cd = config cd.cd
 	d = diff
+	dif = difftool -y --tool=dif
 	dchanged = "!gd() { namey=() ; args=() ; for arg ; do case \"$arg\" in --name*) namey+=( $arg ) ;; *) args+=( $arg ) ;; esac ; done ; git diff --name-status $args | perl -lnwe 'print if s/^M\\s+//' | xargs git diff $namey $args -- ; } ; gd"
 	dn = "!usage() { echo \"Usage: git dn [REV [default:HEAD]] [NUP [default:1]]\" >&2 ; [[ $# -gt 0 ]] && echo \"$@\" >&2 ; exit 1 ; } ; dn() { args=() ; opts=() ; justopts=false ; for v ; do if $justopts ; then opts+=( $v ) ; continue ; fi ; case $v in --) justopts=true ;; -*) opts+=( $v ) ;; *) args+=( $v ) ;; esac ; done ; set -- \"${args[@]}\" ; [[ $# -eq 0 ]] && set -- HEAD 1 ; if [[ $# -eq 1 ]] ; then case $1 in [[:digit:]]*) rev=HEAD ; nup=$1 ;; *) git rev-parse --revs-only $1 | grep -q . || usage \"Bad revision: $1\" ; rev=$1 nup=1 ;; esac ; elif [[ $# -eq 2 ]] ; then rev=$1 ; nup=$2 ; else usage ; fi ; case $nup in [[:digit:]]*) ;; *) usage \"Non-numeric nup: $nup\" ;; esac ; git diff \"$rev\"\\~\"$nup\"..\"$rev\" \"${opts[@]}\" ; } ; dn"
 	dc = diff --cached
