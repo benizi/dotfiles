@@ -64,7 +64,7 @@ __prompt_vcs () {
     [[ "$branch" = master ]] || pretty_git+=( $branch )
     (( $#pretty_git )) || pretty_git+=( . )
     (( $#pretty_git > 1 && ${#pretty_git[1]} > 15 )) && pretty_git[1]=''
-    vcs_strings+=( ${(j.:.)pretty_git} )
+    vcs_strings+=( '%F{white}%K{blue}git:'${(j.:.)pretty_git}%f%k )
   fi
   printf %s $vcs_strings
 }
@@ -100,7 +100,7 @@ __setup_prompt () {
 
   local _ruby_info="$(__prompt_ruby_manager)"
 
-  [[ -n $_ruby_info ]] && _extra+=( $_ruby_info )
+  [[ -n $_ruby_info ]] && _extra+=( '%F{white}%K{red}'$_ruby_info%f%k )
 
   if [[ "$DISPLAY" = localhost:[[:digit:]]*.0 ]] ; then
     (( ${${DISPLAY#localhost:}%.0} > 9 )) && _extra+=( ssh-x11 )
@@ -112,8 +112,13 @@ __setup_prompt () {
 
   (( $+incognito_mode )) && _extra+=( '_^_' )
 
-  (( $#_extra )) && __extra="[$_extra]" || __extra=''
-  PROMPT='%{${PSCOLOR}'$_ps_color'%}%32<...<%n@%m'$_screen' %~%<<'$__extra$_pschar'%f%b '
+  local -a prompt_parts
+  _extra=( $_ps_color%n@%m%f%b $_extra )
+  (( $#_extra )) && prompt_parts+=( ${(j:╶╴:)_extra} )
+
+  prompt_parts+=( '%F{white}%K{22}%~%f%k'$_pschar' ' )
+
+  PROMPT=$'\n''╭╴'${prompt_parts[1]}' ╼'$'\n╰─╴'${prompt_parts[2]}
 }
 
 prompt_shorten () {
