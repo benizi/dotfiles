@@ -59,6 +59,7 @@ let g:Powerline_cache_enabled = 0
 
 set noexpandtab softtabstop=4 tabstop=4 shiftwidth=4
 set list listchars=tab:\ \ ,trail:·
+se nowrap
 if $TERM =~ 'rxvt' || $TERM =~ 'xterm'
 	set mouse=a
 endif
