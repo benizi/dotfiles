@@ -37,7 +37,7 @@ __prompt_vcs () {
     for o in $d/{.hg,.svn,CVS} ; do
       if [[ -d $o ]] ; then
         case $o:t in
-          .svn|CVS) [[ -d $o:h:h/$o:t ]] || other_vcs+=( $o:h ) ;;
+          .svn|CVS) [[ -d $o:h:h/$o:t ]] || other_vcs+=( $o ) ;;
           *) other_vcs+=( $o ) ;;
         esac
       fi
@@ -53,7 +53,9 @@ __prompt_vcs () {
   done
   if (( $#other_vcs )) ; then
     for n in $other_vcs ; do
-      vcs_strings+=( $(cd -q $n ; print -P '%~') )
+      local type=${n:t:l:s/./}
+      local vcs_dir=${${:-"$(cd -q $n ; print -P '%~')"}:h}
+      vcs_strings+=( %F{yellow}$type\:$vcs_dir%f )
     done
   fi
   if (( $#git_dir )) ; then
@@ -66,7 +68,7 @@ __prompt_vcs () {
     (( $#pretty_git > 1 && ${#pretty_git[1]} > 15 )) && pretty_git[1]=''
     vcs_strings+=( '%F{white}%K{blue}git:'${(j.:.)pretty_git}%f%k )
   fi
-  printf %s $vcs_strings
+  printf '%s\n' $vcs_strings
 }
 
 __prompt_ruby_manager () {
