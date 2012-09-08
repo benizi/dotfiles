@@ -23,7 +23,8 @@ __prompt_screen () {
 }
 
 __prompt_vcs () {
-  local -a vcs_strings test_git other_vcs
+  local -a test_git types
+  local -A vcs
   test_git=( $PWD(N) )
   other_vcs=()
   local -A added
@@ -34,13 +35,15 @@ __prompt_vcs () {
     [[ $d = / ]] && d=''
     shift test_git
     n=$(( n + 1 ))
-    for o in $d/{.hg,.svn,CVS} ; do
-      if [[ -d $o ]] ; then
-        case $o:t in
-          .svn|CVS) [[ -d $o:h:h/$o:t ]] || other_vcs+=( $o ) ;;
-          *) other_vcs+=( $o ) ;;
-        esac
-      fi
+    for o in .hg .svn CVS ; do
+      local other_type=${o:l:s/./}
+      local other_dir=$d/$o
+      (( $+vcs[$other_type] )) && continue
+      [[ -d $other_dir ]] || continue
+      # skip if not highest level of repo for hierarchically-littered systems
+      [[ $other_type = (svn|cvs) ]] && [[ -d $other_dir:h:h/$o:t ]] && continue
+      vcs[$other_type]=${:-"$(cd -q $d ; print -P '%~')"}
+      types+=( $other_type )
     done
     [[ -d $d/.git ]] && git_dir=$d/.git && break
     local -a add
@@ -51,13 +54,6 @@ __prompt_vcs () {
       added[$d]=1
     done
   done
-  if (( $#other_vcs )) ; then
-    for n in $other_vcs ; do
-      local type=${n:t:l:s/./}
-      local vcs_dir=${${:-"$(cd -q $n ; print -P '%~')"}:h}
-      vcs_strings+=( %F{yellow}$type\:$vcs_dir%f )
-    done
-  fi
   if (( $#git_dir )) ; then
     local -a pretty_git
     local dir=$(cd -q $git_dir:h ; print -P '%~')
@@ -66,9 +62,21 @@ __prompt_vcs () {
     [[ "$branch" = master ]] || pretty_git+=( $branch )
     (( $#pretty_git )) || pretty_git+=( . )
     (( $#pretty_git > 1 && ${#pretty_git[1]} > 15 )) && pretty_git[1]=''
-    vcs_strings+=( '%F{white}%K{blue}git:'${(j.:.)pretty_git}%f%k )
+    vcs[git]=${(j.:.)pretty_git}
+    types+=( git )
   fi
-  printf '%s\n' $vcs_strings
+  for (( n = 1 ; n <= $#types ; n++ )) ; do
+    o=$types[$n]
+    local cstart= cend=
+    if (( n == 1 )) ; then
+      cstart=%F{white}%K{blue}
+      cend=%f%k
+    else
+      cstart=%F{yellow}
+      cend=%f
+    fi
+    printf '%s%s:%s%s\n' $cstart $o $vcs[$o] $cend
+  done
 }
 
 __prompt_ruby_manager () {
