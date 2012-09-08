@@ -65,17 +65,8 @@ __prompt_vcs () {
     vcs[git]=${(j.:.)pretty_git}
     types+=( git )
   fi
-  for (( n = 1 ; n <= $#types ; n++ )) ; do
-    o=$types[$n]
-    local cstart= cend=
-    if (( n == 1 )) ; then
-      cstart=%F{white}%K{blue}
-      cend=%f%k
-    else
-      cstart=%F{yellow}
-      cend=%f
-    fi
-    printf '%s%s:%s%s\n' $cstart $o $vcs[$o] $cend
+  for o in $types ; do
+    printf '%s:%s\n' $o $vcs[$o]
   done
 }
 
@@ -94,41 +85,49 @@ __prompt_ruby_manager () {
 __setup_prompt () {
   setopt promptsubst
 
-  local _ps_color='$PSCOLORNORM'
-  (( $+termcap[Co] )) && (( $termcap[Co] > 8 )) || _ps_color='$PSCOLORLO'
-  __i_am_admin && _ps_color='${PSCOLORROOT-$INVERSE$BOLD'$_ps_color'}'
-  __i_am_admin && _pschar='#' || _pschar='$'
+  local ps_char='$' ps_color='$PSCOLORNORM'
+  (( $+termcap[Co] )) && (( $termcap[Co] > 8 )) || ps_color='$PSCOLORLO'
+  if __i_am_admin ; then
+    ps_color='${PSCOLORROOT-$INVERSE$BOLD'$ps_color'}'
+    ps_char='#'
+  fi
 
-  local _screen="$(__prompt_screen)"
-  _screen=${_screen:+[$_screen]}
+  local screen="$(__prompt_screen)"
+  local -a vcs
+  vcs=( "${(f):-"$(__prompt_vcs)"}" )
 
-  local -a _extra
+  local x11 deleted socks
+  unset x11 deleted socks
+  local ruby_info="$(__prompt_ruby_manager)"
 
-  _extra+=( "${(f):-"$(__prompt_vcs)"}" )
-
-  [[ ! -e $PWD ]] && _extra+=( "!deleted!" )
-
-  local _ruby_info="$(__prompt_ruby_manager)"
-
-  [[ -n $_ruby_info ]] && _extra+=( '%F{white}%K{red}'$_ruby_info%f%k )
+  [[ ! -e $PWD ]] && deleted=true
 
   if [[ "$DISPLAY" = localhost:[[:digit:]]*.0 ]] ; then
-    (( ${${DISPLAY#localhost:}%.0} > 9 )) && _extra+=( ssh-x11 )
+    (( ${${DISPLAY#localhost:}%.0} > 9 )) && x11=ssh
+  elif (( $+DISPLAY )) && [[ "$DISPLAY" != :0 ]] ; then
+    x11=$DISPLAY
   fi
 
   if [[ "$LD_PRELOAD" = *proxychains* ]] && [[ -n "$PROXY_SOCKS5" ]] ; then
-    _extra+=( "socks:$PROXY_SOCKS5" )
+    socks=$PROXY_SOCKS5
   fi
 
-  (( $+incognito_mode )) && _extra+=( '_^_' )
+  local -a top_row bottom_row
 
-  local -a prompt_parts
-  _extra=( $_ps_color%n@%m%f%b $_extra )
-  (( $#_extra )) && prompt_parts+=( ${(j:╶╴:)_extra} )
+  top_row=( $ps_color%n@%m%f%k%b )
+  (( $#screen )) && top_row+=( '%F{white}%K{128}'$screen'%f%k' )
+  top_row+=( '%F{white}%K{blue}'$^vcs[1,1]'%f%k' )
+  top_row+=( '%F{yellow}'$^vcs[2,-1]'%f' )
+  (( $#ruby_info )) && top_row+=( '%F{white}%K{red}'$ruby_info%f%k )
+  (( $+socks )) && top_row+=( '%F{white}%K{22}socks:'$socks%f%k )
+  (( $+x11 )) && top_row+=( '%F{white}%K{27}display '$x11%f%k )
 
-  prompt_parts+=( '%F{white}%K{22}%~%f%k'$_pschar' ' )
+  bottom_row+=( '%F{white}%K{22}%~%f%k' )
+  (( $+deleted )) && bottom_row+=( '%F{white}%K{red}!deleted!%f%k' )
+  (( $+incognito_mode )) && bottom_row+=( '%F{white}%K{208}!!!%f%k' )
+  bottom_row+=( $ps_char )
 
-  PROMPT=$'\n''╭╴'${prompt_parts[1]}' ╼'$'\n╰─╴'${prompt_parts[2]}
+  PROMPT=$'\n''╭╴'${(j:╶╴:)top_row}' ╼'$'\n╰─╴'${(j:╶╴:)bottom_row}' '
 }
 
 prompt_shorten () {
