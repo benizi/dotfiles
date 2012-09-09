@@ -1,6 +1,11 @@
 # TODO: vcs_info stuff
 # autoload -Uz vcs_info
 # zstyle ':vcs_info:*' disable cdv darcs mtn p4 svk tla
+
+__light_terminal () {
+  [[ $TERM != (st*|konsole*) ]]
+}
+
 __i_am_admin () {
   local admin=1
   [ -n "$INCYG" -a "$USERNAME" = "Administrator" ] && admin=0
@@ -112,21 +117,57 @@ __setup_prompt () {
     socks=$PROXY_SOCKS5
   fi
 
-  local -a top_row bottom_row
+  typeset -a top_row bottom_row
+  map_att () {
+    local att=$1
+    local -A map
+    __light_terminal && map=( f k k f )
+    (( $+map[$att] )) && att=$map[$att]
+    printf %s $att
+  }
 
-  top_row=( '%F{white}%K{22}%~%f%k' $ps_color%n@%m%f%k%b )
-  (( $#screen )) && top_row+=( '%F{white}%K{128}'$screen'%f%k' )
-  top_row+=( '%F{white}%K{blue}'$^vcs[1,1]'%f%k' )
-  top_row+=( '%F{yellow}'$^vcs[2,-1]'%f' )
-  (( $#ruby_info )) && top_row+=( '%F{white}%K{red}'$ruby_info%f%k )
-  (( $+socks )) && top_row+=( '%F{white}%K{22}socks:'$socks%f%k )
-  (( $+x11 )) && top_row+=( '%F{white}%K{27}display '$x11%f%k )
+  add.top_row add.bottom_row () {
+    local arg
+    local -a rest
+    local -A atts
+    atts=( f 15 )
+    while (( $# )) ; do
+      local arg=$1
+      shift
+      case $arg in
+        :norm) atts=() ;;
+        f:*|k:*|s:) atts[${arg%%\:*}]=${arg#*:} ;;
+        *) rest+=( $arg $@ ) ; break ;;
+      esac
+    done
+    (( $#rest )) || return
+    local att= val= c_pre= c_post=
+    for att in ${(k)atts} ; do
+      local key="$(map_att $att)"
+      val=$atts[$att]
+      c_pre+=%${key:u}
+      (( $#val )) && c_pre+='{'$val'}'
+      c_post+=%$key
+    done
+    eval "${0:e}+=( $c_pre${(@q)^rest}$c_post )"
+  }
 
-  (( $+deleted )) && bottom_row+=( '%F{white}%K{red}!deleted!%f%k' )
-  (( $+incognito_mode )) && bottom_row+=( '%F{white}%K{208}!!!%f%k' )
-  bottom_row+=( $ps_char )
+  add.top_row k:22 %~
+  add.top_row :norm $ps_color%n@%m%f%k%b
+  add.top_row k:128 $screen
+  add.top_row k:blue $^vcs[1,1]
+  add.top_row f:yellow $^vcs[2,-1]
+  add.top_row k:red $ruby_info
+  (( $+socks )) && add.top_row k:22 "socks:$socks"
+  (( $+x11 )) && add.top_row k:27 "display $x11"
+
+  (( $+deleted )) && add.bottom_row k:red '!deleted!'
+  (( $+incognito_mode )) && add.bottom_row k:208 '!!!'
+  add.bottom_row :norm $ps_char
 
   PROMPT=$'\n╭─╴'${(j:╶╴:)top_row}' ╼'$'\n╰╴'${(j:╶╴:)bottom_row}' '
+
+  unfunction map_att add.top_row add.bottom_row
 }
 
 prompt_shorten () {
