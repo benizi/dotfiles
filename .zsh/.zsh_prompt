@@ -1,7 +1,3 @@
-# TODO: vcs_info stuff
-# autoload -Uz vcs_info
-# zstyle ':vcs_info:*' disable cdv darcs mtn p4 svk tla
-
 __light_terminal () {
   [[ $TERM != (st*|konsole*) ]]
 }
