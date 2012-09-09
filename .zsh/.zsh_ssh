@@ -7,7 +7,7 @@ function ssh_find_add () {
   ids=( ${(f):-"$(ssh_find)"} )
   (( $#ids )) || return
   (( $+INSOL || $+INOSX )) && envargs=( DISPLAY= ) || envargs=( -u DISPLAY )
-  pushd ~/.ssh || return
+  pushd ~/.ssh 2>/dev/null || return
   env $envargs ssh-add $ids
   popd
 }
