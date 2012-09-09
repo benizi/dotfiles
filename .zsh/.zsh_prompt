@@ -86,10 +86,11 @@ __prompt_ruby_manager () {
 __setup_prompt () {
   setopt promptsubst
 
-  local ps_char='$' ps_color='$PSCOLORNORM'
-  (( $+termcap[Co] )) && (( $termcap[Co] > 8 )) || ps_color='$PSCOLORLO'
+  (( $+__prompt_color )) || __prompt_color=( f:231 k:124 b: )
+  local ps_char='$'
+  (( $+termcap[Co] )) && (( $termcap[Co] > 8 )) || __prompt_color=()
   if __i_am_admin ; then
-    ps_color='${PSCOLORROOT-$INVERSE$BOLD'$ps_color'}'
+    __prompt_color+=( s: )
     ps_char='#'
   fi
 
@@ -132,7 +133,7 @@ __setup_prompt () {
       shift
       case $arg in
         :norm) atts=() ;;
-        f:*|k:*|s:) atts[${arg%%\:*}]=${arg#*:} ;;
+        f:*|k:*|?:) atts[${arg%%\:*}]=${arg#*:} ;;
         *) rest+=( $arg $@ ) ; break ;;
       esac
     done
@@ -149,7 +150,7 @@ __setup_prompt () {
   }
 
   add.top_row k:22 %~
-  add.top_row :norm $ps_color%n@%m%f%k%b
+  add.top_row $__prompt_color %n@%m
   add.top_row k:128 $screen
   add.top_row k:blue $^vcs[1,1]
   add.top_row f:yellow $^vcs[2,-1]
