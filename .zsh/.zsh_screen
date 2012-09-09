@@ -10,7 +10,7 @@ else
 fi
 if (( $+commands[dtach] )) ; then
    local -a dtaches
-   if (( $+commands[dt] )) ; then
+   if [[ -x $commands[dt] ]] ; then
       dtaches=( $(dt -ls) )
    else
       dtaches=( ~/.dtach/*(N:t) )
