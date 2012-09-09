@@ -64,7 +64,7 @@ for my $ba (@escapes) {
 			print "\n";
 		}
 	} else {
-		for (16..($grey?($c88?87:255):($c88?79:231))) {
+		for (0..($grey?($c88?87:255):($c88?79:231))) {
 			print $c->($_, join '', grep($show_number, $_), $text, $split);
 		}
 	}
