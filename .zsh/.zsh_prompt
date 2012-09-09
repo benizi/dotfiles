@@ -137,7 +137,7 @@ __setup_prompt () {
         *) rest+=( $arg $@ ) ; break ;;
       esac
     done
-    (( $#rest )) || return
+    (( $#rest )) || return 0
     local att= val= c_pre= c_post=
     for att in ${(k)atts} ; do
       local key="$(map_att $att)"
