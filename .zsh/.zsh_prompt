@@ -170,25 +170,6 @@ __setup_prompt () {
   unfunction map_att add.top_row add.bottom_row
 }
 
-prompt_shorten () {
-  local in=$1
-  if (( $#in > 15 )) ; then
-    local -a out
-    local i
-    out=( ${(s./.)in} )
-    for (( i = 1 ; i < $#out ; i++ )) ; do
-      part=$out[$i]
-      case $part in
-        .[[:alpha:]]*) part=.$part[2] ;;
-        [[:alpha:]]*) part=$part[1] ;;
-      esac
-      out[$i]=$part
-    done
-    in=${(j./.)out}
-  fi
-  printf %s $in
-}
-
 TITLESEP='│' # ceçi n'est pas un pipe
 (( $+INCYG || $+STY )) && TITLESEP='|'
 [[ $TERM = (screen|cygwin)* ]] && TITLESEP='|'
