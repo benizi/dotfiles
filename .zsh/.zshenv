@@ -169,8 +169,13 @@ ruby-manager () {
   local -a extra_bin
   case $ruby_manager in
     rbenv)
-      extra_bin=( ~$owner/.rbenv/bin )
-      export RBENV_ROOT=~$owner/.rbenv
+      local bin=~$owner/.rbenv/bin
+      if [[ ! -r $bin ]] ; then
+        unset ruby_manager
+        return 1
+      fi
+      extra_bin=( $bin )
+      export RBENV_ROOT=$bin:h
       extra_bin=( $RBENV_ROOT/shims $extra_bin )
 
       rbenv () {
