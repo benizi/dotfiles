@@ -114,7 +114,7 @@ __setup_prompt () {
 
   local -a top_row bottom_row
 
-  top_row=( $ps_color%n@%m%f%k%b )
+  top_row=( '%F{white}%K{22}%~%f%k' $ps_color%n@%m%f%k%b )
   (( $#screen )) && top_row+=( '%F{white}%K{128}'$screen'%f%k' )
   top_row+=( '%F{white}%K{blue}'$^vcs[1,1]'%f%k' )
   top_row+=( '%F{yellow}'$^vcs[2,-1]'%f' )
@@ -122,12 +122,11 @@ __setup_prompt () {
   (( $+socks )) && top_row+=( '%F{white}%K{22}socks:'$socks%f%k )
   (( $+x11 )) && top_row+=( '%F{white}%K{27}display '$x11%f%k )
 
-  bottom_row+=( '%F{white}%K{22}%~%f%k' )
   (( $+deleted )) && bottom_row+=( '%F{white}%K{red}!deleted!%f%k' )
   (( $+incognito_mode )) && bottom_row+=( '%F{white}%K{208}!!!%f%k' )
   bottom_row+=( $ps_char )
 
-  PROMPT=$'\n''╭╴'${(j:╶╴:)top_row}' ╼'$'\n╰─╴'${(j:╶╴:)bottom_row}' '
+  PROMPT=$'\n╭─╴'${(j:╶╴:)top_row}' ╼'$'\n╰╴'${(j:╶╴:)bottom_row}' '
 }
 
 prompt_shorten () {
