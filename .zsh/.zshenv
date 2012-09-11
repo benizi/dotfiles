@@ -153,7 +153,7 @@ ruby-manager () {
   done
   parent_ruby_manager=${PARENT_RUBY_MANAGER:-none}
   if (( ! $+ruby_manager )) ; then
-    [[ -f $last_manager ]] && ruby_manager=$(<$last_manager) || ruby_manager=rbenv
+    [[ -s $last_manager ]] && ruby_manager=$(<$last_manager) || ruby_manager=rbenv
   fi
   if (( ! UID )) && [[ $ruby_manager = rvm ]] ; then
     warn_rvm_root=true
