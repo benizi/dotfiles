@@ -133,6 +133,7 @@ fi
 
 vimrecover () {
   local l s just_list
+  unset just_list
   local -a lines extra
   local -A swapped
   (( $#argv )) && just_list=true
