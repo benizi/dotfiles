@@ -114,10 +114,10 @@ __setup_prompt () {
     socks=$PROXY_SOCKS5
   fi
 
-  typeset -a top_row bottom_row
   current_dir=${${(%):-%d}/$HOME/${:-'~'}}
   [[ $current_dir != ${(%):-%~} ]] && current_dir+=" [%~]"
 
+  typeset -a top_row middle_row bottom_row
   map_att () {
     local att=$1
     local -A map
@@ -126,7 +126,7 @@ __setup_prompt () {
     printf %s $att
   }
 
-  add.top_row add.bottom_row () {
+  add.top_row add.middle_row add.bottom_row () {
     local arg
     local -a rest
     local -A atts
@@ -161,13 +161,25 @@ __setup_prompt () {
   (( $+socks )) && add.top_row k:22 "socks:$socks"
   (( $+x11 )) && add.top_row k:27 "display $x11"
 
+  if (( $__prompt_return )) ; then
+    local escaped_command=${${${__last_command%%$'\n'}:gs/[$]/\\\$}:gs/[%]/%%}
+    add.middle_row k:208 $escaped_command' -> %?'
+  fi
+
   (( $+deleted )) && add.bottom_row k:red '!deleted!'
   (( $+incognito_mode )) && add.bottom_row k:208 '!!!'
   add.bottom_row :norm $ps_char
 
-  PROMPT=$'\n╭─╴'${(j:╶╴:)top_row}' ╼'$'\n╰╴'${(j:╶╴:)bottom_row}' '
+  local -a lines
+  lines=(
+    ''
+    '╭─╴'${(j:╶╴:)top_row}' ╼'
+    '│ '$^middle_row
+    '╰╴'${(j:╶╴:)bottom_row}' '
+  )
+  PROMPT=${(F)lines}
 
-  unfunction map_att add.top_row add.bottom_row
+  unfunction map_att add.top_row add.middle_row add.bottom_row
 }
 
 TITLESEP='│' # ceçi n'est pas un pipe
@@ -192,6 +204,7 @@ preexec () {
   fancytitle "$1 $TITLESEP "
 }
 precmd () {
+  __prompt_return=$?
   __setup_prompt
   fancytitle ""
 }
