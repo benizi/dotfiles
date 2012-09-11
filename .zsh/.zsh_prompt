@@ -98,7 +98,7 @@ __setup_prompt () {
   local -a vcs
   vcs=( "${(f):-"$(__prompt_vcs)"}" )
 
-  local x11 deleted socks
+  local x11 deleted socks current_dir
   unset x11 deleted socks
   local ruby_info="$(__prompt_ruby_manager)"
 
@@ -115,6 +115,9 @@ __setup_prompt () {
   fi
 
   typeset -a top_row bottom_row
+  current_dir=${${(%):-%d}/$HOME/${:-'~'}}
+  [[ $current_dir != ${(%):-%~} ]] && current_dir+=" [%~]"
+
   map_att () {
     local att=$1
     local -A map
@@ -149,7 +152,7 @@ __setup_prompt () {
     eval "${0:e}+=( $c_pre${(@q)^rest}$c_post )"
   }
 
-  add.top_row k:22 %~
+  add.top_row k:22 $current_dir
   add.top_row $__prompt_color %n@%m
   add.top_row k:128 $screen
   add.top_row k:blue $^vcs[1,1]
