@@ -1,0 +1,8 @@
+#compdef ruby-build
+
+_ruby-build-definitions () {
+  compadd ${(f):-"$(ruby-build --definitions)"}
+}
+
+_arguments \
+  '1::version: _ruby-build-definitions'
