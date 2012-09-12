@@ -197,7 +197,9 @@ fancytitle () {
   __i_am_admin && extra="ROOT $c "
   title="$1$(print -nP "$extra$host"'%~ $c %n${STY+ $c $STY}')"
   [[ $title = ?(#c100,) ]] && title=${title[1,88]}...
-  printf "${TITLE}%s${ENDTITLE}" $title
+  echoti tsl
+  printf %s $title
+  echoti fsl
 }
 preexec () {
   __last_command=$1
