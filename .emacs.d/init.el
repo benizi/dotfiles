@@ -22,9 +22,17 @@
 (when (display-graphic-p)
   (require 'color-theme-railscasts))
 
+;; popup menu for autocomplete
+(require 'popup)
+
+(require 'auto-complete)
+(require 'auto-complete-config)
+(ac-config-default)
+
 ;; Lispy stuff
 (require 'paredit)
 (require 'clojure-mode)
+(require 'ac-nrepl)
 (defun turn-on-paredit () (paredit-mode 1))
 (defun turn-off-paredit () (paredit-mode 0))
 (add-hook 'clojure-mode-hook 'turn-on-paredit)
