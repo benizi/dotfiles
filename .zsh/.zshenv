@@ -83,6 +83,7 @@ pathtest+=( $HOME/bin/dslinux/bin /usr/games/bin /home/bhaskell/wn/bin /home/bha
 pathtest+=( $path )
 pathtest+=( /people/bhaskell/bin )
 pathtest=( ~/brew/bin $^pathtest )
+pathtest=( ~/bin.local $^pathtest )
 path=( ${^pathtest}(N-/) )
 }
 
@@ -147,8 +148,7 @@ ruby-manager () {
   for arg ; do
     case $arg in
       --save) save=true ;;
-      --once|--no-save) save=false ;;
-      *) (( $+save )) || save=false ; ruby_manager=$arg ;;
+      *) ruby_manager=$arg ;;
     esac
   done
   parent_ruby_manager=${PARENT_RUBY_MANAGER:-none}
@@ -159,7 +159,14 @@ ruby-manager () {
     warn_rvm_root=true
     ruby_manager=rbenv
   fi
-  (( UID )) && ${save:-true} && (( $#ruby_manager )) && echo $ruby_manager > $last_manager
+
+  if (( $+save )) && (( $#ruby_manager )) ; then
+    if (( UID )) ; then
+      echo $ruby_manager > $last_manager
+    else
+      echo Not setting manager as root
+    fi
+  fi
 
   if [[ -o login ]] || [[ $ruby_manager != $parent_ruby_manager ]] ; then
     __clean_ruby_path
