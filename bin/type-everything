@@ -1,0 +1,57 @@
+#!/usr/bin/env ruby
+
+def xdotool(*args)
+  IO.popen((['xdotool'] + args).join(' ')) { |i| i.read.chomp }
+end
+
+warn "Click the window to test"
+#windowid = xdotool 'selectwindow'
+
+vim_mods = %w{M A C S}
+x_mods = {
+  'M' => 'Meta',
+  'A' => 'Alt',
+  'C' => 'Ctrl',
+  'S' => 'Shift',
+}
+class Array
+  def powerset
+    # from: http://www.entish.org/wordpress/?p=676#comment-23985
+    inject([[]]){|c,y|c.inject([]){|r,i|r+[i,i+[y]]}}
+  end
+end
+
+puts vim_mods.powerset.map { |a| a.join('+') }
+
+def xdo_print(string)
+  string.split(//).map do |k|
+    ['key',
+      case k
+      when '-' ; 'minus'
+      when '=' ; 'equal'
+      when ';' ; 'semicolon'
+      when ' ' ; 'space'
+      when "\n" ; 'Return'
+      else ; k
+      end
+    ]
+  end.reduce(:+)
+end
+
+xdo_args = ['selectwindow']
+xdo_args += xdo_print("echoti smkx ; cat -v ; echoti rmkx\n")
+vim_mods.powerset.each do |mods|
+  (1..20).each do |n|
+    f_key = "F#{n}"
+    vim_key = (mods + [f_key]).join('-')
+    x_key = (mods.map { |m| x_mods[m] } + [f_key]).join('+')
+    #puts vim_key
+    xdo_args += xdo_print("#{vim_key}=")
+    xdo_args += [ 'key', x_key ]
+    xdo_args += xdo_print("\n")
+  end
+end
+2.times { xdo_args += [ 'key', 'Ctrl+d' ] }
+#puts xdo_args
+xdotool *xdo_args
+#puts "ID=#{windowid}="
