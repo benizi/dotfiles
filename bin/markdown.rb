@@ -19,6 +19,7 @@ opts = {
 optparse = OptionParser.new do |o|
 	o.on('--no-additions') { opts[:additions] = false }
 	o.on('--github-style') { opts[:github] = true }
+	o.on('--title TITLE') { |t| @title = t }
 end
 optparse.parse!(ARGV)
 
@@ -36,11 +37,12 @@ if !cgi['source'].empty?
 end
 
 def title
-	begin
-		File.basename(ENV['SCRIPT_FILENAME'], '.markdown')
-	rescue
-		'no filename'
-	end
+	@title ||=
+		begin
+			File.basename(ENV['SCRIPT_FILENAME'], '.markdown')
+		rescue
+			'no filename'
+		end
 end
 
 puts <<HEADER
