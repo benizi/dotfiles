@@ -41,7 +41,21 @@ if (( $+commands[battery] )) ; then
 	battery -p | read plugged pct
 	$plugged && plugmark='+' || plugmark=''
 	bat=$pct
-	if [[ $pct -gt 0 && $pct -lt 11 ]] && ! $plugged ; then
+	unset do_warning
+	[[ $pct -gt 0 && $pct -le 5 ]] && ! $plugged && do_warning=true
+	if (( $+do_warning )) ; then
+		battery_warn=$HOME/.battery.warned
+		now="$(date +%s)"
+		last_warned="$(stat -c %Y $battery_warn 2>/dev/null)"
+		[[ -z $last_warned ]] && last_warned=0
+		if (( now - last_warned > 60 )) ; then
+			xmessage -timeout 60 -buttons 'IGNORE:1,Sleepy time:0' BATTERY IS ABOUT TO DIE && sudo pm-suspend
+			touch $battery_warn
+		else
+			unset do_warning
+		fi
+	fi
+	if (( ! $+do_warning )) && [[ $pct -gt 0 && $pct -le 15 ]] && ! $plugged ; then
 		for i in {1..20} ; do
 			bat="$spinner$bat$spinner"
 		done
