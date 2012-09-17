@@ -70,7 +70,7 @@ sub request_loop {
 	while ($request->Accept >= 0) {
 		#processing any STDIN input from WebServer (for CGI-POST actions)
 		my $stdin_passthrough = '';
-		my $req_len = 0 + $$req_params{CONTENT_LENGTH};
+		my $req_len = 0 + ($$req_params{CONTENT_LENGTH} || 0);
 		if ($$req_params{REQUEST_METHOD} eq 'POST' and $req_len) {
 			my $bytes_read = 0;
 			while ($bytes_read < $req_len) {
