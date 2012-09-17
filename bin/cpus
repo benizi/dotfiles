@@ -1,0 +1,2 @@
+#!/bin/sh
+awk 'BEGIN { cpu = 0 } /^proc/ { cpu++ } END { ORS = "" ; print cpu }' /proc/cpuinfo
