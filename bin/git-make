@@ -29,7 +29,7 @@ when 'zsh'
 	ENV['EXELDFLAGS'] = ''
 	run 'autoreconf'
 	run "./configure --enable-multibyte --prefix=#{dest}"
-	run 'make -j5'
+	run "make -j#{`cpus`}"
 	run 'make install'
 	puts
 when 'vim'
