@@ -45,8 +45,9 @@ $time_format //= $time_relative ? 'relative' : '%Y-%m-%d %H:%M:%S';
 my $print_target_pids;
 $print_target_pids //= 0 if $quiet;
 $_ = $_ ? '(?i)' : '' for $case_insensitive;
-if ($vim and not @cmds) {
-	($grep_args, @cmds) = (0, 'vim');
+if ($vim) {
+	@cmds = ('vim') unless @cmds;
+	$grep_args = 0;
 }
 $show_args //= !$vim;
 $show_env //= $verbose;
