@@ -1,0 +1,48 @@
+#!/bin/zsh
+
+(( UID )) && exec sudo $0 "$@"
+
+warn () { printf "\e[31m%s\e[0m\n" "$@" }
+die () { warn "$@" ; exit 1 }
+mounted () { [[ "$(stat -c %d $1)" != "$(stat -c %d $1:h)" ]] }
+
+pid=$(</var/run/mysql/mysqld.pid)
+
+set -e
+
+stop_wait () {
+  service mysql stop
+  slept=0
+  while sleep 1 ; do
+    (( slept = slept + 1 ))
+    (( slept > 10 )) && die "MySQL not shutting down?"
+    if (( pid )) ; then kill -0 $pid || break ; fi
+    test -e /var/run/mysql/mysql.sock || break
+  done
+}
+
+start () {
+  service mysql start
+}
+
+#fast=/mnt/nonlvm
+fast=/dev/shm
+
+if mounted ~mysql ; then
+  if read -q 'um?Currently mounted... unmount?' ; then
+    stop_wait
+    umount ~mysql
+    start
+  fi
+else
+  over=/mnt/overmounted
+  dest=$fast/mysql
+  mkdir -p $dest
+  mount --bind $dest ~mysql
+  mkdir $over
+  mount --bind /var/lib $over
+  rsync -Pav $over/mysql/ ~mysql/
+  umount $over
+  rmdir $over
+  start
+fi
