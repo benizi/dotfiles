@@ -1,0 +1,8 @@
+#!/bin/sh
+while [ $# -gt 0 ] ; do
+	arg=$1 ; shift
+	case $arg in
+		-activate|-lock) exec xlock -mode coral ;;
+		*) echo "Unhandled command (xscreensaver-command wrapper, not the real thing)" ;;
+	esac
+done
