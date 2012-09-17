@@ -1,0 +1,41 @@
+#!/bin/zsh
+unset help
+cmd=()
+doit=exec
+detach=true
+while (( $#argv )) ; do
+	arg=$1
+	shift
+	case $arg in
+		help|-help|--help) help=true ;;
+		notreally|--no-d|--no-detach|--attached|-a) unset detach ;;
+		--dry|--dry-run) doit=echo ;;
+		*) [[ $arg = -- ]] || cmd+=( $arg ) ; (( $#argv )) && cmd+=( "$@" ) ; break ;;
+	esac
+done
+set -- "${cmd[@]}"
+if (( $+help )) || (( ! $#argv && ! $#cmd )) ; then
+	cat <<USAGE
+Usage: ${0:t} [--help] [.-][session-name | command] [args]
+  session-name is optional if command is prefaced with '.'
+  session-name will not be duplicated if prefaced with '-'
+  Both can be used.
+USAGE
+	exit
+fi
+unset samename checkrunning
+sess=$1
+shift
+screenargs=()
+args=( "$@" )
+while true ; do
+	case $sess in
+		-*) sess=${sess[2,-1]} checkrunning=true ;;
+		.*) sess=${sess[2,-1]} samename=true ;;
+		*) break ;;
+	esac
+done
+(( $+checkrunning )) && screen-running $sess && exit 0
+(( $+samename )) && args=( $sess "${args[@]}" )
+(( ! $+STAYATTACH )) && (( $+detach )) && screenargs=( -d -m )
+$doit screen -S $sess "${screenargs[@]}" -- "${args[@]}"
