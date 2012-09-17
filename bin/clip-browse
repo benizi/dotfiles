@@ -16,7 +16,7 @@ for l in primary clipboard ; do
 	[[ "$url" = *$'\n'*$'\n'* ]] && continue
 	[[ "$url" = *.* ]] || [[ "$url" = */* ]] || continue
 	[[ "$url" = *\ *\ * ]] && continue
-	sensible-browser $url
+	sensible-browser $url &
 	exit
 done
 die "No url found"
