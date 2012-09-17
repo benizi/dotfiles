@@ -1,0 +1,5 @@
+#!/bin/zsh
+s=$1
+screen -r $s -X detach &> /dev/null && exit 0
+screen -ls |& grep -F .$s$'\t(Attached)' > /dev/null && exit 0
+exit 1
