@@ -39,7 +39,7 @@ esac
 #{{{1 setup some variables, each can be passed in
 : ${version=$(get-version)}
 : ${prefix=/tmp/vim-$rcs-$version}
-: ${makejobs:=5}
+: ${makejobs:=$(( 1 + $(cpus) ))}
 (( $+verbose )) || info () {}
 makeargs=()
 () {
