@@ -143,12 +143,15 @@ setup_defaults () {
 		for k in ${(k)image_color} ; do
 			image=i/$k.png
 			out=png:$theme_dir/$image
-			dim=$image_dims[$k]
+			c=$image_color[$k]
+			# speckled=gray10 wavy=verticalsaw
+			# style=pattern pattern=verticalleftshingle dim=36x36
 			case ${style:-plain} in
 				plasma) img=plasma: ;;
-				plain) img=xc:$image_color[$k] ;;
-				hexagons) dim=15x15 ; img=( pattern:hexagons -fill $image_color[$k] -opaque black ) ;;
+				plain) img=xc:$c ;;
+				pattern) : ${dim:=32x32} ; img=( pattern:${pattern:-hexagons} -fill $c -opaque black ) ;;
 			esac
+			: ${dim:=$image_dims[$k]}
 			cmd=( convert -size $dim $img $out )
 			#cmd=( convert rose: +matte $out )
 			$cmd || echo "Failed: $cmd"
