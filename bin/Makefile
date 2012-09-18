@@ -5,7 +5,7 @@ allsource = $(wildcard $(SRC)/*.c)
 all:	$(notdir $(basename $(allsource)))
 
 place-holder:	src/place-holder.c
-	$(CC) $(CFLAGS) -o $@.tmp $< -lcurses
+	$(CC) $(CFLAGS) -o $@.tmp $< $(shell ncurses5-config --libs)
 	mv $@.tmp $@
 
 %:	src/%.c
