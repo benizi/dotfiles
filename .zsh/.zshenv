@@ -83,7 +83,7 @@ pathtest+=( $HOME/bin/dslinux/bin /usr/games/bin /home/bhaskell/wn/bin /home/bha
 pathtest+=( $path )
 pathtest+=( /people/bhaskell/bin )
 pathtest=( ~/brew/bin $^pathtest )
-pathtest=( ~/bin.local $^pathtest )
+pathtest=( ~/bin.bin ~/bin.local $^pathtest )
 path=( ${^pathtest}(N-/) )
 }
 
