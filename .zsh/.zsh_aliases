@@ -103,7 +103,7 @@ rails () {
     warn $warning
     read -q 'proceed?Continue (y/N)? ' || return 1
   fi
-  be $rails "$@"
+  $rails "$@"
 }
 
 # global aliases
