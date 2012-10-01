@@ -14,10 +14,12 @@ import System.Exit
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
 
+import Graphics.X11.ExtraTypes.XF86
+
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
 --
-myTerminal      = "xterm"
+myTerminal      = "st"
 
 -- Whether focus follows the mouse pointer.
 myFocusFollowsMouse :: Bool
@@ -56,10 +58,46 @@ myFocusedBorderColor = "#ff0000"
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- launch a terminal
-    [ ((modm .|. shiftMask, xK_Return), spawn $ XMonad.terminal conf)
+    [ ((modm,               xK_Return), spawn $ "in-cwd " ++ XMonad.terminal conf)
+
+    -- root term
+    , ((modm .|. shiftMask, xK_Return), spawn "st -e sudo su - -s /bin/zsh -l")
 
     -- launch dmenu
-    , ((modm,               xK_p     ), spawn "dmenu_run")
+    , ((modm,               xK_r     ), spawn "dmenu_run")
+    , ((mod4Mask,           xK_r     ), spawn "dmenu_run")
+    , ((modm,               xK_space ), spawn "dmenu_run")
+
+    -- other launchers
+    ---- process monitoring
+    , ((mod4Mask,           xK_h     ), spawn $ XMonad.terminal conf ++ " -e htop")
+    , ((mod4Mask,           xK_i     ), spawn $ XMonad.terminal conf ++ " -e sudo iotop")
+
+    ---- web browsers
+    , ((modm,               xK_c     ), spawn "chromium")
+    , ((mod4Mask,           xK_c     ), spawn "chromium --incognito")
+
+    ---- ssh
+    , ((modm,               xK_u     ), spawn "ssh-choose -r -1")
+    , ((modm,               xK_slash ), spawn "ssh-choose -r")
+
+    ---- screensaver/sleep
+    , ((modm,               xK_Scroll_Lock), spawn "xscreensaver-command -activate")
+    , ((mod4Mask,           xK_Scroll_Lock), spawn "xscreensaver-command -activate")
+    , ((mod4Mask,           xK_l     ), spawn "xscreensaver-command -activate")
+    , ((0,                  xF86XK_ScreenSaver), spawn "xscreensaver-command -activate")
+    , ((0,                  xF86XK_Sleep), spawn "slp")
+
+    ---- screenshot
+    , ((0,                  xK_Print ), spawn "screenshot")
+
+    ---- xmms2
+    , ((0,                  xF86XK_AudioPlay), spawn "nyxmms2 play")
+    , ((shiftMask,          xF86XK_AudioPlay), spawn "nyxmms2 pause")
+    , ((0,                  xF86XK_AudioStop), spawn "nyxmms2 stop")
+    , ((shiftMask,          xF86XK_AudioStop), spawn "nyxmms2 quit")
+    , ((0,                  xF86XK_AudioNext), spawn "nyxmms2 next")
+    , ((0,                  xF86XK_AudioPrev), spawn "nyxmms2 prev")
 
     -- launch gmrun
     , ((modm .|. shiftMask, xK_p     ), spawn "gmrun")
@@ -68,10 +106,10 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm .|. shiftMask, xK_c     ), kill)
 
      -- Rotate through the available layout algorithms
-    , ((modm,               xK_space ), sendMessage NextLayout)
+    , ((mod4Mask,           xK_space ), sendMessage NextLayout)
 
     --  Reset the layouts on the current workspace to default
-    , ((modm .|. shiftMask, xK_space ), setLayout $ XMonad.layoutHook conf)
+    , ((mod4Mask .|. shiftMask, xK_space ), setLayout $ XMonad.layoutHook conf)
 
     -- Resize viewed windows to the correct size
     , ((modm,               xK_n     ), refresh)
@@ -89,7 +127,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm,               xK_m     ), windows W.focusMaster  )
 
     -- Swap the focused window and the master window
-    , ((modm,               xK_Return), windows W.swapMaster)
+    , ((mod4Mask,           xK_Return), windows W.swapMaster)
 
     -- Swap the focused window with the next window
     , ((modm .|. shiftMask, xK_j     ), windows W.swapDown  )
@@ -122,7 +160,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm .|. shiftMask, xK_q     ), io (exitWith ExitSuccess))
 
     -- Restart xmonad
-    , ((modm              , xK_q     ), spawn "xmonad --recompile; xmonad --restart")
+    , ((modm              , xK_q     ), spawn "xmonad --recompile && xmonad --restart")
     ]
     ++
 
