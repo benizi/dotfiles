@@ -213,9 +213,11 @@ precmd () {
 () {
   zle-line-init zle-keymap-select () {
     local -A seqs
+    local normal=1 insert
+    __light_terminal && insert=0 || insert=15
     if [[ $TERM = rxvt* ]] ; then
-      seqs+=( cmd $'\e]12;1\a' )
-      seqs+=( ins $'\e]12;0\a' )
+      seqs+=( cmd $'\e]12;'$normal$'\a' )
+      seqs+=( ins $'\e]12;'$insert$'\a' )
     elif (( $+terminfo[cvvis] && $+terminfo[cnorm] )) ; then
       seqs+=( cmd $terminfo[cvvis] )
       seqs+=( ins $terminfo[cnorm] )
