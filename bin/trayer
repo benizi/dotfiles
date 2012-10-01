@@ -17,13 +17,16 @@ GetOptions(
 ) or die 'options';
 my @cmd;
 my $info0 = join ':', (stat $0)[0,1];
+my $found_trayer = 0;
 for my $dir (File::Spec->path) {
 	my $trayer = File::Spec->catfile($dir, 'trayer');
 	next unless -f $trayer;
 	next if $info0 eq join ':', (stat $trayer)[0,1];
+	$found_trayer = 1;
 	push @cmd, $trayer;
 	last;
 }
+$found_trayer or die "Could not find trayer\n";
 push @cmd, map {; $_, $opts{$_} } keys %opts;
 if ($dry_run) {
 	print "@cmd\n";
