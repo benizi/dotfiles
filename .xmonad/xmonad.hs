@@ -9,6 +9,7 @@
 
 import XMonad
 import XMonad.Hooks.DynamicLog
+import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageDocks
 import XMonad.Util.Run
 import Data.Monoid
@@ -292,7 +293,7 @@ myStartupHook = return ()
 --
 main = do
     xmproc <- spawnPipe "xmobar"
-    xmonad $ defaultConfig {
+    xmonad $ ewmh defaultConfig {
       -- simple stuff
         terminal           = myTerminal,
         focusFollowsMouse  = myFocusFollowsMouse,
