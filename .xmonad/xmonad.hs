@@ -11,6 +11,7 @@ import XMonad
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageDocks
+import XMonad.Hooks.UrgencyHook
 import XMonad.Util.Run
 import Data.Monoid
 import System.Exit
@@ -293,7 +294,9 @@ myStartupHook = return ()
 --
 main = do
     xmproc <- spawnPipe "xmobar"
-    xmonad $ ewmh defaultConfig {
+    xmonad $ ewmh
+           $ withUrgencyHook NoUrgencyHook
+           $ defaultConfig {
       -- simple stuff
         terminal           = myTerminal,
         focusFollowsMouse  = myFocusFollowsMouse,
