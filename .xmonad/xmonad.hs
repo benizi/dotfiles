@@ -175,6 +175,14 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
         , (f, m) <- [(W.greedyView, 0), (W.shift, shiftMask)]]
     ++
 
+    --
+    -- win-[1..9], Switch to monitor N
+    -- win-shift-[1..9], Move client to monitor N
+    [((m .|. mod4Mask, k), screenWorkspace sc >>= flip whenJust (windows . f))
+        | (k, sc) <- zip [xK_1 .. xK_9] [0..]
+        , (f, m) <- [(W.view, 0), (W.shift, shiftMask)]]
+    ++
+
     -- add alt-i = workspace 7 (= "IM")
     [ ((modm, xK_i), windows $ W.greedyView "7")
     , ((modm .|. shiftMask, xK_i), windows $ W.shift "7")
