@@ -296,6 +296,11 @@ myLogHook = return ()
 -- By default, do nothing.
 myStartupHook = return ()
 
+myLayoutDisplay :: String -> String
+myLayoutDisplay "Tall" = "[]="
+myLayoutDisplay "Full" = "[M]"
+myLayoutDisplay other = wrap "(layout:" ")" other
+
 ------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
 
@@ -330,7 +335,7 @@ main = do
                                  , ppHiddenNoWindows = xmobarColor "gray60" ""
                                  , ppUrgent = xmobarColor myNormalBorderColor myUrgentColor
                                  , ppTitle = xmobarColor "white" "" . shorten 120
-                                 , ppLayout = wrap "(layout:" ")"
+                                 , ppLayout = myLayoutDisplay
                                  , ppSep = " │ "
                                  , ppWsSep = " "
                                  , ppSort = DynOrd.getSortByOrder
