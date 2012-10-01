@@ -83,8 +83,8 @@ begin
 	case cmd[0]
 	when /(\A|\/)(?:u?rxvt|st|u?xterm|terminal)$/i # if it looks term-ish, find subshell
 		pid = subvim(pid) || subshell(pid)
-	when /chrom/i # if it looks like Chromium, don't care about cwd
-		dir = ENV['HOME']
+	when /chrom/i # if it looks like Chromium, probably downloaded something
+		dir = "#{ENV['HOME']}/Downloads"
 	end
 	dir ||= cwd(pid)
 	Dir.chdir(dir)
