@@ -3,6 +3,7 @@
 
 # except...
 !/.zsh*
+!/.zsh.local
 *.historyfile
 .zsh*/*-history
 .zsh*/reminder*
@@ -12,6 +13,7 @@
 /.vim-tmp
 /.viminfo
 !/bin
+!/bin.local
 !/perl-lib
 !/Usable
 
