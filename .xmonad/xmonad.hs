@@ -52,8 +52,8 @@ myWorkspaces = map show [1..9]
 
 -- Border colors for unfocused and focused windows, respectively.
 --
-myNormalBorderColor  = "#dddddd"
-myFocusedBorderColor = "#ff0000"
+myNormalBorderColor  = "#285577"
+myFocusedBorderColor = "#ff9900"
 
 ------------------------------------------------------------------------
 -- Key bindings. Add, modify or remove key bindings here.
