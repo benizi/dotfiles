@@ -56,6 +56,7 @@ myWorkspaces = map show [1..9]
 --
 myNormalBorderColor  = "#285577"
 myFocusedBorderColor = "#ff9900"
+myUrgentColor = "orange"
 
 ------------------------------------------------------------------------
 -- Key bindings. Add, modify or remove key bindings here.
@@ -316,10 +317,10 @@ main = do
         handleEventHook    = myEventHook,
         logHook            = dynamicLogWithPP xmobarPP
                                  { ppOutput = hPutStrLn xmproc
-                                 , ppCurrent = xmobarColor "#285577" "white"
+                                 , ppCurrent = xmobarColor myNormalBorderColor "white"
                                  , ppHidden = xmobarColor "white" ""
                                  , ppHiddenNoWindows = xmobarColor "gray60" ""
-                                 , ppUrgent = xmobarColor "orange" ""
+                                 , ppUrgent = xmobarColor myNormalBorderColor myUrgentColor
                                  , ppTitle = xmobarColor "white" "" . shorten 120
                                  , ppLayout = wrap "(layout:" ")"
                                  , ppSep = " │ "
