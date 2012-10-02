@@ -81,7 +81,7 @@ begin
 	cmd = cmd_from_pid(pid)
 	dir = nil
 	case cmd[0]
-	when /(\A|\/)(?:u?rxvt|st|u?xterm|terminal)$/i # if it looks term-ish, find subshell
+	when /(\A|\/)(?:u?rxvt|st|u?xterm|term(?:inal)?)$/i # if it looks term-ish, find subshell
 		pid = subvim(pid) || subshell(pid)
 	when /chrom/i # if it looks like Chromium, probably downloaded something
 		dir = "#{ENV['HOME']}/Downloads"
