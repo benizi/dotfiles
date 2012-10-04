@@ -51,8 +51,6 @@
 	# allow "git git cmd" typo:
 	k = !gitk
 	ka = "!gitk --all"
-	g = !gitg
-	ga = !gitg --all
 	# s = shell -- simple interactive shell
 	s = "!d() { d=\"$(git rev-parse --show-toplevel)\" ; b=\"$(git config --get alias.bc >/dev/null && git bc)\" ; d=\"$d${b:+[branch:$b]}\" ; } ; s() { d ; unset cmdprefix ; while echo -e \"$d git${cmdprefix:+ $cmdprefix}> \\c\" ; do read cmd ; handled=true ; case $cmd in \\!*) eval ${cmd#\\!} ;; /*) cd $cmd ;; \"\") [ -z \"$cmdprefix\" ] && break ; echo \"(locked, not quitting: q/quit)\" ; handled=false ;; q|quit) break ;; \\?) git help ${cmdprefix:---all} ;; prefix*) cmdprefix=\"${cmd#prefix }\" ;; lock*) cmdprefix=\"${cmd#lock }\" ;; noprefix*|unprefix*|unlock*) unset cmdprefix ;; *) handled=false ;; esac ; d ; $handled && continue ; git $cmdprefix $cmd ; done ; echo ; } ; s"
 #	st = diff --name-status
