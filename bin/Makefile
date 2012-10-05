@@ -51,6 +51,9 @@ NOW:	src/NOW.c
 chrome-cache-dump:	src/chrome-cache-dump.c src/chrome-cache-dump.h
 	$(CC) $(CFLAGS) -o $@ src/chrome-cache-dump.c
 
+list-essids:	src/list-essids.c
+	$(CC) $(CFLAGS) -o $@ $< -liw -lm
+
 password-manager:	src/password-manager.c
 	$(CC) $(CFLAGS) $(shell pkg-config --cflags gnome-keyring-1) -o $@ $< $(shell pkg-config --libs gnome-keyring-1)
 
