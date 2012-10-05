@@ -1,7 +1,6 @@
 #!/bin/zsh
 case $0 in
 	*-fresh) argv+=( --scratch http://${${0//-fresh/}:t} ) ;;
-	*.*) _profile=$0:e ;;
 	*chromium*|*open|*sensible-browser) ;;
 	*scratch) argv+=( --scratch ) ;;
 	*) _profile=$0:t ;;
