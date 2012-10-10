@@ -160,6 +160,7 @@ __setup_prompt () {
   add.top_row k:red $ruby_info
   (( $+socks )) && add.top_row k:22 "socks:$socks"
   (( $+x11 )) && add.top_row k:27 "display $x11"
+  add.top_row k:17 '%D{%Y-%m-%d %H:%M:%S}'
 
   if (( $__prompt_return )) ; then
     local escaped_command=${${${__last_command%%$'\n'}:gs/[$]/\\\$}:gs/[%]/%%}
