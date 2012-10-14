@@ -6,4 +6,4 @@ for arg ; do
   break
 done
 cd $dir
-urxvt
+term
