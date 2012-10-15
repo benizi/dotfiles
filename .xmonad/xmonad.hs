@@ -9,7 +9,6 @@
 
 import XMonad
 import XMonad.Actions.CycleWS
-import qualified XMonad.Actions.DynamicWorkspaceOrder as DynOrd
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageDocks
@@ -192,12 +191,6 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     [ ((modm, xK_i), windows $ W.greedyView "7")
     , ((modm .|. shiftMask, xK_i), windows $ W.shift "7")
     ]
-    ++
-
-    -- dynamic workspace ordering
-    [ ((mod4Mask, xK_Right), DynOrd.swapWith Next NonEmptyWS)
-    , ((mod4Mask, xK_Left), DynOrd.swapWith Prev NonEmptyWS)
-    ]
 
 
 ------------------------------------------------------------------------
@@ -342,7 +335,6 @@ main = do
                                  , ppLayout = myLayoutDisplay
                                  , ppSep = " │ "
                                  , ppWsSep = " "
-                                 , ppSort = DynOrd.getSortByOrder
                                  } <+> myLogHook,
         startupHook        = myStartupHook
     }
