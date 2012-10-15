@@ -303,6 +303,8 @@ myLayoutDisplay other = wrap "(layout:" ")" other
 
 myActiveMarker = wrap "" "⁰"
 
+myColor = dzenColor
+
 ------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
 
@@ -332,11 +334,11 @@ main = do
         handleEventHook    = myEventHook,
         logHook            = dynamicLogWithPP defaultPP
                                  { ppOutput = hPutStrLn dzproc
-                                 , ppCurrent = dzenColor myNormalBorderColor "white" . myActiveMarker
-                                 , ppHidden = dzenColor "white" "" . myActiveMarker
-                                 , ppHiddenNoWindows = dzenColor "gray60" ""
-                                 , ppUrgent = dzenColor myNormalBorderColor myUrgentColor
-                                 , ppTitle = dzenColor "white" "" . shorten 120
+                                 , ppCurrent = myColor myNormalBorderColor "white" . myActiveMarker
+                                 , ppHidden = myColor "white" "" . myActiveMarker
+                                 , ppHiddenNoWindows = myColor "gray60" ""
+                                 , ppUrgent = myColor myNormalBorderColor myUrgentColor
+                                 , ppTitle = myColor "white" "" . shorten 120
                                  , ppLayout = myLayoutDisplay
                                  , ppSep = " │ "
                                  , ppWsSep = " "
