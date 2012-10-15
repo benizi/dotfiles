@@ -298,7 +298,8 @@ myLayoutDisplay other = wrap "(layout:" ")" other
 
 myActiveMarker = wrap "" (superScriptNum 0)
 
-myColor = dzenColor
+statusBarProc = "dzen2 -e 'onstart=lower' -w 1920 -ta l -fg 'white' -bg '" ++ myNormalBorderColor ++ "'"
+statusBarColor = dzenColor
 
 ------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
@@ -306,7 +307,7 @@ myColor = dzenColor
 -- Run xmonad with the settings you specify. No need to modify this.
 --
 main = do
-    dzproc <- spawnPipe ("dzen2 -e 'onstart=lower' -w 1920 -ta l -fg 'white' -bg '" ++ myNormalBorderColor ++ "'")
+    statusproc <- spawnPipe statusBarProc
     xmonad $ ewmh
            $ withUrgencyHook NoUrgencyHook
            $ defaultConfig {
@@ -328,12 +329,12 @@ main = do
         manageHook         = myManageHook,
         handleEventHook    = myEventHook,
         logHook            = dynamicLogWithPP defaultPP
-                                 { ppOutput = hPutStrLn dzproc
-                                 , ppCurrent = myColor myNormalBorderColor "white" . myActiveMarker
-                                 , ppHidden = myColor "white" "" . myActiveMarker
-                                 , ppHiddenNoWindows = myColor "gray60" ""
-                                 , ppUrgent = myColor myNormalBorderColor myUrgentColor
-                                 , ppTitle = myColor "white" "" . shorten 120
+                                 { ppOutput = hPutStrLn statusproc
+                                 , ppCurrent = statusBarColor myNormalBorderColor "white" . myActiveMarker
+                                 , ppHidden = statusBarColor "white" "" . myActiveMarker
+                                 , ppHiddenNoWindows = statusBarColor "gray60" ""
+                                 , ppUrgent = statusBarColor myNormalBorderColor myUrgentColor
+                                 , ppTitle = statusBarColor "white" "" . shorten 120
                                  , ppLayout = myLayoutDisplay
                                  , ppSep = " │ "
                                  , ppWsSep = " "
