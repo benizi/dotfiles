@@ -78,7 +78,10 @@ fun! PostColorScheme()
 	if colo == 'dual-converted'
 		hi StatusLineNC ctermfg=252 ctermbg=24
 	elseif colo == 'jellybeans'
-		sil! !printf '\e]12;8\a'
+		if &t_Co <= 256
+			" set cursor color
+			sil! !printf '\e]12;8\a'
+		end
 		hi Search cterm=NONE ctermfg=0 ctermbg=220
 	elseif colo == 'railscasts'
 		hi TabLine guibg=#0000cc gui=none,reverse guifg=#ffffff
