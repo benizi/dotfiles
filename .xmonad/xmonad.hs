@@ -301,6 +301,8 @@ myLayoutDisplay "Tall" = "[]="
 myLayoutDisplay "Full" = "[M]"
 myLayoutDisplay other = wrap "(layout:" ")" other
 
+myActiveMarker = wrap "" "⁰"
+
 ------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
 
@@ -330,8 +332,8 @@ main = do
         handleEventHook    = myEventHook,
         logHook            = dynamicLogWithPP xmobarPP
                                  { ppOutput = hPutStrLn xmproc
-                                 , ppCurrent = xmobarColor myNormalBorderColor "white"
-                                 , ppHidden = xmobarColor "white" ""
+                                 , ppCurrent = xmobarColor myNormalBorderColor "white" . myActiveMarker
+                                 , ppHidden = xmobarColor "white" "" . myActiveMarker
                                  , ppHiddenNoWindows = xmobarColor "gray60" ""
                                  , ppUrgent = xmobarColor myNormalBorderColor myUrgentColor
                                  , ppTitle = xmobarColor "white" "" . shorten 120
