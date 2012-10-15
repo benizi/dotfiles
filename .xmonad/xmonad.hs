@@ -309,7 +309,7 @@ myActiveMarker = wrap "" "⁰"
 -- Run xmonad with the settings you specify. No need to modify this.
 --
 main = do
-    xmproc <- spawnPipe "xmobar"
+    dzproc <- spawnPipe ("dzen2 -e 'onstart=lower' -w 1920 -ta l -fg 'white' -bg '" ++ myNormalBorderColor ++ "'")
     xmonad $ ewmh
            $ withUrgencyHook NoUrgencyHook
            $ defaultConfig {
@@ -330,13 +330,13 @@ main = do
         layoutHook         = myLayout,
         manageHook         = myManageHook,
         handleEventHook    = myEventHook,
-        logHook            = dynamicLogWithPP xmobarPP
-                                 { ppOutput = hPutStrLn xmproc
-                                 , ppCurrent = xmobarColor myNormalBorderColor "white" . myActiveMarker
-                                 , ppHidden = xmobarColor "white" "" . myActiveMarker
-                                 , ppHiddenNoWindows = xmobarColor "gray60" ""
-                                 , ppUrgent = xmobarColor myNormalBorderColor myUrgentColor
-                                 , ppTitle = xmobarColor "white" "" . shorten 120
+        logHook            = dynamicLogWithPP defaultPP
+                                 { ppOutput = hPutStrLn dzproc
+                                 , ppCurrent = dzenColor myNormalBorderColor "white" . myActiveMarker
+                                 , ppHidden = dzenColor "white" "" . myActiveMarker
+                                 , ppHiddenNoWindows = dzenColor "gray60" ""
+                                 , ppUrgent = dzenColor myNormalBorderColor myUrgentColor
+                                 , ppTitle = dzenColor "white" "" . shorten 120
                                  , ppLayout = myLayoutDisplay
                                  , ppSep = " │ "
                                  , ppWsSep = " "
