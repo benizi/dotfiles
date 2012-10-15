@@ -7,6 +7,8 @@
 -- Normally, you'd only override those defaults you care about.
 --
 
+import Superscripts
+
 import XMonad
 import XMonad.Actions.CycleWS
 import XMonad.Hooks.DynamicLog
@@ -294,7 +296,7 @@ myLayoutDisplay "Tall" = "[]="
 myLayoutDisplay "Full" = "[M]"
 myLayoutDisplay other = wrap "(layout:" ")" other
 
-myActiveMarker = wrap "" "⁰"
+myActiveMarker = wrap "" (superScriptNum 0)
 
 myColor = dzenColor
 
