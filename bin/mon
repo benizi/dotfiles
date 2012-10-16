@@ -2,17 +2,25 @@
 unset dry
 unset cycle
 ext_pos=--right-of
+case $0 in
+	*clone) set -- "$@" --clone
+esac
 for arg ; do
 	case "$arg" in
 		--dry*) dry=true ;;
 		--cycle) cycle=true ;;
-		--clone) ext_pos=--same-as ;;
+		--clone) ext_pos=--same-as ; cycle=true ;;
 		-l|--left) ext_pos=--left-of ;;
 		-r|--right) ext_pos=--right-of ;;
 		-a|--above) ext_pos=--above ;;
 		-b|--below) ext_pos=--below ;;
 	esac
 done
+
+all_off () {
+	xrandr | awk '/^[A-Z]{2}/ { print $1 }' | sed 1d | xargs -iZ xrandr --verbose --output Z --off
+}
+
 if xrandr | grep -q '^LVDS-*[123]' ; then
 	eval "$(xrandr | perl -lnwe 'BEGIN{@k=qw/int ext/} print join "=", (shift @k), $1 if /^([A-Z]\S+) (?:dis)?connected/; exit unless @k')"
 	int=LVDS-1
@@ -42,6 +50,6 @@ if $onlylap ; then
 	cmd+=( --output $ext --off )
 	doit $cmd
 else
-	(( $+cycle )) && doit $cmd --output $ext --off
+	(( $+cycle )) && all_off
 	doit $cmd --output $ext --mode $ext_mode $ext_pos $int
 fi
