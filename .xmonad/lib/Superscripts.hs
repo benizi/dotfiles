@@ -23,19 +23,15 @@ lookupOrSelf c m = case Map.lookup c m of
 superScriptChar :: Char -> Char
 superScriptChar c = lookupOrSelf c superScripts
 
+superScript = map superScriptChar
+
 desuperScriptChar :: Char -> Char
 desuperScriptChar c = lookupOrSelf c desuperScripts
 
-superScript :: String -> String
-superScript [] = ""
-superScript (x:xs) = [superScriptChar x] ++ superScript xs
+desuperScript = map desuperScriptChar
 
 superScriptNum :: Int -> String
 superScriptNum = superScript . show
-
-desuperScript :: String -> String
-desuperScript [] = ""
-desuperScript (x:xs) = [desuperScriptChar x] ++ desuperScript xs
 
 desuperScriptNum :: Int -> String
 desuperScriptNum = desuperScript . show
