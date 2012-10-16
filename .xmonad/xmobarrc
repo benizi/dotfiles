@@ -1,0 +1,20 @@
+Config { font = "xft:DejaVu Sans Mono:size=11"
+       , bgColor = "#285577"
+       , fgColor = "white"
+       , position = TopW L 95
+       , commands = [ Run Cpu ["-t", "cpu:<total>"] 10
+                    , Run Memory ["-t", "mem:<used>/<total>"] 10
+                    , Run Swap ["-t", "swap:<used>/<total>"] 10
+                    , Run Date "%Y-%m-%d │ %H:%M:%S" "theDate" 10
+                    , Run Network "wlan0" ["-t", "wlan:<rx>/<tx>"] 10
+                    , Run Com "essid" [] "" 10
+                    , Run Wireless "wlan0" [] 10
+                    , Run StdinReader
+                    , Run BatteryP ["BAT0"]
+                      [ "-t", "bat:<left>"
+                      , "--"
+                      , "-l", "red", "-m", "orange", "-h", "green"
+                      ] 10
+                    ]
+       , template = "%StdinReader% }{ %memory% │ %swap% │ %essid% %wlan0% │ %cpu% │ %battery% │ %theDate%"
+       }

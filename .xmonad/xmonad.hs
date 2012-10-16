@@ -19,6 +19,8 @@ import XMonad.Util.Run
 import Data.Monoid
 import System.Exit
 
+import System.Environment.FindBin
+
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
 
@@ -298,8 +300,9 @@ myLayoutDisplay other = wrap "(layout:" ")" other
 
 myActiveMarker = wrap "" (superScriptNum 0)
 
-statusBarProc = "dzen2 -e 'onstart=lower' -w 1920 -ta l -fg 'white' -bg '" ++ myNormalBorderColor ++ "'"
-statusBarColor = dzenColor
+statusBarProc :: String -> String
+statusBarProc xmonadDir = "xmobar " ++ xmonadDir ++ "/xmobarrc"
+statusBarColor = xmobarColor
 
 ------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
@@ -307,7 +310,8 @@ statusBarColor = dzenColor
 -- Run xmonad with the settings you specify. No need to modify this.
 --
 main = do
-    statusproc <- spawnPipe statusBarProc
+    xmonadDir <- getProgPath
+    statusproc <- spawnPipe $ statusBarProc xmonadDir
     xmonad $ ewmh
            $ withUrgencyHook NoUrgencyHook
            $ defaultConfig {
