@@ -262,7 +262,9 @@ myManageHook = manageDocks <+> composeAll
     , className =? "feh"            --> doFloat
     , className =? "Gitk"           --> doFloat
     , resource  =? "desktop_window" --> doIgnore
-    , resource  =? "kdesktop"       --> doIgnore ]
+    , resource  =? "kdesktop"       --> doIgnore
+    , className =? "Pinentry" --> doFloat
+    ]
 
 ------------------------------------------------------------------------
 -- Event handling
