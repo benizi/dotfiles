@@ -1,0 +1,9 @@
+#!/bin/zsh
+if (( $+commands[nmcli] )) ; then
+  nmcli="$(nmcli -t -f name con status)"
+  if [[ -n $nmcli ]] ; then
+    printf '%s\n' $nmcli
+    exit
+  fi
+fi
+list-essids
