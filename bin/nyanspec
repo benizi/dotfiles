@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+require 'open3'
+
+get_dir_cmd_e = %q{print Gem::Specification.find_by_name("nyan-cat-formatter").gem_dir, "/lib"}
+get_dir_cmd = %Q{ruby -rubygems -e '#{get_dir_cmd_e}'}
+
+unbundle_env = {
+  'BUNDLE_GEMFILE' => nil,
+  'BUNDLE_BIN_PATH' => nil,
+  'RUBYOPT' => nil,
+}
+
+$PROGRAM_NAME = 'rspec'
+$LOAD_PATH << Open3.popen3(unbundle_env, get_dir_cmd) { |i,o,e| o.read }
+ARGV.push(*%w{-f NyanCatMusicFormatter})
+
+gem 'rspec-core'
+load Gem.bin_path('rspec-core', 'rspec')
