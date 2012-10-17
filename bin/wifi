@@ -1,1 +1,10 @@
-nmcli con up id ${1:-benizi}
+#!/bin/zsh
+if (( $# )) ; then
+  ssid=$1
+  shift
+elif nmcli dev list | grep -q '[.]SSID.*4moms' ; then
+  ssid=4moms
+else
+  ssid=benizi
+fi
+nmcli con up id $ssid
