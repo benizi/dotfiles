@@ -110,7 +110,7 @@ TRAPZERR () {
   [[ $1 == "<"* ]] && return 0
   dir=${~1}
   dirs=( ${~:-$dir*}(-/N) )
-  if (( $#dirs )) ; then
+  if [[ ! -e $dir ]] && (( $#dirs > 1 )) ; then
     prompt3=$PROMPT3
     PROMPT3="Use one of these instead? "
     select choose in No Create $dirs ; do break ; done
