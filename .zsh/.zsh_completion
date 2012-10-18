@@ -67,3 +67,5 @@ _git-co () {
   _git-checkout "$@"
   _git-clone "$@"
 }
+
+_git-hard () { _git-reset "$@" }
