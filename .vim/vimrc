@@ -339,8 +339,8 @@ let g:no_time_tracking = 1
 "" Ctrl-P settings
 " default to horizontal open
 let g:ctrlp_prompt_mappings = {
-	\ 'AcceptSelection("h")': ['<cr>'],
-	\ 'AcceptSelection("e")': ['<c-x>'],
+	\ 'AcceptSelection("e")': ['<cr>'],
+	\ 'AcceptSelection("h")': ['<c-x>'],
 	\ }
 " no path management ( == use cwd)
 let g:ctrlp_working_path_mode = 0
@@ -348,6 +348,7 @@ let g:ctrlp_custom_ignore = {
 	\ 'dir': '\.git$\|\.hg$\|\.svn$\|tmp$',
 	\ 'file': '\.o$',
 	\ }
+let g:ctrlp_max_height = 100
 
 let g:NERDDefaultAlign = 'left'
 
