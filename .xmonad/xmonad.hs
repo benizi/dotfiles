@@ -308,6 +308,12 @@ statusBarProc :: String -> String
 statusBarProc xmonadDir = "xmobar " ++ xmonadDir ++ "/xmobarrc"
 statusBarColor = xmobarColor
 
+statusBarTitle :: String -> String
+statusBarTitle title = foldl (\acc c -> acc ++ case c of
+ '{' -> "("
+ '}' -> ")"
+ a -> [a]) [] title
+
 ------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
 
@@ -337,7 +343,7 @@ main = do
         manageHook         = myManageHook,
         handleEventHook    = myEventHook,
         logHook            = dynamicLogWithPP defaultPP
-                                 { ppOutput = hPutStrLn statusproc
+                                 { ppOutput = hPutStrLn statusproc . statusBarTitle
                                  , ppCurrent = statusBarColor myNormalBorderColor "white" . myActiveMarker
                                  , ppHidden = statusBarColor "white" "" . myActiveMarker
                                  , ppHiddenNoWindows = statusBarColor "gray60" ""
