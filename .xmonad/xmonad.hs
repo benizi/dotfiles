@@ -265,6 +265,7 @@ myManageHook = manageDocks <+> composeAll
     , resource  =? "desktop_window" --> doIgnore
     , resource  =? "kdesktop"       --> doIgnore
     , className =? "Pinentry" --> doFloat
+    , className =? "Huludesktop" --> doFloat
     ]
 
 ------------------------------------------------------------------------
