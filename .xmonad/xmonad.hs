@@ -70,6 +70,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- launch a terminal
     [ ((modm,               xK_Return), spawn $ "in-cwd " ++ XMonad.terminal conf)
+    , ((mod4Mask, xK_Return), spawn $ "in-cwd urxvt-256color")
 
     -- root term
     , ((modm .|. shiftMask, xK_Return), spawn "st -e sudo su - -s /bin/zsh -l")
@@ -137,7 +138,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm,               xK_m     ), windows W.focusMaster  )
 
     -- Swap the focused window and the master window
-    , ((mod4Mask,           xK_Return), windows W.swapMaster)
+    , ((mod4Mask .|. shiftMask, xK_Return), windows W.swapMaster)
 
     -- Swap the focused window with the next window
     , ((modm .|. shiftMask, xK_j     ), windows W.swapDown  )
