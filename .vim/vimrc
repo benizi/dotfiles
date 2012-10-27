@@ -237,17 +237,6 @@ fun! OpenOrNewUnderCursor()
 endfun
 nnoremap <C-w>f :call OpenOrNewUnderCursor()<CR>
 
-fun! CurrentDir()
-	let dir = expand('%:h').'/'
-	return dir =~ '^\.\?/$' ? '' : dir
-endf
-
-cno %% <C-R>=CurrentDir()<cr>
-" easy new %:h
-nma <Leader>n :new %%
-nma <Leader>e :e %%
-nma <Leader>t :tabnew %%
-
 " Ctrl+Arrow = window movement
 map <C-Left> <C-W>h
 map <C-Down> <C-W>j
@@ -350,6 +339,8 @@ let g:ctrlp_custom_ignore = {
 	\ 'file': '\.o$',
 	\ }
 let g:ctrlp_max_height = 100
+
+nm <Leader>n :CtrlPCurFile<CR>
 
 let g:NERDDefaultAlign = 'left'
 
