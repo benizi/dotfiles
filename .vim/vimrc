@@ -232,7 +232,7 @@ fun! OpenOrNewUnderCursor()
 		if OpenGlobUnderCursor()
 			return
 		end
-		new <cfile>
+		tabnew <cfile>
 	endtry
 endfun
 nnoremap <C-w>f :call OpenOrNewUnderCursor()<CR>
@@ -246,6 +246,7 @@ cno %% <C-R>=CurrentDir()<cr>
 " easy new %:h
 nma <Leader>n :new %%
 nma <Leader>e :e %%
+nma <Leader>t :tabnew %%
 
 " Ctrl+Arrow = window movement
 map <C-Left> <C-W>h
