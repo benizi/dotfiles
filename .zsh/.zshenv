@@ -83,6 +83,7 @@ pathtest+=( $HOME/bin/dslinux/bin /usr/games/bin /home/bhaskell/wn/bin /home/bha
 pathtest+=( $path )
 pathtest+=( /usr/local/heroku/bin )
 pathtest+=( /people/bhaskell/bin )
+pathtest=( ~$owner/maven/bin $^pathtest )
 pathtest=( ~/brew/bin $^pathtest )
 pathtest=( ~/.cabal/bin $^pathtest )
 pathtest=( ~/bin.bin ~/bin.local $^pathtest )
