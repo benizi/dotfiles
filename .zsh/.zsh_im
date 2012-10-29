@@ -1,5 +1,0 @@
-function(){
-#scim breaks Compose#local im=SCIM
-local im=XIM
-export XMODIFIERS=@im=$im GTK_IM_MODULE=$im:l QT_IM_MODULE=$im:l
-}
