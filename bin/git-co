@@ -20,8 +20,8 @@ case $# in
 esac
 if (( $+cloneit )) ; then
   echo "[$1] looks like a repo, so cloning." >&2
+  [[ $1 = gh:* ]] && set -- -o gh "$@"
   git clone "$@"
-  [[ $1 = gh:* ]] && { pushd *(/om[1]) ; git remote rename origin gh ; popd }
 else
   git checkout "$@"
 fi
