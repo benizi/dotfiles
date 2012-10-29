@@ -10,9 +10,10 @@ case $# in
     case $1 in
       *:*)
         revlike=${1%%:*}
-        rev=$(git rev-list --no-walk $revlike -- 2>/dev/null)
-        # [[ -z $rev ]] && echo "[$revlike] not a revision" >&2
-        [[ -z $rev ]] && cloneit=true
+        if [[ ! -e $1 ]] ; then
+          rev=$(git rev-list --no-walk $revlike -- 2>/dev/null)
+          [[ -z $rev ]] && cloneit=true
+        fi
         ;;
     esac
     ;;
