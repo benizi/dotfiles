@@ -1,5 +1,10 @@
 #!/bin/zsh
 unset cloneit
+# git co user/project
+# -> git co gh:user/project
+if (( $# == 1 )) && [[ $1 = [^/]*/[^/]* ]] && [[ $1 != [^:]*:[^:]* ]] ; then
+  set -- gh:$1
+fi
 case $# in
   1|2)
     case $1 in
