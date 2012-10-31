@@ -1,3 +1,15 @@
+local simple_prompt
+unset simple_prompt
+
+case $TERM in
+  9term) simple_prompt=true ;;
+esac
+
+if (( $+simple_prompt )) ; then
+  PS1='%n@%m %~%% '
+  return
+fi
+
 __light_terminal () {
   [[ $TERM != (st*|konsole*) ]]
 }
