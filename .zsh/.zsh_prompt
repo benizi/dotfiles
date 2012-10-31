@@ -99,11 +99,12 @@ __setup_prompt () {
   vcs=( "${(f):-"$(__prompt_vcs)"}" )
   local term=${TERM/-256color}
 
-  local x11 deleted socks current_dir
-  unset x11 deleted socks
+  local x11 deleted socks fail_couchdb current_dir
+  unset x11 deleted socks fail_couchdb
   local ruby_info="$(__prompt_ruby_manager)"
 
   [[ ! -e $PWD ]] && deleted=true
+  [[ -e ~$owner/failed-couchdb ]] && fail_couchdb=true
 
   if [[ "$DISPLAY" = localhost:[[:digit:]]*.0 ]] ; then
     (( ${${DISPLAY#localhost:}%.0} > 9 )) && x11=ssh
@@ -170,6 +171,7 @@ __setup_prompt () {
   fi
 
   (( $+deleted )) && add.bottom_row k:red '!deleted!'
+  (( $+fail_couchdb )) && add.bottom_row k:red '!CouchDB!'
   (( $+incognito_mode )) && add.bottom_row k:208 '!!!'
   add.bottom_row :norm $ps_char
 
