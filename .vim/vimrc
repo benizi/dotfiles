@@ -292,15 +292,13 @@ nn <silent> <C-l> :nohls<CR><C-l>
 nn <silent> <Esc>t :tabnew<CR>
 nn <silent> <Esc>{ gT
 nn <silent> <Esc>} gt
-fun! CloseIfLastWindow()
-	let bufs = 0
-	tabdo windo let bufs += 1
-	echom 'nbufs=' bufs
-	if bufs == 1
+fun! CloseAndQuitIfLast()
+	bd
+	if tabpagenr('$') == 1 && winnr('$') == 1 && bufname('') == ''
 		q
 	end
 endf
-nn <silent> <Esc>w :bd <bar> call CloseIfLastWindow()<CR>
+nn <silent> <Esc>w :call CloseAndQuitIfLast()<CR>
 
 " settings for TOhtml
 let g:html_no_progress=1
