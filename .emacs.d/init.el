@@ -1,6 +1,10 @@
 (global-font-lock-mode 1)
 (add-to-list 'load-path "~/.emacs.d")
 
+;; no menu or tool bars
+(menu-bar-mode -1)
+(tool-bar-mode -1)
+
 ;; Keep backup {file}~ and autosave #{file}# files in central directories
 (defvar autosave-dir "~/.emacs.d/autosaves")
 (make-directory autosave-dir t)
