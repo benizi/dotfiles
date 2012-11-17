@@ -2,11 +2,14 @@
 (add-to-list 'load-path "~/.emacs.d")
 
 ;; Keep backup {file}~ and autosave #{file}# files in central directories
-(defvar autosave-dir "~/.emacs-autosave")
+(defvar autosave-dir "~/.emacs.d/autosaves")
 (make-directory autosave-dir t)
+(defvar backup-dir "~/.emacs.d/backups")
+(make-directory backup-dir t)
+
 (setq auto-save-list-file-prefix (concat autosave-dir))
-(setq auto-save-file-name-transforms `(("." ,autosave-dir t)))
-(setq backup-directory-alist `(("." . "~/.emacs-backups")))
+(setq auto-save-file-name-transforms `((".*" ,(concat autosave-dir "/\\1") t)))
+(setq backup-directory-alist `(("." . ,backup-dir)))
 
 ;; Keep VIPER settings in the emacs dir
 (setq viper-custom-file-name "~/.emacs.d/viper")
