@@ -36,6 +36,8 @@
 (require 'auto-complete-config)
 (ac-config-default)
 
+(require 'anything)
+
 ;; Lispy stuff
 (require 'paredit)
 (require 'clojure-mode)
