@@ -26,6 +26,10 @@
       ("melpa" . "http://melpa.milkbox.net/packages/")))
 (package-initialize)
 
+;; EMacs VIm compatibility Layer
+(require 'evil)
+(evil-mode)
+
 ;; Set color-theme if running in X
 (when (display-graphic-p)
   (require 'color-theme-railscasts))
