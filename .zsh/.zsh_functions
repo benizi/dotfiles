@@ -141,4 +141,12 @@ rsync-build () {
   | xargs -iZ rsync -RPtv Z /usr/src/packages/
 }
 
+alias-function () {
+  (( $# )) || { warn "alias-function function-name [saved-function-name]" ; return 1 }
+  local fn=$1
+  (( $+functions[$fn] )) || { warn "no such function: $fn" ; return 1 }
+  local old_fn=${2:-_old_$fn}
+  eval $old_fn$' () {\n'${functions[$fn]}$'\n}'
+}
+
 ruler () { perl -lwe 'print map sprintf(" 23456 %2d0", $_), 1..50' | less -SE }
