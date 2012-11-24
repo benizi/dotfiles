@@ -30,9 +30,20 @@
 (require 'evil)
 (evil-mode)
 
-;; Set color-theme if running in X
-(when (display-graphic-p)
-  (require 'color-theme-railscasts))
+;; Set color-theme if running in X or a high-color terminal
+(defun setup-color-theme-p ()
+  "Returns true if it looks like the display can handle 24-bit colors"
+  (or (display-graphic-p)
+      (< 256 (display-color-cells))
+      (eq "st-24bit" (getenv "TERM"))
+      (getenv "KONSOLE_DBUS_SERVICE")))
+
+(defun setup-color-theme ()
+  "Set up my color theme"
+  (when (setup-color-theme-p)
+    (require 'color-theme-railscasts)))
+
+(add-hook 'term-setup-hook 'setup-color-theme)
 
 ;; popup menu for autocomplete
 (require 'popup)
