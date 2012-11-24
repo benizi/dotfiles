@@ -235,6 +235,9 @@ precmd () {
     if [[ $TERM = rxvt* ]] ; then
       seqs+=( cmd $'\e]12;'$normal$'\a' )
       seqs+=( ins $'\e]12;'$insert$'\a' )
+    elif [[ $TERM = (st*|*xterm*) ]] ; then
+      seqs+=( cmd $'\e[2 q' )
+      seqs+=( ins $'\e[6 q' )
     elif (( $+terminfo[cvvis] && $+terminfo[cnorm] )) ; then
       seqs+=( cmd $terminfo[cvvis] )
       seqs+=( ins $terminfo[cnorm] )
