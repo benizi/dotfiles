@@ -33,6 +33,10 @@
 (evil-set-initial-state 'nrepl-mode 'insert)
 (evil-set-initial-state 'fundamental-mode 'insert)
 
+;; I DO things
+(require 'ido)
+(ido-mode t)
+
 ;; Set color-theme if running in X or a high-color terminal
 (defun setup-color-theme-p ()
   "Returns true if it looks like the display can handle 24-bit colors"
