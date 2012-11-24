@@ -73,3 +73,9 @@
     (define-key paredit-mode-map (kbd "C-[") 'paredit-backward-slurp-sexp) ; c-[ rather than c-(
     (define-key paredit-mode-map (kbd "ESC") nil))) ; kill <esc> map (interferes w/ st)
 (add-hook 'paredit-mode-hook 'my-paredit-mode-hook)
+
+(add-hook 'minibuffer-setup-hook 'conditionally-enable-paredit-mode)
+(defun conditionally-enable-paredit-mode ()
+  "enable paredit-mode during eval-expression"
+  (if (eq this-command 'eval-expression)
+      (paredit-mode 1)))
