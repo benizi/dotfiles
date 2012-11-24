@@ -29,6 +29,9 @@
 ;; EMacs VIm compatibility Layer
 (require 'evil)
 (evil-mode)
+(setq evil-default-state 'normal)
+(evil-set-initial-state 'nrepl-mode 'insert)
+(evil-set-initial-state 'fundamental-mode 'insert)
 
 ;; Set color-theme if running in X or a high-color terminal
 (defun setup-color-theme-p ()
