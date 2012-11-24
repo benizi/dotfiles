@@ -218,35 +218,47 @@ fancytitle () {
   printf %s $title
   echoti fsl
 }
+
+typeset -A __terminal_seqs
+
+__reset_cursor () {
+  if (( $+__terminal_seqs[reset] )) ; then
+    printf '%s' $__terminal_seqs[reset]
+  fi
+}
+
 preexec () {
   __last_command=$1
   fancytitle "$1 $TITLESEP "
+  __reset_cursor
 }
+
 precmd () {
   __prompt_return=$?
   __setup_prompt
   fancytitle ""
 }
+
 () {
   zle-line-init zle-keymap-select () {
-    local -A seqs
     local normal=1 insert
     __light_terminal && insert=0 || insert=15
     if [[ $TERM = rxvt* ]] ; then
-      seqs+=( cmd $'\e]12;'$normal$'\a' )
-      seqs+=( ins $'\e]12;'$insert$'\a' )
+      __terminal_seqs+=( cmd $'\e]12;'$normal$'\a' )
+      __terminal_seqs+=( ins $'\e]12;'$insert$'\a' )
     elif [[ $TERM = (st*|*xterm*) ]] ; then
-      seqs+=( cmd $'\e[2 q' )
-      seqs+=( ins $'\e[6 q' )
+      __terminal_seqs+=( cmd $'\e[2 q' )
+      __terminal_seqs+=( ins $'\e[6 q' )
+      __terminal_seqs[reset]=$__terminal_seqs[cmd]
     elif (( $+terminfo[cvvis] && $+terminfo[cnorm] )) ; then
-      seqs+=( cmd $terminfo[cvvis] )
-      seqs+=( ins $terminfo[cnorm] )
+      __terminal_seqs+=( cmd $terminfo[cvvis] )
+      __terminal_seqs+=( ins $terminfo[cnorm] )
     else
       return
     fi
     case $KEYMAP in
-      vicmd) print -rn -- $seqs[cmd] ;;
-      main|viins) print -rn -- $seqs[ins] ;;
+      vicmd) print -rn -- $__terminal_seqs[cmd] ;;
+      main|viins) print -rn -- $__terminal_seqs[ins] ;;
     esac
   }
   # need line-init for cancelled commands
