@@ -140,3 +140,5 @@ rsync-build () {
   | perl -lpwe 's!(/.?RPMS)!/.$1!' \
   | xargs -iZ rsync -RPtv Z /usr/src/packages/
 }
+
+ruler () { perl -lwe 'print map sprintf(" 23456 %2d0", $_), 1..50' | less -SE }
