@@ -5,7 +5,7 @@ Config { font = "xft:DejaVu Sans Mono:size=11"
        , commands = [ Run Cpu ["-t", "cpu:<total>"] 10
                     , Run Memory ["-t", "mem:<used>/<total>"] 10
                     , Run Swap ["-t", "swap:<used>/<total>"] 10
-                    , Run Date "%Y-%m-%d │ %H:%M:%S" "theDate" 10
+                    , Run Date "%Y-%m-%d │ %H:%M:%S" "theDate" 1
                     , Run Network "wlan0" ["-t", "wlan:<rx>/<tx>"] 10
                     , Run Com "essid" [] "" 10
                     , Run Wireless "wlan0" [] 10
