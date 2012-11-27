@@ -37,10 +37,13 @@ sub auto_geometry {
 	my ($w, $h, $x, $y) = $g =~ /^(\d+)x(\d+)([+\-]\d+)([+\-]\d+)$/;
 	my $bar_height = 0;
 	if (my $xprop = find_prog 'xprop') {
-		($bar_height) = `$xprop -root DWM_BAR_HEIGHT` =~ /= (\d+)/m;
+		$bar_height = $1 if `$xprop -root DWM_BAR_HEIGHT` =~ /= (\d+)/m;
 	}
 	if (!$bar_height and my $wininfo = find_prog 'xwininfo') {
-		($bar_height) = `$wininfo -root -children -size` =~ /no name\): \(\)  ${w}x(?!$h)(\d+)\Q$x$y\E/m;
+		my $all_wins = `$wininfo -root -children -size`;
+		my @no_names = grep /no name\):/, split /\n/, $all_wins;
+		my @dims = map [ /\(\)\s+(\d+)x(\d+)/ ], @no_names;
+		$bar_height = (map $$_[1], sort { $$b[0] <=> $$a[0] } @dims)[0] if @dims;
 	}
 	$h -= $bar_height;
 	$y += $bar_height;

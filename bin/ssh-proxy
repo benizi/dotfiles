@@ -14,8 +14,8 @@ die () {
 usage () {
   cat >&2 <<USAGE
 Usage:
-  $(basename "$0") host port [options] [cmd [args]]
-  $(basename "$0") host port --quit
+  $(basename "$0") host [port] [options] [cmd [args]]
+  $(basename "$0") host [port] --quit
 
   cmd defaults to \$SHELL [$SHELL]
 
@@ -40,10 +40,10 @@ while [ $# -gt 0 ] ; do
     -c|--close|-q|--quit) quit=true ; break ;;
     -h|-help|--help|-u|--usage) usage 0 ;;
     *)
-      if [[ -z "$host" ]] ; then
-        host=$1
-      elif [[ -z "$port" ]] ; then
+      if [[ "$(expr "$1" : '[[:digit:]]*')" = ${#1} ]] && [[ -z "$port" ]] ; then
         port=$1
+      elif [[ -z "$host" ]] ; then
+        host=$1
       else
         break
       fi
