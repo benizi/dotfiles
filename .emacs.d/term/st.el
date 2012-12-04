@@ -40,11 +40,11 @@ Otherwise assume it does."
   (defun tty-color-approximate (rgb &optional frame)
     (st-tty-color-approximate rgb frame)))
 
-(defun terminal-init-st-24bit ()
+(defun st-24bit-setup ()
   "Set things up for \"high\" mode (256-color mode)"
   (st-register-default-colors))
 
-(defun terminal-init-st-24bit-super ()
+(defun st-24bit-super-setup ()
   "Set things up for \"super\" mode (24-bit color via terminfo)"
   (st-overwrite-standard-tty-stuff))
 
@@ -57,5 +57,5 @@ Otherwise assume it does."
   (progn
     (push (getenv "TERM") mode-line-format)
     (if (st-super-p)
-        (terminal-init-st-super)
-      (terminal-init-st-high))))
+        (st-24bit-super-setup)
+      (st-24bit-setup))))
