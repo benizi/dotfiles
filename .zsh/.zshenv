@@ -55,14 +55,17 @@ function run_local_versions () {
 }
 
 setup_term () {
-  function term_color_test () { eval '(( $+terminfo[colors] ))' 2>/dev/null }
+  if (( ! $+commands[infocmp] )) ; then
+    return 0
+  fi
+  term_color_test () { infocmp &> /dev/null }
   if ! term_color_test ; then
     terminfo_dirs=( ${^zsh_dirs}/{.,}terminfo(N/) /usr/share/terminfo(N) )
     (( $#terminfo_dirs )) && export TERMINFO=$terminfo_dirs[1] 2>/dev/null
   fi
   if ! term_color_test ; then
     ORIGINAL_TERM=$TERM
-    for try_term in rxvt-unicode256 xterm ; do
+    for try_term in rxvt-unicode256 xterm-256color xterm ; do
       TERM=$try_term 2>/dev/null
       term_color_test && break
     done
