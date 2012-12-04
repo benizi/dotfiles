@@ -6,6 +6,22 @@
 (tool-bar-mode -1)
 (setq inhibit-startup-screen t)
 
+;; highlight whitespace errors
+(setq-default whitespace-style '(face tabs trailing lines space-before-tab space-after-tab empty line))
+(whitespace-mode)
+(setq require-final-newline t)
+
+;; set up tabstop functions
+(setq-default indent-tabs-mode nil)
+
+(defun setup-tabstop (sw et)
+  "Setup tabstop like vim's &sw and &et"
+  (progn
+    (setq tab-width sw)
+    (setq c-basic-offset sw)
+    (setq cperl-indent-level sw)
+    (indent-tabs-mode et)))
+
 ;; Keep backup {file}~ and autosave #{file}# files in central directories
 (defvar autosave-dir "~/.emacs.d/autosaves")
 (make-directory autosave-dir t)
