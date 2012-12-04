@@ -22,6 +22,8 @@
     (setq cperl-indent-level sw)
     (indent-tabs-mode et)))
 
+(column-number-mode)
+
 ;; Keep backup {file}~ and autosave #{file}# files in central directories
 (defvar autosave-dir "~/.emacs.d/autosaves")
 (make-directory autosave-dir t)
