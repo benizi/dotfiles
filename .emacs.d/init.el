@@ -37,6 +37,10 @@
 (require 'ido)
 (ido-mode t)
 
+;; set font in X11
+(if (display-graphic-p)
+    (set-default-font "DejaVu Sans Mono-14"))
+
 ;; Set color-theme if running in X or a high-color terminal
 (defun setup-color-theme-p ()
   "Returns true if it looks like the display can handle 24-bit colors"
