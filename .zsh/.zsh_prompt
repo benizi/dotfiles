@@ -109,7 +109,6 @@ __setup_prompt () {
   local screen="$(__prompt_screen)"
   local -a vcs
   vcs=( "${(f):-"$(__prompt_vcs)"}" )
-  local term=${TERM/-256color}
 
   local x11 deleted socks fail_couchdb current_dir
   unset x11 deleted socks fail_couchdb
@@ -175,7 +174,7 @@ __setup_prompt () {
   (( $+socks )) && add.top_row k:22 "socks:$socks"
   (( $+x11 )) && add.top_row k:27 "display $x11"
   add.top_row k:17 '%D{%Y-%m-%d %H:%M:%S}'
-  (( $#term )) && add.top_row k:68 $term
+  add.top_row k:68 $TERM
 
   if (( $__prompt_return )) ; then
     local escaped_command=${${${__last_command%%$'\n'}:gs/[$]/\\\$}:gs/[%]/%%}
