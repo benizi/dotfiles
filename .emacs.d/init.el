@@ -52,6 +52,13 @@
 (evil-set-initial-state 'nrepl-mode 'insert)
 (evil-set-initial-state 'fundamental-mode 'insert)
 
+; clear default insert mode mappings
+(setcdr evil-insert-state-map nil)
+(define-key evil-insert-state-map
+  [escape] 'evil-normal-state)
+(define-key evil-insert-state-map
+  (read-kbd-macro evil-toggle-key) 'evil-emacs-state)
+
 ;; I DO things
 (require 'ido)
 (ido-mode t)
