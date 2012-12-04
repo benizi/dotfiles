@@ -4,6 +4,7 @@
 ;; no menu or tool bars
 (menu-bar-mode -1)
 (tool-bar-mode -1)
+(setq inhibit-startup-screen t)
 
 ;; Keep backup {file}~ and autosave #{file}# files in central directories
 (defvar autosave-dir "~/.emacs.d/autosaves")
