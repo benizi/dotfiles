@@ -33,7 +33,7 @@ Otherwise assume it does."
 	 (b (ash (nth 2 rgb) -8))
 	 (name (format "#%02x%02x%02x" r g b))
 	 (index (+ (ash r 16) (ash g 8) b)))
-    (list name index r g b)))
+    (list name index (car rgb) (cadr rgb) (nth 2 rgb))))
 
 (defun st-overwrite-standard-tty-stuff ()
   "Overwrites standard tty function(s) with st versions"
