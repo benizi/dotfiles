@@ -50,6 +50,10 @@ Otherwise assume it does."
          (name (format "#%02x%02x%02x" r g b)))
     (list name idx r g b)))
 
+(defun st-remove-ansi-colors ()
+  "Prevent ANSI 8 colors from overriding basic colors"
+  (setq tty-defined-color-alist nil))
+
 (defun st-overwrite-standard-tty-stuff ()
   "Overwrites standard tty function(s) with st versions"
   (defun tty-color-approximate (rgb &optional frame)
@@ -70,7 +74,8 @@ Otherwise assume it does."
 
 (defun st-24bit-super-setup ()
   "Set things up for \"super\" mode (24-bit color via terminfo)"
-  (st-overwrite-standard-tty-stuff))
+  (st-overwrite-standard-tty-stuff)
+  (st-remove-ansi-colors))
 
 (defun st-super-p ()
   "Whether the st currently running supports \"super\" mode"
