@@ -35,10 +35,34 @@ Otherwise assume it does."
 	 (index (+ (ash r 16) (ash g 8) b)))
     (list name index (car rgb) (cadr rgb) (nth 2 rgb))))
 
+(defun st-tty-color-desc (color &optional frame)
+  "Convert COLOR to a list in the same format as returned by tty-color-desc: \(NAME INDEX R G B\)"
+  (and (stringp color)
+       (let ((color (tty-color-canonicalize color))
+             (rgb (tty-color-standard-values color)))
+         (and rgb (st-tty-color-approximate rgb frame)))))
+
+(defun st-tty-color-by-index (idx &optional frame)
+  "Convert IDX to a list in the same format as returned by tty-color-desc"
+  (let* ((r (logand #xff (lsh idx -16)))
+         (g (logand #xff (lsh idx -8)))
+         (b (logand #xff idx))
+         (name (format "#%02x%02x%02x" r g b)))
+    (list name idx r g b)))
+
 (defun st-overwrite-standard-tty-stuff ()
   "Overwrites standard tty function(s) with st versions"
   (defun tty-color-approximate (rgb &optional frame)
-    (st-tty-color-approximate rgb frame)))
+    (st-tty-color-approximate rgb frame))
+  ; can't override tty-color-desc, since it's a C DEFSYM
+  (defun tty-color-translate (color &optional frame)
+    (cadr (st-tty-color-desc color frame)))
+  (defun tty-color-values (color &optional frame)
+    (cddr (st-tty-color-desc color frame)))
+  (defun tty-color-by-index (idx &optional frame)
+    (st-tty-color-by-index idx frame))
+  (defun tty-color-gray-shades (&optional display)
+    256))
 
 (defun st-24bit-setup ()
   "Set things up for \"high\" mode (256-color mode)"
