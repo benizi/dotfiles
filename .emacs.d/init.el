@@ -1,6 +1,16 @@
 (global-font-lock-mode 1)
 (add-to-list 'load-path "~/.emacs.d")
 
+;; Set up package management
+(require 'package)
+(setq package-archives
+      '(("gnu" . "http://elpa.gnu.org/packages/")
+      ("marmalade" . "http://marmalade-repo.org/packages/")
+      ("melpa" . "http://melpa.milkbox.net/packages/")))
+(package-initialize)
+
+(load "early-packages")
+
 ;; no menu or tool bars
 (menu-bar-mode -1)
 (tool-bar-mode -1)
@@ -36,14 +46,6 @@
 
 ;; Keep VIPER settings in the emacs dir
 (setq viper-custom-file-name "~/.emacs.d/viper")
-
-;; Set up package management
-(require 'package)
-(setq package-archives
-      '(("gnu" . "http://elpa.gnu.org/packages/")
-      ("marmalade" . "http://marmalade-repo.org/packages/")
-      ("melpa" . "http://melpa.milkbox.net/packages/")))
-(package-initialize)
 
 ;; EMacs VIm compatibility Layer
 (require 'evil)
