@@ -188,14 +188,6 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
         {- , (m == 0 || (not $ k `elem` [xK_9, xK_0]) ) -} ] -- exclude M-S-(, M-S-)
     ++
 
-    --
-    -- win-[1..9], Switch to monitor N
-    -- win-shift-[1..9], Move client to monitor N
-    [((m .|. mod4Mask, k), screenWorkspace sc >>= flip whenJust (windows . f))
-        | (k, sc) <- zip [xK_1 .. xK_9] [0..]
-        , (f, m) <- [(W.view, 0), (W.shift, shiftMask)]]
-    ++
-
     -- add alt-i = workspace 7 (= "IM")
     [ ((modm, xK_i), windows $ W.greedyView "7")
     , ((modm .|. shiftMask, xK_i), windows $ W.shift "7")
