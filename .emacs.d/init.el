@@ -30,7 +30,7 @@
     (setq tab-width sw)
     (setq c-basic-offset sw)
     (setq cperl-indent-level sw)
-    (indent-tabs-mode et)))
+    (setq indent-tabs-mode et)))
 
 (column-number-mode)
 
