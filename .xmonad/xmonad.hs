@@ -16,6 +16,7 @@ import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ICCCMFocus
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.UrgencyHook
+import XMonad.Layout.Grid
 import qualified XMonad.Layout.Fullscreen as FS
 import XMonad.Util.Run
 import Data.Monoid
@@ -227,7 +228,7 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 -- The available layouts.  Note that each layout is separated by |||,
 -- which denotes layout choice.
 --
-myLayout = FS.fullscreenFocus $ avoidStruts $ tiled ||| Full
+myLayout = FS.fullscreenFocus $ avoidStruts $ Full ||| tiled ||| GridRatio (8/2)
   where
      -- default tiling algorithm partitions the screen into two panes
      tiled   = Tall nmaster delta ratio
