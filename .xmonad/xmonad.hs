@@ -16,6 +16,7 @@ import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ICCCMFocus
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.UrgencyHook
+import qualified XMonad.Layout.Fullscreen as FS
 import XMonad.Util.Run
 import Data.Monoid
 import System.Exit
@@ -229,7 +230,7 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 -- The available layouts.  Note that each layout is separated by |||,
 -- which denotes layout choice.
 --
-myLayout = avoidStruts $ tiled ||| Full
+myLayout = FS.fullscreenFocus $ avoidStruts $ tiled ||| Full
   where
      -- default tiling algorithm partitions the screen into two panes
      tiled   = Tall nmaster delta ratio
@@ -258,7 +259,7 @@ myLayout = avoidStruts $ tiled ||| Full
 -- To match on the WM_NAME, you can use 'title' in the same way that
 -- 'className' and 'resource' are used below.
 --
-myManageHook = manageDocks <+> composeAll
+myManageHook = FS.fullscreenManageHook <+> manageDocks <+> composeAll
     [ className =? "MPlayer"        --> doFloat
     , className =? "Gimp"           --> doFloat
     , className =? "feh"            --> doFloat
@@ -278,7 +279,7 @@ myManageHook = manageDocks <+> composeAll
 -- return (All True) if the default handler is to be run afterwards. To
 -- combine event hooks use mappend or mconcat from Data.Monoid.
 --
-myEventHook = mempty
+myEventHook = FS.fullscreenEventHook
 
 ------------------------------------------------------------------------
 -- Status bars and logging
