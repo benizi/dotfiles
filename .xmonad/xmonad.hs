@@ -252,12 +252,13 @@ myLayout = FS.fullscreenFocus $ avoidStruts $ Full ||| tiled ||| GridRatio (8/2)
 myManageHook = FS.fullscreenManageHook <+> manageDocks <+> composeAll
     [ className =? "MPlayer"        --> doFloat
     , className =? "Gimp"           --> doFloat
-    , className =? "feh"            --> doFloat
-    , className =? "Gitk"           --> doFloat
     , resource  =? "desktop_window" --> doIgnore
     , resource  =? "kdesktop"       --> doIgnore
     , className =? "Pinentry" --> doFloat
     , className =? "Huludesktop" --> doFloat
+    , className =? "Pavucontrol" --> doFloat
+    , className =? "sun-awt-X11-XFramePeer" --> doFloat
+    , className =? "java-lang-Thread" --> doFloat
     ]
 
 ------------------------------------------------------------------------
