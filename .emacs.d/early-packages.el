@@ -1,6 +1,9 @@
 (defvar early-packages
   '(
+    auto-complete
     clojure-mode
+    elscreen
+    evil
     expand-region
     haml-mode
     haskell-mode
