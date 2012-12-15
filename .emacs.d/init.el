@@ -118,3 +118,5 @@
   "enable paredit-mode during eval-expression"
   (if (eq this-command 'eval-expression)
       (paredit-mode 1)))
+
+(setq auto-mode-alist (cons '("\\.cljs$" . clojure-mode) auto-mode-alist))
