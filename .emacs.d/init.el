@@ -123,3 +123,5 @@
 
 ; Haskell stuff
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
+
+(setup-tabstop 2 t)
