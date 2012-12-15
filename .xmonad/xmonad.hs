@@ -296,7 +296,7 @@ myLogHook = takeTopFocus
 -- per-workspace layout choices.
 --
 -- By default, do nothing.
-myStartupHook = return ()
+myStartupHook = ewmhDesktopsStartup
 
 myLayoutDisplay :: String -> String
 myLayoutDisplay "Tall" = "[]="
