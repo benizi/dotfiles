@@ -120,3 +120,6 @@
       (paredit-mode 1)))
 
 (setq auto-mode-alist (cons '("\\.cljs$" . clojure-mode) auto-mode-alist))
+
+; Haskell stuff
+(add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
