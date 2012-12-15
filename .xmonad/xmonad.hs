@@ -23,6 +23,7 @@ import Data.Monoid
 import System.Exit
 
 import System.Environment.FindBin
+import GHC.IO.Handle.Types (Handle)
 
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
@@ -278,18 +279,6 @@ myEventHook = FS.fullscreenEventHook
 -- Perform an arbitrary action on each internal state change or X event.
 -- See the 'XMonad.Hooks.DynamicLog' extension for examples.
 --
-myLogHook = takeTopFocus
-
-------------------------------------------------------------------------
--- Startup hook
-
--- Perform an arbitrary action each time xmonad starts or is restarted
--- with mod-q.  Used by, e.g., XMonad.Layout.PerWorkspace to initialize
--- per-workspace layout choices.
---
--- By default, do nothing.
-myStartupHook = ewmhDesktopsStartup
-
 myLayoutDisplay :: String -> String
 myLayoutDisplay "Tall" = "[]="
 myLayoutDisplay "Full" = "[M]"
@@ -306,6 +295,32 @@ statusBarTitle title = foldl (\acc c -> acc ++ case c of
  '{' -> "("
  '}' -> ")"
  a -> [a]) [] title
+
+statusLogHook :: Handle -> X ()
+statusLogHook statusproc = dynamicLogWithPP defaultPP
+  { ppOutput = hPutStrLn statusproc . statusBarTitle
+  , ppCurrent = statusBarColor myNormalBorderColor "white" . myActiveMarker
+  , ppHidden = statusBarColor "white" "" . myActiveMarker
+  , ppHiddenNoWindows = statusBarColor "gray60" ""
+  , ppUrgent = statusBarColor myNormalBorderColor myUrgentColor
+  , ppTitle = statusBarColor "white" "" . shorten 120
+  , ppLayout = myLayoutDisplay
+  , ppSep = " │ "
+  , ppWsSep = " "
+  }
+
+myLogHook :: Handle -> X ()
+myLogHook statusproc = statusLogHook statusproc <+> takeTopFocus
+
+------------------------------------------------------------------------
+-- Startup hook
+
+-- Perform an arbitrary action each time xmonad starts or is restarted
+-- with mod-q.  Used by, e.g., XMonad.Layout.PerWorkspace to initialize
+-- per-workspace layout choices.
+--
+-- By default, do nothing.
+myStartupHook = ewmhDesktopsStartup
 
 ------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
@@ -335,16 +350,6 @@ main = do
         layoutHook         = myLayout,
         manageHook         = myManageHook,
         handleEventHook    = myEventHook,
-        logHook            = dynamicLogWithPP defaultPP
-                                 { ppOutput = hPutStrLn statusproc . statusBarTitle
-                                 , ppCurrent = statusBarColor myNormalBorderColor "white" . myActiveMarker
-                                 , ppHidden = statusBarColor "white" "" . myActiveMarker
-                                 , ppHiddenNoWindows = statusBarColor "gray60" ""
-                                 , ppUrgent = statusBarColor myNormalBorderColor myUrgentColor
-                                 , ppTitle = statusBarColor "white" "" . shorten 120
-                                 , ppLayout = myLayoutDisplay
-                                 , ppSep = " │ "
-                                 , ppWsSep = " "
-                                 } <+> myLogHook,
+        logHook            = myLogHook statusproc,
         startupHook        = myStartupHook
     }
