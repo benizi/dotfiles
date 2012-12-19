@@ -48,7 +48,11 @@ alias g=git
 alias gv=gvim
 alias v=vim
 alias vi=v
-alias em='emacs -nw'
+() {
+  local em='emacs -nw'
+  [[ $TERM = st-24bit ]] && em="env TERM=st-24bit-super $em"
+  alias em=$em
+}
 be cap rake rspec ruby () {
   local dir=$PWD
   local -a bundle
