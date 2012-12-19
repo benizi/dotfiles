@@ -128,7 +128,11 @@ __setup_prompt () {
   fi
 
   current_dir=${${(%):-%d}/$HOME/${:-'~'}}
-  [[ $current_dir != ${(%):-%~} ]] && current_dir+=" [%~]"
+  if [[ ${(%):-%~} = */* ]] ; then
+    current_dir=%~
+  elif [[ $current_dir != ${(%):-%~} ]] ; then
+    current_dir="%~ [$current_dir]"
+  fi
 
   typeset -a top_row middle_row bottom_row
   map_att () {
