@@ -256,7 +256,6 @@ myManageHook = FS.fullscreenManageHook <+> manageDocks <+> composeAll
     , resource  =? "desktop_window" --> doIgnore
     , resource  =? "kdesktop"       --> doIgnore
     , className =? "Pinentry" --> doFloat
-    , className =? "Huludesktop" --> doFloat
     , className =? "Pavucontrol" --> doFloat
     , className =? "sun-awt-X11-XFramePeer" --> doFloat
     , className =? "java-lang-Thread" --> doFloat
