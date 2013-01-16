@@ -125,8 +125,8 @@ alias -g LS2='|& less -S'
 (( $+commands[colorizediff-stdin.pl] )) && diffy () {
   diff -ur "$@" | colorizediff-stdin.pl --files
 }
-alias pf='ps -ef'
-alias pfg='ps -ef | grep'
+(( $+INOSX )) && alias pf='ps aux' || alias pf='ps -ef'
+alias pfg='pf | grep'
 if [[ $commands[alpine] != /usr/local/bin/alpine ]] ; then
   (( $+commands[alpine-svn] )) && alias alpine='titlep ALPINE ; alpine-svn -bail -p $PINERC'
 fi
