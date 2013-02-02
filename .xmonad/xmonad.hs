@@ -114,6 +114,9 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((0,                  xF86XK_AudioNext), spawn "nyxmms2 next")
     , ((0,                  xF86XK_AudioPrev), spawn "nyxmms2 prev")
 
+    ---- choose wifi
+    , ((mod4Mask, xK_w), spawn "wifi-chooser")
+
     -- launch gmrun
     , ((modm .|. shiftMask, xK_p     ), spawn "gmrun")
 
