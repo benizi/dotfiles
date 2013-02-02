@@ -262,7 +262,9 @@ myManageHook = FS.fullscreenManageHook <+> manageDocks <+> composeAll
     , className =? "Pavucontrol" --> doFloat
     , className =? "sun-awt-X11-XFramePeer" --> doFloat
     , className =? "java-lang-Thread" --> doFloat
+    , className =? "xfreerdp" --> unfloat
     ]
+  where unfloat = ask >>= doF . W.sink
 
 ------------------------------------------------------------------------
 -- Event handling
