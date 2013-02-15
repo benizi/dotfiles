@@ -98,7 +98,7 @@ auto_git_alias () {
   git $al "$@"
   return 0
 }
-command_not_found_handlers+=( auto_git_alias )
+(( $+commands[git] )) && command_not_found_handlers+=( auto_git_alias )
 
 TRAPZERR () {
   local dir= choose= prompt3=
