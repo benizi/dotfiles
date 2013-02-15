@@ -191,12 +191,21 @@ __setup_prompt () {
   add.bottom_row :norm $ps_char
 
   local -a lines
-  lines=(
-    ''
-    '╭─╴'${(j:╶╴:)top_row}' ╼'
-    '│ '$^middle_row
-    '╰╴'${(j:╶╴:)bottom_row}' '
-  )
+  if (( $+hi_color )) ; then
+    lines=(
+      ''
+      '╭─╴'${(j:╶╴:)top_row}' ╼'
+      '│ '$^middle_row
+      '╰╴'${(j:╶╴:)bottom_row}' '
+    )
+  else
+    lines=(
+      ''
+      '/- '${(j: - :)top_row}
+      '| '$^middle_row
+      '\\- '${(j: - :)bottom_row}' '
+    )
+  fi
   PROMPT=${(F)lines}
 
   unfunction map_att add.top_row add.middle_row add.bottom_row

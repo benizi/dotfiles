@@ -74,6 +74,9 @@ setup_term () {
 }
 [[ $TERM = 9term ]] || setup_term
 
+unset hi_color
+(( $+terminfo[colors] && $terminfo[colors] > 8 )) && hi_color=true
+
 typeset -U path
 function () {
 local pathtest user
