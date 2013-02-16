@@ -33,4 +33,5 @@ fi
 if find_dev /IBM.TrackPoint/ ; then
 	prop 'Evdev Wheel Emulation' 1
 	prop 'Evdev Wheel Emulation Button' 2
+	prop 'Evdev Wheel Axes' 6 7 4 5
 fi
