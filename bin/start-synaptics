@@ -29,3 +29,8 @@ if find_dev /Synaptics/ ; then
 	prop 'Synaptics Scrolling Distance' 111 50
 	prop 'Synaptics Edge Scrolling' 0 0 0
 fi
+
+if find_dev /IBM.TrackPoint/ ; then
+	prop 'Evdev Wheel Emulation' 1
+	prop 'Evdev Wheel Emulation Button' 2
+fi
