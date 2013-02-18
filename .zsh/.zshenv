@@ -96,6 +96,7 @@ pathtest=( ~$owner/maven/bin $^pathtest )
 pathtest=( ~/brew/bin $^pathtest )
 pathtest=( ~/.cabal/bin $^pathtest )
 pathtest=( ~/bin.bin ~/bin.local $^pathtest )
+pathtest=( ~/context/tex/texmf-linux-64/bin $^pathtest )
 path=( ${^pathtest}(N-/) )
 }
 
