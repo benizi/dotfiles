@@ -15,14 +15,14 @@ alias rehash=' builtin rehash'
 alias cave='noglob cave'
 () {
 local cmd
-for cmd in $commands[(I)find*] ; do
+for cmd in $commands[(I)find*] ack ; do
   alias $cmd="noglob $cmd"
 done
 }
-'find' () {
+'find' 'ack' () {
   integer i=${argv[(i)-*]}
   (( $+INOSX && ! $#argv )) && argv=( . )
-  command find ${~argv[1,i-1]} "${(@)argv[i,-1]}"
+  command $0 ${~argv[1,i-1]} "${(@)argv[i,-1]}"
 }
 alias ri='noglob ri'
 
