@@ -345,3 +345,5 @@ named-gem-directory () {
   reply=( $gemdir )
 }
 zsh_directory_name_functions+=( named-gem-directory )
+
+alias cd.='cd "$(pwd)"'
