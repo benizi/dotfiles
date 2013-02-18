@@ -335,3 +335,13 @@ for dir in ${^zsh_dirs}/(#i)[[:alpha:]]*(N@-/) ; do
   hash -d ${dir:t}=$target[1]
 done
 }
+
+named-gem-directory () {
+  [[ $1 = d ]] && return 1
+  local gemdir="$(bundle show $2 2> /dev/null)"
+  (( $? )) && return 1
+  [[ -d $gemdir ]] || return 1
+  [[ -z $gemdir ]] && return 1
+  reply=( $gemdir )
+}
+zsh_directory_name_functions+=( named-gem-directory )
