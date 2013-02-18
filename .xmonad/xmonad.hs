@@ -291,8 +291,8 @@ myLayoutDisplay other = wrap "(layout:" ")" other
 myActiveMarker = wrap "" (superScriptNum 0)
 
 statusBarProc :: String -> String
-statusBarProc xmonadDir = "xmobar " ++ xmonadDir ++ "/xmobarrc"
-statusBarColor = xmobarColor
+statusBarProc xmonadDir = "dzen2 -dock -expand right -fn 'DejaVu Sans Mono'"
+statusBarColor = dzenColor
 
 statusBarTitle :: String -> String
 statusBarTitle title = foldl (\acc c -> acc ++ case c of
