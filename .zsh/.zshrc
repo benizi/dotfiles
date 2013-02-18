@@ -82,7 +82,7 @@ valid_git_alias () {
 
 all_git_commands () {
   git help --all \
-    | awk '/---/ {ok=1; OFS="\n"; ORS=""} /^ / {NF=NF+1; if (ok) print $0}'
+    | awk '/---|available git commands/ {ok=1; OFS="\n"; ORS=""} /^ / {NF=NF+1; if (ok) print $0}'
   print -l ${${(k)commands[(I)git-*]}#git-}
 }
 
