@@ -237,7 +237,12 @@ ruby-manager () {
       eval "$(rbfu_dir=$rbfu_dir rbfu --init)"
       unalias rbfu-env
       rbfu-env () { source rbfu "$@" }
-      [[ -f $rbfu_dir/default ]] && source rbfu "$(<$rbfu_dir/default)" &> /dev/null
+      if [[ -f $rbfu_dir/default ]] ; then
+        source rbfu @"$(<$rbfu_dir/default)" &> /dev/null
+      else
+        echo "No default ruby specified in $rbfu_dir/default"
+        source rbfu @system
+      fi
       ;;
   esac
 

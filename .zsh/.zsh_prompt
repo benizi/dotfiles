@@ -89,7 +89,7 @@ __prompt_ruby_manager () {
       prb) printf %s "prb:$(prb version --short)" ;;
       rbenv) printf %s "$(rbenv version-name)" ;;
       rvm) printf %s "rvm:$(rvm current)" ;;
-      rbfu) printf %s ${RBFU_RUBY_VERSION:-rbfu} ;;
+      rbfu) printf %s ${RBFU_RUBY_VERSION:-rbfu@system} ;;
       *) printf %s "$ruby_manager:?" ;;
     esac
   fi
