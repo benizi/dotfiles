@@ -151,7 +151,7 @@ __clean_ruby_path () {
   new_path=()
   for dir in $path ; do
     case $dir in
-      ~$owner/.rbenv*|~$owner/.rvm*|~$owner/.rbfu*) ;;
+      ~$owner/.rbenv*|~$owner/.rvm*|~$owner/.rbfu*|/opt/rbfu/*) ;;
       *) new_path+=( $dir ) ;;
     esac
   done
@@ -162,7 +162,7 @@ __clean_ruby_path () {
 
 ruby-manager () {
   local arg save last_manager=~$owner/.ruby-manager
-  unset save ruby_manager
+  unset save ruby_manager rbfu_dir
   for arg ; do
     case $arg in
       --save) save=true ;;
@@ -213,7 +213,14 @@ ruby-manager () {
       }
       ;;
     rbfu)
-      extra_bin=( ~$owner/.rbfu/bin )
+      local rbfu
+      unset rbfu_dir
+      for rbfu in /opt/rbfu ~$ownder/.rbfu ; do
+        [[ -d $rbfu ]] || continue
+        rbfu_dir=$rbfu
+        extra_bin=( $rbfu/bin )
+        break
+      done
       ;;
     prb)
       extra_bin=( ~g/prb/shims ~g/prb/bin ~$owner/.rbenv/shims )
@@ -227,10 +234,10 @@ ruby-manager () {
 
   case $ruby_manager in
     rbfu)
-      eval "$(rbfu --init)"
+      eval "$(rbfu_dir=$rbfu_dir rbfu --init)"
       unalias rbfu-env
       rbfu-env () { source rbfu "$@" }
-      [[ -f ~/.rbfu/default ]] && source rbfu "$(<~/.rbfu/default)" &> /dev/null
+      [[ -f $rbfu_dir/default ]] && source rbfu "$(<$rbfu_dir/default)" &> /dev/null
       ;;
   esac
 

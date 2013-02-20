@@ -264,7 +264,7 @@ hash_if_exist ht /srv/www/htdocs
 (( $+commands[xwininfo] )) && alias x-click-id='xwininfo | grep Window.id | cut -f4 -d" "'
 
 setup_rbfu_directory_aliases () {
-  hash_if_exist -r rb "${path[(r)*/.rbfu/rubies/*]}"
+  hash_if_exist -r rb "${${path[(r)*rbfu/rubies/*]}:h}"
   hash_if_exist -r gem $GEM_HOME/gems
   hash_if_exist -r rdoc $GEM_HOME/doc
 }
