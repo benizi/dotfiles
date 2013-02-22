@@ -1,0 +1,7 @@
+#!/bin/sh
+net=$(nmcli -f SSID dev wifi list \
+| sed '1d;s/^.//;s/[[:space:]]*$//;s/.$//' \
+| sort \
+| uniq \
+| dmenu)
+test -n "$net" && wifi "$net"
