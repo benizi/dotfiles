@@ -12,6 +12,8 @@
 # If someone writes an app and no one uses it, does his code run? -- me
 #
 #########################################################################
+use FindBin '$Bin';
+chdir $Bin or die "Couldn't chdir($Bin): $!";
 
 require 5.005;
 
