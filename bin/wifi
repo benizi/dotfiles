@@ -1,9 +1,13 @@
 #!/bin/zsh
 config=$HOME/.config/wifi
-if (( $# )) ; then
-  ssid=$1
-  shift
-elif [[ -f $config ]] ; then
+unset ssid force
+for arg ; do
+  case $arg in
+    -f|--force) force=true ;;
+    *) ssid=$arg ;;
+  esac
+done
+if (( ! $+ssid )) && [[ -f $config ]] ; then
   ssid=$(nmcli dev list | perl -lnwe '
   if ($ARGV eq "-") {
     if (my ($ap, $k, $v) = /^(AP\d+)\.(BSSID|SSID):\s*(.*)$/) {
@@ -14,14 +18,14 @@ elif [[ -f $config ]] ; then
         $ss{$v} = $ap;
       }
     }
-  } elsif (eof) {
-    print;
   } else {
+    $default ||= $_;
     next unless my $ap = $ss{$_};
     print and exit if $bs{$ap} =~ /[^0:]/;
+    print $default if eof
   }' - $config)
 fi
-if (( $+ssid )) && nmcli con status | grep -q "^$ssid " ; then
+if (( ! $+force )) && (( $+ssid )) && nmcli con status | grep -q "^$ssid " ; then
   echo alread using $ssid
 else
   nmcli con up id $ssid
