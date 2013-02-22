@@ -1,6 +1,6 @@
 #!/bin/zsh
 unset dry
-unset cycle
+unset cycle scale
 ext_pos=--right-of
 case $0 in
 	*clone) set -- "$@" --clone
@@ -17,39 +17,58 @@ for arg ; do
 	esac
 done
 
-all_off () {
-	xrandr | awk '/^[A-Z]{2}/ { print $1 }' | sed 1d | xargs -iZ xrandr --verbose --output Z --off
+typeset -a outputs all_outputs
+typeset -A vid_modes
+
+get_modes () {
+	outputs=()
+	all_outputs=()
+	vid_modes=()
+	eval "$(xrandr | perl -lanwe '
+if (/^[A-Z]{2}/) {
+	$last_output = $F[0];
+	push @outputs, $last_output;
+	print qq/all_outputs+=( $last_output )/;
+	$last_ok = 1
+}
+elsif (/^ *[0-9]+x[0-9]+/) {
+	print qq/outputs+=( $last_output )/ unless $modes{$last_output};
+	$modes{$last_output} //= $F[0];
+	$last_ok = 1
+}
+else { $last_ok = 0 }
+END {
+	for my $output (grep $modes{$_}, @outputs) {
+		print qq/vid_modes+=( $output "$modes{$output}" )/;
+	}
+}')"
 }
 
-if xrandr | grep -q '^LVDS-*[123]' ; then
-	eval "$(xrandr | perl -lnwe 'BEGIN{@k=qw/int ext/} print join "=", (shift @k), $1 if /^([A-Z]\S+) (?:dis)?connected/; exit unless @k')"
-	int=LVDS-1
-	ext=DP-1
-	int_mode=1920x1080
-	ext_mode=1920x1080
-elif xrandr | grep -q DisplayPort ; then
-	int=LVDS
-	int_mode=1440x900
-	ext=DisplayPort-0
-	ext_mode=1920x1080
-else
-	int=LVDS1
-	int_mode=1440x900
-	ext=HDMI1
-	ext_mode=1920x1080
-fi
+get_modes
 
-doit () {
-	print -r - $argv
-	(( $+dry )) || $argv
-}
+int=$outputs[1]
+ext=$outputs[2]
+int_mode=$vid_modes[$int]
+ext_mode=$vid_modes[$ext]
 
-xrandr | grep -q $ext.disconnected && onlylap=true || onlylap=false
 cmd=( xrandr --output $int --mode $int_mode )
-if $onlylap ; then
-	cmd+=( --output $ext --off )
-	doit $cmd
-else
-	(( $+cycle )) && all_off
-	doit $cmd --output $ext --mode $ext_mode $ext_pos $int
+if [[ -n $ext ]] ; then
+	if [[ $int_mode == $ext_mode ]] ; then
+		cmd+=( --output $ext $ext_pos $int --mode $int_mode )
+	else
+		case $int_mode/$ext_mode in
+			1920x1080/1920x1200) scale=1x.9 ;;
+		esac
+		if (( $+scale )) ; then
+			cmd[2,1]=( --fb $int_mode )
+			cmd+=( --output $ext $ext_pos $int --mode $ext_mode --scale $scale )
+		fi
+	fi
 fi
+if (( $+cycle )) ; then
+	for output in $all_outputs ; do
+		${dry+echo} xrandr --output $output --off
+	done
+fi
+
+${dry+echo} $cmd
