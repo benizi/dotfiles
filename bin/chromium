@@ -3,6 +3,7 @@ case $0 in
 	*-fresh) argv+=( --scratch http://${${0//-fresh/}:t} ) ;;
 	*chromium*|*open|*sensible-browser) ;;
 	*scratch) argv+=( --scratch ) ;;
+	*webmail) argv+=( --firefox --profile webmail ) ;;
 	*) _profile=$0:t ;;
 esac
 function warn () { echo "\e[31m$*\e[0m" >&2 }
