@@ -1,6 +1,7 @@
 #!/bin/zsh
-env -u LD_PRELOAD xinit =minecraft -- :8 &
-export DISPLAY=:8
+: ${disp:=':17'}
+env -u LD_PRELOAD xinit =minecraft -- Xorg $disp &
+export DISPLAY=$disp
 x-is-active -wait
 xclock -name blue -geometry +1920+0 &
 twm &
