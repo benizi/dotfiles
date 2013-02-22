@@ -17,7 +17,7 @@ cp+=( $CLOJURE_JAR $PWD )
 
 cmd=()
 if (( ! $# )) ; then
-	cmd+=( rlwrap --remember -c )
+	(( $+commands[rlwrap] )) && cmd+=( rlwrap --remember -c )
 	[[ -f $completions_file ]] && cmd+=( -f $completions_file )
 fi
 cmd+=( java -cp $CP clojure.main )
