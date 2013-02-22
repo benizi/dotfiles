@@ -41,8 +41,12 @@ sub auto_geometry {
 	}
 	if (!$bar_height and my $wininfo = find_prog 'xwininfo') {
 		my $all_wins = `$wininfo -root -children -size`;
-		my @no_names = grep /no name\):/, split /\n/, $all_wins;
-		my @dims = map [ /\(\)\s+(\d+)x(\d+)/ ], @no_names;
+		my @possible_bars = grep /no name\):|dzen2/, split /\n/, $all_wins;
+		my @dims = map [ /\)\s+(\d+)x(\d+)/ ], @possible_bars;
+		@dims = grep { @$_ and !grep !defined, @$_ } @dims;
+		$_ //= 0 for $w, $h;
+		# filter to skinny bars:
+		@dims = grep { $$_[0] < .1 * $w or $$_[1] < .1 * $h } @dims;
 		$bar_height = (map $$_[1], sort { $$b[0] <=> $$a[0] } @dims)[0] if @dims;
 	}
 	$h -= $bar_height;
