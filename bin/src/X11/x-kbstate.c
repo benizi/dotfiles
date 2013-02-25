@@ -3,7 +3,32 @@
 #include <X11/keysym.h>
 #include <X11/extensions/XKBstr.h>
 #include <stdio.h>
-#include "bitblock.h"
+#include <string.h>
+
+const char* bitblock[] = {
+	" ", /* 0000 - space */
+	"▗", /* 0001 - 0x2597 */
+	"▖", /* 0010 - 0x2596 */
+	"▄", /* 0011 - 0x2584 */
+	"▝", /* 0100 - 0x259d */
+	"▐", /* 0101 - 0x2590 */
+	"▞", /* 0110 - 0x259e */
+	"▟", /* 0111 - 0x259f */
+	"▘", /* 1000 - 0x2598 */
+	"▚", /* 1001 - 0x259a */
+	"▌", /* 1010 - 0x258c */
+	"▙", /* 1011 - 0x2599 */
+	"▀", /* 1100 - 0x2580 */
+	"▜", /* 1101 - 0x259c */
+	"▛", /* 1110 - 0x259b */
+	"█", /* 1111 - 0x2588 */
+};
+
+const char *nybbleblock(int b) { return bitblock[b & 0xF]; }
+void printbyteblock(unsigned char b) {
+	printf("%s", nybbleblock(b >> 4));
+	printf("%s", nybbleblock(b));
+}
 
 int main(int argc, char **argv) {
 	int i, use_unicode = 0, verbose = 0;
