@@ -294,15 +294,15 @@ statusBarProc :: String -> String
 statusBarProc xmonadDir = "dzen2 -dock -expand right -fn 'DejaVu Sans Mono'"
 statusBarColor = dzenColor
 
-statusBarTitle :: String -> String
-statusBarTitle title = foldl (\acc c -> acc ++ case c of
+escapeStatusCodes :: String -> String
+escapeStatusCodes title = foldl (\acc c -> acc ++ case c of
  '{' -> "("
  '}' -> ")"
  a -> [a]) [] title
 
 statusLogHook :: Handle -> X ()
 statusLogHook statusproc = dynamicLogWithPP defaultPP
-  { ppOutput = hPutStrLn statusproc . statusBarTitle
+  { ppOutput = hPutStrLn statusproc . escapeStatusCodes
   , ppCurrent = statusBarColor myNormalBorderColor "white" . myActiveMarker
   , ppHidden = statusBarColor "white" "" . myActiveMarker
   , ppHiddenNoWindows = statusBarColor "gray60" ""
