@@ -22,6 +22,7 @@ parser = OptionParser.new do |o|
 	o.on('-l','-ls','--ls') { opts[:mode] = :list }
 	o.on('--dry-run') { opts[:dry] = true }
 	o.on('--_rerun') { opts[:rerun] = true }
+	o.on('--check') { opts[:mode] = :check }
 end
 parser.order!(ARGV)
 
@@ -65,24 +66,29 @@ if opts[:mode] == :list
 end
 
 case opts[:mode]
-when :resume, :resume_or_new
+when :resume, :resume_or_new, :check
 	opts[:name] ||= ARGV[0]
 	opts[:name] = suffixed(opts[:name], true)
 	if opts[:mode] == :resume_or_new
 		opts[:mode] = opts[:name] ? :resume : :new
-	else
+	elsif opts[:mode] != :check
 		abort "Nothing to resume" unless opts[:name]
 	end
 end
 
 case opts[:mode]
-when :new, :detach
+when :new, :detach, :check
 	ARGV << (ENV['SHELL'] || 'bash') if ARGV.empty?
 	opts[:name] = suffixed(opts[:name] || ARGV[0], false)
 end
 
 sock = @dir + '/' + opts[:name]
 abort "No such socket: #{sock}" if opts[:mode] == :resume and not File.exists?(sock)
+
+if opts[:mode] == :check
+	exit 1 if !File.exists?(sock)
+	exec(%Q{fuser -s #{sock}})
+end
 
 cmd = ['dtach']
 case opts[:mode]
