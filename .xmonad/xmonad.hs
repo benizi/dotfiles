@@ -11,6 +11,7 @@ import Superscripts
 
 import XMonad
 import XMonad.Actions.CycleWS
+import XMonad.Actions.GridSelect
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ICCCMFocus
@@ -190,6 +191,10 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
         | (i, k) <- zip (XMonad.workspaces conf) ([xK_1 .. xK_9] ++ [xK_0])
         , (f, m) <- [(W.greedyView, 0), (W.shift, shiftMask)]
         {- , (m == 0 || (not $ k `elem` [xK_9, xK_0]) ) -} ] -- exclude M-S-(, M-S-)
+    ++
+
+    -- Grid Select
+    [ ((modm, xK_g), goToSelected defaultGSConfig) ]
     ++
 
     -- add alt-i = workspace 7 (= "IM")
