@@ -295,9 +295,14 @@ myLayoutDisplay other = wrap "(layout:" ")" other
 
 myActiveMarker = wrap "" (superScriptNum 0)
 
+statusColorNormalFG = "white"
+statusColorSubdued = "gray60"
+statusColorBG = "#285577"
+
 statusBarProc :: String -> String
 statusBarProc xmonadDir = "dzen2 -dock -expand right -fn 'DejaVu Sans Mono'"
 statusBarColor = dzenColor
+statusNormalColor = statusBarColor statusColorNormalFG statusColorBG
 
 escapeStatusCodes :: String -> String
 escapeStatusCodes title = foldl (\acc c -> acc ++ case c of
@@ -308,14 +313,14 @@ escapeStatusCodes title = foldl (\acc c -> acc ++ case c of
 statusLogHook :: Handle -> X ()
 statusLogHook statusproc = dynamicLogWithPP defaultPP
   { ppOutput = hPutStrLn statusproc . escapeStatusCodes
-  , ppCurrent = statusBarColor myNormalBorderColor "white" . myActiveMarker
-  , ppHidden = statusBarColor "white" "" . myActiveMarker
-  , ppHiddenNoWindows = statusBarColor "gray60" ""
+  , ppCurrent = statusBarColor myNormalBorderColor statusColorNormalFG
+  , ppHidden = statusNormalColor
+  , ppHiddenNoWindows = statusBarColor statusColorSubdued statusColorBG
   , ppUrgent = statusBarColor myNormalBorderColor myUrgentColor
-  , ppTitle = statusBarColor "white" "" . shorten 120
-  , ppLayout = myLayoutDisplay
-  , ppSep = " │ "
-  , ppWsSep = " "
+  , ppTitle = statusNormalColor . shorten 120
+  , ppLayout = statusNormalColor . myLayoutDisplay
+  , ppSep = statusNormalColor " │ "
+  , ppWsSep = statusNormalColor " "
   }
 
 myLogHook :: Handle -> X ()
