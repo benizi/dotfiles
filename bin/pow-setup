@@ -1,0 +1,26 @@
+#!/bin/zsh
+pow=$(pidof pow)
+
+if [[ -z $pow ]] ; then
+  http=20559
+  dns=20560
+else
+  http=$(lsof -p $pow -i -a -sTCP:LISTEN -Fn | awk '/^n/ { print substr($_, 4) }')
+  dns=$(lsof -p $pow -i UDP -a -Fn | awk '/^n/ { print substr($_, 4) }')
+fi
+
+redir () {
+  local proto=$1 from=$2 to=$3
+  # redirect external requests
+  sudo iptables -t nat -A PREROUTING -p $proto --dport $from -j REDIRECT --to-port $to
+  # redirect loopback requests
+  sudo iptables -t nat -A OUTPUT -d 127.0.0.1 -p $proto --dport $from -j REDIRECT --to-port $to
+}
+
+sudo iptables -t nat -F
+if [[ ${1:-up} = up ]] ; then
+  redir tcp 80 $http
+  # broken - needs to be a recursive resolver under linux
+  # redir udp 53 $dns
+  sudo iptables -t nat -L
+fi
