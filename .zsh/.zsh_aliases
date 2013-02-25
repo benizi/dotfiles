@@ -269,6 +269,11 @@ setup_rbfu_directory_aliases () {
   hash_if_exist -r rdoc $GEM_HOME/doc
 }
 
+if (( $+commands[ruby-build] )) ; then
+  rbfu-install () { ruby-build $1 $rbfu_dir/rubies/$1 }
+  compdef _ruby-build rbfu-install
+fi
+
 ruby-manager-startup () {
   if (( $+functions[rbfu-env] )) ; then
     setup_rbfu_version () {
