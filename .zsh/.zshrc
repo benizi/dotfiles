@@ -108,6 +108,7 @@ TRAPZERR () {
   (( $# == 1 )) || return 0
   [[ $1 == */* ]] || return 0
   [[ $1 == "<"* ]] && return 0
+  [[ $zsh_eval_context[1] == toplevel ]] || return 0
   dir=${~1}
   dirs=( ${~:-$dir*}(-/N) )
   if [[ ! -e $dir ]] && (( $#dirs > 1 )) ; then
