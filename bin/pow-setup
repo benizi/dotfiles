@@ -2,8 +2,8 @@
 pow=$(pidof pow)
 
 if [[ -z $pow ]] ; then
-  http=20559
-  dns=20560
+  : ${http=20559}
+  : ${dns=20560}
 else
   http=$(lsof -p $pow -i -a -sTCP:LISTEN -Fn | awk '/^n/ { print substr($_, 4) }')
   dns=$(lsof -p $pow -i UDP -a -Fn | awk '/^n/ { print substr($_, 4) }')
