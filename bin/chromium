@@ -15,8 +15,9 @@ _logging=false
 _userscripts=true
 #_ipv6=true
 unset _ipv6
+unset _asyncdns
 _args=()
-_flags=( plugins logging user-scripts ipv6 )
+_flags=( plugins logging user-scripts ipv6 async-dns )
 
 if [[ -d /Applications ]] ; then
 	_official="/Applications/Chrome.app/Contents/MacOS/Google Chrome"
