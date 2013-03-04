@@ -103,6 +103,12 @@ if (( $+commands[nyxmms2] )) && [[ ! -f $HOME/.no-xmms2-status ]] ; then
 	fi
 	out=( $song $out )
 fi
+
+if (( $+commands[pomo] )) ; then
+	pomo="$(pomo status)"
+	[[ -n $pomo ]] && out+=( "$pomo" )
+fi
+
 (( $+dzen )) && normcolor="^fg()^bg()" || normcolor=''
 toprint=''
 for thing in $out ; do
