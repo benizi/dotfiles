@@ -1,4 +1,6 @@
 #!/bin/zsh
+unset dzen
+(( $#argv )) && dzen=true fg=$1 bg=$2
 (( $+WMII_TERM )) && wmii=true || wmii=false
 date="$(date +'%s %Y-%m-%d %H:%M:%S')"
 epoch=${date%% *}
@@ -97,7 +99,12 @@ if (( $+commands[nyxmms2] )) && [[ ! -f $HOME/.no-xmms2-status ]] ; then
 	fi
 	out=( $song $out )
 fi
-toprint="${(j:│:)out}"
+(( $+dzen )) && normcolor="^fg()^bg()" || normcolor=''
+toprint=''
+for thing in $out ; do
+	[[ -z $toprint ]] || toprint+=$normcolor'│'
+	toprint+=$thing
+done
 unset inp
 while [[ "$toprint" != "$inp" ]] ; do
 	inp="$toprint"
@@ -106,3 +113,4 @@ done
 $wmii && toprint="label $toprint"
 print -n -r - $toprint
 $wmii && echo
+(( $+dzen )) && echo
