@@ -57,13 +57,17 @@ if (( $+commands[battery] )) ; then
 			unset do_warning
 		fi
 	fi
+	bcol=''
 	if (( ! $+do_warning )) && [[ $pct -gt 0 && $pct -le 15 ]] && ! $plugged ; then
 		for i in {1..20} ; do
 			bat="$spinner$bat$spinner"
 		done
+		(( $+dzen )) && bcol='^bg(red)'
+	elif (( $+dzen )) ; then
+		$plugged && bcol='^bg(#339933)' || bcol='^fg(black)^bg(#cccc00)'
 	fi
 	[[ $pct -lt 10 ]] && ! $plugged && (( $+commands[osd] )) && (osd -d 2 $bat &)
-	out=( bat:$plugmark$bat $out )
+	out=( ${bcol}bat:$plugmark$bat $out )
 fi
 
 (( $+commands[x-kbstate] )) && out=( "$(x-kbstate -u)" $out )
