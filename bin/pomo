@@ -1,0 +1,67 @@
+#!/bin/zsh
+zmodload -F zsh/stat b:zstat
+zmodload zsh/datetime
+
+pomfile=/tmp/$UID-pomo-pom
+breakfile=/tmp/$UID-pomo-break
+files=( $pomfile $breakfile )
+
+pomlen=$(( 25 * 60 ))
+breaklen=$(( 5 * 60 ))
+
+load_times () {
+  pomstart=$(zstat +mtime $pomfile 2>/dev/null)
+  breakstart=$(zstat +mtime $breakfile 2>/dev/null)
+  : ${pomstart:=0} ${breakstart:=0}
+  now=$EPOCHSECONDS
+
+  if (( pomstart > breakstart )) ; then
+    pomleft=$(( pomstart + pomlen - now ))
+  elif (( breakstart )) ; then
+    breakleft=$(( breakstart + breaklen - now ))
+  fi
+
+  if (( $+pomleft )) && (( pomleft <= 0 )) ; then
+    : notify-send -t 0 'Pomodoro ended'
+    touch $breakfile
+    unset pomleft
+    breakleft=$breaklen
+  elif (( $+breakleft )) && (( breakleft < 0 )) ; then
+    : notify-send -t 0 'Break ended'
+    rm -f $files
+  fi
+}
+
+dzen_out () {
+  load_times
+  if (( $+pomleft )) ; then
+    color=009900
+    time=$pomleft
+    cmd=pomb
+  elif (( $+breakleft )) ; then
+    color=990000
+    time=$breakleft
+    cmd=pom
+  fi
+  if (( $+time )) && (( time >= 0 )) ; then
+    m=$(( time / 60 ))
+    s=$(( time % 60 ))
+    printf '^ca(1,%s)^fg()^bg(#%s)%s:%02d^bg()^ca()^ca(1,pom kill)x^ca()' $cmd $color $m $s
+  else
+    printf '^ca(1,pom)pom^ca()'
+  fi
+}
+
+main () {
+  local cmd=$1
+  shift
+  (( $# )) || set -- $cmd:t
+  case $1 in
+    status) dzen_out ;;
+    pom) touch $pomfile ;;
+    pomb|break) touch $breakfile ;;
+    kill) rm -f $files ;;
+  esac
+}
+
+main $0 "$@"
