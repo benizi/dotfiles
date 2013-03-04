@@ -20,7 +20,9 @@ if (( ! $# )) ; then
 	(( $+commands[rlwrap] )) && cmd+=( rlwrap --remember -c )
 	[[ -f $completions_file ]] && cmd+=( -f $completions_file )
 fi
-cmd+=( java -cp $CP clojure.main )
+java=java
+[[ $0:t = d* ]] && java=drip
+cmd+=( $java -cp $CP clojure.main )
 if (( ! $# )) ; then
 	[[ -f $rc ]] && cmd+=( -i $rc )
 	cmd+=( --repl )
