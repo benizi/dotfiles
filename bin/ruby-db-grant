@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+require 'yaml'
+
+if yaml = YAML.load(File.read('config/database.yml'))
+  envs = ENV['RAILS_ENV'] || ARGV.shift || %w[development test]
+  envs.each do |env|
+    cfg = yaml[env]
+
+    if !cfg
+      warn "No config for env: #{env}"
+      next
+    end
+
+    case cfg['adapter']
+    when 'mysql', 'mysql2'
+      puts <<SQL
+create database if not exists `#{cfg['database']}`;
+grant all privileges on `#{cfg['database']}`.* to '#{cfg['username']}'@'localhost' identified by "#{cfg['password']}";
+flush tables;
+SQL
+    else
+      warn "Can't handle adapter #{cfg['adapter']} (env: #{env}) yet"
+    end
+  end
+end
