@@ -58,13 +58,19 @@ if (( $+commands[battery] )) ; then
 		fi
 	fi
 	bcol=''
-	if (( ! $+do_warning )) && [[ $pct -gt 0 && $pct -le 15 ]] && ! $plugged ; then
+	if (( ! $+do_warning )) && [[ $pct -gt 0 && $pct -le 10 ]] && ! $plugged ; then
 		for i in {1..20} ; do
 			bat="$spinner$bat$spinner"
 		done
 		(( $+dzen )) && bcol='^bg(red)'
 	elif (( $+dzen )) ; then
-		$plugged && bcol='^bg(#339933)' || bcol='^fg(black)^bg(#cccc00)'
+		if $plugged ; then
+			bcol='^bg(#336633)'
+		elif (( pct <= 20 )) ; then
+			bcol='^fg(black)^bg(#cccc00)'
+		else
+			bcol='^bg(#339933)'
+		fi
 	fi
 	[[ $pct -lt 10 ]] && ! $plugged && (( $+commands[osd] )) && (osd -d 2 $bat &)
 	out=( ${bcol}bat:$plugmark$bat $out )
