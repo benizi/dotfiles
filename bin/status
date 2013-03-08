@@ -28,7 +28,7 @@ function kb(b){return int(b/1024)}
 { kind[$1] = $2 }
 END {
 print "mem:" report(kind["MemTotal:"], kind["MemFree:"] + kind["Cached:"])
-print "swp:" report(kind["SwapTotal:"], kind["SwapFree:"])
+if (kind["SwapTotal:"]) print "swp:" report(kind["SwapTotal:"], kind["SwapFree:"])
 }
 ' /proc/meminfo)
 	$out
