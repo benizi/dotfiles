@@ -5,4 +5,6 @@ let g:SuperTabCompletionContexts = ['s:ContextMarkup']
 let g:SuperTabRetainCompletionType = 2
 inoremap <C-t> <C-v><Tab>
 let endwise = ScriptNumber('plugin/endwise.vim')
-exe 'imap <script> <CR> '.maparg('<CR>','i').'<SNR>'.endwise.'_DiscretionaryEnd'
+if strlen(endwise)
+  exe 'imap <script> <CR> '.maparg('<CR>','i').'<SNR>'.endwise.'_DiscretionaryEnd'
+end
