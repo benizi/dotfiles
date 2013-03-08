@@ -6,7 +6,8 @@ if (( $+commands[nmcli] )) ; then
     exit
   fi
 elif (( $+commands[wicd-cli] )) ; then
-  wicd-cli --wireless -p Essid
+  invalid='Invalid wireless network identifier.'
+  wicd-cli --wireless -p Essid | grep -Fv $invalid || printf '(none)'
   exit
 fi
 list-essids
