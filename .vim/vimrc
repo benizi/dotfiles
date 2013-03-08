@@ -43,6 +43,18 @@ if $TERM =~ 'st-256color' || exists('$KONSOLE_DBUS_SERVICE')
 	se t_Co=1000
 end
 
+if $TERM =~ '^st'
+	" fix cursor shape in st
+	let &t_SI="\e[6 q"
+	let &t_EI="\e[2 q"
+end
+
+" fix cursor shape in Konsole
+if exists('$KONSOLE_DBUS_SERVICE')
+	let &t_SI="\<Esc>]50;CursorShape=1\x7"
+	let &t_EI="\<Esc>]50;CursorShape=0\x7"
+end
+
 try
 	call vam#ActivateAddons() " set up VAM functions
 	call pathogen#infect(s:BundleDir()) " activate everything
