@@ -39,10 +39,8 @@ static int open_display(const char *display_name, int verbose) {
 }
 
 int main(int argc, char **argv) {
-	char c, *arg;
-	int i, errlen, fds[2], tries = 0;
-	fd_set errpipe;
-	struct timeval nowait;
+	char *arg;
+	int i, tries = 0;
 
 	char *display_name = NULL;
 	int delay = 1, max_try = 3, verbose = 0;
@@ -67,37 +65,10 @@ int main(int argc, char **argv) {
 		} else arg_error();
 	}
 
-	if (pipe(fds)) {
-		perror("pipe");
-		exit(1);
-	}
-
-	if (dup2(fds[1], 2) < 0) {
-		perror("dup2");
-		exit(1);
-	}
-
 	while (1) {
 		tries++;
 		if (open_display(display_name, verbose))
 			break;
-
-		/* process any errors received by XOpenDisplay */
-		for (errlen = 0;;) {
-			FD_ZERO(&errpipe);
-			FD_SET(fds[0], &errpipe);
-			nowait.tv_sec = 0;
-			nowait.tv_usec = 0;
-			if (!select(fds[0] + 1, &errpipe, NULL, NULL, &nowait)) {
-				break;
-			}
-			if (!read(fds[0], &c, 1)) {
-				break;
-			}
-			if (verbose) printf("%c", c);
-			errlen++;
-		}
-		if (verbose && errlen) printf("Errors of length %d\n", errlen);
 
 		if (max_try && tries >= max_try) {
 			if (verbose) {
