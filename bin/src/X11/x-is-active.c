@@ -12,7 +12,7 @@ void arg_error() {
 	exit(2);
 }
 
-void print_display(char *display_name) {
+void print_display(const char *display_name) {
 	if (!display_name) printf("default ");
 	printf("display");
 	if (display_name) printf("=%s", display_name);
