@@ -368,6 +368,7 @@ let g:ctrlp_custom_ignore = {
 	\ 'file': '\.o$',
 	\ }
 let g:ctrlp_max_height = 100
+let g:ctrlp_show_hidden = 1
 
 nm <Leader>n :CtrlPCurFile<CR>
 
