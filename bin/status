@@ -19,6 +19,8 @@ for f in ${(k)files} ; do
 	fi
 done
 
+out=( "$(essid)" $out )
+
 out=(
 	$(awk '
 function report(t,f){ return kb(t-f) "/" kb(t) }
