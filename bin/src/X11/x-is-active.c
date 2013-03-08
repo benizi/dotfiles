@@ -23,8 +23,22 @@ static int handler(Display *disp, XErrorEvent *error) {
 	return 0;
 }
 
+static int open_display(const char *display_name, int verbose) {
+	int opened = 0;
+	Display *disp = XOpenDisplay(display_name);
+	if (disp) {
+		opened = 1;
+		if (verbose) {
+			printf("Opened ");
+			print_display(display_name);
+			printf("\n");
+		}
+		XCloseDisplay(disp);
+	}
+	return opened;
+}
+
 int main(int argc, char **argv) {
-	Display *disp;
 	char c, *arg;
 	int i, errlen, fds[2], tries = 0;
 	fd_set errpipe;
@@ -65,16 +79,8 @@ int main(int argc, char **argv) {
 
 	while (1) {
 		tries++;
-		disp = XOpenDisplay(display_name);
-		if (disp) {
-			if (verbose) {
-				printf("Opened ");
-				print_display(display_name);
-				printf("\n");
-			}
-			XCloseDisplay(disp);
+		if (open_display(display_name, verbose))
 			break;
-		}
 
 		/* process any errors received by XOpenDisplay */
 		for (errlen = 0;;) {
