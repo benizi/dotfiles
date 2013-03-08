@@ -13,8 +13,9 @@ fun! s:BundleDir(...)
 endfun
 
 " Add various directories to &rtp, with their '/after' dirs
-let s:dirs = [ s:home.'/.vim', s:home.'/.vim.local' ]
-\ + map(['vim-addon-manager','pathogen'],'s:BundleDir(v:val)')
+let s:dirs = [ s:home_vim, s:home_vim.'.local' ]
+\ + [ s:home_vim.'/vundle' ]
+\ + map(['vim-addon-manager','vim-pathogen'],'s:BundleDir(v:val)')
 for dir in map(s:dirs, 'expand(v:val)')
 	if isdirectory(dir)
 		if index(split(&rtp,','), dir) < 0
