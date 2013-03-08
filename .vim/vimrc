@@ -47,6 +47,9 @@ if $TERM =~ '^st'
 	" fix cursor shape in st
 	let &t_SI="\e[6 q"
 	let &t_EI="\e[2 q"
+
+	" fix BCE bug in st
+	se t_ut=
 end
 
 " fix cursor shape in Konsole
