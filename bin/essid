@@ -5,5 +5,8 @@ if (( $+commands[nmcli] )) ; then
     printf '%s\n' $nmcli
     exit
   fi
+elif (( $+commands[wicd-cli] )) ; then
+  wicd-cli --wireless -p Essid
+  exit
 fi
 list-essids
