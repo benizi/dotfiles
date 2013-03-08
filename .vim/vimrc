@@ -36,6 +36,8 @@ endf
 let g:pathogen_disabled = []
 call add(g:pathogen_disabled, 'CSApprox')
 
+let s:limited_terminal = $TERM =~ 'linux'
+
 " st and konsole support 24-bit color
 if $TERM =~ 'st-256color' || exists('$KONSOLE_DBUS_SERVICE')
 	se t_Co=1000
@@ -50,13 +52,21 @@ catch
 	echomsg 'Perhaps pathogen or vim-addon-manager is not installed?'
 endtry
 
+try
+	call vundle#rc(s:BundleDir()) " set up Vundle
+	exe 'so' s:home_vim.'/bundles.vim'
+catch
+	echom 'Caught exception trying to activate Vundle:'
+	echom v:exception
+endtry
+
 let s:ng = expand(s:home.'/hg/vimclojure/client/ng')
 if executable(s:ng)
 	let vimclojure#WantNailgun = 1
 	let vimclojure#NailgunClient = s:ng
 endif
 
-let g:Powerline_symbols = 'unicode'
+let g:Powerline_symbols = s:limited_terminal ? 'compatible' : 'unicode'
 let g:Powerline_cache_enabled = 0
 
 set noexpandtab softtabstop=4 tabstop=4 shiftwidth=4
