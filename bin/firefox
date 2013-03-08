@@ -12,8 +12,9 @@ if (( ! $+SELENIUM_POPUP )) && (( $+found_rspec )) ; then
     kill -9 $found_rspec
     exit 1
   fi
-  screen-detached -xvfb Xvfb :1 -screen 0 1920x1080x24
-  export DISPLAY=:1
+  disp=88
+  screen-detached -xvfb Xvfb :$disp -screen 0 1920x1080x24
+  export DISPLAY=:$disp
   x-is-active -maxtry 10 -v || exit 1
 fi
 if $debugging ; then
