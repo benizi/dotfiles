@@ -5,10 +5,11 @@ if executable('stat') && system('stat -c %F '.s:script) =~ 'link'
 	let owner_home .= split(system('stat -L -c %U '.s:script))[0]
 endif
 let s:home = owner_home
+let s:home_vim = s:home.'/.vim'
 
 " Get directory under the set of 'bundled' files
 fun! s:BundleDir(...)
-	return join(extend([s:home.'/.vim-bundle'],a:000),'/')
+	return join(extend([s:home_vim.'/bundle'],a:000),'/')
 endfun
 
 " Add various directories to &rtp, with their '/after' dirs
