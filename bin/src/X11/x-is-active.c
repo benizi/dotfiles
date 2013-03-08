@@ -18,11 +18,6 @@ void print_display(const char *display_name) {
 	if (display_name) printf("=%s", display_name);
 }
 
-static int handler(Display *disp, XErrorEvent *error) {
-	fprintf(stderr, "Got an error\n");
-	return 0;
-}
-
 static int open_display(const char *display_name, int verbose) {
 	int opened = 0;
 	Display *disp = XOpenDisplay(display_name);
