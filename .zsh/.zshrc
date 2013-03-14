@@ -36,7 +36,7 @@ compinit $compinitargs
 export LESS="-R -i -M --shift 5 -F -X -j4"
 (( $+commands[lesspipe.sh] )) && export LESSOPEN="|lesspipe.sh %s"
 export PAGER=less
-export EDITOR=/usr/bin/vim
+export EDITOR=vim
 export READNULLCMD=$PAGER
 
 for dir in $zsh_dirs ; do
