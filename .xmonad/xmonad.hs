@@ -31,6 +31,13 @@ import qualified Data.Map        as M
 
 import Graphics.X11.ExtraTypes.XF86
 
+-- for myDynamicLogWithPP
+import Codec.Binary.UTF8.String (encodeString)
+import Data.List (intersperse, sortBy)
+import Data.Maybe (isJust, catMaybes)
+import XMonad.Util.NamedWindows
+import XMonad.Util.WorkspaceCompare (getWsCompareByTag, WorkspaceSort)
+
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
 --
@@ -293,8 +300,6 @@ myLayoutDisplay "Tall" = "[]="
 myLayoutDisplay "Full" = "[M]"
 myLayoutDisplay other = wrap "(layout:" ")" other
 
-myActiveMarker = wrap "" (superScriptNum 0)
-
 statusColorNormalFG = "white"
 statusColorSubdued = "gray60"
 statusColorBG = "#285577"
@@ -310,8 +315,70 @@ escapeStatusCodes title = foldl (\acc c -> acc ++ case c of
  '}' -> ")"
  a -> [a]) [] title
 
+-- | Output a list of strings, ignoring empty ones and separating the
+--   rest with the given separator.
+sepBy :: String   -- ^ separator
+      -> [String] -- ^ fields to output
+      -> String
+sepBy sep = concat . intersperse sep . filter (not . null)
+
+-- | Format the current status using the supplied pretty-printing format,
+--   and write it to stdout.
+myDynamicLogWithPP :: PP -> X ()
+myDynamicLogWithPP pp = myDynamicLogString pp >>= XMonad.io . ppOutput pp
+
+-- | Format the workspace information, given a workspace sorting function,
+--   a list of urgent windows, a pretty-printer format, and the current
+--   WindowSet.
+myPprWindowSet :: WorkspaceSort -> [Window] -> PP -> WindowSet -> String
+myPprWindowSet sort' urgents pp s = sepBy (ppWsSep pp) . map fmt . sort' $
+            map W.workspace (W.current s : W.visible s) ++ W.hidden s
+   where this     = W.currentTag s
+         visibles = map (W.tag . W.workspace) (W.visible s)
+
+         fmt w = printer pp (W.tag w ++ superScriptNum (nws w))
+          where printer | any (\x -> maybe False (== W.tag w) (W.findTag x s)) urgents  = ppUrgent
+                        | W.tag w == this                                               = ppCurrent
+                        | W.tag w `elem` visibles                                       = ppVisible
+                        | isJust (W.stack w)                                            = ppHidden
+                        | otherwise                                                     = ppHiddenNoWindows
+                nws = length . W.integrate' . W.stack
+
+-- | The same as 'dynamicLogWithPP', except it simply returns the status
+--   as a formatted string without actually printing it to stdout, to
+--   allow for further processing, or use in some application other than
+--   a status bar.
+myDynamicLogString :: PP -> X String
+myDynamicLogString pp = do
+  winset <- gets windowset
+  urgents <- readUrgents
+  sort' <- ppSort pp
+
+  -- layout description
+  let ld = description . W.layout . W.workspace . W.current $ winset
+
+  -- workspace list
+  let ws = myPprWindowSet sort' urgents pp winset
+  -- let ws = show ((ppSort pp) $ map W.tag $ W.hidden $ winset)
+  -- let ws = show (W.allWindows winset)
+  -- let ws = show $ map length $ map W.tag $ W.hidden $ winset
+  -- let ws = show $ map (\x -> ((length . W.integrate' . W.stack) x, W.tag x) :: (Int,String)) $ sortBy getWsCompareByTag $ (W.workspaces winset)
+
+  -- window title
+  wt <- maybe (return "") (fmap show . getName) . W.peek $ winset
+
+  -- run extra loggers, ignoring any that generate errors.
+  extras <- mapM (flip catchX (return Nothing)) $ ppExtras pp
+
+  return $ encodeString . sepBy (ppSep pp) . ppOrder pp $
+         [ ws
+         , ppLayout pp ld
+         , ppTitle  pp wt
+         ]
+         ++ catMaybes extras
+
 statusLogHook :: Handle -> X ()
-statusLogHook statusproc = dynamicLogWithPP defaultPP
+statusLogHook statusproc = myDynamicLogWithPP defaultPP
   { ppOutput = hPutStrLn statusproc . escapeStatusCodes
   , ppCurrent = statusBarColor myNormalBorderColor statusColorNormalFG
   , ppHidden = statusNormalColor
