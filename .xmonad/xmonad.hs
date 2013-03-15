@@ -305,7 +305,7 @@ statusColorSubdued = "gray60"
 statusColorBG = "#285577"
 
 statusBarProc :: String -> String
-statusBarProc xmonadDir = "dzen2 -dock -expand right -fn 'DejaVu Sans Mono'"
+statusBarProc xmonadDir = "dzen2 -dock -expand right -w 980 -x 0 -fn 'DejaVu Sans Mono'"
 statusBarColor = dzenColor
 statusNormalColor = statusBarColor statusColorNormalFG statusColorBG
 
