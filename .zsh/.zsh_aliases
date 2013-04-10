@@ -66,7 +66,7 @@ be cap rake rspec ruby () {
   [[ $0 == be ]] || bundle+=( $0 )
   command $bundle "$@"
 }
-rpush () { rspec $@ && git push }
+rpush () { bundle && rspec $@ && git push }
 
 rails () {
   local base dir=$PWD warning
