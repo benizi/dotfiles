@@ -66,6 +66,7 @@ couchdb_uri () {
 }
 
 couchdb_log_failure () {
+  (( $+_no_couchdb_log_failure )) && return 0
   printf '%s\n' $1 >> ~$owner/.failed-couchdb.$USER.$$
   touch ~$owner/failed-couchdb
 }
@@ -115,4 +116,16 @@ history_add_couchdb () {
   )"
   couchdb_add_doc history/ $json &>/dev/null &!
   return 0
+}
+
+history_add_couchdb_fix_failures () {
+  local file line
+  for file in ~/.failed-couchdb.* ; do
+    while read -r line ; do
+      _no_couchdb_log_failure=1 couchdb_add_doc history/ $line 2>/dev/null
+    done < $file | perl -lnwe 'BEGIN { $err = 0; }
+    print;
+    /"error":/ and $err = 1;
+    END { exit $err }' && rm -f $file
+  done && rm ~/failed-couchdb
 }
