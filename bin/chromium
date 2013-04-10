@@ -39,7 +39,7 @@ find_exe () {
 	if [[ -f $_official ]] ; then
 		exe=$_official
 	else
-		path=( ${path/${${(%):-"%x"}:h}} )
+		path=( ${${path:#$HOME/bin*}/${${(%):-"%x"}:h}} )
 		for command in chromium chromium-bin chrome ; do
 			(( $+commands[$command] )) || continue
 			exe==$command
