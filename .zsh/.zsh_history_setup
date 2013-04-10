@@ -65,6 +65,11 @@ couchdb_uri () {
   printf 'http://localhost:5984/%s' $1
 }
 
+couchdb_log_failure () {
+  printf '%s\n' $1 >> ~$owner/.failed-couchdb.$USER.$$
+  touch ~$owner/failed-couchdb
+}
+
 couchdb_request () {
   local method=$1
   local uri=$(couchdb_uri $2)
@@ -74,8 +79,7 @@ couchdb_request () {
   args+=( -H 'Content-Type: application/json' )
   if [[ -n $3 ]] ; then
     if ! printf '%s' $3 | curl $args $uri ; then
-      printf '%s\n' $3 >> ~$owner/.failed-couchdb.$USER.$$
-      touch ~$owner/failed-couchdb
+      couchdb_log_failure $3
     fi
   else
     curl $args $uri
