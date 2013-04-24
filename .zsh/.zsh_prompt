@@ -110,9 +110,10 @@ __setup_prompt () {
   local -a vcs
   vcs=( "${(f):-"$(__prompt_vcs)"}" )
 
-  local x11 deleted socks fail_couchdb current_dir
-  unset x11 deleted socks fail_couchdb
+  local x11 deleted socks fail_couchdb current_dir virtenv_info
+  unset x11 deleted socks fail_couchdb virtenv_info
   local ruby_info="$(__prompt_ruby_manager)"
+  (( $+VIRTUAL_ENV )) && virtenv_info=$VIRTUAL_ENV:t
 
   [[ ! -e $PWD ]] && deleted=true
   [[ -e ~$owner/failed-couchdb ]] && fail_couchdb=true
@@ -175,6 +176,7 @@ __setup_prompt () {
   add.top_row k:blue $^vcs[1,1]
   add.top_row f:yellow $^vcs[2,-1]
   add.top_row k:red $ruby_info
+  add.top_row k:22 $virtenv_info
   (( $+socks )) && add.top_row k:22 "socks:$socks"
   (( $+x11 )) && add.top_row k:27 "display $x11"
   add.top_row k:17 '%D{%Y-%m-%d %H:%M:%S}'
