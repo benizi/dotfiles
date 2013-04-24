@@ -11,7 +11,7 @@ normal_history_mode () {
     [[ ! -f $HISTFILE ]] && touch $HISTFILE && chown --reference=${(%):-%N} $HISTFILE
   fi
   TRAPUSR1 () { fc -W $zsh_dirs[-1]/emergency-zsh-backup-$(date +%Y%m%d-%H%M%S)-$$ }
-  zshaddhistory_functions=( history_add_couchdb )
+  zshaddhistory_functions=( couchdb_history_add )
 }
 
 normal_history_mode
@@ -101,7 +101,7 @@ couchdb_put couchdb_create_db () {
 
 zmodload zsh/datetime
 
-history_add_couchdb () {
+couchdb_history_add () {
   local cmd=
   cmd=${1%%$'\n'}
   [[ $1 = ' '* ]] && return 0
@@ -118,7 +118,7 @@ history_add_couchdb () {
   return 0
 }
 
-history_add_couchdb_fix_failures () {
+couchdb_history_fix () {
   local file line
   for file in ~/.failed-couchdb.* ; do
     while read -r line ; do
