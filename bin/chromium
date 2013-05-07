@@ -13,8 +13,7 @@ _plugins=true
 unset _url _ua _scratch
 _logging=false
 _userscripts=true
-#_ipv6=true
-unset _ipv6
+_ipv6=true
 unset _asyncdns
 _args=()
 _flags=( plugins logging user-scripts ipv6 async-dns )
