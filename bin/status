@@ -117,6 +117,15 @@ if (( $+commands[pomo] )) ; then
 	[[ -n $pomo ]] && out+=( "$pomo" )
 fi
 
+if (( $+commands[ip] )) ; then
+	if ip -6 addr show dev sixxs &> /dev/null ; then
+		ipv6="^fg(black)^bg(#ff9900)^ca(1,/usr/bin/sudo systemctl stop aiccu.service)V6^ca()"
+	else
+		ipv6="^fg()^bg()^ca(1,/usr/bin/sudo systemctl start aiccu.service)v6^ca()"
+	fi
+	(( $+ipv6 )) && out=( $ipv6 $out )
+fi
+
 (( $+dzen )) && normcolor="^fg()^bg()" || normcolor=''
 toprint=''
 for thing in $out ; do
