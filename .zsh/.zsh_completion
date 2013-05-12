@@ -49,7 +49,7 @@ _add_git_commands () {
 zstyle ':completion:*' completer _check_for_git_alias _complete
 zstyle ':completion::complete:-command-::' completer _add_git_commands
 
-__git_files () {
+is-at-least 5.0.0 || __git_files () {
   # localize options as appropriate
   local compadd_opts opts tag description
   # ignore compadd-related options that __git_files passes along
