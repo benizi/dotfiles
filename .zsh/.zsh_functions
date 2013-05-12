@@ -150,3 +150,13 @@ alias-function () {
 }
 
 ruler () { perl -lwe 'print map sprintf(" 23456 %2d0", $_), 1..50' | less -SE }
+
+f-it () {
+  local file=${1:-~/tgmf}
+  while read line ; do
+    if (( $#line )) ; then
+      printf '%%\n%s\n' "$line" >> $file
+      strfile $file $file.dat
+    fi
+  done
+}
