@@ -133,3 +133,4 @@ couchdb_history_fix () {
     END { exit $err }' && rm -f $file
   done && rm ~/failed-couchdb
 }
+alias fix_couchdb_history=' couchdb_history_fix'
