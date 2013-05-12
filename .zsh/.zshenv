@@ -282,3 +282,35 @@ ruby-manager () {
 }
 
 ruby-manager
+
+gvm_fixup_path () {
+  # remove the "system" go from PATH
+  if (( $+gvm_go_name )) ; then
+    path=( ${path:#$_my_gobin} )
+  else
+    path=( ${path:#/opt/gvm*} )
+  fi
+  typeset -U PATH
+}
+
+gvm_use_system () {
+  path=( $_my_gobin $path )
+  unset gvm_go_name gvm_pkgset_name
+  export GOPATH=~$owner/go/external:~$owner/go/code
+  unset GOROOT
+  gvm_fixup_path
+}
+
+go-manager () {
+  local gvm=/opt/gvm/scripts/gvm
+  _my_gobin=~$owner/hg/go/bin
+  if [ -f $gvm ] ; then
+    . $gvm
+    eval $'gvm () {\n'$functions[gvm]$'\ngvm_fixup_path\n}'
+    gvm_fixup_path
+  else
+    gvm_use_system
+  fi
+}
+
+go-manager
