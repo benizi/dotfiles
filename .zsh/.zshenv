@@ -145,6 +145,9 @@ if_exists PLAN9 /usr/local/plan9
 if (( $+XAUTHLOCALHOSTNAME )) && (( ! $+XAUTHORITY )) ; then
   export XAUTHORITY=~$owner/.Xauthority
 fi
+
+typeset -F 6 SECONDS
+
 run_local_versions
 
 __clean_ruby_path () {
