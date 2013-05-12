@@ -331,8 +331,10 @@ done
 
 named-gem-directory () {
   [[ $1 = d ]] && return 1
-  local gemdir="$(bundle show $2 2> /dev/null)"
+  local -a gemdir
+  gemdir=( ${(f)"$(bundle show $2 2>&1)"} )
   (( $? )) && return 1
+  gemdir=( $gemdir[-1] )
   [[ -d $gemdir ]] || return 1
   [[ -z $gemdir ]] && return 1
   reply=( $gemdir )
