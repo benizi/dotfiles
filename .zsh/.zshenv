@@ -157,8 +157,9 @@ __clean_ruby_path () {
     esac
   done
   path=( $new_path )
-  funcs=( ${(k)functions[(I)*rvm*|*rbenv*|*rbfu*]} )
+  funcs=( ${(k)functions[(I)chruby*|rvm*|rbenv*|rbfu*]} )
   (( $#funcs )) && unfunction $funcs
+  unset RUBIES
 }
 
 ruby-manager () {
@@ -194,6 +195,14 @@ ruby-manager () {
   # non-interactive setup
   local -a extra_bin
   case $ruby_manager in
+    chruby)
+      local script=/usr/local/share/chruby/chruby.sh
+      if [[ ! -f $script ]] ; then
+        unset ruby_manager
+        return 1
+      fi
+      . $script
+      ;;
     rbenv)
       local bin=~$owner/.rbenv/bin
       if [[ ! -r $bin ]] ; then
@@ -234,6 +243,9 @@ ruby-manager () {
   path=( $extra_bin $path )
 
   case $ruby_manager in
+    chruby)
+      [[ -f ~$owner/.ruby-version ]] && chruby "$(<~$owner/.ruby-version)"
+      ;;
     rbfu)
       eval "$(rbfu_dir=$rbfu_dir rbfu --init)"
       unalias rbfu-env

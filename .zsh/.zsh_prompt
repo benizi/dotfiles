@@ -86,6 +86,7 @@ __prompt_vcs () {
 __prompt_ruby_manager () {
   if (( $+ruby_manager )) ; then
     case $ruby_manager in
+      chruby) printf %s "chruby:${RUBY_ROOT:t}" ;;
       prb) printf %s "prb:$(prb version --short)" ;;
       rbenv) printf %s "$(rbenv version-name)" ;;
       rvm) printf %s "rvm:$(rvm current)" ;;
