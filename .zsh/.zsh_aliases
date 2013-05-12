@@ -183,9 +183,7 @@ for jar in /usr/share/java/saxon8.jar ; do
 done
 }
 alias z=' exec zsh'
-if (( $+commands[zu] )) ; then
-  : noop
-elif (( $+zsh_admin_mode )) ; then
+if (( $+zsh_admin_mode )) ; then
   alias zu='sudo ZDOTDIR=$HOME zsh -l'
 elif (( $+INOSX )) ; then
   alias zu='sudo su - root -c "ZDOTDIR=$HOME zsh -l"'
