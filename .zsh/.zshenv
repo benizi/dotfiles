@@ -87,7 +87,8 @@ for user in benhaskell bhaskell USC/bhaskell ; do
 done
 pathtest+=( $HOME/python/bin ~/.local/bin $HOME/bin )
 (( $+INSOL )) && pathtest+=( /usr/xpg4/bin )
-pathtest+=( {/{usr,opt}{/local,},}/{s,}bin /usr/bin/vendor_perl )
+pathtest+=( {/{usr,opt}{/local,},}/{s,}bin )
+pathtest+=( /usr/bin/vendor_perl /usr/bin/core_perl /usr/bin/site_perl )
 pathtest+=( $HOME/bin/dslinux/bin /usr/games/bin /home/bhaskell/wn/bin /home/bhaskell/qmail/bin /var/qmail/bin /usr/kde/4.0/bin /usr/X11R6/bin )
 pathtest+=( $path )
 pathtest+=( /usr/local/heroku/bin )
