@@ -272,6 +272,13 @@ if (( $+commands[ruby-build] )) ; then
   compdef _ruby-build rbfu-install ruby-install
 fi
 
+rbfu-local () {
+  (( $# )) || return 0
+  echo ${1#@} > .ruby-version
+  rbfu-env >&/dev/null
+}
+compdef _rbfu rbfu-local
+
 ruby-manager-startup () {
   if (( $+functions[rbfu-env] )) ; then
     setup_rbfu_version () {
