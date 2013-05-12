@@ -18,4 +18,4 @@ dns_servers=(
 	Scrubit-b 207.225.209.66
 )
 
-alive () { ping -c 1 $dns_servers[Google-a] }
+alive () { ping -c 1 ${1:-$dns_servers[Google-a]} }
