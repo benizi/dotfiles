@@ -136,6 +136,7 @@ if_exists PYTHONPATH ~$owner/python{,/lib/python*}(N)
 if_exists CLOJURE_EXT ~$owner/git/clojure
 if_exists CLOJURESCRIPT_HOME ~$owner/git/clojurescript
 if_exists M2_HOME ~$owner/maven
+export RUBY_BUILD_CACHE_PATH=/opt/ruby-build-cache
 export BROWSER=sensible-browser
 
 if_exists PLAN9 /usr/local/plan9
