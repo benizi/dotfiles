@@ -314,3 +314,5 @@ go-manager () {
 }
 
 go-manager
+
+(( $+commands[nvm] )) && eval "$(nvm default)"
