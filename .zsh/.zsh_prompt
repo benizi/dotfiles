@@ -177,6 +177,7 @@ __setup_prompt () {
   add.top_row k:blue $^vcs[1,1]
   add.top_row f:yellow $^vcs[2,-1]
   add.top_row k:red $ruby_info
+  (( $+NVM_VERSION )) && add.top_row k:128 ${NVM_VERSION#v}
   add.top_row k:22 $virtenv_info
   (( $+socks )) && add.top_row k:22 "socks:$socks"
   (( $+x11 )) && add.top_row k:27 "display $x11"
