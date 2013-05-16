@@ -141,6 +141,10 @@ if_exists M2_HOME ~$owner/maven
 export RUBY_BUILD_CACHE_PATH=/opt/ruby-build-cache
 export BROWSER=sensible-browser
 
+# settings for ssh-proxy
+export PROXY_DNS=1
+export PROXY_LOCALNET=127.0.0.1:5984/255.0.0.0
+
 if_exists PLAN9 /usr/local/plan9
 [[ -e $PLAN9 ]] && path+=( $PLAN9/bin )
 
