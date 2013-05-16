@@ -10,6 +10,7 @@ GetOptions(
 	'v' => \(my $verbose),
 	'dry-run' => \(my $dry),
 	'ssh-script!' => \(my $ssh_script = 1),
+	't|term=s' => \(my $term),
 );
 
 sub ssh_script {
@@ -22,8 +23,6 @@ sub ssh_script {
 		$ENV{$1} = $2;
 	}
 }
-
-sub term { ($ENV{TERM} // 'st') ? 'st' : 'urxvt' }
 
 $verbose //= $dry;
 my ($hosts, @hosts, %hosts);
@@ -66,7 +65,7 @@ if ($just_one) {
 }
 chomp $out;
 exit 1 unless length $out;
-my @cmd = (term, '-e', 'env', 'TERM=xterm-256color', 'ssh', split ' ', $out);
+my @cmd = ($term // 'st', '-e', 'env', 'TERM=xterm-256color', 'ssh', split ' ', $out);
 print "@cmd\n" if $verbose;
 exit if $dry;
 open STDERR, '>', '/dev/null';
