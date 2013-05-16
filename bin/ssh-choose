@@ -42,7 +42,7 @@ if (@ARGV) {
 	!/^#/ and undef @hosts{map split(/,/), (split)[0]} while <>;
 	@ARGV = ("$ENV{HOME}/.ssh/config");
 	/^Host(?:Name)?\s/ and undef @hosts{(split)} while <>;
-	@hosts = grep /[^\d.:]/, grep !/^[\[*|]/, grep !/Host/,
+	@hosts = grep !/\*/, grep /[^\d.:]/, grep !/^[\[*|]/, grep !/Host/,
 		sort { length $a <=> length $b or $a cmp $b }
 		keys %hosts;
 }
