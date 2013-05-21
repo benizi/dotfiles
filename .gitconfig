@@ -133,6 +133,7 @@
 	graphviz = "!f() { echo 'digraph git {' ; git log --pretty='format:  %h -> { %p }' \"$@\" | sed 's/[0-9a-f][0-9a-f]*/\"&\"/g' ; echo '}'; }; f"
 	remove-droppings = "! : remove leftovers from failed merges/rebases ; rd () { action='print and unlink' ; for arg ; do case \"$arg\" in --dry|-n) action=print ;; esac ; done ; git ls-files | perl -lnwe 'if ($ARGV eq q/-/) { $git{$_}++; } else { next unless s/^\\? //; next if $git{$_}; '\"$action\"' if /[.]orig$/ or /[.](?:REMOTE|LOCAL|BASE)[.]/; }' - 'git st|' ; } ; rd"
 	hub-browse = "! : open on GitHub ; gh () { url=\"$(git remote -v | awk '{print $2}' | awk '/gh:/ || /github/ { gsub(\"gh:\", \"github.com:\") ; gsub(\"git@\", \"\") ; gsub(\".com:\", \".com/\") ; gsub(/\\.git$/, \"\") ; print \"https://\" $_ ; exit }')\" ; if [ $# -gt 0 ] ; then url=\"$url/commit/$(git rev-parse \"$@\")\" ; fi ; open \"$url\" ; true ; } ; gh"
+	cleaner = "clean -xdfe /.*-version"
 [github]
 	user = benizi
 	token = "f1e16775462d45c3c324dbef2e84c508"
