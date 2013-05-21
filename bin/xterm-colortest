@@ -11,7 +11,7 @@ GetOptions(
 	'escape|extra-escape=s@' => \@esc,
 	'split=s' => \(my $split = chr 0x2502),
 	'raw' => \(my $raw = 0),
-	'square' => \(my $square = 0),
+	'square' => \(my $square = 1),
 	'gray|grey!' => \(my $grey = 1),
 	'stdin' => \(my $stdin = 0),
 	'rgb' => \(my $rgb = 0),
