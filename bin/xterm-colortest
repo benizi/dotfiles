@@ -75,7 +75,7 @@ for my $ba (@escapes) {
 			}
 			print "\n";
 		}
-		last unless $square or $list;
+		$ramp_24bit = 0;
 	}
 }
 print "\n" unless $square;
