@@ -1,4 +1,6 @@
 #!/usr/bin/perl
+use strict;
+use warnings;
 use utf8;
 use open qw/:std :utf8/;
 use Encode 'decode_utf8';
@@ -11,13 +13,17 @@ GetOptions(
 	'escape|extra-escape=s@' => \@esc,
 	'split=s' => \(my $split = chr 0x2502),
 	'raw' => \(my $raw = 0),
-	'square' => \(my $square = 1),
+	'square!' => \(my $square = 1),
+	'list!' => \(my $list),
 	'gray|grey!' => \(my $grey = 1),
 	'stdin' => \(my $stdin = 0),
 	'rgb' => \(my $rgb = 0),
 	'88' => \(my $c88 = 0),
+	'ramp!' => \(my $ramp_24bit),
 ) or die 'options';
 $show_number //= 1-$square;
+$ramp_24bit //= 1;
+$list //= 1-$ramp_24bit;
 chomp($text = do { undef local $/; <STDIN> }) if $stdin;
 ($show_number, $split) = (0, '') if $raw;
 my $X = $text || 'X'; # ╬▛░▒▓█
@@ -56,6 +62,12 @@ for my $ba (@escapes) {
 			}
 		}
 		print @$_, "\n" for @rows;
+	} elsif ($list) {
+		for (0..($grey?($c88?87:255):($c88?79:231))) {
+			print $c->($_, join '', grep($show_number, $_), $text, $split);
+		}
+	}
+	if ($ramp_24bit) {
 		for (qw/100 110 010 011 001 101/) {
 			my $mult = [split //];
 			for my $n (grep !($_ % 6), 1..255) {
@@ -63,10 +75,7 @@ for my $ba (@escapes) {
 			}
 			print "\n";
 		}
-	} else {
-		for (0..($grey?($c88?87:255):($c88?79:231))) {
-			print $c->($_, join '', grep($show_number, $_), $text, $split);
-		}
+		last unless $square or $list;
 	}
 }
 print "\n" unless $square;
