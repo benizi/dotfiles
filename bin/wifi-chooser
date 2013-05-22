@@ -1,6 +1,10 @@
 #!/bin/sh
-net=$(nmcli -f SSID dev wifi list \
-| sed '1d;s/^.//;s/[[:space:]]*$//;s/.$//' \
+net=$(if hash nmcli 2>&- ; then
+  nmcli -f SSID dev wifi list \
+  | sed '1d;s/^.//;s/[[:space:]]*$//;s/.$//'
+elif hash wicd-cli 2>&- ; then
+  wicd-cli --wireless -l | sed 1d | awk -F$'\t' '{print $(NF)}'
+fi \
 | sort \
 | uniq \
 | dmenu)
