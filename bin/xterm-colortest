@@ -68,12 +68,14 @@ for my $ba (@escapes) {
 		}
 	}
 	if ($ramp_24bit) {
-		for (qw/100 110 010 011 001 101/) {
-			my $mult = [split //];
-			for my $n (grep !($_ % 6), 1..255) {
-				printf "\e[38;2;%d;%d;%dm%s\e[0m", (map $n * $_, @$mult), $X;
+		for my $fgbg (38, 48) {
+			for (qw/100 110 010 011 001 101/) {
+				my $mult = [split //];
+				for my $n (grep !($_ % 6), 1..255) {
+					printf "\e[%d;2;%d;%d;%dm%s\e[0m", $fgbg, (map $n * $_, @$mult), $X;
+				}
+				print "\n";
 			}
-			print "\n";
 		}
 		$ramp_24bit = 0;
 	}
