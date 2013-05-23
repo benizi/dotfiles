@@ -29,8 +29,15 @@ fun! HighlightSpacingErrors()
 	hi Error cterm=reverse
 endfun
 
-fun! ResetSpacingErrors()
-	for group in get(w:, 'spacing_match_groups', [])
+fun! ResetSpacingErrors(...)
+	let todelete = []
+	if exists('w:spacing_match_groups')
+		call extend(todelete, w:spacing_match_groups)
+	end
+	if a:0 " 'force' mode
+		call extend(todelete, map(filter(getmatches(), 'v:val.group == "Error"'), 'v:val.id'))
+	end
+	for group in todelete
 		call matchdelete(group)
 	endfor
 	let w:spacing_match_groups = []
