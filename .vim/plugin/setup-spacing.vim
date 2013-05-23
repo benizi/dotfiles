@@ -13,19 +13,33 @@ fun! SetupTabstop(width, expand, ...)
 	let &l:sw = a:width
 	let &l:et = a:expand ? 1 : 0
 	let &l:listchars = 'tab:'.(a:expand ? '»·' : '  ').',trail:·'
+endf
+
+fun! HighlightSpacingErrors()
+	if !exists('w:spacing_match_groups')
+		let w:spacing_match_groups = []
+	end
+
 	" if not mixed tabs+spaces, hilight as errors
 	if (! &l:sts) || (&l:sts == &l:ts)
-		call matchadd('Error', '^\t\+\ ')
-		call matchadd('Error', '^\ \+\t')
+		call add(w:spacing_match_groups, matchadd('Error', '^\t\+\ '))
+		call add(w:spacing_match_groups, matchadd('Error', '^\ \+\t'))
 	endif
 	if &l:ft != 'mail'
 		" trailing whitespace, except for the current cursor position
-		call matchadd('Error', '\S\zs[\t ]\+\%#\@!$')
+		call add(w:spacing_match_groups, matchadd('Error', '\S\zs[\t ]\+\%#\@!$'))
 		" tabs anywhere but leading
-		call matchadd('Error', '\%(^\|\t\)\@<!\t')
+		call add(w:spacing_match_groups, matchadd('Error', '\%(^\|\t\)\@<!\t'))
 	end
 	hi Error cterm=reverse
 endfun
+
+fun! ResetSpacingErrors()
+	for group in get(w:, 'spacing_match_groups', [])
+		call matchdelete(group)
+	endfor
+	let w:spacing_match_groups = []
+endf
 
 fun! SetInModeline(var)
 	redir => last_set
@@ -146,6 +160,7 @@ fun! SetupSpacing(...)
 		let type = (a:1 ? 'tabbed' : 'spaced')
 		if exists('g:setup_spacing_default_{type}')
 			call call('SetupTabstop', g:setup_spacing_default_{type})
+			call HighlightSpacingErrors()
 		endif
 		return
 	endif
@@ -181,5 +196,6 @@ fun! SetupSpacing(...)
 	endfor
 	if len(params)
 		call call('SetupTabstop', params)
+		call HighlightSpacingErrors()
 	endif
 endfun
