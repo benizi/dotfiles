@@ -326,12 +326,23 @@ nn <silent> <Esc>t :tabnew<CR>
 nn <silent> <Esc>{ gT
 nn <silent> <Esc>} gt
 fun! CloseAndQuitIfLast()
-	bd
-	if tabpagenr('$') == 1 && winnr('$') == 1 && bufname('') == ''
-		q
+	let closing = bufnr('')
+	let tabpos = tabpagenr() - 1
+	winc q
+	let allbufs = []
+	for t in range(tabpagenr('$'))
+		cal extend(allbufs, tabpagebuflist(t + 1))
+	endfor
+	if -1 == index(allbufs, closing)
+		try
+			exe closing.'bd'
+		catch
+			exe tabpos.'tabnew|sil! '.closing.'b'
+			unsil echom v:exception
+		endtry
 	end
 endf
-nn <silent> <Esc>w :call CloseAndQuitIfLast()<CR>
+nn <silent> <Esc>w :sil call CloseAndQuitIfLast()<CR>
 
 " settings for TOhtml
 let g:html_no_progress=1
@@ -372,6 +383,7 @@ let g:ctrlp_custom_ignore = {
 let g:ctrlp_max_height = 100
 let g:ctrlp_show_hidden = 1
 let g:ctrlp_mruf_max = 1000000
+let g:ctrlp_switch_buffer = 'et'
 
 nm <Leader>n :CtrlPCurFile<CR>
 
