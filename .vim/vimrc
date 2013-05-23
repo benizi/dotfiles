@@ -47,8 +47,10 @@ if $TERM =~ '^st'
 	" fix cursor shape in st
 	let &t_SI="\e[6 q"
 	let &t_EI="\e[2 q"
+end
 
-	" fix BCE bug in st
+" fix BCE bug in `st` and in rxvt-unicode-24bit
+if $TERM =~ '^st' || $TERM =~ 'rxvt.*24bit'
 	se t_ut=
 end
 
