@@ -1,6 +1,4 @@
-fun! ShowTabsettings()
-	verbose set ts? sts? sw? et? listchars?
-endfun
+com! ShowSpacing verb se ts? sts? sw? et? listchars?
 
 fun! SetupTabstop(width, expand, ...)
 	let &l:ts = a:width
