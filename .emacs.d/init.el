@@ -94,6 +94,10 @@
 
 (add-hook 'window-setup-hook 'setup-color-theme)
 
+;; set up xterm (necessary evil?)
+(custom-set-variables
+ '(xterm-extra-capabilities (quote modifyOtherKeys)))
+
 ;; popup menu for autocomplete
 (require 'popup)
 
