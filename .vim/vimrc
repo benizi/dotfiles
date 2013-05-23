@@ -371,6 +371,7 @@ let g:ctrlp_custom_ignore = {
 	\ }
 let g:ctrlp_max_height = 100
 let g:ctrlp_show_hidden = 1
+let g:ctrlp_mruf_max = 1000000
 
 nm <Leader>n :CtrlPCurFile<CR>
 
