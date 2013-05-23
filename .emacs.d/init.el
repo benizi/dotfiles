@@ -63,6 +63,12 @@
       (define-key evil-insert-state-map
         (read-kbd-macro evil-toggle-key) 'evil-emacs-state)))
 
+;; El-Screen
+(require 'elscreen)
+(global-set-key (kbd "M-{") 'elscreen-previous)
+(global-set-key (kbd "M-}") 'elscreen-next)
+(global-set-key (kbd "M-t") 'elscreen-create)
+
 ;; I DO things
 (require 'ido)
 (setq ido-enable-flex-matching t)
