@@ -1,8 +1,3 @@
-if exists('g:loaded_setup_spacing')
-	finish
-endif
-let g:loaded_setup_spacing = 1
-
 fun! ShowTabsettings()
 	verbose set ts? sts? sw? et? listchars?
 endfun
