@@ -65,7 +65,7 @@ if ($just_one) {
 }
 chomp $out;
 exit 1 unless length $out;
-my @cmd = ($term // 'st', '-e', 'env', 'TERM=xterm-256color', 'ssh', split ' ', $out);
+my @cmd = ($term // 'term', '-e', 'env', 'TERM=xterm-256color', 'ssh', split ' ', $out);
 print "@cmd\n" if $verbose;
 exit if $dry;
 open STDERR, '>', '/dev/null';
