@@ -136,7 +136,7 @@ for (0..$#A) {
 			if (@files) {
 				for (0..$#lr) {
 					my $fh = $files[$_];
-					print $fh "====> $lr[$_]{filename} <====\n";
+					print $fh "====> $lr[-1]{filename} <====\n";
 				}
 			} else {
 				print ColorDiff::color_diff(
@@ -150,7 +150,7 @@ for (0..$#A) {
 			if(1){#if (@files) {
 				unshift @{$lines[$_]},
 					map { ($_ x 72)."\n" }
-					'=', [qw/< >/]->[-$_], '='
+					'=', grep(0, [qw/< >/]->[-$_]), '='
 					for 0..$#lines;
 			}
 			print $_ @{shift @lines} for @toprint;
