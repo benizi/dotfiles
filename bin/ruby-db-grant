@@ -1,7 +1,8 @@
 #!/usr/bin/env ruby
 require 'yaml'
+require 'erb'
 
-if yaml = YAML.load(File.read('config/database.yml'))
+if yaml = YAML.load(ERB.new(File.read(ENV['CONFIG'] || 'config/database.yml')).result)
   envs = ENV['RAILS_ENV'] || ARGV.shift || %w[development test]
   envs.each do |env|
     cfg = yaml[env]
