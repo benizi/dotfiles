@@ -3,9 +3,17 @@ net=$(if hash nmcli 2>&- ; then
   nmcli -f SSID dev wifi list \
   | sed '1d;s/^.//;s/[[:space:]]*$//;s/.$//'
 elif hash wicd-cli 2>&- ; then
+  echo '<cli>'
+  echo '<rescan>'
   wicd-cli --wireless -l | sed 1d | awk -F$'\t' '{print $(NF)}'
 fi \
 | sort \
 | uniq \
 | dmenu)
-test -n "$net" && wifi "$net"
+if test -n "$net" ; then
+  case "$net" in
+    '<cli>') term -e sudo su - -s $(which wicd-curses) ;;
+    '<rescan>') wifi-rescan ;;
+    *) wifi "$net" ;;
+  esac
+fi
