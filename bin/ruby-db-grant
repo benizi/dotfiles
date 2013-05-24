@@ -19,6 +19,11 @@ create database if not exists `#{cfg['database']}`;
 grant all privileges on `#{cfg['database']}`.* to '#{cfg['username']}'@'localhost' identified by "#{cfg['password']}";
 flush tables;
 SQL
+    when 'postgresql'
+      puts <<SHELL
+sudo su - postgres -c 'createuser '\\''#{cfg['username']}'\\'
+sudo su - postgres -c 'createdb '\\''#{cfg['database']}'\\'' -O #{cfg['username']}'
+SHELL
     else
       warn "Can't handle adapter #{cfg['adapter']} (env: #{env}) yet"
     end
