@@ -5,6 +5,7 @@ zmodload zsh/datetime
 pomfile=/tmp/$UID-pomo-pom
 breakfile=/tmp/$UID-pomo-break
 files=( $pomfile $breakfile )
+files+=( $breakfile.notified )
 
 pomlen=$(( 25 * 60 ))
 breaklen=$(( 5 * 60 ))
@@ -22,13 +23,13 @@ load_times () {
   fi
 
   if (( $+pomleft )) && (( pomleft <= 0 )) ; then
-    : notify-send -t 0 'Pomodoro ended'
+    notify-send -t 0 'Pomodoro ended'
     touch $breakfile
     unset pomleft
     breakleft=$breaklen
   elif (( $+breakleft )) && (( breakleft < 0 )) ; then
-    : notify-send -t 0 'Break ended'
-    rm -f $files
+    [[ -f $breakfile.notified ]] || notify-send -t 0 'Break ended'
+    touch $breakfile.notified
   fi
 }
 
@@ -39,8 +40,13 @@ dzen_out () {
     time=$pomleft
     cmd=pomb
   elif (( $+breakleft )) ; then
-    color=990000
-    time=$breakleft
+    if (( breakleft >= 0 )) ; then
+      color=990000
+      time=$breakleft
+    else
+      time=$(( 0 - breakleft ))
+      (( time % 2 == 0 )) && color=999900 || color=ff9900
+    fi
     cmd=pom
   fi
   if (( $+time )) && (( time >= 0 )) ; then
@@ -58,7 +64,7 @@ main () {
   (( $# )) || set -- $cmd:t
   case $1 in
     status) dzen_out ;;
-    pom) touch $pomfile ;;
+    pom) rm -f $files ; touch $pomfile ;;
     pomb|break) touch $breakfile ;;
     kill) rm -f $files ;;
   esac
