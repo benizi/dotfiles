@@ -1,4 +1,18 @@
 #!/bin/zsh
+
+if (( $+commands[nmcli] )) ; then
+  list() { nmcli dev list }
+  using() { nmcli con status | grep -q "^$1 " }
+  connect() { nmcli con up id $ssid }
+elif (( $+commands[wicd-cli] )) ; then
+  list() { wicd-cli --wireless -l | sed 1d | awk -F$'\t' '{print $(NF)}' }
+  using() { false }
+  connect() { wicd-cli --wireless -p essid -s $1 -c }
+else
+  echo No cli wifi tool >&2
+  exit 1
+fi
+
 config=$HOME/.config/wifi
 unset ssid force
 for arg ; do
@@ -8,7 +22,7 @@ for arg ; do
   esac
 done
 if (( ! $+ssid )) && [[ -f $config ]] ; then
-  ssid=$(nmcli dev list | perl -lnwe '
+  ssid=$(list | perl -lnwe '
   if ($ARGV eq "-") {
     if (my ($ap, $k, $v) = /^(AP\d+)\.(BSSID|SSID):\s*(.*)$/) {
       $v = eval $v if $v =~ /^\x27/;
@@ -25,8 +39,8 @@ if (( ! $+ssid )) && [[ -f $config ]] ; then
     print $default if eof
   }' - $config)
 fi
-if (( ! $+force )) && (( $+ssid )) && nmcli con status | grep -q "^$ssid " ; then
+if (( ! $+force )) && (( $+ssid )) && using $ssid ; then
   echo alread using $ssid
 else
-  nmcli con up id $ssid
+  connect $ssid
 fi
