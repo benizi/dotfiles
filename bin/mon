@@ -17,18 +17,18 @@ for arg ; do
 	esac
 done
 
-typeset -a outputs all_outputs
-typeset -A vid_modes
+typeset -a outputs
+typeset -A active_output vid_modes
 
 get_modes () {
 	outputs=()
-	all_outputs=()
+	active_output=()
 	vid_modes=()
 	eval "$(xrandr | perl -lanwe '
 if (/^[A-Z]{2}/) {
 	$last_output = $F[0];
 	push @outputs, $last_output;
-	print qq/all_outputs+=( $last_output )/;
+	print qq/active_output+=( $last_output 1 )/ if /^\S+ connected/;
 	$last_ok = 1
 }
 elsif (/^ *[0-9]+x[0-9]+/) {
@@ -46,29 +46,49 @@ END {
 
 get_modes
 
+deactivate=()
 int=$outputs[1]
-ext=$outputs[2]
 int_mode=$vid_modes[$int]
-ext_mode=$vid_modes[$ext]
+if (( $#active_output > 1 )) ; then
+	for ext in ${outputs[2,-1]} ; do
+		(( $+active_output[$ext] )) || continue
+		ext_mode=$vid_modes[$ext]
+		break
+	done
+else
+	for mon in $outputs ; do
+		[[ $mon == $int ]] || deactivate+=( $mon )
+	done
+fi
+
+scale=1x1
+unset fb
 
 cmd=( xrandr --output $int --mode $int_mode )
 if [[ -n $ext ]] ; then
-	if [[ $int_mode == $ext_mode ]] ; then
-		cmd+=( --output $ext $ext_pos $int --mode $int_mode )
+	if [[ $int_mode == $ext_mode ]] || [[ $ext_pos != --same-as ]] ; then
+		cmd+=( --output $ext $ext_pos $int --mode $ext_mode )
 	else
 		case $int_mode/$ext_mode in
-			1920x1080/1920x1200) scale=1x.9 ;;
+			1920x1080/1920x1200) scale=1x.9 ; fb=$int_mode ;;
+			*) scale=$(( ${int_mode%x*}.0 / ${ext_mode%x*} ))x$(( ${int_mode#*x}.0 / ${ext_mode#*x} )) ; fb=$int_mode ;;
 		esac
-		if (( $+scale )) ; then
-			cmd[2,1]=( --fb $int_mode )
-			cmd+=( --output $ext $ext_pos $int --mode $ext_mode --scale $scale )
-		fi
+		cmd+=( --output $ext $ext_pos $int --mode $ext_mode )
 	fi
+else
+	fb=$int_mode
 fi
+
 if (( $+cycle )) ; then
 	for output in $all_outputs ; do
 		${dry+echo} xrandr --output $output --off
 	done
 fi
 
+(( $+fb )) && cmd[2,1]=( --fb $fb )
+(( $+scale )) && cmd+=( --scale $scale )
+
+for mon in $deactivate ; do
+	cmd+=( --output $mon --off )
+done
 ${dry+echo} $cmd
