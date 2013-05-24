@@ -52,6 +52,10 @@ while [ $# -gt 0 ] ; do
   shift
 done
 
+if [[ -z "$port" ]] ; then
+  port=4321
+fi
+
 if [[ -z "$host" ]] || [[ -z "$port" ]] ; then
   die 'Need to specify host and port'
 fi
