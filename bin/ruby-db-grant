@@ -3,8 +3,8 @@ require 'yaml'
 require 'erb'
 
 if yaml = YAML.load(ERB.new(File.read(ENV['CONFIG'] || 'config/database.yml')).result)
-  envs = ENV['RAILS_ENV'] || ARGV.shift || %w[development test]
-  envs.each do |env|
+  envs = ENV['RAILS_ENV'] || ARGV.shift || 'development test'
+  envs.split.each do |env|
     cfg = yaml[env]
 
     if !cfg
