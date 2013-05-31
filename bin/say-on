@@ -1,0 +1,7 @@
+#!/bin/zsh
+host=$1
+shift
+printf '%s\n' "$*" \
+| text2wave \
+| sox -v 10 - -t wav - \
+| ssh $host 'f=/tmp/sound.wav ; cat > $f && afplay $f && rm $f' }
