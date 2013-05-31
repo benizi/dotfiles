@@ -132,18 +132,19 @@ TRAPZERR () {
   fi
 }
 
-setup_nvm_version () {
-  [[ -e .node-version ]] && nvm-env
-}
-
 if (( $+commands[nvm] )) ; then
-  chpwd_functions+=( setup_nvm_version )
   nvm-env () {
     (( $# )) || set -- "$(<.node-version)"
     eval "$(nvm env $1)"
   }
   _nvmenv () { _arguments "1:version:(($(nvm versions)))" }
   compdef _nvmenv nvm-env
+
+  setup_nvm_version () {
+    [[ -e .node-version ]] && nvm-env
+  }
+  setup_nvm_version
+  chpwd_functions+=( setup_nvm_version )
 fi
 
 [[ -e $GVM_ROOT ]] && . $GVM_ROOT/scripts/completion
