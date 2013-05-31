@@ -148,3 +148,6 @@ if (( $+commands[nvm] )) ; then
 fi
 
 [[ -e $GVM_ROOT ]] && . $GVM_ROOT/scripts/completion
+
+local cmd
+for cmd in $chpwd_functions ; do $cmd ; done
