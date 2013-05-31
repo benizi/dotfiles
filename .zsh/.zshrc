@@ -147,7 +147,15 @@ if (( $+commands[nvm] )) ; then
   chpwd_functions+=( setup_nvm_version )
 fi
 
-[[ -e $GVM_ROOT ]] && . $GVM_ROOT/scripts/completion
+if [[ -e $GVM_ROOT ]] ; then
+  . $GVM_ROOT/scripts/completion
+
+  setup_gvm_directories () {
+    hash -d go=$GOROOT
+    hash -d gopkg=${GOPATH%:*}/src
+  }
+  chpwd_functions+=( setup_gvm_directories )
+fi
 
 local cmd
 for cmd in $chpwd_functions ; do $cmd ; done
