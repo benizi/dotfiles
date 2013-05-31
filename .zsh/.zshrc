@@ -12,7 +12,7 @@ setopt no_recexact no_rcquotes
 setopt magic_equal_subst
 setopt csh_junkie_history
 export MAILCHECK=0
-autoload -U compinit
+autoload -U compinit bashcompinit
 autoload -Uz age
 () {
   local fn
@@ -31,6 +31,7 @@ compinitargs=( -d ~/.zcompdump )
   (( $+INCYG )) || (( $#notmine )) && compinitargs+=( -u )
 }
 compinit $compinitargs
+bashcompinit
 [ -n "$INCYG" -a -n "$INWIN7" ] && export CYGWIN=nontsec
 
 export LESS="-R -i -M --shift 5 -F -X -j4"
@@ -144,3 +145,5 @@ if (( $+commands[nvm] )) ; then
   _nvmenv () { _arguments "1:version:(($(nvm versions)))" }
   compdef _nvmenv nvm-env
 fi
+
+[[ -e $GVM_ROOT ]] && . $GVM_ROOT/scripts/completion
