@@ -160,3 +160,15 @@ f-it () {
     fi
   done
 }
+
+revbump () {
+  local pattern
+  local -a versions
+  versions=( **/version.rb )
+  if (( $#versions == 1 )) ; then
+    perl -i -pwe '/VERSION/ and s/(\d+)(?=")/$1 + 1/e' $versions \
+      && git commit -am "Revision bump for $*"
+  else
+    warn 'More than one version.rb?'
+  fi
+}
