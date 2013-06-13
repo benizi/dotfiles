@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use feature ':5.10';
+use FindBin '$Bin';
 use Getopt::Long qw/:config pass_through/;
 use IPC::Run;
 my %opt;
@@ -18,6 +19,8 @@ my $is_macbook = do {
 	$mac
 };
 
+my $xkb_dir = "$Bin/xkb";
+
 GetOptions(
 	(map {; "$_=s" => \$opt{$_} } @xkbopts),
 	'reset=s' => \$opt{reset},
@@ -27,13 +30,13 @@ GetOptions(
 	'extra=s@' => \my @extra,
 	'ion!' => \(my $ion = `pgrep ion3`),
 	'mod3' => \(my $mod3),
-	'modmap=s' => \(my $modmap = "$ENV{HOME}/.xmodmap"),
+	'modmap=s' => \(my $modmap = "$xkb_dir/.xmodmap"),
 	'M|justmod' => \(my $just_modmap = 0),
 	'clear' => \(my $clear_mods),
 	'I=s@' => \@includes,
 	'macbook' => \$is_macbook,
 ) or die 'options';
-@includes = grep -d, "$ENV{HOME}/xkb" unless @includes;
+@includes = grep -d, $xkb_dir unless @includes;
 sub run_it {
 	my @flat = map ref() ? @$_ : $_, grep { (!ref) or ('ARRAY' eq ref) } @_;
 	$_ = (length) ? $_ : "''" for @flat;
