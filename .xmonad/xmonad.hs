@@ -82,7 +82,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- launch a terminal
     [ ((modm,               xK_Return), spawn $ "in-cwd " ++ XMonad.terminal conf)
-    , ((mod4Mask, xK_Return), spawn $ "in-cwd urxvt-256color")
+    , ((mod4Mask, xK_Return), spawn $ "LC_ALL=en_US.UTF-8 in-cwd urxvt")
 
     -- root term
     , ((modm .|. shiftMask, xK_Return), spawn "st -e sudo su - -s /bin/zsh -l")
