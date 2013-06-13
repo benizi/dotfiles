@@ -36,6 +36,7 @@ GetOptions(
 	'clear' => \(my $clear_mods),
 	'I=s@' => \@includes,
 	'macbook' => \$is_macbook,
+	'print' => \(my $just_print),
 ) or die 'options';
 @includes = grep -d, $xkb_dir unless @includes;
 sub run_it {
@@ -95,6 +96,7 @@ if (!$just_modmap) {
 		'|',
 		[xkbcomp => -w => 3 => map("-I$_", @includes), '-', $ENV{DISPLAY}]
 	) if @includes;
+	@cmd = @{$cmd[0]} if $just_print;
 	run_it @cmd;
 }
 if ($mod3 or $just_modmap or $is_macbook or -f $modmap) {
