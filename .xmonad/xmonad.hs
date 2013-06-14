@@ -38,6 +38,8 @@ import Data.Maybe (isJust, catMaybes)
 import XMonad.Util.NamedWindows
 import XMonad.Util.WorkspaceCompare (getWsCompareByTag, WorkspaceSort)
 
+import Data.Set (toList, fromList)
+
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
 --
@@ -224,7 +226,7 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- mod-button3, Set the window to floating mode and resize by dragging
     , ((modm, button3), (\w -> focus w >> mouseResizeWindow w))
-    ]) [modm, mod1Mask]
+    ]) $ toList $ fromList [modm, mod1Mask]
 
 ------------------------------------------------------------------------
 -- Layouts:
