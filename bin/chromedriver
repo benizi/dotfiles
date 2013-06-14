@@ -1,6 +1,6 @@
 #!/bin/zsh
 if (( ! $+SELENIUM_POPUP )) ; then
-  screen-detached -xvfb Xvfb :1 -screen 0 1920x1080x24
+  screen-detached -1 Xvfb :1 -screen 0 1920x1080x24
   export DISPLAY=:1
   x-is-active -maxtry 10 -v || exit 1
 fi

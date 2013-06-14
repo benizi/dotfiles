@@ -76,7 +76,7 @@ run_action () {
     start)
       port=$(port_number)
       already_running && die "Already running on port $(run_action port)"
-      cmd=( screen-detached -$screenname start-nailgun $port )
+      cmd=( screen-detached -1 -S $screenname start-nailgun $port )
       printf "%s\n" $port > $tmpdir/$screenname
       cd $dir
       $cmd

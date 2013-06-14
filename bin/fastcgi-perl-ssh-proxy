@@ -22,5 +22,5 @@ doit screen -r fastcgi-perl -X quit
 # start the new one
 cmd=()
 (( $+stop )) || cmd=( ssh-proxy $host $port -N )
-cmd+=( screen-detached -fastcgi-perl fastcgi-perl -f --no-exec )
+cmd+=( screen-detached -1 fastcgi-perl -f --no-exec )
 doit $cmd

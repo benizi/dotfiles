@@ -5,10 +5,10 @@ start () {
   # nginx FastCGI servers
   set-all-facl -u /var/run
   mkdir -p $sock_dir
-  screen-detached -fastcgi-perl fastcgi-perl -f --no-exec
-  screen-detached -fastcgi-php spawn-fcgi -n -s /var/run/nginx/php.sock -f /usr/bin/php-cgi
-  screen-detached -fastcgi-haml spawn-fcgi -n -s /var/run/nginx/haml.sock -f ~/bin/fastcgi-haml
-  screen-detached -fastcgi-markdown spawn-fcgi -n -s /var/run/nginx/markdown.sock -f ~/bin/fastcgi-markdown
+  screen-detached -1 fastcgi-perl -f --no-exec
+  screen-detached -1 -S fastcgi-php spawn-fcgi -n -s /var/run/nginx/php.sock -f /usr/bin/php-cgi
+  screen-detached -1 -S fastcgi-haml spawn-fcgi -n -s /var/run/nginx/haml.sock -f ~/bin/fastcgi-haml
+  screen-detached -1 -S fastcgi-markdown spawn-fcgi -n -s /var/run/nginx/markdown.sock -f ~/bin/fastcgi-markdown
   set-all-facl -u -w -R :rwX $sock_dir
 }
 
