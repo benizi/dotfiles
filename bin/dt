@@ -79,7 +79,7 @@ end
 case opts[:mode]
 when :new, :detach, :check
 	ARGV << (ENV['SHELL'] || 'bash') if ARGV.empty?
-	opts[:name] = suffixed(opts[:name] || ARGV[0], false)
+	opts[:name] = suffixed(opts[:name] || ARGV[0], false) || ARGV[0]
 end
 
 sock = @dir + '/' + opts[:name]
