@@ -72,7 +72,7 @@ do {
 	for my $k (keys %{$defaults{''}}) {
 		next unless exists $defaults{$path}{$k};
 		my $v = $defaults{$path}{$k};
-		if ($v and ref($v)~~'ARRAY') {
+		if ($v and ref($v) and 'ARRAY' eq ref $v) {
 			push @{$opt{$k}}, @$v;
 		} else {
 			$opt{$k} //= $v;
