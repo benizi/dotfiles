@@ -56,7 +56,7 @@ myBorderWidth   = 1
 -- ("right alt"), which does not conflict with emacs keybindings. The
 -- "windows key" is usually mod4Mask.
 --
-myModMask       = mod1Mask
+myModMask = mod3Mask
 
 -- The default number of workspaces (virtual screens) and their names.
 -- By default we use numeric strings, but any string may be used as a
@@ -81,7 +81,8 @@ myUrgentColor = "orange"
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- launch a terminal
-    [ ((modm,               xK_Return), spawn $ "in-cwd " ++ XMonad.terminal conf)
+    [ ((modm, xK_Return), spawn $ "in-cwd " ++ XMonad.terminal conf)
+    , ((mod1Mask, xK_Return), spawn $ "in-cwd " ++ XMonad.terminal conf)
     , ((mod4Mask, xK_Return), spawn $ "LC_ALL=en_US.UTF-8 in-cwd urxvt")
 
     -- root term
@@ -90,6 +91,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- launch dmenu
     , ((mod4Mask,           xK_r     ), spawn "dmenu_run")
     , ((modm,               xK_space ), spawn "dmenu_run")
+    , ((mod1Mask,           xK_space ), spawn "dmenu_run")
 
     -- other launchers
     ---- process monitoring
