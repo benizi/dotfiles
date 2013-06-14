@@ -1,42 +1,46 @@
 #!/bin/zsh
-unset help
-cmd=()
-doit=exec
-detach=true
-while (( $#argv )) ; do
-	arg=$1
-	shift
-	case $arg in
-		help|-help|--help) help=true ;;
-		notreally|--no-d|--no-detach|--attached|-a) unset detach ;;
-		--dry|--dry-run) doit=echo ;;
-		*) [[ $arg = -- ]] || cmd+=( $arg ) ; (( $#argv )) && cmd+=( "$@" ) ; break ;;
-	esac
-done
-set -- "${cmd[@]}"
-if (( $+help )) || (( ! $#argv && ! $#cmd )) ; then
+
+usage() {
 	cat <<USAGE
-Usage: ${0:t} [--help] [.-][session-name | command] [args]
-  session-name is optional if command is prefaced with '.'
-  session-name will not be duplicated if prefaced with '-'
-  Both can be used.
+Usage:
+  ${0:t} [options] command [args]
+Options:
+  -n/--dry/--dry-run       Just print the command that would be run
+  -h/--help                Print this usage information and exit
+  -1/--single/--one        Don't start a new process if one exists
+  -a/--attach/--no-detach  Don't detach at the outset
+    or set the STAYATTACH env var
+  -S NAME / --name NAME    Set the session name [default: \$command]
 USAGE
 	exit
+}
+
+zparseopts -D \
+	{n,-dry{,-run}}=dry \
+	{h,-help}=help \
+	{1,-{single,one}}=singleton \
+	{S,-name}:=name \
+	{-no-d{,etach},a,-attach{,ed}}=attach
+
+(( $#dry )) && doit=echo || doit=exec
+(( $#attach )) && unset detach || detach=true
+(( $#singleton )) && checkrunning=true || unset checkrunning
+(( $#name )) && sess=${name[2]} || sess=$1
+
+if (( $#help )) || (( ! $#argv )) ; then
+	usage
 fi
-unset samename checkrunning
-sess=$1
-shift
+
 screenargs=()
 args=( "$@" )
-while true ; do
-	case $sess in
-		-*) sess=${sess[2,-1]} checkrunning=true ;;
-		.*) sess=${sess[2,-1]} samename=true ;;
-		*) break ;;
-	esac
-done
-[[ -e /run/screens ]] && sudo chmod g-w /run/screens
-(( $+checkrunning )) && screen-running $sess && exit 0
-(( $+samename )) && args=( $sess "${args[@]}" )
-(( ! $+STAYATTACH )) && (( $+detach )) && screenargs=( -d -m )
-$doit screen -S $sess "${screenargs[@]}" -- "${args[@]}"
+
+if (( $+commands[dt] )) ; then # prefer dt by a wide margin...
+	dt -S $sess --check && exit $(( 1 - $+checkrunning ))
+	(( ! $+STAYATTACH )) && (( $+detach )) && screenargs=( -n $screenargs )
+	$doit dt -S $sess $screenargs -- $args
+else
+	[[ -e /run/screens ]] && sudo chmod g-w /run/screens
+	(( $+checkrunning )) && screen-running $sess && exit 0
+	(( ! $+STAYATTACH )) && (( $+detach )) && screenargs=( -d -m )
+	$doit screen -S $sess "${screenargs[@]}" -- "${args[@]}"
+fi
