@@ -35,6 +35,7 @@ while true ; do
 		*) break ;;
 	esac
 done
+[[ -e /run/screens ]] && sudo chmod g-w /run/screens
 (( $+checkrunning )) && screen-running $sess && exit 0
 (( $+samename )) && args=( $sess "${args[@]}" )
 (( ! $+STAYATTACH )) && (( $+detach )) && screenargs=( -d -m )
