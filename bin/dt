@@ -31,6 +31,14 @@ parser.order!(ARGV)
 
 FileUtils.mkdir_p(@dir, :mode => 01700)
 
+def sock_for(name)
+	File.join(@dir, (name||'').split('/').last)
+end
+
+def sock?(name)
+	File.exist?(sock_for(name))
+end
+
 def socks
 	ret = []
 	Dir.new(@dir).each do |f|
@@ -46,7 +54,7 @@ def suffixed(name, exist)
 	already = socks.grep(/^#{name}\d{0,2}$/).sort
 	return already[0] if exist
 	ret = nil
-	100.times do |i|
+	(0..100).each do |i|
 		testname = "#{name}"
 		testname << i.to_s if i > 0
 		next if testname.empty? or already.include?(testname)
@@ -67,26 +75,24 @@ end
 
 case opts[:mode]
 when :resume, :resume_or_new, :check
-	opts[:name] ||= ARGV[0]
-	opts[:name] = suffixed(opts[:name], true)
+	opts[:name] ||= ARGV[0] || ENV['SHELL'] || 'bash'
 	if opts[:mode] == :resume_or_new
-		opts[:mode] = opts[:name] ? :resume : :new
-	elsif opts[:mode] != :check
-		abort "Nothing to resume" unless opts[:name]
+		opts[:mode] = sock?(opts[:name]) ? :resume : :new
 	end
 end
 
 case opts[:mode]
-when :new, :detach, :check
+when :new, :detach
 	ARGV << (ENV['SHELL'] || 'bash') if ARGV.empty?
-	opts[:name] = suffixed(opts[:name] || ARGV[0], false) || ARGV[0]
+	opts[:name] = suffixed(opts[:name] || ARGV[0], false) || opts[:name]
 end
 
-sock = @dir + '/' + opts[:name]
-abort "No such socket: #{sock}" if opts[:mode] == :resume and not File.exists?(sock)
+sock = sock_for(opts[:name])
 
-if opts[:mode] == :check
-	exit 1 if !File.exists?(sock)
+if opts[:mode] == :resume
+	abort "No such socket: #{sock}" unless sock?(opts[:name])
+elsif opts[:mode] == :check
+	exit 1 unless sock?(opts[:name])
 	exec(%Q{fuser -s #{sock}})
 end
 
