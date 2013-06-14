@@ -217,15 +217,14 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 --
 myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 
+    concat $ map (\modm ->
     -- mod-button1, Set the window to floating mode and move by dragging
     [ ((modm, button1), (\w -> focus w >> mouseMoveWindow w))
     , ((modm, button2), (\w -> focus w >> windows W.shiftMaster))
 
     -- mod-button3, Set the window to floating mode and resize by dragging
     , ((modm, button3), (\w -> focus w >> mouseResizeWindow w))
-
-    -- you may also bind events to the mouse scroll wheel (button4 and button5)
-    ]
+    ]) [modm, mod1Mask]
 
 ------------------------------------------------------------------------
 -- Layouts:
