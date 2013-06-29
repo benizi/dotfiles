@@ -22,7 +22,6 @@ alias nl='nl -ha -ba -fa -nln'
 function commafy () { perl -lpwe '@F=split/(\s+)/,$_,-1;for(@F){next if/\D/;1 while s/(?<=\d)(?=\d\d\d\b)/,/}$_=join"",@F' }
 function humanfy () { perl -lpwe '@F=split/(\s+)/,$_,-1;for(@F){last if /[^\s\d]/; next if not s/^([+\-]?)(\d+(?:\.\d+)?)$/$2/; my $s = $1; my $l = int(log($_||1)/log(1024)); my $conv = "KMGTP"; if ($l > 0 and $l <= length $conv) { my $si=substr $conv, $l-1, 1; $_ /= 1024 ** $l; $_ = sprintf "%5.1f\e[%dm%s\e[0m", $_, 31+$l, $si; } else { $_ = sprintf "%5.1f", $_ } 1 while s/(?<=\d)(?=\d\d\d\b)/,/} $_=join"",@F' }
 function hex () { perl -lpwe 's/(\d+)/sprintf"(dec)%d (hex)%x",$1,$1/e' }
-function headline () { head -n -0 $argv | grep . | perl -lwe 'chomp(@l=<>); my $i = 0; while ($i < $#l) { next unless $l[$i]=~/==/ and ($i+2>$#l or $l[$i+2]=~/==/); splice @l, $i, 2, "@l[$i,$i+1]"; } continue { $i++; } print for @l' }
 function count () { echo $#argv }
 function countf () { perl -lwe '$a++for grep-f,@ARGV;print$a' $argv }
 function with-size () { perl -lpwe '$_=join"\t",-s,$_' }
