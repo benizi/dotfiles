@@ -1,2 +1,2 @@
 #!/bin/sh
-exec java -Xmx1024M -Xms512M -cp $HOME/Downloads/minecraft.jar net.minecraft.LauncherFrame
+exec java -Xmx1024M -Xms512M -cp $HOME/Downloads/minecraft.jar
