@@ -36,9 +36,10 @@ local lscolor="ls --color=auto"
 # OSX: -G = colorize, -e = show ACLs, -O = show file flags
 (( $+INOSX )) && lscolor="ls -GO"
 
-alias l="$lscolor -trl"
-alias la="$lscolor -trlA"
-alias lsd="$lscolor -trld"
+alias ll="$lscolor -trl"
+alias l="ll -A"
+alias la=l
+alias lsd="ll -d"
 alias lss="$lscolor -Srl"
 alias lsr="$lscolor -Sl"
 }
