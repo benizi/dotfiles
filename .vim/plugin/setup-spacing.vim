@@ -1,9 +1,9 @@
 com! ShowSpacing verb se ts? sts? sw? et? listchars?
 
 fun! SetupTabstop(width, expand, ...)
-	let &l:ts = a:width
-	let &l:sts = a:0 ? a:1 : a:width
+	let &l:sts = a:width
 	let &l:sw = a:width
+	let &l:ts = a:0 ? a:1 : a:width
 	let &l:et = a:expand ? 1 : 0
 	let &l:listchars = 'tab:'.(a:expand ? '»·' : '  ').',trail:·'
 endf
