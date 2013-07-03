@@ -67,6 +67,7 @@ fun! DetectSpacing()
 	let chars_scanned = 0
 	let indented_lines = 0
 	let tab_indented = 0
+	let mixed_tabs = 0
 	let line_indents = []
 	for lnum in range(1,min([max_lines,line('$')]))
 		let line = getline(lnum)
@@ -89,6 +90,9 @@ fun! DetectSpacing()
 				let indented_lines += 1
 				if len(matchlist(line, '^\t'))
 					let tab_indented += 1
+					if len(matchlist(line, '^\t\+ '))
+						let mixed_tabs += 1
+					end
 				endif
 			endif
 			call add(line_indents, {'num':lnum,'indent':strlen(ws[1])})
@@ -125,7 +129,11 @@ fun! DetectSpacing()
 		return []
 	endif
 
-	if tab_indented > indented_lines / 3 " mostly tabs
+	if mixed_tabs > 5 || mixed_tabs > indented_lines / 10 " some mixed
+		return [ 4, 0, 8 ] " Emacs-style mixed tabs/spaces
+	end
+
+	if tab_indented > 20 || tab_indented > indented_lines / 3 " mostly tabs
 		return [ default_spacing, 0 ]
 	endif
 
