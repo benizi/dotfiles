@@ -210,6 +210,7 @@ nn <silent> z= :call SetFoldEqual()<CR>
 if &diff
 	nnoremap > :.diffput <bar> diffupdate<cr>
 	nnoremap < :.diffput <bar> diffupdate<cr>
+	au VimEnter * nn ZZ :wa<bar>qa<CR>
 else
 	" keep visual mode selection when indenting
 	vmap > >gv
