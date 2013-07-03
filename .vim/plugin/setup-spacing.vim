@@ -178,9 +178,20 @@ fun! SetupSpacing(...)
 		call add(scores, { "score": 10, "params": detected })
 	endif
 	if exists('g:setup_spacing_filetypes')
-		let by_ft = get(g:setup_spacing_filetypes, &ft, [])
+		let by_ft = get(g:setup_spacing_filetypes, &ft, {})
 		if len(by_ft)
-			call add(scores, { "score": 5, "params": by_ft })
+			if type(by_ft) == type([])
+				let params = by_ft
+				let notabs = 0
+			else
+				let params = by_ft.params
+				let notabs = get(by_ft, 'notabs', 0)
+			end
+			let score = 5
+			if notabs && len(detected) && !detected[1]
+				let score += 6
+			end
+			call add(scores, { "score": score, "params": params })
 		endif
 	endif
 	if exists('g:setup_spacing_paths')
