@@ -388,6 +388,10 @@ let g:ctrlp_switch_buffer = 'et'
 nm <Leader>n :CtrlPCurFile<CR>
 
 let g:NERDDefaultAlign = 'left'
+let g:NERDCustomDelimiters = {
+\   'sql': { 'left': '/*', 'right': '*/', 'leftAlt': '-- ' },
+\   'puppet': { 'left': '#' },
+\ }
 
 let g:rtn_open_with = 'vnew'
 
