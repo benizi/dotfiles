@@ -3,7 +3,23 @@
 # substitute your own tools here
 
 # command to find the active X11 window ID
-def active_window ; 'xdotool getwindowfocus' ; end
+def active_window
+  if File.exists?(wmii_namespace)
+    'wmiir cat /client/sel/ctl | sed 1q'
+  else
+    'xdotool getwindowfocus'
+  end
+end
+
+def wmii_namespace
+  ENV['WMII_NAMESPACE'] || wmii_default_namespace
+end
+
+def wmii_default_namespace
+  user = ENV.fetch('USER', '')
+  display = ENV.fetch('DISPLAY', '').gsub(/\.0\Z/, '')
+  "/tmp/ns.#{user}.#{display}/wmii"
+end
 
 # command to find the PID of a given X11 window ID
 # `sprop` doesn't handle "CARDINAL" atoms
