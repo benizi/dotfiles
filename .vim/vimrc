@@ -406,3 +406,50 @@ else
 	" use degraded 256-color palette for Solarized
 	let g:solarized_termcolors = 256
 end
+
+" Clean up interline spacing
+let s:blank_line = '^\s*$'
+
+fun! CleanBlankLinesOrBackspace(...)
+	let insert = a:0 ? a:1 : 0
+
+	let start = line('.')
+	let col = col('.')
+
+	let stop = start
+	let total = line('$')
+
+	" If we're not on a blank line, normal backspace
+	if col != 1 || getline(start) !~ s:blank_line
+		return "\<BS>"
+	end
+
+	" Find the first line of the run of blanks
+	while start > 1 && getline(start - 1) =~ s:blank_line
+		let start -= 1
+	endwhile
+
+	" Find the last line of the run of blanks
+	while stop < total && getline(stop + 1) =~ s:blank_line
+		let stop += 1
+	endwhile
+
+	" We're at an 'end' of the file if we're on the first or last line
+	let at_end = (start == 1 || stop == total)
+
+	" Nothing to do if:
+	" 1. there's only one blank line and it's not the end of the file
+	"    We're compacting lines to 1, or removing them at the end
+	" or 2. we're at the end of the file and we're in insert mode
+	"       It's disconcerting to clean up lines in insert mode
+	if (start == stop && !at_end) || (at_end && insert)
+		return "\<BS>"
+	end
+
+	" Construct the set of commands to clean up the lines
+	let exit_insert_mode = insert ? "\<C-[>" : ""
+	let delete_blank_lines = ":".start.",".stop."d"
+	let add_blank_line = at_end ? "" : "|i\<CR>\<CR>."
+	return exit_insert_mode.delete_blank_lines.add_blank_line."\<CR>"
+endf
+nn <silent> <expr> <BS> CleanBlankLinesOrBackspace()
