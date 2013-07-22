@@ -22,7 +22,7 @@ SQL
     end
 
     def connect
-      %W[mysql -u#{cfg.username} -p#{cfg.password} -hlocalhost -D#{cfg.database}]
+      %W[mysql -u#{cfg.username} -p#{cfg.password} -h#{cfg.host || 'localhost'} -D#{cfg.database}]
     end
   end
 
