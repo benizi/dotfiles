@@ -1,3 +1,4 @@
 #!/bin/zsh
 xscreensaver -lock &
 sudo pm-suspend
+sudo chown $UID:$GID -R /run/user/$UID/pulse 2> /dev/null
