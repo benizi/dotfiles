@@ -54,7 +54,7 @@ if ($just_one or not @hosts) {
 		// 'localhost'
 	}
 }
-$hosts = join "", map "$_\n", @hosts;
+$hosts = join "", map "$_\n", sort @hosts;
 print $hosts and exit unless $do_exec;
 my $out;
 if ($just_one) {
