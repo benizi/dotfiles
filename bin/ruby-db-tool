@@ -34,6 +34,36 @@ sudo su - postgres -c 'createdb '\\''#{cfg.database}'\\'' -O #{cfg.username}'
 SHELL
     end
   end
+
+  class Sqlserver < Base
+    def connect
+      cli_tool + server_or_host + user + pass
+    end
+
+    private
+
+    def cli_tool
+      ['tsql']
+    end
+
+    def server_or_host
+      if cfg.dataserver
+        ['-S', cfg.dataserver]
+      elsif host = cfg.host || cfg.hostname
+        %W[-H #{host} -p #{cfg.port || 1433}]
+      else
+        []
+      end
+    end
+
+    def user
+      cfg.username ? ['-U', cfg.username] : []
+    end
+
+    def pass
+      cfg.password ? ['-P', cfg.password] : []
+    end
+  end
 end
 
 action = $0 =~ /ruby-db-(\w+)$/ ? $1.to_sym : :connect
