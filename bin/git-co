@@ -1,27 +1,24 @@
-#!/bin/zsh
-unset cloneit
-# git co user/project
-# -> git co gh:user/project
-if (( $# == 1 )) && [[ $1 = [^/]*/[^/]* ]] && [[ $1 != [^:]*:[^:]* ]] ; then
-  set -- gh:$1
-fi
-case $# in
-  1|2)
-    case $1 in
-      *:*)
-        revlike=${1%%:*}
-        if [[ ! -e $1 ]] ; then
-          rev=$(git rev-list --no-walk $revlike -- 2>/dev/null)
-          [[ -z $rev ]] && cloneit=true
-        fi
-        ;;
-    esac
-    ;;
-esac
-if (( $+cloneit )) ; then
-  echo "[$1] looks like a repo, so cloning." >&2
-  [[ $1 = gh:* ]] && set -- -o gh "$@"
-  git clone "$@"
-else
-  git checkout "$@"
-fi
+#!/usr/bin/env perl
+
+sub git { exec { 'git' } git => @_ }
+sub checkout { git 'checkout', @_ }
+sub clone { git 'clone', @_ }
+
+sub is_rev {
+  system { 'git' } git => 'rev-list' => '--no-walk'
+}
+
+checkout @ARGV if @ARGV > 2;
+die "Usage: git $0 repo [dest]\n" unless @ARGV;
+
+my ($repo, $dest) = @ARGV;
+if ($repo =~ /\A(?:[a-z]+:)?(\w+\/\w+)\Z/) {
+  $repo =~ s/^(?![a-z]+:)/gh:/;
+  my @args = $repo;
+  unshift @args, '-o', $repo =~ /^gh:/ ? 'gh' : 'upstream';
+  push @args, grep $_, $dest;
+  warn "[$ARGV[0]] looks like a repo, so cloning.\n";
+  clone @args;
+}
+
+checkout @ARGV;
