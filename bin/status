@@ -112,16 +112,22 @@ if (( $+commands[nyxmms2] )) && [[ ! -f $HOME/.no-xmms2-status ]] ; then
 	out=( $song $out )
 fi
 
-if (( $+commands[pomo] )) ; then
+if (( $+commands[pomo] )) && ! $wmii ; then
 	pomo="$(pomo status)"
 	[[ -n $pomo ]] && out+=( "$pomo" )
 fi
 
 if (( $+commands[ip] )) ; then
 	if ip -6 addr show dev sixxs &> /dev/null ; then
-		ipv6="^fg(black)^bg(#ff9900)^ca(1,/usr/bin/sudo systemctl stop aiccu.service)V6^ca()"
+		if (( $+dzen ))
+		then ipv6="^fg(black)^bg(#ff9900)^ca(1,/usr/bin/sudo systemctl stop aiccu.service)V6^ca()"
+		else ipv6=V6
+		fi
 	else
-		ipv6="^fg()^bg()^ca(1,/usr/bin/sudo systemctl start aiccu.service)v6^ca()"
+		if (( $+dzen ))
+		then ipv6="^fg()^bg()^ca(1,/usr/bin/sudo systemctl start aiccu.service)v6^ca()"
+		else ipv6=v6
+		fi
 	fi
 	(( $+ipv6 )) && out=( $ipv6 $out )
 fi
