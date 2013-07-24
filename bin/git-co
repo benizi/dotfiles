@@ -12,7 +12,7 @@ checkout @ARGV if @ARGV > 2;
 die "Usage: git $0 repo [dest]\n" unless @ARGV;
 
 my ($repo, $dest) = @ARGV;
-if ($repo =~ /\A(?:[a-z]+:)?(\w+\/\w+)\Z/) {
+if ($repo =~ /\A(?:[a-z]+:)?([\w-]+\/[\w-]+)\Z/ or $repo =~ m{^[a-z]+://}) {
   $repo =~ s/^(?![a-z]+:)/gh:/;
   my @args = $repo;
   unshift @args, '-o', $repo =~ /^gh:/ ? 'gh' : 'upstream';
