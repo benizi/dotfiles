@@ -95,7 +95,11 @@ setup_defaults () {
 	set +e
 	pushd $_profdir
 	touch 'First Run'
+
+	# Theme ID and Theme key must be "real"
 	local theme_id=bfjgbcjfpbbfepcccpaffkjofcmglifg
+	local theme_key='MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQClY8uVLNLboHrzx5431OElszuH0FpiLCZyl1ZzU5HCYYA4t6ReRvaUG7HTNWpeUUUUki73XqgJV13qv/SeawOlmBzxt3MRDPBpcOFd7LzZTwz7dXJXGbTx+gh0b4VJve+pXSgLAF88sRm/YEOU/m52Gw8qCXTvK2tT2bA+JY2cmwIDAQAB'
+
 	local theme_dir=Default/Extensions/${theme_id}
 	local k image
 	mkdir -p $theme_dir/i
@@ -189,7 +193,7 @@ setup_defaults () {
 		"settings": {
 			"${theme_id}": {
 				"manifest": {
-					"key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQClY8uVLNLboHrzx5431OElszuH0FpiLCZyl1ZzU5HCYYA4t6ReRvaUG7HTNWpeUUUUki73XqgJV13qv/SeawOlmBzxt3MRDPBpcOFd7LzZTwz7dXJXGbTx+gh0b4VJve+pXSgLAF88sRm/YEOU/m52Gw8qCXTvK2tT2bA+JY2cmwIDAQAB",
+					"key": "${theme_key}",
 					"name": "",
 					"theme": { ${(j:,:)settings} },
 					"version": "1.0"
