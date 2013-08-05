@@ -230,7 +230,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     ++
 
     -- Grid Select
-    [ ((modm, xK_g), goToSelected defaultGSConfig) ]
+    [ ((mod4Mask, xK_g), goToSelected defaultGSConfig) ]
     ++
 
     -- add alt-i = workspace 7 (= "IM")
