@@ -12,6 +12,7 @@ import Superscripts
 import XMonad
 import XMonad.Actions.CycleWS
 import XMonad.Actions.GridSelect
+import XMonad.Actions.WorkspaceNames (getWorkspaceNames, renameWorkspace)
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ICCCMFocus
@@ -29,6 +30,8 @@ import GHC.IO.Handle.Types (Handle)
 
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
+
+import XMonad.Prompt
 
 import Graphics.X11.ExtraTypes.XF86
 
@@ -77,6 +80,14 @@ myWorkspaces = map show [1..10]
 myNormalBorderColor  = "#285577"
 myFocusedBorderColor = "#ff9900"
 myUrgentColor = "orange"
+
+myPrompt = defaultXPConfig { bgColor = statusColorBG
+                           , fgColor = statusColorNormalFG
+                           , bgHLight = statusColorNormalFG
+                           , fgHLight = statusColorBG
+                           , borderColor = myNormalBorderColor
+                           , position = Top
+                           }
 
 ------------------------------------------------------------------------
 -- Key bindings. Add, modify or remove key bindings here.
@@ -180,6 +191,11 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm .|. shiftMask, xK_j), swapDown)
     , ((modm .|. shiftMask, xK_k), sendMessage $ Swap U)
     , ((modm .|. shiftMask, xK_k), swapUp)
+    ]
+    ++
+
+    -- named workspaces
+    [ ((modm, xK_t), renameWorkspace myPrompt)
     ]
     ++
 
@@ -382,8 +398,26 @@ statusLogHook statusproc = myDynamicLogWithPP defaultPP
   , ppWsSep = statusNormalColor " "
   }
 
+dropcolon :: String -> String
+dropcolon s = if takeWhile (/= ':') s == s
+              then s
+              else drop 1 $ dropWhile (/= ':') s
+
+myWorkspaceNamesPP :: PP -> X PP
+myWorkspaceNamesPP pp = do
+   {-names <- liftM (>>> dropcolon) getWorkspaceNames-}
+   names <- liftA ((.) dropcolon) getWorkspaceNames
+   return $ pp { ppCurrent = ppCurrent pp . names
+               , ppVisible = ppVisible pp . names
+               , ppHidden = ppHidden pp . names
+               , ppHiddenNoWindows = ppHiddenNoWindows pp . names
+               , ppUrgent = ppUrgent pp . names
+               }
+
 myLogHook :: Handle -> X ()
-myLogHook statusproc = statusLogHook statusproc <+> takeTopFocus
+myLogHook statusproc = myWorkspaceNamesPP defaultPP {
+                       ppOutput = hPutStrLn statusproc
+                       } >>= dynamicLogWithPP
 
 ------------------------------------------------------------------------
 -- Startup hook
