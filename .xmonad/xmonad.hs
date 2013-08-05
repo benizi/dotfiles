@@ -25,6 +25,16 @@ import XMonad.Util.Run
 import Data.Monoid
 import System.Exit
 
+import qualified XMonad.Layout.LayoutCombinators as LC
+import XMonad.Layout.Groups (group)
+import XMonad.Layout.Groups.Examples (zoomRowG)
+import XMonad.Layout.Groups.Wmii
+import XMonad.Layout.MessageControl (ignore, unEscape)
+import XMonad.Layout.Named (named)
+import XMonad.Layout.Renamed (renamed, Rename(CutWordsLeft))
+import XMonad.Layout.Simplest
+import XMonad.Layout.Tabbed (addTabs)
+
 import System.Environment.FindBin
 import GHC.IO.Handle.Types (Handle)
 
@@ -41,6 +51,8 @@ import Data.List (intersperse, sortBy)
 import Data.Maybe (isJust, catMaybes)
 import XMonad.Util.NamedWindows
 import XMonad.Util.WorkspaceCompare (getWsCompareByTag, WorkspaceSort)
+
+import Control.Applicative (liftA)
 
 import Data.Set (toList, fromList)
 
@@ -184,13 +196,27 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- Directional movement
     [ ((modm, xK_h), sendMessage $ Go L)
-    , ((modm, xK_j), sendMessage $ Go D)
-    , ((modm, xK_k), sendMessage $ Go U)
+    , ((modm, xK_j), sendMessage $ Go D) -- probably broken to do this...
+    , ((modm, xK_j), focusDown)          -- ...and this
+    , ((modm, xK_k), sendMessage $ Go U) -- probably broken to do this...
+    , ((modm, xK_k), focusUp)            -- ...and this
     , ((modm, xK_l), sendMessage $ Go R)
     , ((modm .|. shiftMask, xK_j), sendMessage $ Swap D)
     , ((modm .|. shiftMask, xK_j), swapDown)
     , ((modm .|. shiftMask, xK_k), sendMessage $ Swap U)
     , ((modm .|. shiftMask, xK_k), swapUp)
+    ]
+    ++
+
+    -- wmii style layouts
+    [ ((modm, xK_s), groupToTabbedLayout)
+    , ((modm, xK_m), groupToFullLayout)
+    , ((modm, xK_f), groupToNextLayout)
+    , ((modm, xK_d), groupToVerticalLayout)
+    , ((modm .|. shiftMask, xK_h), moveToGroupUp False)
+    , ((modm .|. shiftMask, xK_l), moveToGroupDown False)
+    , ((modm, xK_space), toggleFocusFloat)
+    , ((modm .|. shiftMask, xK_space), withFocused $ windows . W.sink)
     ]
     ++
 
@@ -244,19 +270,26 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 -- The available layouts.  Note that each layout is separated by |||,
 -- which denotes layout choice.
 --
-myLayout = windowNavigation (FS.fullscreenFocus $ avoidStruts $ Full ||| tiled ||| GridRatio (8/2))
+myLayout = windowNavigation (FS.fullscreenFocus $ myWmii ||| wmiiLike)
   where
-     -- default tiling algorithm partitions the screen into two panes
-     tiled   = Tall nmaster delta ratio
-
-     -- The default number of windows in the master pane
-     nmaster = 1
-
      -- Default proportion of screen occupied by master pane
      ratio   = 1/2
 
      -- Percent of screen to increment by when resizing panes
      delta   = 3/100
+
+     wmiiLike = avoidStruts $ wmii shrinkText defaultTheme
+
+     -- myWmii is basically the same as stock wmii,
+     -- but it defaults to tabs first
+     myWmii = avoidStruts $ group innerLayout zoomRowG
+        where column = named "Column" $ Tall 0 delta ratio
+              tabs = named "Tabs" $ Simplest
+              innerLayout = renamed [CutWordsLeft 3]
+                            $ addTabs shrinkText defaultTheme
+                            $ ignore NextLayout
+                            $ ignore (LC.JumpToLayout "") $ unEscape
+                                $ tabs LC.||| column LC.||| Full
 
 ------------------------------------------------------------------------
 -- Window rules:
@@ -306,6 +339,7 @@ myEventHook = FS.fullscreenEventHook
 myLayoutDisplay :: String -> String
 myLayoutDisplay "Tall" = "[]="
 myLayoutDisplay "Full" = "[M]"
+myLayoutDisplay "Tabs by ZoomRow" = "tabs"
 myLayoutDisplay other = wrap "(layout:" ")" other
 
 statusColorNormalFG = "white"
