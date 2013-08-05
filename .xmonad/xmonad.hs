@@ -19,6 +19,7 @@ import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.UrgencyHook
 import XMonad.Layout.Grid
 import qualified XMonad.Layout.Fullscreen as FS
+import XMonad.Layout.WindowNavigation
 import XMonad.Util.Run
 import Data.Monoid
 import System.Exit
@@ -144,29 +145,8 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- Resize viewed windows to the correct size
     , ((modm,               xK_n     ), refresh)
 
-    -- Move focus to the next window
-    , ((modm,               xK_Tab   ), windows W.focusDown)
-
-    -- Move focus to the next window
-    , ((modm,               xK_j     ), windows W.focusDown)
-
-    -- Move focus to the previous window
-    , ((modm,               xK_k     ), windows W.focusUp  )
-
     -- Swap the focused window and the master window
     , ((mod4Mask .|. shiftMask, xK_Return), windows W.swapMaster)
-
-    -- Swap the focused window with the next window
-    , ((modm .|. shiftMask, xK_j     ), windows W.swapDown  )
-
-    -- Swap the focused window with the previous window
-    , ((modm .|. shiftMask, xK_k     ), windows W.swapUp    )
-
-    -- Shrink the master area
-    , ((modm,               xK_h     ), sendMessage Shrink)
-
-    -- Expand the master area
-    , ((modm,               xK_l     ), sendMessage Expand)
 
     -- Push window back into tiling
     , ((mod4Mask,           xK_t     ), withFocused $ windows . W.sink)
@@ -188,6 +168,18 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- Restart xmonad
     , ((modm              , xK_q     ), spawn "xmonad --recompile && xmonad --restart")
+    ]
+    ++
+
+    -- Directional movement
+    [ ((modm, xK_h), sendMessage $ Go L)
+    , ((modm, xK_j), sendMessage $ Go D)
+    , ((modm, xK_k), sendMessage $ Go U)
+    , ((modm, xK_l), sendMessage $ Go R)
+    , ((modm .|. shiftMask, xK_j), sendMessage $ Swap D)
+    , ((modm .|. shiftMask, xK_j), swapDown)
+    , ((modm .|. shiftMask, xK_k), sendMessage $ Swap U)
+    , ((modm .|. shiftMask, xK_k), swapUp)
     ]
     ++
 
@@ -236,7 +228,7 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 -- The available layouts.  Note that each layout is separated by |||,
 -- which denotes layout choice.
 --
-myLayout = FS.fullscreenFocus $ avoidStruts $ Full ||| tiled ||| GridRatio (8/2)
+myLayout = windowNavigation (FS.fullscreenFocus $ avoidStruts $ Full ||| tiled ||| GridRatio (8/2))
   where
      -- default tiling algorithm partitions the screen into two panes
      tiled   = Tall nmaster delta ratio
