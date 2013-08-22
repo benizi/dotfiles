@@ -332,6 +332,14 @@ _logext=$_profdir:t
 for flag in $_flags ; do
 	${(P)${:-_${flag//-}}} && _args+=( --enable-$flag ) || _args+=( --disable-$flag )
 done
+
+pepper_flash_dir=/opt/google/chrome/PepperFlash
+if [[ -d $pepper_flash_dir ]] ; then
+	pepper_flash=$pepper_flash_dir/libpepflashplayer.so
+	pepper_flash_version=$(awk '/version/ {print $2}' $pepper_flash_dir/manifest.json | tr -dc 0-9.)
+	_args+=( --ppapi-flash-path=$pepper_flash --ppapi-flash-version=$pepper_flash_version )
+fi
+
 _echo=()
 $_dry && _echo=(echo)
 _exec=()
