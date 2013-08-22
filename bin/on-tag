@@ -6,7 +6,7 @@ require 'optparse'
 opt = {
 	:match => [],
 	:limit => 20,
-	:tag => 'sel',
+	:tag => '+sel',
 	:cmd => [],
 }
 optparse = OptionParser.new do |o|
