@@ -17,6 +17,7 @@ GetOptions(
 	'server=s' => \$opt{server},
 	'username|user|u=s' => \$opt{user},
 	'password|pass|p=s' => \$opt{pass},
+	'nopass' => \$opt{nopass},
 	'defaults=s' => \(my $defaults_from = ''),
 	'dry' => \(my $dry = 0),
 	'verbose+' => \(my $verbose = 0),
@@ -148,7 +149,7 @@ if ($rdesktop =~ /xfreerdp/) {
 			$has_password = 1;
 		}
 	}
-	if (!$has_password) {
+	if (!$has_password and !$opt{nopass}) {
 		chomp(my $pass = $dry ? '{pass}' : `password-manager -h $opt{server} -u $opt{user} -P rdp`);
 		die "Aborted due to empty password\n" unless $pass =~ /\S/;
 		splice @rcmd, 1, 0, '-p', $pass;
