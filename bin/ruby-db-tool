@@ -21,8 +21,16 @@ flush tables;
 SQL
     end
 
+    def _params
+      %W[-u#{cfg.username} -p#{cfg.password} -h#{cfg.host || 'localhost'}]
+    end
+
     def connect
-      %W[mysql -u#{cfg.username} -p#{cfg.password} -h#{cfg.host || 'localhost'} -D#{cfg.database}]
+      ['mysql'] + _params + %W[-D#{cfg.database}]
+    end
+
+    def dump
+      ['mysqldump'] + _params + [cfg.database]
     end
   end
 
@@ -67,6 +75,7 @@ SHELL
 end
 
 action = $0 =~ /ruby-db-(\w+)$/ ? $1.to_sym : :connect
+action = ARGV.shift.to_sym if action == :tool
 
 if yaml = YAML.load(ERB.new(File.read(ENV['CONFIG'] || 'config/database.yml')).result)
   envs = ENV['ENV'] || ENV['RAILS_ENV'] || 'development'
