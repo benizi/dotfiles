@@ -23,12 +23,17 @@ out=( "$(essid)" $out )
 
 out=(
 	$(awk '
-function report(t,f){ return kb(t-f) "/" kb(t) }
+function report(t,f,usecolor){
+used = kb(t-f)
+color = (usecolor && used) ? "^fg(#ff9900)" : ""
+nocolor = color ? "^fg()" : ""
+return color used "/" kb(t) nocolor
+}
 function kb(b){return int(b/1024)}
-{ kind[$1] = $2 }
+{ stats[$1] = $2 }
 END {
-print "mem:" report(kind["MemTotal:"], kind["MemFree:"] + kind["Cached:"])
-if (kind["SwapTotal:"]) print "swp:" report(kind["SwapTotal:"], kind["SwapFree:"])
+print "mem:" report(stats["MemTotal:"], stats["MemFree:"] + stats["Cached:"])
+if (stats["SwapTotal:"]) print "swp:" report(stats["SwapTotal:"], stats["SwapFree:"], 1)
 }
 ' /proc/meminfo)
 	$out
