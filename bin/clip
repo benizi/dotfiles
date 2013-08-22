@@ -1,2 +1,6 @@
 #!/bin/sh
-exec xclip -selection clipboard "$@"
+xclip -selection clipboard "$@"
+case "$*" in
+  -o|-out) ;;
+  *) xclip -selection clipboard -out ;;
+esac
