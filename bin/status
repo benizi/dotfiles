@@ -145,5 +145,4 @@ while [[ "$toprint" != "$inp" ]] ; do
 done
 $wmii && toprint="label $toprint"
 print -n -r - $toprint
-$wmii && echo
 (( $+dzen )) && echo
