@@ -18,6 +18,7 @@ GetOptions(
 	'username|user|u=s' => \$opt{user},
 	'password|pass|p=s' => \$opt{pass},
 	'nopass' => \$opt{nopass},
+	'show-pass|showpass' => \$opt{showpass},
 	'defaults=s' => \(my $defaults_from = ''),
 	'dry' => \(my $dry = 0),
 	'verbose+' => \(my $verbose = 0),
@@ -150,7 +151,8 @@ if ($rdesktop =~ /xfreerdp/) {
 		}
 	}
 	if (!$has_password and !$opt{nopass}) {
-		chomp(my $pass = $dry ? '{pass}' : `password-manager -h $opt{server} -u $opt{user} -P rdp`);
+		my $use_fake = ($dry and !$opt{showpass});
+		chomp(my $pass = $use_fake ? '{pass}' : `password-manager -h $opt{server} -u $opt{user} -P rdp`);
 		die "Aborted due to empty password\n" unless $pass =~ /\S/;
 		splice @rcmd, 1, 0, '-p', $pass;
 	}
@@ -163,7 +165,7 @@ my @no_pass = @rcmd;
 for my $i (0..$#no_pass-1) {
 	$no_pass[$i] eq '-p' and $no_pass[$i+1] = '{pass}';
 }
-warn "@no_pass\n";
+warn $opt{showpass} ? "@rcmd\n" : "@no_pass\n";
 $dry and exit;
 exec { $rcmd[0] } @rcmd;
 die "Couldn't exec(",join(",",@no_pass),")\n";
