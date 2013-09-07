@@ -22,11 +22,11 @@ done
 out=( "$(essid)" $out )
 
 out=(
-	$(awk '
+	${(f):-"$(awk '
 function report(t,f,usecolor){
 used = kb(t-f)
-color = (usecolor && used) ? "^fg(#ff9900)" : ""
-nocolor = color ? "^fg()" : ""
+color = (usecolor && used) ? "^fg(#ff9900)^ca(1,sudo swapoff -a && sudo swapon -a)" : ""
+nocolor = color ? "^fg()^ca()" : ""
 return color used "/" kb(t) nocolor
 }
 function kb(b){return int(b/1024)}
@@ -35,7 +35,7 @@ END {
 print "mem:" report(stats["MemTotal:"], stats["MemFree:"] + stats["Cached:"])
 if (stats["SwapTotal:"]) print "swp:" report(stats["SwapTotal:"], stats["SwapFree:"], 1)
 }
-' /proc/meminfo)
+' /proc/meminfo)"}
 	$out
 )
 
