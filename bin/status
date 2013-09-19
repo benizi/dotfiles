@@ -2,7 +2,11 @@
 unset dzen
 (( $#argv )) && dzen=true fg=$1 bg=$2
 (( $+WMII_TERM )) && wmii=true || wmii=false
-date="$(date +'%s %Y-%m-%d %H:%M:%S')"
+if [[ -f ~/tz ]] ; then
+	date="$(TZ=$(<~/tz) date +'%s %Y-%m-%d %H:%M:%S %Z')"
+else
+	date="$(date +'%s %Y-%m-%d %H:%M:%S')"
+fi
 epoch=${date%% *}
 date=${date#* }
 out=( $date )
