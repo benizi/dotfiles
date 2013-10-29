@@ -1,6 +1,14 @@
 #!/bin/sh
-xclip -selection clipboard "$@"
-case "$*" in
+
+clip() { xclip -selection "$@" ; }
+clipout() { clip clipboard -out ; }
+
+case "$1" in
   -o|-out) ;;
-  *) xclip -selection clipboard -out ;;
+  *)
+    clip clipboard
+    clipout | clip primary
+    ;;
 esac
+
+clipout
