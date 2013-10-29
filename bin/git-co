@@ -21,11 +21,9 @@ die "Usage: git $0 repo [dest]\n" unless @ARGV;
 my ($repo, $dest) = @ARGV;
 if ($repo =~ /\A(?:[a-z]+:)?([\w-]+\/[\w-]+)\Z/ or $repo =~ m{^[a-z]+://}) {
   $repo =~ s/^(?![a-z]+:)/gh:/;
-  my @args = $repo;
-  unshift @args, '-o', $repo =~ /^gh:/ ? 'gh' : 'upstream';
-  push @args, grep $_, $dest;
+  my $upstream = $repo =~ /^gh:([^\/]+)/ ? $1 : '';
   warn "[$ARGV[0]] looks like a repo, so cloning.\n";
-  clone @args;
+  clone grep($upstream, -o => $upstream), $repo, grep($_, $dest);
 }
 
 checkout @ARGV;
