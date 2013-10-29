@@ -1,12 +1,19 @@
 #!/usr/bin/env perl
 
-sub git { exec { 'git' } git => @_ }
+my $dry = 0;
+
+sub cmd { $dry || exec { $_[0] } @_; print "@_\n"; exit }
+sub git { cmd git => @_ }
 sub checkout { git 'checkout', @_ }
 sub clone { git 'clone', @_ }
 
 sub is_rev {
   system { 'git' } git => 'rev-list' => '--no-walk'
 }
+
+@ARGV = grep { !(
+  /--dry/ ? ($dry = 1) :
+0) } @ARGV;
 
 checkout @ARGV if @ARGV > 2;
 die "Usage: git $0 repo [dest]\n" unless @ARGV;
