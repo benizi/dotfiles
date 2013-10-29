@@ -16,6 +16,7 @@ sub is_rev {
 0) } @ARGV;
 
 checkout @ARGV if @ARGV > 2;
+checkout @ARGV if -e '.git';
 die "Usage: git $0 repo [dest]\n" unless @ARGV;
 
 my ($repo, $dest) = @ARGV;
