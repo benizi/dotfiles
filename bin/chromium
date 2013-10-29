@@ -2,6 +2,7 @@
 case $0 in
 	*-fresh) argv+=( --scratch http://${${0//-fresh/}:t} ) ;;
 	*chromium*|*open|*sensible-browser) ;;
+	*nojs) argv+=( --nojs --scratch ) ;;
 	*scratch) argv+=( --scratch ) ;;
 	*webmail) argv+=( --firefox --profile webmail ) ;;
 	*) _profile=$0:t ;;
