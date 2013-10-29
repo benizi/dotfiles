@@ -14,6 +14,7 @@ unset _url _ua _scratch
 _logging=false
 _userscripts=true
 _ipv6=true
+_javascript=true
 unset _asyncdns
 _args=()
 _flags=( plugins logging user-scripts ipv6 async-dns )
@@ -86,6 +87,7 @@ while [ $# -gt 0 ] ; do
 		--googlebot) _ua='Googlebot/2.1 (+http://www.google.com/bot.html)' ;;
 		--default) _profile=Default ;;
 		-dry|--dry) _dry=true ;;
+		--nojs) unset _javascript ;;
 		http:*|https:*|ftp:*|file:*|/*) _url=$arg ;;
 		*) _args+=( $arg ) ;;
 	esac
@@ -189,7 +191,7 @@ setup_defaults () {
 	local theme_key='MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQClY8uVLNLboHrzx5431OElszuH0FpiLCZyl1ZzU5HCYYA4t6ReRvaUG7HTNWpeUUUUki73XqgJV13qv/SeawOlmBzxt3MRDPBpcOFd7LzZTwz7dXJXGbTx+gh0b4VJve+pXSgLAF88sRm/YEOU/m52Gw8qCXTvK2tT2bA+JY2cmwIDAQAB'
 
 	local theme_dir=Default/Extensions/${theme_id}
-	local k image
+	local k image extra_profile
 	mkdir -p $theme_dir/i
 	local -a image_colors colors tints properties settings
 	local -A image_color color tint propertie h image_dims
@@ -270,6 +272,14 @@ setup_defaults () {
 		(( ${#${(P)k}} )) || continue
 		settings+=( "\"$k\": { ${(Pj:,:)k} }" )
 	done
+	if (( ! $+_javascript )) ; then
+		extra_profile=',
+"profile": {
+	"default_content_settings": {
+		"javascript": 2
+	}
+}'
+	fi
 	cat > Default/Preferences <<PREFSJSON
 {
 	"browser": {
@@ -296,7 +306,7 @@ setup_defaults () {
 			}
 		},
 		"theme": { "id": "${theme_id}" }
-	}
+	}${extra_profile}
 }
 PREFSJSON
 	popd
