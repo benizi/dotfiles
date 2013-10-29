@@ -1,12 +1,15 @@
 #!/bin/sh
 
 clip() { xclip -selection "$@" ; }
+clipboard() { clip clipboard "$@" ; }
 clipout() { clip clipboard -out ; }
+trim() { printf '%s' "$(clipout)" | clipboard ; }
 
 case "$1" in
   -o|-out) ;;
   *)
-    clip clipboard
+    clipboard
+    trim
     clipout | clip primary
     ;;
 esac
