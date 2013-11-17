@@ -150,6 +150,12 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((0,                  xF86XK_AudioNext), spawn "nyxmms2 next")
     , ((0,                  xF86XK_AudioPrev), spawn "nyxmms2 prev")
 
+    ---- brightness
+    , ((modm, xK_F5), spawn "brightness down")
+    , ((modm .|. shiftMask, xK_F5), spawn "brightness min")
+    , ((modm, xK_F6), spawn "brightness up")
+    , ((modm .|. shiftMask, xK_F6), spawn "brightness max")
+
     ---- choose wifi
     , ((mod4Mask, xK_w), spawn "wifi-chooser \"<cli>\"")
 
