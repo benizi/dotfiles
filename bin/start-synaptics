@@ -34,7 +34,7 @@ if (( $#argv )) ; then
 	exit
 fi
 
-if find_dev '/Synaptics|Elantech.Touchpad/' ; then
+if find_dev '/Synaptics|Elantech.Touchpad|Cypress.Trackpad/' ; then
 	prop 'Synaptics Finger' 10 15 256
 	prop 'Synaptics Tap Action' 0 0 0 0 1 2 2
 	prop 'Synaptics Two-Finger Scrolling' 1 1
