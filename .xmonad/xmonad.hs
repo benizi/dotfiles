@@ -11,8 +11,9 @@ import Superscripts
 
 import XMonad
 import XMonad.Actions.CycleWS
+import XMonad.Actions.DynamicWorkspaces
 import XMonad.Actions.GridSelect
-import XMonad.Actions.WorkspaceNames (getWorkspaceNames, renameWorkspace)
+import XMonad.Actions.SwapWorkspaces
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ICCCMFocus
@@ -42,6 +43,7 @@ import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
 
 import XMonad.Prompt
+import XMonad.Prompt.Workspace (workspacePrompt)
 
 import Graphics.X11.ExtraTypes.XF86
 
@@ -177,9 +179,6 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- Swap the focused window and the master window
     , ((mod4Mask .|. shiftMask, xK_Return), windows W.swapMaster)
 
-    -- Push window back into tiling
-    , ((mod4Mask,           xK_t     ), withFocused $ windows . W.sink)
-
     -- Increment the number of windows in the master area
     , ((modm .|. shiftMask, xK_comma ), sendMessage (IncMasterN 1))
 
@@ -221,7 +220,13 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     ++
 
     -- named workspaces
-    [ ((modm, xK_t), renameWorkspace myPrompt)
+    [ ((modm, xK_t), selectWorkspace myPrompt)
+    , ((modm .|. shiftMask, xK_t), withWorkspace myPrompt (windows . W.shift))
+    , ((modm, xK_p), moveTo Prev NonEmptyWS)
+    , ((modm .|. shiftMask, xK_p), swapTo Prev)
+    , ((modm, xK_n), moveTo Next NonEmptyWS)
+    , ((modm .|. shiftMask, xK_n), swapTo Next)
+    , ((modm .|. shiftMask, xK_minus), removeEmptyWorkspace)
     ]
     ++
 
