@@ -140,6 +140,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((mod4Mask,           xK_l     ), spawn "xscreensaver-command -activate")
     , ((0,                  xF86XK_ScreenSaver), spawn "xscreensaver-command -activate")
     , ((0,                  xF86XK_Sleep), spawn "slp")
+    , ((mod4Mask .|. shiftMask, xK_l), spawn "slp")
 
     ---- screenshot
     , ((0,                  xK_Print ), spawn "screenshot")
