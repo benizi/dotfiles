@@ -172,7 +172,7 @@ __setup_prompt () {
   }
 
   add.top_row k:22 $current_dir
-  add.top_row $__prompt_color %n@%m
+  add.top_row $__prompt_color ${${${(%):-%n@%m}#$owner@}#$owner-}
   add.top_row k:128 $screen
   add.top_row k:blue $^vcs[1,1]
   add.top_row f:yellow $^vcs[2,-1]
