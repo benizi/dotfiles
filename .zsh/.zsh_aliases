@@ -122,7 +122,7 @@ alias -g LS2='|& less -S'
 (( $+commands[certutil] )) && alias c-cert="certutil -d sql:$HOME/.pki/nssdb"
 (( $+commands[pk12util] )) && alias c-pk12="pk12util -d sql:$HOME/.pki/nssdb"
 
-(( $+commands[curl] )) && myip () { curl 'http://benizi.com/ip?raw=1' }
+(( $+commands[myip] )) || myip () { curl 'http://benizi.com/ip?raw=1' }
 
 (( $+commands[colorizediff-stdin.pl] )) && diffy () {
   diff -ur "$@" | colorizediff-stdin.pl --files
