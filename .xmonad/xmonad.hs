@@ -428,12 +428,18 @@ myDynamicLogString pp = do
          ]
          ++ catMaybes extras
 
-statusLogHook :: Handle -> X ()
-statusLogHook statusproc = myDynamicLogWithPP defaultPP
-  { ppOutput = hPutStrLn statusproc . escapeStatusCodes
-  , ppCurrent = statusBarColor myNormalBorderColor statusColorNormalFG
+withLogHandlePP :: PP -> Handle -> PP
+withLogHandlePP pp proc = pp { ppOutput = hPutStrLn proc . escapeStatusCodes }
+
+withLogHandlePPX :: X PP -> Handle -> X PP
+withLogHandlePPX xpp proc = do
+    pp <- xpp
+    return (withLogHandlePP pp proc)
+
+myLogPP = defaultPP
+  { ppCurrent = statusBarColor myNormalBorderColor statusColorNormalFG
   , ppHidden = statusNormalColor
-  , ppHiddenNoWindows = statusBarColor statusColorSubdued statusColorBG
+  , ppHiddenNoWindows = const ""
   , ppUrgent = statusBarColor myNormalBorderColor myUrgentColor
   , ppTitle = statusNormalColor . shorten 120
   , ppLayout = statusNormalColor . myLayoutDisplay
@@ -446,21 +452,8 @@ dropcolon s = if takeWhile (/= ':') s == s
               then s
               else drop 1 $ dropWhile (/= ':') s
 
-myWorkspaceNamesPP :: PP -> X PP
-myWorkspaceNamesPP pp = do
-   {-names <- liftM (>>> dropcolon) getWorkspaceNames-}
-   names <- liftA ((.) dropcolon) getWorkspaceNames
-   return $ pp { ppCurrent = ppCurrent pp . names
-               , ppVisible = ppVisible pp . names
-               , ppHidden = ppHidden pp . names
-               , ppHiddenNoWindows = ppHiddenNoWindows pp . names
-               , ppUrgent = ppUrgent pp . names
-               }
-
 myLogHook :: Handle -> X ()
-myLogHook statusproc = myWorkspaceNamesPP defaultPP {
-                       ppOutput = hPutStrLn statusproc
-                       } >>= dynamicLogWithPP
+myLogHook statusproc = dynamicLogWithPP (withLogHandlePP myLogPP statusproc) >> takeTopFocus
 
 ------------------------------------------------------------------------
 -- Startup hook
