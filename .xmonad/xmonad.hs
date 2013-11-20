@@ -254,16 +254,19 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 ------------------------------------------------------------------------
 -- Mouse bindings: default actions bound to mouse events
 --
-myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
+type WinFunc = Window -> X ()
+modsMouseBindings :: ([KeyMask], Button, WinFunc) -> [((KeyMask, Button), WinFunc)]
+modsMouseBindings (ms, b, f) = map (\m -> ((m, b), f)) $ ms
 
-    concat $ map (\modm ->
+myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
+    concat $ map modsMouseBindings $
     -- mod-button1, Set the window to floating mode and move by dragging
-    [ ((modm, button1), (\w -> focus w >> mouseMoveWindow w))
-    , ((modm, button2), (\w -> focus w >> windows W.shiftMaster))
+    [ ([modm], button1, (\w -> focus w >> mouseMoveWindow w))
+    , ([modm, mod1Mask], button2, (\w -> focus w >> windows W.shiftMaster))
 
     -- mod-button3, Set the window to floating mode and resize by dragging
-    , ((modm, button3), (\w -> focus w >> mouseResizeWindow w))
-    ]) $ toList $ fromList [modm, mod1Mask]
+    , ([modm, mod1Mask], button3, (\w -> focus w >> mouseResizeWindow w))
+    ]
 
 ------------------------------------------------------------------------
 -- Layouts:
