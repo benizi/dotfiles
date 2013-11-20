@@ -11,7 +11,7 @@ if (( $+simple_prompt )) ; then
 fi
 
 __light_terminal () {
-  [[ $TERM != (st*|konsole*) ]]
+  [[ $TERM != (st*|konsole*|rxvt-unicode-24bit*) ]]
 }
 
 __i_am_admin () {
