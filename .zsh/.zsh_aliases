@@ -114,8 +114,8 @@ rails () {
 
 # global aliases
 alias -g L='| less'
-alias -g LS='| less -S'
-alias -g LS2='|& less -S'
+alias -g LS='|& less -S'
+alias -g LS1='| less -S'
 
 (( UID )) && alias lvm='sudo lvm'
 
