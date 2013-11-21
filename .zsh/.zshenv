@@ -320,3 +320,6 @@ go-manager () {
 go-manager
 
 (( $+commands[nvm] )) && eval "$(nvm default)"
+
+erlang=r15b01
+path=( /opt/erlang/$erlang/bin $path )
