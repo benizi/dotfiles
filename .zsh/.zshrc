@@ -47,7 +47,7 @@ for dir in $zsh_dirs ; do
   if [ -f .ZSHFILES ] ; then
     files=($files `cat .ZSHFILES`)
   else
-    files=($files *zsh_*~*.swp~*.zsh_history)
+    files=($files *zsh_*~*.swp~*.zsh_history~*.orig~*.*.*)
   fi
   for file in $files ; [ -r $file ] && source $file
   popd
