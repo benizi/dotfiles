@@ -139,6 +139,7 @@ if_exists CLOJURE_EXT ~$owner/git/clojure
 if_exists CLOJURESCRIPT_HOME ~$owner/git/clojurescript
 if_exists M2_HOME ~$owner/maven
 export RUBY_BUILD_CACHE_PATH=/opt/ruby-build-cache
+export PIP_DOWNLOAD_CACHE=/opt/pip-download-cache
 export BROWSER=sensible-browser
 
 # settings for ssh-proxy
