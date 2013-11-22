@@ -165,8 +165,9 @@ revbump () {
   local -a versions
   versions=( **/version.rb )
   if (( $#versions == 1 )) ; then
-    perl -i -pwe '/VERSION/ and s/(\d+)(?=")/$1 + 1/e' $versions \
+    perl -i -pwe '/VERSION/ and s/(\d+)(?=["\x27])/$1 + 1/e' $versions \
       && git commit -am "Revision bump for $*"
+    git tag v$(awk -F$'[\'"]' '/VERSION/ { print $2 }' $versions)
   else
     warn 'More than one version.rb?'
   fi
