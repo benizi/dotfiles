@@ -324,3 +324,21 @@ go-manager
 
 erlang=r15b01
 path=( /opt/erlang/$erlang/bin $path )
+
+preso_file=~/presentation
+setup_preso() {
+  local size=0 force=${1:-false}
+  [[ $TERM = *rxvt* ]] || return
+
+  if [[ -f $preso_file ]] ; then
+    size=18
+  elif $force ; then
+    size=11
+  fi
+
+  if (( size )) ; then
+    printf '\e]710;xft:Bitstream Vera Sans Mono:size=%d\a' $size
+    [[ -o interactive ]] && printf 'Set font for presentation mode\n'
+  fi
+}
+setup_preso

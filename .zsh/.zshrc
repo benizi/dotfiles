@@ -166,3 +166,8 @@ chpwd_functions+=( setup_real_pwd )
 
 local cmd
 for cmd in $chpwd_functions ; do $cmd ; done
+
+preso() {
+  [[ -f $preso_file ]] && rm $preso_file || touch $preso_file
+  setup_preso true
+}
