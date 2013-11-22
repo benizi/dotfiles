@@ -75,7 +75,7 @@ couchdb_request () {
   local method=$1
   local uri=$(couchdb_uri $2)
   local -a args
-  args=( -X $method )
+  args=( -s -X $method )
   [[ $method = GET ]] || args+=( --data-binary @- )
   args+=( -H 'Content-Type: application/json' )
   if [[ -n $3 ]] ; then
