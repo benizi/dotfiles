@@ -3,4 +3,10 @@ if (( $+commands[nosefart] )) ; then
   function nsf-count () { nsf -i $1 | perl -lnwe 'print for /Songs:\s(\d+)/'}
   function nsf-track () { nsf -t $2 -a 1 $1 }
   function playit () { for t in {1..$(nsf-count $1)} ; nsf-track $1 $t }
+  nosefart() {
+    env DSP_CLIENT_NAME=nosefart \
+      PADSP_STREAM_NAME=$1:t:r \
+      LD_PRELOAD=/usr/lib/pulseaudio/libpulsedsp.so \
+      nosefart "$@"
+  }
 fi
