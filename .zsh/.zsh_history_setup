@@ -116,6 +116,12 @@ couchdb_history_add () {
     pid "$$"
     user "$USERNAME"
   )
+  if (( $+commands[uuidgen] )) ; then
+    if (( ! $+couchdb_session )) ; then
+      couchdb_session=$(uuidgen)
+    fi
+  fi
+  (( $+couchdb_session )) && json_params+=( session $couchdb_session )
   local json="$(json_object "${json_params[@]}")"
   couchdb_add_doc history/ $json &>/dev/null &!
   return 0
