@@ -172,6 +172,7 @@ __setup_prompt () {
   }
 
   add.top_row k:22 $current_dir
+  (( $+real_pwd )) && add.top_row k:22 $real_pwd
   add.top_row $__prompt_color ${${${(%):-%n@%m}#$owner@}#$owner-}
   add.top_row k:128 $screen
   add.top_row k:blue $^vcs[1,1]

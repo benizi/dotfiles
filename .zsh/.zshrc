@@ -157,5 +157,12 @@ if [[ -e $GVM_ROOT ]] ; then
   chpwd_functions+=( setup_gvm_directories )
 fi
 
+setup_real_pwd() {
+  local actual
+  actual="$(pwd -r)"
+  [[ $actual != $PWD ]] && real_pwd=$actual || unset real_pwd
+}
+chpwd_functions+=( setup_real_pwd )
+
 local cmd
 for cmd in $chpwd_functions ; do $cmd ; done
