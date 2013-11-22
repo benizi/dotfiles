@@ -107,13 +107,16 @@ couchdb_history_add () {
   [[ $1 = ' '* ]] && return 0
   [[ -z "$cmd" ]] && return 0
   # print -sr -- ${1%%$'\n'}
-  local json="$(json_object host "$HOST" \
-    pwd "$PWD" \
-    cmd "$cmd" \
-    time "$EPOCHSECONDS" \
-    pid "$$" \
+  local -a json_params
+  json_params=(
+    host "$HOST"
+    pwd "$PWD"
+    cmd "$cmd"
+    time "$EPOCHSECONDS"
+    pid "$$"
     user "$USERNAME"
-  )"
+  )
+  local json="$(json_object "${json_params[@]}")"
   couchdb_add_doc history/ $json &>/dev/null &!
   return 0
 }
