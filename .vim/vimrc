@@ -62,7 +62,7 @@ end
 
 try
 	call vam#ActivateAddons() " set up VAM functions
-	call pathogen#infect(s:BundleDir()) " activate everything
+	call pathogen#infect(s:BundleDir() . '/{}') " activate everything
 catch
 	echomsg 'Caught exception:'
 	echomsg v:exception
