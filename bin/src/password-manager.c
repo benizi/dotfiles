@@ -156,6 +156,22 @@ password_from(int fd)
   return password;
 }
 
+static void
+set_port_by_protocol(guint32 *port, const char *protocol)
+{
+  struct servent *srv;
+  srv = getservbyname(protocol, NULL);
+  if (srv) *port = ntohs(srv->s_port);
+}
+
+static void
+set_protocol_by_port(char **protocol, int port)
+{
+  struct servent *srv;
+  srv = getservbyport(htons(port), NULL);
+  if (srv) *protocol = srv->s_name;
+}
+
 static void usage() {
   printf("Usage: password-manager [options]\n");
   printf("\n");
@@ -268,16 +284,18 @@ int main(int argc, char **argv) {
   }
 
   if ((set_port + set_protocol) == 1) {
-    struct servent *srv;
     if (set_protocol) {
-      srv = getservbyname(protocol, NULL);
-      if (srv) port = ntohs(srv->s_port);
+      set_port_by_protocol(&port, protocol);
     } else if (set_port) {
-      srv = getservbyport(htons(port), NULL);
-      if (srv) protocol = srv->s_name;
+      set_protocol_by_port(&protocol, port);
     }
-  } else if (!list) {
-    fprintf(stderr, "Must set exactly one of --port or --protocol\n");
+  } else if (!(set_port || set_protocol || list)) {
+    fprintf(stderr, "Must set at least one of --port or --protocol\n");
+    return 1;
+  }
+
+  if (set_protocol && !port) {
+    fprintf(stderr, "Couldn't determine port for --protocol %s\n", protocol);
     return 1;
   }
 
