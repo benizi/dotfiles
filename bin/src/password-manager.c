@@ -231,7 +231,7 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  if (verbose) {
+  if (verbose && !list) {
 #define VALUE(X) printf("%s: %s\n", #X, X ? X : "(null)")
     VALUE(user);
     VALUE(domain);
