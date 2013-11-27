@@ -16,7 +16,7 @@ done
 contents () {
 	awk '{ print FILENAME, $_ }' "$@"
 }
-$do_ac && for ac in $power/AC* ; do
+$do_ac && for ac in $power/{AC,ADP}* ; do
 	online=$ac/online
 	[ -f $online ] || continue
 	if $vb ; then
