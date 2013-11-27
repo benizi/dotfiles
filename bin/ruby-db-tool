@@ -41,6 +41,10 @@ sudo su - postgres -c 'createuser '\\''#{cfg.username}'\\'
 sudo su - postgres -c 'createdb '\\''#{cfg.database}'\\'' -O #{cfg.username}'
 SHELL
     end
+
+    def connect
+      %W[psql] + [cfg.database, cfg.username]
+    end
   end
 
   class Sqlserver < Base
