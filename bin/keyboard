@@ -99,6 +99,13 @@ if (!$just_modmap) {
 	@cmd = @{$cmd[0]} if $just_print;
 	run_it @cmd;
 }
+
+sub swap_mods {
+	my ($key, $old, $new) = @_;
+	run_it xmodmap => -e => "remove $old = $key";
+	run_it xmodmap => -e => "add $new = $key";
+}
+
 if ($mod3 or $just_modmap or $is_macbook or -f $modmap) {
 	run_it xmodmap => $modmap if -f $modmap;
 	if ($is_macbook) {
@@ -107,10 +114,10 @@ if ($mod3 or $just_modmap or $is_macbook or -f $modmap) {
 		run_it xmodmap => -e => "keycode $b3 = Pointer_Button3";
 		run_it xkbset => 'm';
 	} else {
-		my ($old, $use) = map "mod$_", ($ion or $mod3) ? (4, 3) : (3, 4);
-		run_it xmodmap => -e => "remove $old = Super_L";
-		run_it xmodmap => -e => "add $use = Super_L";
+		my ($old, $new) = map "mod$_", ($ion or $mod3) ? (4, 3) : (3, 4);
+		swap_mods 'Super_L', $old, $new;
 	}
+	swap_mods 'Alt_R', 'mod1', 'mod3';
 }
 if ($clear_mods) {
 	run_it xdotool => keyup => $_
