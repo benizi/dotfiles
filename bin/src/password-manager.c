@@ -138,6 +138,15 @@ static void usage() {
 #define S_OPT_Q(X) S_OPT(X); set_ ## X = 1
 #define I_OPT(X) CHECK_ARGS X = strtol(argv[++i], NULL, 0)
 #define I_OPT_Q(X) I_OPT(X); set_ ## X = 1
+
+#define MODE(X) { \
+  if (remove || list) { \
+    fprintf(stderr, "Multiple modes set\n"); \
+    return 1; \
+  } \
+  X = 1; \
+}
+
 int main(int argc, char **argv) {
   GnomeKeyringResult result;
   GList *results;
@@ -173,9 +182,9 @@ int main(int argc, char **argv) {
     } else if (ARG(v) || LARG(verbose)) {
       verbose = 1;
     } else if (ARG(R) || LARG(remove)) {
-      remove = 1;
+      MODE(remove);
     } else if (ARG(l) || LARG(list)) {
-      list = 1;
+      MODE(list);
     } else if (ARG(n) || LARG(dry)) {
       dry = 1;
       verbose++;
@@ -198,19 +207,23 @@ int main(int argc, char **argv) {
       if (!set_domain) domain = dot;
       if (!set_server) server = host;
     }
+  } else if (!list) {
+    fprintf(stderr, "Must set --host or (--server and --domain)\n");
+    return 1;
   }
 
   if ((set_port + set_protocol) == 1) {
     struct servent *srv;
-    if (set_port && port == 3389) {
-      protocol = "rdp";
-    } else if (set_protocol) {
+    if (set_protocol) {
       srv = getservbyname(protocol, NULL);
       if (srv) port = ntohs(srv->s_port);
-    } else {
+    } else if (set_port) {
       srv = getservbyport(htons(port), NULL);
       if (srv) protocol = srv->s_name;
     }
+  } else if (!list) {
+    fprintf(stderr, "Must set exactly one of --port or --protocol\n");
+    return 1;
   }
 
   if (verbose) {
