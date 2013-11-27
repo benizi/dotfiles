@@ -333,7 +333,7 @@ int main(int argc, char **argv) {
         printf("%s", password);
         return 0;
       }
-      if (password && *password)
+      if (password)
         break;
     }
     if (remove) {
@@ -348,7 +348,7 @@ int main(int argc, char **argv) {
       } else {
         password = password_prompt(user, server, domain, protocol, port);
       }
-      if (password && *password) {
+      if (password) {
         guint32 item_id;
         gnome_keyring_set_network_password_sync(
           use_keyring,
