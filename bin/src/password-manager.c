@@ -206,7 +206,12 @@ int main(int argc, char **argv) {
       dot++;
       if (!set_domain) domain = dot;
       if (!set_server) server = host;
+    } else {
+      server = host;
+      domain = "";
     }
+  } else if (set_domain && set_server) {
+    host = NULL;
   } else if (!list) {
     fprintf(stderr, "Must set --host or (--server and --domain)\n");
     return 1;
