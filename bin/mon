@@ -66,6 +66,7 @@ scale=1x1
 unset fb
 
 cmd=( xrandr --output $int --primary --mode $int_mode )
+(( $+int_dpi )) && cmd+=( --dpi $int_dpi )
 if [[ -n $ext ]] ; then
 	if [[ $int_mode == $ext_mode ]] || [[ $ext_pos != --same-as ]] ; then
 		cmd+=( --output $ext $ext_pos $int --mode $ext_mode )
@@ -76,6 +77,7 @@ if [[ -n $ext ]] ; then
 		esac
 		cmd+=( --output $ext $ext_pos $int --mode $ext_mode )
 	fi
+	(( $+ext_dpi )) && cmd+=( --dpi $ext_dpi )
 else
 	fb=$int_mode
 fi
