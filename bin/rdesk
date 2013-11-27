@@ -153,8 +153,8 @@ if ($rdesktop =~ /xfreerdp/) {
 	if (!$has_password and !$opt{nopass}) {
 		my $use_fake = ($dry and !$opt{showpass});
 		chomp(my $pass = $use_fake ? '{pass}' : `password-manager -h $opt{server} -u $opt{user} -P rdp`);
-		die "Aborted due to empty password\n" unless $pass =~ /\S/;
-		splice @rcmd, 1, 0, '-p', $pass;
+		die "Failed to read password\n" if $?;
+		splice @rcmd, 1, 0, '-p', $pass if length $pass;
 	}
 	splice @rcmd, -1, 0, '--plugin', 'cliprdr';
 }
