@@ -97,6 +97,16 @@ key_listing(int verbose)
 }
 
 #define MAXPASS 65536
+static void
+password_cleaner(char *password)
+{
+  int i;
+  for (i = 0; password[i] && i < MAXPASS; i++)
+    if (password[i] == '\r' || password[i] == '\n')
+      break;
+  password[i] = '\0';
+}
+
 static char *
 password_prompt(const char *user, const char *server, const char *domain, const char *protocol, guint32 port)
 {
@@ -120,12 +130,7 @@ password_prompt(const char *user, const char *server, const char *domain, const 
     close(fd[0]);
     waitpid(-1, &status, 0);
     if (ret < 0 || !*password) password[0] = '\0';
-    for (ret = 0; password[ret]; ret++) {
-      if (password[ret] == '\r' || password[ret] == '\n') {
-        password[ret] = '\0';
-        break;
-      }
-    }
+    password_cleaner(password);
   } else {
     char *argv[] = { "dmenu", "--secret", "-p", "password", NULL };
     close(fd[0]);
@@ -134,6 +139,20 @@ password_prompt(const char *user, const char *server, const char *domain, const 
     execvp("dmenu", argv);
     exit(1);
   }
+  return password;
+}
+
+static char *
+password_from(int fd)
+{
+  char *password;
+  int ret;
+
+  password = (char *)malloc(MAXPASS * sizeof(char));
+  if (!password) return password;
+  ret = read(fd, password, MAXPASS);
+  if (ret < 0) password[0] = '\0';
+  password_cleaner(password);
   return password;
 }
 
@@ -146,6 +165,7 @@ static void usage() {
   printf("     HOST = SERVER.DOMAIN\n");
   printf("  -P/--protocol PROTOCOL | -p/--port PORTNUMBER \n");
   printf("     PROTOCOL = numeric PORT\n");
+  printf("  --passfd N = specify a password via file descriptor\n");
   printf("\n");
   printf("  -k/--keyring KEYRING\n");
   printf("\n");
@@ -180,7 +200,7 @@ int main(int argc, char **argv) {
   char *host;
   int i, tried, verbose = 0, remove = 0, list = 0;
   int set_domain = 0, set_host = 0, set_server = 0;
-  int set_protocol = 0, set_port = 0;
+  int set_protocol = 0, set_port = 0, set_passfd = 0;
   int dry = 0;
 
   char *user = default_user();
@@ -190,6 +210,7 @@ int main(int argc, char **argv) {
   char *protocol = NULL;
   char *authtype = NULL;
   guint32 port = 0;
+  int passfd = 0;
 
   char *use_keyring = GNOME_KEYRING_DEFAULT;
 
@@ -206,6 +227,8 @@ int main(int argc, char **argv) {
       S_OPT_Q(protocol);
     } else if (ARG(p) || LARG(port)) {
       I_OPT_Q(port);
+    } else if (LARG(passfd)) {
+      I_OPT_Q(passfd);
     } else if (ARG(v) || LARG(verbose)) {
       verbose = 1;
     } else if (ARG(R) || LARG(remove)) {
@@ -319,7 +342,12 @@ int main(int argc, char **argv) {
     }
     if (verbose) printf("nope\n");
     if (!tried) {
-      char *password = password_prompt(user, server, domain, protocol, port);
+      char *password;
+      if (set_passfd) {
+        password = password_from(passfd);
+      } else {
+        password = password_prompt(user, server, domain, protocol, port);
+      }
       if (password && *password) {
         guint32 item_id;
         gnome_keyring_set_network_password_sync(
