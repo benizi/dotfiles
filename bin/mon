@@ -65,7 +65,7 @@ fi
 scale=1x1
 unset fb
 
-cmd=( xrandr --output $int --mode $int_mode )
+cmd=( xrandr --output $int --primary --mode $int_mode )
 if [[ -n $ext ]] ; then
 	if [[ $int_mode == $ext_mode ]] || [[ $ext_pos != --same-as ]] ; then
 		cmd+=( --output $ext $ext_pos $int --mode $ext_mode )
