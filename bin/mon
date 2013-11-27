@@ -26,7 +26,7 @@ get_modes () {
 	active_output=()
 	vid_modes=()
 	eval "$(xrandr | perl -lanwe '
-if (/^[A-Z]{2}/) {
+if (/^[A-Za-z]+\d+ (dis|)connected/) {
 	$last_output = $F[0];
 	push @outputs, $last_output;
 	print qq/active_output+=( $last_output 1 )/ if /^\S+ connected/;
