@@ -2,6 +2,7 @@
 unset dry
 unset cycle scale
 ext_pos=--right-of
+[[ -f ~/.config/mon ]] && . ~/.config/mon
 case $0 in
 	*clone) set -- "$@" --clone
 esac
