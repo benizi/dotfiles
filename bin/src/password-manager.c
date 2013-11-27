@@ -148,12 +148,12 @@ int main(int argc, char **argv) {
   int dry = 0;
 
   char *user = default_user();
-  char *domain = "thorleyindustries.com";
-  char *server = "accpac";
+  char *domain = NULL;
+  char *server = NULL;
   char *object = NULL;
-  char *protocol = "rdp";
+  char *protocol = NULL;
   char *authtype = NULL;
-  guint32 port = 3389;
+  guint32 port = 0;
 
   char *use_keyring = GNOME_KEYRING_DEFAULT;
 
