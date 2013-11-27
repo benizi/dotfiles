@@ -22,8 +22,32 @@ default_user(void)
   return ret;
 }
 
+static void
+detailed_key_listing(gchar *keyring, guint32 id)
+{
+  GnomeKeyringAttributeList *attlist;
+  GnomeKeyringResult result =
+    gnome_keyring_item_get_attributes_sync(keyring, id, &attlist);
+  if (result == GNOME_KEYRING_RESULT_OK) {
+    GnomeKeyringAttribute att, *atts;
+    int i;
+    atts = (GnomeKeyringAttribute *)attlist->data;
+    for (i = 0; i < attlist->len; i++) {
+      att = atts[i];
+      if (att.type == GNOME_KEYRING_ATTRIBUTE_TYPE_STRING) {
+        printf("  %s = '%s'\n", att.name, att.value.string);
+      } else if (att.type == GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32) {
+        printf("  %s = %u\n", att.name, att.value.integer);
+      } else {
+        printf("Found %d\n", i);
+      }
+    }
+    gnome_keyring_attribute_list_free(attlist);
+  }
+}
+
 static int
-key_listing(void)
+key_listing(int verbose)
 {
   GList *keyrings, *current;
   if (gnome_keyring_list_keyring_names_sync(&keyrings) != OK) {
@@ -47,6 +71,9 @@ key_listing(void)
         gnome_keyring_item_get_info_full_sync(keyring, GPOINTER_TO_INT(cid->data), GNOME_KEYRING_ITEM_INFO_SECRET, &info);
       if (result == GNOME_KEYRING_RESULT_OK) {
         printf(" %s\n", gnome_keyring_item_info_get_display_name(info));
+        if (verbose)
+          detailed_key_listing(keyring, GPOINTER_TO_INT(cid->data));
+
         gnome_keyring_item_info_free(info);
       } else {
 #define CHECKIT(X) case GNOME_KEYRING_RESULT_ ## X: printf(#X "\n"); break
@@ -250,7 +277,7 @@ int main(int argc, char **argv) {
   }
 
   if (list)
-    return key_listing();
+    return key_listing(verbose);
 
   for (tried = 0; tried < 2; tried++) {
     result = gnome_keyring_find_network_password_sync(
