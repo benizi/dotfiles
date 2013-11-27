@@ -3,7 +3,7 @@ kill=false
 debugging=false
 unset found_rspec
 pst -P $$ | while read line ; do
-  [[ $line = */rspec* ]] || continue
+  [[ $line = (*rspec*|*cucumber*) ]] || continue
   print -l - $line | read pid rest
   found_rspec=$pid
 done
