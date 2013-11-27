@@ -160,6 +160,10 @@ static void
 set_port_by_protocol(guint32 *port, const char *protocol)
 {
   struct servent *srv;
+  if (!strcmp("rdp", protocol)) {
+    *port = 3389;
+    return;
+  }
   srv = getservbyname(protocol, NULL);
   if (srv) *port = ntohs(srv->s_port);
 }
