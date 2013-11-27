@@ -3,3 +3,4 @@ xscreensaver -lock &
 sudo umount -a -t fuse.sshfs
 sudo pm-suspend
 sudo chown $UID:$GID -R /run/user/$UID/pulse 2> /dev/null
+keyboard
