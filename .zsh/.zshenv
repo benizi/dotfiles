@@ -350,4 +350,4 @@ setup_preso() {
     [[ -o interactive ]] && printf 'Set font to %s @ %s\n' $preso_font $size
   fi
 }
-setup_preso
+(( ! $+VIM )) && setup_preso
