@@ -342,15 +342,12 @@ setup_preso() {
   local size=0 force=${1:-false}
   [[ $TERM = *rxvt* ]] || return
 
-  if [[ -f $preso_file ]] ; then
-    size=18
-  elif $force ; then
-    size=11
-  fi
+  : ${preso_font="Bitstream Vera Sans Mono"}
+  [[ -f $preso_file ]] && size=${preso_large:-18} || size=${preso_normal:-11}
 
   if (( size )) ; then
-    printf '\e]710;xft:Bitstream Vera Sans Mono:size=%d\a' $size
-    [[ -o interactive ]] && printf 'Set font for presentation mode\n'
+    printf '\e]710;xft:%s:size=%d\a' $preso_font $size
+    [[ -o interactive ]] && printf 'Set font to %s @ %s\n' $preso_font $size
   fi
 }
 setup_preso
