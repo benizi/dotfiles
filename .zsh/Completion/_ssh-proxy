@@ -1,0 +1,7 @@
+#compdef ssh-proxy
+
+(( $+functions[_ssh_hosts] )) || _ssh &> /dev/null
+
+_arguments \
+  '1:host:_ssh_hosts' \
+  '*: : _normal'
