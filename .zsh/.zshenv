@@ -325,6 +325,14 @@ go-manager
 erlang=r15b01
 path=( /opt/erlang/$erlang/bin $path )
 
+leapd() {
+  if [[ -e /opt/leap/usr/bin ]] ; then
+    path=( /opt/leap/usr/bin $path )
+    ld_library_path=( /opt/leap/LeapSDK/lib/x64 $ld_library_path )
+    command leapd "$@"
+  fi
+}
+
 preso_file=~/presentation
 setup_preso() {
   local size=0 force=${1:-false}
