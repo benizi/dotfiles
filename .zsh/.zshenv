@@ -102,6 +102,7 @@ pathtest=( ~/context/tex/texmf-linux-64/bin $^pathtest )
 pathtest=( /opt/fsharp/bin $^pathtest )
 pathtest=( ~$owner/git/verman/bin $^pathtest )
 pathtest+=( ~$owner/android-sdks/platform-tools )
+pathtest+=( ~/git/racket/racket/bin )
 path=( ${^pathtest}(N-/) )
 }
 
