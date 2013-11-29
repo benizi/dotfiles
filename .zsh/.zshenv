@@ -1,6 +1,16 @@
 # Deal with pathological path on Windows 7 Cygwin
 (( $path[(Ie)/bin] )) || export PATH=$PATH:/bin
+
 setopt no_global_rcs
+
+typeset -F 6 SECONDS
+
+if (( $+zsh_start_timing )) ; then
+  PS4='$SECONDS %N:%i> '
+  exec 3>&2 2>/tmp/startlog.$$
+  setopt xtrace prompt_subst
+fi
+
 # Set up system-specific vars
 export ZSH_UNAME=$(uname)
 case $ZSH_UNAME in
@@ -156,8 +166,6 @@ if_exists PLAN9 /usr/local/plan9
 if (( $+XAUTHLOCALHOSTNAME )) && (( ! $+XAUTHORITY )) ; then
   export XAUTHORITY=~$owner/.Xauthority
 fi
-
-typeset -F 6 SECONDS
 
 run_local_versions
 
@@ -350,5 +358,10 @@ setup_preso() {
     [[ -o interactive ]] && printf 'Set font to %s @ %s\n' $preso_font $size
   fi
 }
+
+if (( $+zsh_start_timing )) ; then
+  unsetopt xtrace
+  exec 2>&3 3>&-
+fi
 
 (( $+commands[cpus] )) && pmake=-j$(( $(cpus) + 1 ))
