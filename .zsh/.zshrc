@@ -171,3 +171,9 @@ preso() {
   [[ -f $preso_file ]] && rm $preso_file || touch $preso_file
   setup_preso true
 }
+
+# Ctrl+Ins -> send current buffer to clipboard
+zle-clip-line() { printf '%s' $BUFFER | clip &> /dev/null }
+zle -N zle-clip-line
+bindkey '^[[2^' zle-clip-line
+bindkey '^[[2;5~' zle-clip-line
