@@ -351,3 +351,5 @@ setup_preso() {
   fi
 }
 (( ! $+VIM )) && setup_preso
+
+(( $+commands[cpus] )) && pmake=-j$(( $(cpus) + 1 ))
