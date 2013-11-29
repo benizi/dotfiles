@@ -179,3 +179,5 @@ image() {
   else reply=($REPLY)
   fi
 }
+
+gemdoc() { open http://rubygems.org/gems/$1 }
