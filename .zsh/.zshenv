@@ -350,6 +350,5 @@ setup_preso() {
     [[ -o interactive ]] && printf 'Set font to %s @ %s\n' $preso_font $size
   fi
 }
-(( ! $+VIM )) && setup_preso
 
 (( $+commands[cpus] )) && pmake=-j$(( $(cpus) + 1 ))

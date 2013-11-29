@@ -171,6 +171,7 @@ preso() {
   [[ -f $preso_file ]] && rm $preso_file || touch $preso_file
   setup_preso true
 }
+(( ! $+VIM )) && setup_preso
 
 # Ctrl+Ins -> send current buffer to clipboard
 zle-clip-line() { printf '%s' $BUFFER | clip &> /dev/null }
