@@ -289,8 +289,10 @@ ruby-manager () {
         [[ -e $rbenv_comp ]] && . $rbenv_comp
         ;;
       rvm)
-        local rvmsource=~$owner/.rvm/scripts/rvm
-        [[ -x $rvmsource ]] && . $rvmsource
+        local rvmsource rvmscripts=~$owner/.rvm/scripts
+        for rvmsource in $rvmscripts/{rvm,completion} ; do
+          [[ -x $rvmsource ]] && . $rvmsource
+        done
         rvm-unfuckup-options() { setopt nokshglob }
         chpwd_functions+=( rvm-unfuckup-options )
         ;;
