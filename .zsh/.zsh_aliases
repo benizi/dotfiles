@@ -64,6 +64,7 @@ be cap rake rspec ruby () {
   command $bundle "$@"
 }
 rpush () { bundle && rspec $@ && git push }
+alias wipit='rspec -t @wip'
 
 rails () {
   local base dir=$PWD warning
