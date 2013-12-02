@@ -359,7 +359,6 @@ setup_preso() {
 
   if (( size )) ; then
     printf '\e]710;xft:%s:size=%d\a' $preso_font $size
-    [[ -o interactive ]] && printf 'Set font to %s @ %s\n' $preso_font $size
   fi
 }
 
