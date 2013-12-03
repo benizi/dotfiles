@@ -238,6 +238,7 @@ fancytitle () {
 }
 
 typeset -A __terminal_seqs
+typeset -i __last_command_number
 
 __reset_cursor () {
   if (( $+__terminal_seqs[reset] )) ; then
@@ -247,6 +248,7 @@ __reset_cursor () {
 
 preexec () {
   __last_command=$1
+  (( __last_command_number ++ ))
   fancytitle "$1 $TITLESEP "
   __reset_cursor
 }
