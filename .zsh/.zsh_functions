@@ -192,3 +192,10 @@ first() {
 }
 
 first-or() { first "$@" || $@ }
+
+loopy() {
+  if (( ! $# )) || [[ "$1" = <-> ]]
+  then first-or sleep ${1:-1}
+  else first-or "$@"
+  fi
+}
