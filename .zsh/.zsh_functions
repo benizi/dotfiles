@@ -190,3 +190,5 @@ first() {
   __first+=( $key 1 )
   return ret
 }
+
+first-or() { first "$@" || $@ }
