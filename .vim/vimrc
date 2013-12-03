@@ -86,7 +86,8 @@ endif
 let g:Powerline_symbols = s:limited_terminal ? 'compatible' : 'unicode'
 let g:Powerline_cache_enabled = 0
 
-set noexpandtab softtabstop=4 tabstop=4 shiftwidth=4
+" default 2-space tabstops, no actual tab chars
+se noet sts=2 ts=2 sw=2
 set list listchars=tab:\ \ ,trail:·
 se nowrap cc=80
 if $TERM =~ 'rxvt' || $TERM =~ 'xterm'
