@@ -181,3 +181,12 @@ image() {
 }
 
 gemdoc() { open http://rubygems.org/gems/$1 }
+
+# return true the first time called, false thereafter
+typeset -A __first
+first() {
+  local key="$__last_command_number $*"
+  local ret=$(( $+__first[$key] ))
+  __first+=( $key 1 )
+  return ret
+}
