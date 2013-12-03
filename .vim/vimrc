@@ -113,6 +113,7 @@ fun! PostColorScheme()
 			sil! !printf '\e]12;8\a'
 		end
 		hi Search cterm=NONE ctermfg=0 ctermbg=220 guifg=#000000 guibg=#ffff00
+		hi Normal guibg=black
 	elseif colo == 'railscasts'
 		hi TabLine guibg=#0000cc gui=none,reverse guifg=#ffffff
 		hi TabLineSel guibg=#0000cc gui=none guifg=#ffffff
