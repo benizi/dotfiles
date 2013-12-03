@@ -324,6 +324,8 @@ se nf=hex
 set hls
 " turn off highlighting when refreshing the screen
 nn <silent> <C-l> :nohls<CR><C-l>
+" incremental search
+se is
 
 " mappings for tab navigation
 nn <silent> <Esc>t :tabnew<CR>
