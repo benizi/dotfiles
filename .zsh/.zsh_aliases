@@ -70,6 +70,13 @@ executable() {
   (( $+commands[$1] || $+aliases[$1] || $+functions[$1] || $+builtins[$1] ))
 }
 
+if-able() {
+  if executable $1
+  then "$@"
+  else true
+  fi
+}
+
 rails () {
   local base dir=$PWD warning
   local -a rails rails_cmds
