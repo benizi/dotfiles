@@ -66,6 +66,10 @@ be cap rake rspec ruby () {
 rpush () { bundle && rspec $@ && git push }
 alias wipit='rspec -t @wip'
 
+executable() {
+  (( $+commands[$1] || $+aliases[$1] || $+functions[$1] || $+builtins[$1] ))
+}
+
 rails () {
   local base dir=$PWD warning
   local -a rails rails_cmds
