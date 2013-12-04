@@ -349,7 +349,7 @@ leapd() {
   fi
 }
 
-preso_file=~/presentation
+preso_file=~$owner/presentation
 setup_preso() {
   local size=0 force=${1:-false}
   [[ $TERM = *rxvt* ]] || return
