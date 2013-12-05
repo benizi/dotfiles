@@ -1,4 +1,21 @@
 #!/usr/bin/env ruby
+if ENV['PERL']
+  require 'tempfile'
+  script = Tempfile.new(['pj', '.pl'])
+  status = 1
+  begin
+    script.write(DATA.read)
+    script.close
+    cmd = ['perl', script.path] + ARGV.dup
+    system(*cmd)
+    status = $?.exitstatus
+  ensure
+    script.close
+    script.unlink
+  end
+  exit status
+end
+
 require 'rubygems'
 require 'pp'
 require 'multi_json'
