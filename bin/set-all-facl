@@ -59,6 +59,8 @@ sub run_cmd {
 	system { $cmd[0] } @cmd unless $dry;
 }
 
+-f or run_cmd touch => $_ for @files;
+
 for (
 	[ 1, @files ],
 	[ 0, @dirs ],
