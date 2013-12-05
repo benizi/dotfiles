@@ -94,7 +94,21 @@ rpush () {
   setopt xtrace
   git push ${dry+-n} $args
 }
-alias wipit='rspec -t @wip'
+
+wipit() {
+  local specs=true cukes=true
+  # check for wip specs/features if ack is present
+  if (( $+commands[ack] )) ; then
+    ack 'wip:|:wip' spec | grep -q . || unset specs
+    ack @wip spec/features(N) features(N) | grep -q . || unset cukes
+  fi
+  if ! (( $+specs || $+cukes )) ; then
+    warn "No wip specs or cukes"
+    return 0
+  fi
+  (( $+specs )) && if-able rspec -t @wip spec
+  (( $+cukes )) && if-able cucumber -t @wip
+}
 
 executable() {
   (( $+commands[$1] || $+aliases[$1] || $+functions[$1] || $+builtins[$1] ))
