@@ -7,7 +7,7 @@ def active_window
   if File.exists?(wmii_namespace)
     'wmiir cat /client/sel/ctl | sed 1q'
   else
-    'xdotool getwindowfocus'
+    %q[xprop -root _NET_ACTIVE_WINDOW | awk '/#/ { print $(NF) ; exit } END { exit 1 }' || xdotool getwindowfocus]
   end
 end
 
