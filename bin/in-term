@@ -1,0 +1,7 @@
+#!/bin/sh
+
+for term in term urxvt uxterm xterm ; do
+  if hash $term 2>/dev/null ; then
+    exec $term -e "$@"
+  fi
+done
