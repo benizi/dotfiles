@@ -1,1 +1,11 @@
-nmcli con ${1:-up} id pgh
+. ensure-in-term "$0" "$@"
+
+. ~/.config/vpn 2>/dev/null
+
+: ${domain=${EMAIL#*@}}
+: ${user=$EMAIL}
+: ${host=vpn.$domain}
+: ${port=443}
+
+password-manager -h $host -p $port |
+sudo openconnect --passwd-on-stdin "$@" -u $user $host:$port
