@@ -19,11 +19,22 @@ for cmd in $commands[(I)find*] ack ; do
   alias $cmd="noglob $cmd"
 done
 }
-'find' 'ack' () {
+'find' () {
   integer i=${argv[(i)-*]}
   (( $+INOSX && ! $#argv )) && [[ $0 = find ]] && argv=( . )
   command $0 ${~argv[1,i-1]} "${(@)argv[i,-1]}"
 }
+
+'ack'() {
+  local -i i
+  for (( i=1; i<$#argv; i++ )) ; do
+    [[ $argv[i] == -* ]] && continue
+    break
+  done
+  ((i++))
+  command $0 "${(@)argv[1,i-1]}" ${~argv[i,-1]}
+}
+
 alias ri='noglob ri'
 
 alias chroot32='sudo su - -c "linux32 chroot /32 /bin/zsh -l"'
