@@ -44,8 +44,8 @@ $permbits //= 'rwX';
 /^(?:d:.*:.*:.*|[ugm]:.*:.*|o::...)$/ or $_ .= ":$permbits" for @perms;
 @perms or die "No default/user/group permissions specified\n";
 @args or die "No files/directories specified\n";
-my (@with_defaults, @no_defaults);
-(-d) ? (push @with_defaults, $_) : (push @no_defaults, $_) for @args;
+my (@dirs, @files);
+(-d) ? (push @dirs, $_) : (push @files, $_) for @args;
 
 sub print_cmd {
 	print "=== CMD\n";
@@ -60,8 +60,8 @@ sub run_cmd {
 }
 
 for (
-	[ 1, @no_defaults ],
-	[ 0, @with_defaults ],
+	[ 1, @files ],
+	[ 0, @dirs ],
 ) {
 	my ($filter_defaults, @paths) = @$_;
 	next unless @paths;
