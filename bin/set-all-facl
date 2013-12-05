@@ -28,6 +28,10 @@ GetOptions(
 		}
 	},
 ) or die 'options';
+unless (@perms or $permbits) {
+	warn "(Default perms = --user)\n";
+	$do_current_user = 1;
+}
 push @perms, $mask // 'm::rwx';
 push @perms, grep $do_current_user, "u:".getpwuid $<;
 push @perms, grep $do_current_group, "g:".getgrgid $(;
