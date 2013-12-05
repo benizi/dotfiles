@@ -106,8 +106,18 @@ wipit() {
     warn "No wip specs or cukes"
     return 0
   fi
+
   (( $+specs )) && if-able rspec -t @wip spec
-  (( $+cukes )) && if-able cucumber -t @wip
+
+  if (( $+cukes )) ; then
+    local cfg=config/cucumber.yml
+    local -a args
+    if [[ -f $cfg ]] && grep -q '^wip:' $cfg
+    then args=( -p wip )
+    else args=( -t @wip )
+    fi
+    if-able cucumber $args
+  fi
 }
 
 executable() {
