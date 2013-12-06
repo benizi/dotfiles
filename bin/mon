@@ -1,16 +1,18 @@
 #!/bin/zsh
 unset dry
-unset cycle scale
+unset cycle scale no_ext
 ext_pos=--right-of
 [[ -f ~/.config/mon ]] && . ~/.config/mon
 case $0 in
 	*clone) set -- "$@" --clone ;;
+	*single) set -- "$@" --single ;;
 esac
 for arg ; do
 	case "$arg" in
 		--dry*) dry=true ;;
 		--cycle) cycle=true ;;
 		--clone) ext_pos=--same-as ; cycle=true ;;
+		--single) no_ext=true ;;
 		-l|--left) ext_pos=--left-of ;;
 		-r|--right) ext_pos=--right-of ;;
 		-a|--above) ext_pos=--above ;;
@@ -50,7 +52,7 @@ get_modes
 deactivate=()
 int=$outputs[1]
 int_mode=$vid_modes[$int]
-if (( $#active_output > 1 )) ; then
+if (( $#active_output > 1 )) && (( ! $+no_ext )) ; then
 	for ext in ${outputs[2,-1]} ; do
 		(( $+active_output[$ext] )) || continue
 		ext_mode=$vid_modes[$ext]
