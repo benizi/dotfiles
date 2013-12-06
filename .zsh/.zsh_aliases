@@ -76,13 +76,12 @@ be cap rake rspec ruby () {
 }
 
 rpush () {
-  setopt local_options err_exit err_return
-
   # run all tests
-  bundle
-  if-able rubocop app spec lib
-  rspec $@
-  if-able cucumber
+  bundle &&
+  if-able rubocop app spec lib &&
+  rspec $@ &&
+  if-able cucumber ||
+  return 1
 
   # push to upstream, setting it up if needed
   local -a args
@@ -91,7 +90,7 @@ rpush () {
     local branch=$(git branch | awk '/^\*/ { print $2 }')
     args=( -u $remote $branch )
   fi
-  setopt xtrace
+  setopt local_options xtrace
   git push ${dry+-n} $args
 }
 
