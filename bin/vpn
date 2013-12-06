@@ -7,5 +7,11 @@
 : ${host=vpn.$domain}
 : ${port=443}
 
+cert=$HOME/.config/vpn.$host.crt
+if test -f $cert ; then
+  finger=$(openssl x509 -noout -in $cert -sha1 -fingerprint | sed 's/^.*=//;s/://g')
+  set -- "$@" --servercert=$finger
+fi
+
 password-manager -h $host -p $port |
 sudo openconnect --passwd-on-stdin "$@" -u $user $host:$port
