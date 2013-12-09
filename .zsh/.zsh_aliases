@@ -75,14 +75,14 @@ be cap rake rspec ruby () {
   command $bundle "$@"
 }
 
-rpush () {
-  # run all tests
+run-tests() {
   bundle &&
   if-able rubocop app spec lib &&
   rspec $@ &&
-  if-able cucumber ||
-  return 1
+  if-able cucumber
+}
 
+push-upstream() {
   # push to upstream, setting it up if needed
   local -a args
   if ! git rev-parse @{upstream} &> /dev/null ; then
@@ -93,6 +93,8 @@ rpush () {
   setopt local_options xtrace
   git push ${dry+-n} $args
 }
+
+rpush () { run-tests && push-upstream }
 
 wipit() {
   local specs=true cukes=true
