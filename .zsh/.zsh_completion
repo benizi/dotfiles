@@ -69,3 +69,4 @@ _git-co () {
 }
 
 _git-hard () { _git-reset "$@" }
+_git-close() { _git-branch -d "$@" }
