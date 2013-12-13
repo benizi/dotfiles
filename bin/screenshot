@@ -6,11 +6,19 @@ filename = IO.popen('dmenu', 'r+') do |io|
 end
 exit if filename.empty?
 filename += '.png' unless filename =~ /\.\w+$/
-dir = ENV['HOME'].dup
-if File.directory?("#{dir}/screenshots")
-  dir << '/screenshots'
+home = ENV['HOME'].dup
+s_dir = File.join(home, 'screenshots')
+drop = File.join(home, 'Dropbox', 'screenshots')
+
+if !Dir.exists?(s_dir) and Dir.exists?(drop)
+  File.symlink(drop, s_dir)
+end
+
+if Dir.exists?(s_dir)
+  dir = s_dir
 else
   filename = "screenshots-#{filename}"
 end
-filename = "#{dir}/#{filename}"
+
+filename = File.join(dir, filename)
 system('import', filename)
