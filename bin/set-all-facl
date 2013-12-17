@@ -28,7 +28,7 @@ GetOptions(
 		}
 	},
 ) or die 'options';
-unless (@perms or $permbits) {
+unless (@perms or $permbits or $do_current_user or $do_current_group) {
 	warn "(Default perms = --user)\n";
 	$do_current_user = 1;
 }
