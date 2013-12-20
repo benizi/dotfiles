@@ -20,9 +20,9 @@ delete_redirs() {
 redir () {
   local proto=$1 from=$2 to=$3
   # redirect external requests
-  sudo iptables -t nat -A PREROUTING -p $proto --dport $from -j REDIRECT --to-port $to
+  sudo iptables -t nat -A PREROUTING ! -s 172.0.0.0/8 -p $proto --dport $from -j REDIRECT --to-port $to
   # redirect loopback requests
-  sudo iptables -t nat -A OUTPUT -d 127.0.0.1 -p $proto --dport $from -j REDIRECT --to-port $to
+  sudo iptables -t nat -A OUTPUT ! -s 172.0.0.0/8 -d 127.0.0.1 -p $proto --dport $from -j REDIRECT --to-port $to
 }
 
 delete_redirs 80
