@@ -85,7 +85,7 @@ else
 fi
 
 if (( $+cycle )) ; then
-	for output in $all_outputs ; do
+	for output in $outputs ; do
 		${dry+echo} xrandr --output $output --off
 	done
 fi
