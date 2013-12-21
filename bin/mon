@@ -1,6 +1,6 @@
 #!/bin/zsh
 unset dry
-unset cycle scale no_ext
+unset cycle scale no_ext check_connections
 ext_pos=--right-of
 [[ -f ~/.config/mon ]] && . ~/.config/mon
 case $0 in
@@ -17,6 +17,7 @@ for arg ; do
 		-r|--right) ext_pos=--right-of ;;
 		-a|--above) ext_pos=--above ;;
 		-b|--below) ext_pos=--below ;;
+		--check) check_connections=true ;;
 		*)
 			tput setaf 1 >&2
 			printf 'Unknown option: %s\n' "$arg"
@@ -68,6 +69,16 @@ else
 	for mon in $outputs ; do
 		[[ $mon == $int ]] || deactivate+=( $mon )
 	done
+fi
+
+if (( $+check_connections )) ; then
+	xrandr | awk '
+/^[^[:space:]]+ / { last_con = $2 }
+/^ +[0-9]/ {
+	if (last_con == "disconnected")
+		exit 1
+}'
+	exit $?
 fi
 
 scale=1x1
