@@ -17,6 +17,12 @@ for arg ; do
 		-r|--right) ext_pos=--right-of ;;
 		-a|--above) ext_pos=--above ;;
 		-b|--below) ext_pos=--below ;;
+		*)
+			tput setaf 1 >&2
+			printf 'Unknown option: %s\n' "$arg"
+			tput sgr0 >&2
+			exit 1
+			;;
 	esac
 done
 
