@@ -199,3 +199,16 @@ loopy() {
   else first-or "$@"
   fi
 }
+
+curl-json() { curl -s -H 'Accept: application/json' "$@" }
+curl-api() {
+  local -a opts
+  [[ -f token ]] && opts+=( -H "Authorization: $(<token)" )
+  if [[ -f base_url ]] && [[ $1 = /* ]] ; then
+    local url=$(<base_url)$1
+    shift
+    opts+=( $url )
+  fi
+  curl-json $opts "$@"
+}
+curl-api-post() { curl-api "$@" -H 'Content-Type: application/json' -X POST }
