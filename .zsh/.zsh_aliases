@@ -85,9 +85,9 @@ run-tests() {
 push-upstream() {
   # push to upstream, setting it up if needed
   local -a args
-  if ! git rev-parse @{upstream} &> /dev/null ; then
+  local branch=${1:-"$(git branch | awk '/^\*/ { print $2 }')"}
+  if ! git rev-parse $branch@{upstream} &> /dev/null ; then
     local remote=$(git remote | sed 1q)
-    local branch=$(git branch | awk '/^\*/ { print $2 }')
     args=( -u $remote $branch )
   fi
   setopt local_options xtrace
