@@ -429,3 +429,15 @@ load_namedirs() {
 }
 
 load_namedirs --quiet
+
+with-fresh-test-db() {
+  local testdb=$(date +test-db-%s) url
+  ruby -rubygems -rdatabase_url -e 1 || return 1
+  url="$(ruby -rubygems -rdatabase_url -ryaml -e 'f,n = ARGV ; puts DatabaseUrl.database_url(YAML.load_file(f)["test"].merge("database" => n))' config/database.yml $testdb)"
+  (( $? == 0 )) || return 1
+  printf 'DATABASE_URL='\''%s'\''\n' $url
+  DATABASE_URL=$url RAILS_ENV=test rake db:create db:migrate || return 1
+  DATABASE_URL=$url "$@" || keepdb=true
+  [[ -z $keepdb ]] && sudo -i -u postgres dropdb $testdb && unset testdb
+  [[ -n $testdb ]] && printf 'testdb=%s\nDATABASE_URL='\''%s'\''\n' $testdb $url
+}
