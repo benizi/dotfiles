@@ -191,6 +191,7 @@ __setup_prompt () {
     add.middle_row k:208 $escaped_command' -> %?'
   fi
 
+  (( $+DATABASE_URL )) && add.bottom_row k:167 "DB ${testdb:-$DATABASE_URL}"
   (( $+deleted )) && add.bottom_row k:red '!deleted!'
   (( $+fail_couchdb )) && add.bottom_row k:red '!CouchDB!'
   (( $+incognito_mode )) && add.bottom_row k:208 '!!!'
