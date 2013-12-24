@@ -262,6 +262,7 @@ fi
 # fix completion for some alia
 compdef _ssh ssh-noagent
 compdef _precommand noagent hidessh noproxy with-depot with-status proxychains be
+compdef _precommand with-fresh-test-db in-btrfs-snapshot
 
 alias Z=' exec sudo su -l bhaskell'
 hash -d afs=/afs/cs.cmu.edu/user/bhaskell/protected
