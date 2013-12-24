@@ -449,3 +449,25 @@ with-fresh-test-db() {
   (( $# )) && [[ -n $testdb ]] && printf 'testdb=%s\nDATABASE_URL='\''%s'\''\n' $testdb $url
   return ret
 }
+
+in-btrfs-snapshot() {
+  local snapshot dir relative ret
+  if [[ -z $snapshot_base ]] ; then
+    warn "Need to set snapshot_base to use $0"
+    return 1
+  fi
+  snapshot=~/snapshot-$(date +%Y%m%d%H%M%S)
+  dir=$(pwd)
+  [[ $dir = $snapshot_base* ]] && relative=$snapshot${dir/$snapshot_base}
+  btrfs subvolume snapshot $snapshot_base $snapshot || {
+    warn "Snapshot failed $snapshot_base -> $snapshot"
+    return 1
+  }
+  printf 'snapshot=%s\n' $snapshot
+  pushd ${relative:-$snapshot}
+  snapshot=$snapshot "${@:-$SHELL}"
+  ret=$?
+  popd
+  (( $+keepsnap )) || sudo btrfs subvolume delete $snapshot
+  return ret
+}
