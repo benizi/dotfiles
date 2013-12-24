@@ -440,11 +440,12 @@ with-fresh-test-db() {
   url="$(ruby -rubygems -rdatabase_url -ryaml -e 'f,n = ARGV ; puts DatabaseUrl.database_url(YAML.load_file(f)["test"].merge("database" => n))' config/database.yml $testdb)"
   (( $? )) && return 1
   printf 'DATABASE_URL='\''%s'\''\n' $url
-  DATABASE_URL=$url RAILS_ENV=test rake db:create db:migrate || return 1
-  DATABASE_URL=$url "$@"
+  if DATABASE_URL=$url RAILS_ENV=test rake db:create db:migrate ; then
+    DATABASE_URL=$url testdb=$testdb "${@:-$SHELL}"
+  fi
   ret=$?
-  (( ret )) || [[ -n $keepdb ]] && unset dropdb
+  (( ret )) || [[ -n $keepdb ]] || (( ! $# )) && unset dropdb
   (( $+dropdb )) && sudo -i -u postgres dropdb $testdb && unset testdb
-  [[ -n $testdb ]] && printf 'testdb=%s\nDATABASE_URL='\''%s'\''\n' $testdb $url
+  (( $# )) && [[ -n $testdb ]] && printf 'testdb=%s\nDATABASE_URL='\''%s'\''\n' $testdb $url
   return ret
 }
