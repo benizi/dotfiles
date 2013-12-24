@@ -75,11 +75,15 @@ be cap rake rspec ruby () {
   command $bundle "$@"
 }
 
+cuke() {
+  if-able cucumber -o log/cucumber.$(date +%Y%m%d%H%M%S).log -f pretty "$@"
+}
+
 run-tests() {
   bundle &&
   if-able rubocop app spec lib &&
   rspec $@ &&
-  if-able cucumber
+  cuke
 }
 
 push-upstream() {
