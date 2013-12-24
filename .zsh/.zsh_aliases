@@ -444,7 +444,7 @@ with-fresh-test-db() {
   DATABASE_URL=$url "$@"
   ret=$?
   (( ret )) || [[ -n $keepdb ]] && unset dropdb
-  [[ -z $keepdb ]] && sudo -i -u postgres dropdb $testdb && unset testdb
+  (( $+dropdb )) && sudo -i -u postgres dropdb $testdb && unset testdb
   [[ -n $testdb ]] && printf 'testdb=%s\nDATABASE_URL='\''%s'\''\n' $testdb $url
   return ret
 }
