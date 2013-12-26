@@ -7,7 +7,7 @@ pst -P $$ | while read line ; do
   print -l - $line | read pid rest
   found_rspec=$pid
 done
-if (( ! $+SELENIUM_POPUP )) && (( $+found_rspec )) ; then
+if (( ! $+SELENIUM_POPUP )) && (( $+found_rspec || $+xvfb )) ; then
   if $kill ; then
     kill -9 $found_rspec
     exit 1
