@@ -441,7 +441,8 @@ with-fresh-test-db() {
   url="$(ruby -rubygems -rdatabase_url -ryaml -e 'f,n = ARGV ; puts DatabaseUrl.database_url(YAML.load_file(f)["test"].merge("database" => n))' config/database.yml $testdb)"
   (( $? )) && return 1
   printf 'DATABASE_URL='\''%s'\''\n' $url
-  if DATABASE_URL=$url RAILS_ENV=test rake db:create db:migrate ; then
+  if printf 'Running migrations...' && DATABASE_URL=$url testdb=$testdb RAILS_ENV=test rake db:create db:migrate VERBOSE=false ; then
+    printf ' Done.\n'
     DATABASE_URL=$url testdb=$testdb "${@:-$SHELL}"
   fi
   ret=$?
