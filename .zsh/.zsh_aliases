@@ -76,14 +76,16 @@ be cap rake rspec ruby () {
 }
 
 cuke() {
-  if-able cucumber -o log/cucumber.$(date +%Y%m%d%H%M%S).log -f pretty "$@"
+  local logdate=$(date +%Y.%m.%d.%H%M%S)
+  local log=${cuke_logs:-log}/${cuke_prefix:+$cuke_prefix.}cucumber.$logdate.log
+  if-able cucumber -o $log -f pretty "$@"
 }
 
 run-tests() {
   bundle &&
   if-able rubocop app spec lib &&
   rspec $@ &&
-  cuke
+  cuke_prefix=run-tests cuke
 }
 
 push-upstream() {
