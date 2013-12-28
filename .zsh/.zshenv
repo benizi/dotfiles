@@ -145,7 +145,7 @@ if_exists ld_library_path ~$owner/lib $ld_library_path
 eval "$(tied_export CLASSPATH)"
 if_exists MOZ5PROF ~/.mozilla/firefox/default
 if_exists AXIS2_HOME /opt/axis2-1.3
-export auto_proxy=http://localhost/proxy.pac
+unset auto_proxy
 if_exists MATLAB ~/MATLAB/7.4/lib/matlab7
 if_exists PYTHONSTARTUP -f ~$owner/.python/startup
 if_exists PYTHONPATH ~$owner/python{,/lib/python*}(N)
