@@ -138,7 +138,7 @@ set laststatus=2 ruler
 aug filetypedetect
 	au! BufNewFile,BufRead *.markdown,*.md,*.mkd setf markdown
 	au! BufNewFile,BufRead *.cron setf crontab
-	au! BufNewFile,BufRead *.watchr,Gemfile*,Capfile,Vagrantfile,*.jbuilder setf ruby
+	au! BufNewFile,BufRead *.watchr,Gemfile*,Capfile,Vagrantfile,*.jbuilder,*.rabl setf ruby
 	au! BufNewFile,BufRead *.hsc,*xmobarrc setf haskell
 aug END
 filetype plugin indent on
