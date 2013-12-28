@@ -392,6 +392,8 @@ let g:ctrlp_mruf_max = 1000000
 let g:ctrlp_switch_buffer = 'et'
 
 nm <Leader>n :CtrlPCurFile<CR>
+nm <expr> <Leader>e ':e '.expand('%:h').'/'
+nm <expr> <Leader>t ':tabnew '.expand('%:h').'/'
 
 let g:NERDDefaultAlign = 'left'
 let g:NERDCustomDelimiters = {
