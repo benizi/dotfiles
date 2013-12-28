@@ -70,3 +70,8 @@ _git-co () {
 
 _git-hard () { _git-reset "$@" }
 _git-close() { _git-branch -d "$@" }
+_push-upstream() {
+  (( $+functions[_git-branch] )) || _git &> /dev/null
+  _git-branch -d "$@"
+}
+compdef {_,}push-upstream
