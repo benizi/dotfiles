@@ -242,3 +242,30 @@ fail.() {
     printf '%s%s%s' ${(%):-"%F{$color}"} $char ${(%):-%f}
   done
 }
+
+repeat-status() {
+  local ret streak streak_count k
+  local -a rets
+  local -A counts
+
+  while : ; do
+    "$@"
+    ret=$?
+    rets+=( $ret )
+    if (( ! $+streak )) || (( streak != ret )) ; then
+      streak_count=0
+    fi
+    (( streak_count++ ))
+    streak=$ret
+    counts[$ret]=$(( ${counts[$ret]:-0} + 1 ))
+    fail. $rets
+    printf '\n'
+    for k in ${(onk)counts} ; do
+      fail. $k
+      printf ' %d ' $counts[$k]
+    done
+    printf '\ncurrent streak: '
+    fail. $streak
+    printf ' %d\n' $streak_count
+  done
+}
