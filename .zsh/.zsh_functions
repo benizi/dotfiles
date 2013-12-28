@@ -244,9 +244,24 @@ fail.() {
 }
 
 repeat-status() {
-  local ret streak streak_count k
+  local ret streak streak_count k arg wait_for
   local -a rets
   local -A counts
+
+  while (( $# )) ; do
+    arg=$1
+    if [[ $arg = <-> ]] ; then
+      wait_for=$arg
+      shift
+    else
+      break
+    fi
+  done
+
+  (( $# )) || {
+    warn "No command given to $0"
+    return 1
+  }
 
   while : ; do
     "$@"
@@ -267,5 +282,9 @@ repeat-status() {
     printf '\ncurrent streak: '
     fail. $streak
     printf ' %d\n' $streak_count
+
+    if (( ! streak )) && (( $+wait_for )) && (( wait_for == streak_count ))
+    then break
+    fi
   done
 }
