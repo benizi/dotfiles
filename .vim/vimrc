@@ -395,6 +395,19 @@ nm <Leader>n :CtrlPCurFile<CR>
 nm <expr> <Leader>e ':e '.expand('%:h').'/'
 nm <expr> <Leader>t ':tabnew '.expand('%:h').'/'
 
+" cycle through different ways of opening a buffer on the cmdline
+fun! SwapOpenType(cmdline)
+	let opens = ['e', 'tabnew', 'vne', 'new']
+	let [cmd, rest] = matchlist(a:cmdline, '^\(\S\+\)\(\%(\s\+.\{-\}\)\?\)$')[1:2]
+	let i = index(opens, cmd)
+	if i < 0
+		return a:cmdline
+	end
+	let newcmd = opens[(1 + i) % len(opens)]
+	return newcmd . rest
+endf
+cno <C-t> <C-\>eSwapOpenType(getcmdline())<CR>
+
 let g:NERDDefaultAlign = 'left'
 let g:NERDCustomDelimiters = {
 \   'sql': { 'left': '/*', 'right': '*/', 'leftAlt': '-- ' },
