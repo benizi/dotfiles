@@ -212,3 +212,23 @@ curl-api() {
   curl-json $opts "$@"
 }
 curl-api-post() { curl-api "$@" -H 'Content-Type: application/json' -X POST }
+
+.env() {
+  local arg anyfile
+  local -a opts
+  while (( $# )) ; do
+    arg=$1
+    if [[ -f $arg ]] ; then
+      opts+=( ${(f):-"$(<$arg)"} )
+      anyfile=true
+      shift
+    elif [[ $arg = - ]] ; then
+      opts=( - "${opts[@]}" )
+      shift
+    else
+      break
+    fi
+  done
+  [[ -f .env ]] && (( ! $+anyfile )) && opts+=( .env )
+  env $opts "$@"
+}
