@@ -244,7 +244,7 @@ fail.() {
 }
 
 repeat-status() {
-  local ret streak streak_count k arg wait_for
+  local ret streak streak_count k arg wait_for quit
   local -a rets
   local -A counts
 
@@ -263,9 +263,14 @@ repeat-status() {
     return 1
   }
 
-  while : ; do
+  unset quit
+  setopt localtraps trapsasync
+  trap 'quit=true' INT QUIT
+
+  while (( ! $+quit )) ; do
     "$@"
     ret=$?
+    (( ret & 128 )) && quit=true
     rets+=( $ret )
     if (( ! $+streak )) || (( streak != ret )) ; then
       streak_count=0
@@ -284,7 +289,7 @@ repeat-status() {
     printf ' %d\n' $streak_count
 
     if (( ! streak )) && (( $+wait_for )) && (( wait_for == streak_count ))
-    then break
+    then quit=true
     fi
   done
 }
