@@ -465,7 +465,9 @@ with-fresh-test-db() {
 }
 
 in-btrfs-snapshot() {
-  local snapshot dir relative ret
+  local snapshot dir relative ret quit
+  setopt localtraps trapsasync
+  trap 'quit=true' INT QUIT
   if [[ -z $snapshot_base ]] ; then
     warn "Need to set snapshot_base to use $0"
     return 1
