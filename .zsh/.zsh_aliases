@@ -89,7 +89,10 @@ cuke() {
   done
   (( OPTIND )) && shift $(( OPTIND - 1 ))
   local log=$logdir/${cuke_prefix:+$cuke_prefix.}cucumber.$logdate.log
-  [[ -d $logdir ]] || mkdir -p $logdir
+  [[ -d $logdir ]] || {
+    [[ $logdir = /* ]] || warn "Creating log directory: $logdir"
+    mkdir -p $logdir
+  }
   if-able cucumber -o $log -f pretty "$@"
 }
 
