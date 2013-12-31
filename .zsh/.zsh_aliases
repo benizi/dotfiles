@@ -96,9 +96,13 @@ cuke() {
   if-able cucumber -o $log -f pretty "$@"
 }
 
+rcop() {
+  if-able rubocop app spec lib
+}
+
 run-tests() {
   bundle &&
-  if-able rubocop app spec lib &&
+  rcop &&
   rspec $@ &&
   cuke_prefix=run-tests cuke
 }
