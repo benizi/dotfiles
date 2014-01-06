@@ -209,7 +209,7 @@ curl-json() {
 }
 curl-api() {
   local -a opts
-  [[ -f token ]] && opts+=( -H "Authorization: $(<token)" )
+  [[ -f token ]] && opts+=( -H "X-Forever-Authorization: $(<token)" )
   if [[ -f base_url ]] && [[ $1 = /* ]] ; then
     local url=$(<base_url)$1
     shift
