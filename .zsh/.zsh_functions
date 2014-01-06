@@ -200,7 +200,13 @@ loopy() {
   fi
 }
 
-curl-json() { curl -s -H 'Accept: application/json' "$@" }
+curl-json() {
+  local -a opts
+  case "$*" in
+    *-XPOST*|*-X\ POST*) opts+=( -H 'Content-Type: application/json' ) ;;
+  esac
+  curl -s -H 'Accept: application/json' $opts "$@"
+}
 curl-api() {
   local -a opts
   [[ -f token ]] && opts+=( -H "Authorization: $(<token)" )
