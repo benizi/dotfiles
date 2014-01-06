@@ -134,6 +134,7 @@ couchdb_history_fix () {
     return 1
   fi
   for file in ~/.failed-couchdb.*(N) ; do
+    printf "Reprocessing %s\n" $file
     while read -r line ; do
       _no_couchdb_log_failure=1 couchdb_add_doc history/ $line 2>/dev/null
     done < $file | perl -lnwe 'BEGIN { $err = 0; }
