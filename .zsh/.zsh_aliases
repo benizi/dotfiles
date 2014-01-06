@@ -76,7 +76,8 @@ be cap rake rspec ruby () {
 }
 
 cuke() {
-  local flag logdir logdate=$(date +%Y.%m.%d.%H%M%S)
+  local flag logdir logdate=$(date +%Y.%m.%d.%H%M%S) retry maxretry=3 ret
+  local -a args
   logdir=${cuke_logs:-log}
   while getopts g flag ; do
     case "$flag" in
@@ -93,7 +94,22 @@ cuke() {
     [[ $logdir = /* ]] || warn "Creating log directory: $logdir"
     mkdir -p $logdir
   }
-  if-able cucumber -o $log -f pretty "$@"
+  local retrylog=$(mktemp -t cucumber.retry.XXXXXXXX)
+  setopt localtraps
+  trap "[[ -n \"$retrylog\" ]] && rm -f \"$retrylog\"" INT QUIT KILL TERM EXIT
+  for (( retry=0 ; retry < maxretry ; retry++ )) ; do
+    args=( "$@" )
+    if (( retry )) ; then
+      warn "Retrying failures"
+      args+=( $(<$retrylog) )
+    fi
+    if-able cucumber -o $log -f rerun -o $retrylog -f pretty $args
+    ret=$?
+    [[ ! -s $retrylog ]] && break
+    # don't retry if we passed arguments
+    (( $# )) && break
+  done
+  return ret
 }
 
 rcop() {
