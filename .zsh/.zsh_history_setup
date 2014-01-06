@@ -140,7 +140,7 @@ couchdb_history_fix () {
     done < $file | perl -lnwe 'BEGIN { $err = 0; }
     print;
     /"error":/ and $err = 1;
-    END { exit $err }' && rm -f $file
+    END { exit $err }' && rm -f $file || return 1
   done && rm ~/failed-couchdb
 }
 alias fix_couchdb_history=' couchdb_history_fix'
