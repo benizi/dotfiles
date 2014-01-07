@@ -128,7 +128,7 @@ run-tests() {
   bundle &&
   rcop &&
   rspec $@ &&
-  cuke_prefix=run-tests cuke
+  cuke_prefix=run-tests cuke -r
 }
 
 push-upstream() {
