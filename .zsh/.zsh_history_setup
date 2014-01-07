@@ -62,7 +62,7 @@ json_object () {
 }
 
 couchdb_uri () {
-  printf 'http://localhost:5984/%s' $1
+  printf 'http://localhost:5984/%s' ${1#/}
 }
 
 couchdb_log_failure () {
