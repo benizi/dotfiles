@@ -263,7 +263,7 @@ modsMouseBindings (ms, b, f) = map (\m -> ((m, b), f)) $ ms
 myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
     concat $ map modsMouseBindings $
     -- mod-button1, Set the window to floating mode and move by dragging
-    [ ([modm], button1, (\w -> focus w >> mouseMoveWindow w))
+    [ ([modm, mod1Mask], button1, (\w -> focus w >> mouseMoveWindow w))
     , ([modm, mod1Mask], button2, (\w -> focus w >> windows W.shiftMaster))
 
     -- mod-button3, Set the window to floating mode and resize by dragging
