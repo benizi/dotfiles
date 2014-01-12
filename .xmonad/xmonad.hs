@@ -152,6 +152,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((shiftMask,          xF86XK_AudioStop), spawn "nyxmms2 quit")
     , ((0,                  xF86XK_AudioNext), spawn "nyxmms2 next")
     , ((0,                  xF86XK_AudioPrev), spawn "nyxmms2 prev")
+    , ((0, xF86XK_AudioMute), spawn "pavucontrol")
 
     ---- brightness
     , ((modm, xK_F5), spawn "brightness down")
