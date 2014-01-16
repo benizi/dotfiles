@@ -122,7 +122,10 @@ cuke() {
 }
 
 rcop() {
-  if-able rubocop app spec lib
+  if executable rubocop
+  then be rubocop "$@"
+  else true
+  fi
 }
 
 run-tests() {
