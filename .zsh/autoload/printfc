@@ -1,0 +1,6 @@
+printfc() {
+  tput setaf $1
+  shift
+  printf "$@"
+  tput sgr0
+}
