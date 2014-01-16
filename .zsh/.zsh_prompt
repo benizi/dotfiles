@@ -175,9 +175,9 @@ __setup_prompt () {
   (( $+real_pwd )) && add.top_row k:22 $real_pwd
   add.top_row $__prompt_color ${${${(%):-%n@%m}#$owner@}#$owner-}
   add.top_row k:128 $screen
-  add.top_row k:blue $^vcs[1,1]
-  add.top_row f:yellow $^vcs[2,-1]
-  add.top_row k:red $ruby_info
+  add.top_row k:20 $^vcs[1,1]
+  add.top_row f:184 $^vcs[2,-1]
+  add.top_row k:88 $ruby_info
   (( $+NVM_VERSION )) && add.top_row k:128 ${NVM_VERSION#v}
   (( $+gvm_go_name )) && add.top_row k:166 ${gvm_go_name#go}
   add.top_row k:22 $virtenv_info
@@ -192,8 +192,8 @@ __setup_prompt () {
   fi
 
   (( $+DATABASE_URL )) && add.bottom_row k:167 "DB ${testdb:-$DATABASE_URL}"
-  (( $+deleted )) && add.bottom_row k:red '!deleted!'
-  (( $+fail_couchdb )) && add.bottom_row k:red '!CouchDB!'
+  (( $+deleted )) && add.bottom_row k:196 '!deleted!'
+  (( $+fail_couchdb )) && add.bottom_row k:196 '!CouchDB!'
   (( $+incognito_mode )) && add.bottom_row k:208 '!!!'
   add.bottom_row :norm $ps_char
 
