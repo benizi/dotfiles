@@ -250,8 +250,8 @@ ruby-manager () {
     rbfu)
       local rbfu
       unset rbfu_dir
-      for rbfu in /opt/rbfu ~$ownder/.rbfu ; do
-        [[ -d $rbfu ]] || continue
+      for rbfu in /opt/rbfu ~$owner/.rbfu ; do
+        [[ -d $rbfu/bin ]] || continue
         rbfu_dir=$rbfu
         extra_bin=( $rbfu/bin )
         break
