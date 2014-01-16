@@ -117,6 +117,7 @@ cuke() {
     else break
     fi
   done
+  git log --decorate --no-walk 2>/dev/null
   return ret
 }
 
