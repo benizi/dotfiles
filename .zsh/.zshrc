@@ -166,6 +166,32 @@ setup_real_pwd() {
 }
 chpwd_functions+=( setup_real_pwd )
 
+typeset -A cdenv_vars
+cd_env() {
+  local line var val
+  local -A vars
+  if [[ -f .env.cd ]] ; then
+    for line in ${(f):-"$(<.env.cd)"} ; do
+      vars+=( ${line%%=*} ${line#*=} )
+    done
+  fi
+  for var val in ${(kv)cdenv_vars} ; do
+    (( $+vars[$var] )) && continue
+    unset $var
+    printfc 1 '-%s=%s\n' $var $val >&2
+    unset "cdenv_vars[$var]"
+  done
+  for var val in ${(kv)vars} ; do
+    if (( $+cdenv_vars[$var] )) && [[ $cdenv_vars[$var] == $val ]]
+    then printf ' %s=%s\n' $var $val >&2
+    else printfc 2 '+%s=%s\n' $var $val >&2
+    fi
+    eval "export $var=$val"
+    cdenv_vars+=( $var $val )
+  done
+}
+chpwd_functions+=( cd_env )
+
 local cmd
 for cmd in $chpwd_functions ; do $cmd ; done
 
