@@ -198,7 +198,9 @@ rails () {
     [[ $dir = / ]] && break
     dir=$dir:h
   done
-  if [[ -f $base/script/rails ]] ; then # rails 3
+  if [[ -f $base/bin/rails ]] ; then # rails 4
+    rails=( bin/rails )
+  elif [[ -f $base/script/rails ]] ; then # rails 3
     rails=( rails )
   elif [[ -f $base/script/runner ]] && [[ $rails_cmds[(i)$1] -le $#rails_cmds ]] ; then # rails 2
     if (( $+rails3[$1] )) ; then
