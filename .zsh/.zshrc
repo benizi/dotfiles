@@ -54,10 +54,12 @@ for dir in $zsh_dirs ; do
   setopt nonullglob
 done
 
-(( $+warn_rubyopt )) && warn "RUBYOPT was set ($warn_rubyopt)... shouldn't be"
-unset warn_rubyopt
-(( $+warn_rvm_root )) && warn "RVM does not play well with root - using $ruby_manager"
-unset warn_rvm_root
+() {
+  local warning
+  for warning in $ruby_manager_warnings ; do
+    warn $warning
+  done
+}
 
 cat ${^zsh_dirs}/{.zsh,}reminder{,s} 2>/dev/null
 run_local_versions ${(%):-"%x"}

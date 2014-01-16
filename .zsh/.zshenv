@@ -29,8 +29,10 @@ else
   A () { reply=("$(perl -MCwd=realpath -we 'print realpath shift' $REPLY)") }
 fi
 
+typeset -a ruby_manager_warnings
+
 if (( $+RUBYOPT )) ; then
-  warn_rubyopt=$RUBYOPT
+  ruby_manager_warnings+=( "RUBYOPT was set ($warn_rubyopt)... shouldn't be" )
   unset RUBYOPT
 fi
 
@@ -199,8 +201,8 @@ ruby-manager () {
     [[ -s $last_manager ]] && ruby_manager=$(<$last_manager) || ruby_manager=rbenv
   fi
   if (( ! UID )) && [[ $ruby_manager = rvm ]] ; then
-    warn_rvm_root=true
     ruby_manager=rbenv
+    ruby_manager_warnings+=( "RVM does not play well with root - using $ruby_manager" )
   fi
 
   if (( $+save )) && (( $#ruby_manager )) ; then
