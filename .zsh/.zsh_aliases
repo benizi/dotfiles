@@ -149,30 +149,32 @@ push-upstream() {
 
 rpush () { run-tests && push-upstream }
 
-wipit() {
-  local specs=true cukes=true
-  # check for wip specs/features if ack is present
-  if (( $+commands[ack] )) ; then
-    ack 'wip:|:wip' spec | grep -q . || unset specs
-    ack @wip spec/features(N) features(N) | grep -q . || unset cukes
-  fi
-  if ! (( $+specs || $+cukes )) ; then
-    warn "No wip specs or cukes"
+wipspec() {
+  if (( $+commands[ack] )) && ! ack 'wip:|:wip' spec | grep -q . ; then
+    warn "No wip specs"
     return 0
   fi
 
-  (( $+specs )) && if-able rspec -t @wip spec
-
-  if (( $+cukes )) ; then
-    local cfg=config/cucumber.yml
-    local -a args
-    if [[ -f $cfg ]] && grep -q '^wip:' $cfg
-    then args=( -p wip )
-    else args=( -t @wip )
-    fi
-    if-able cucumber $args
-  fi
+  if-able rspec -t @wip "${@:-spec}"
 }
+
+wipcuke() {
+  if (( $+commands[ack] )) && ! ack @wip spec/features(N) features(N) | grep -q . ; then
+    warn "No wip cukes"
+    return 0
+  fi
+
+  local cfg=config/cucumber.yml
+  local -a args
+  if [[ -f $cfg ]] && grep -q '^wip:' $cfg
+  then args=( -p wip )
+  else args=( -t @wip )
+  fi
+
+  if-able cucumber $args "$@"
+}
+
+wipit() { wipspec "$@" && wipcuke "$@" }
 
 executable() {
   (( $+commands[$1] || $+aliases[$1] || $+functions[$1] || $+builtins[$1] ))
