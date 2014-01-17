@@ -117,7 +117,6 @@ cuke() {
     else break
     fi
   done
-  git log --decorate --no-walk 2>/dev/null
   return ret
 }
 
@@ -129,10 +128,14 @@ rcop() {
 }
 
 run-tests() {
+  local ret
   bundle &&
   rcop &&
   rspec $@ &&
   cuke_prefix=run-tests cuke -r
+  ret=$?
+  git log --decorate --no-walk 2>/dev/null
+  return ret
 }
 
 push-upstream() {
