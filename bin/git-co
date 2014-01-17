@@ -20,9 +20,11 @@ checkout @ARGV if -e '.git';
 die "Usage: git $0 repo [dest]\n" unless @ARGV;
 
 my ($repo, $dest) = @ARGV;
-if ($repo =~ /\A(?:[a-z]+:)?([\w-]+\/[\w-]+)\Z/
+my $repochar = qr/[\w-]/;
+my $userchar = qr/(?:[.]|$repochar)/;
+if ($repo =~ /\A(?:[a-z]+:)?($repochar+\/$userchar+)\Z/
     or $repo =~ m{^[a-z]+://}
-    or $repo =~ m{\Agh:(\w+)\Z}) {
+    or $repo =~ m{\Agh:($repochar+)\Z}) {
   $repo =~ s/^(?![a-z]+:)/gh:/;
   $repo =~ s{^(gh:)(\w+)$}{$1$2/$2};
   my $upstream = $repo =~ /^gh:([^\/]+)/ ? $1 : '';
