@@ -113,9 +113,6 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((mod1Mask, xK_Return), spawn $ "in-cwd " ++ XMonad.terminal conf)
     , ((mod4Mask, xK_Return), spawn $ "LC_ALL=en_US.UTF-8 term -e /bin/bash -l")
 
-    -- root term
-    , ((modm .|. shiftMask, xK_Return), spawn $ XMonad.terminal conf ++ " -e sudo su - -s /bin/zsh -l")
-
     -- launch dmenu
     , ((mod4Mask,           xK_r     ), spawn "dmenu_run")
     , ((modm,               xK_space ), spawn "dmenu_run")
