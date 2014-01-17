@@ -61,7 +61,7 @@ alias gv=gvim
 alias v=vim
 alias vi=v
 
-be cap rake rspec ruby () {
+be cap rake rspec ruby cucumber () {
   local dir=$PWD
   local -a bundle
   bundle=()
