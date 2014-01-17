@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+require 'open3'
+
+def unbundle_env
+  {
+    'BUNDLE_GEMFILE' => nil,
+    'BUNDLE_BIN_PATH' => nil,
+    'RUBYOPT' => nil,
+  }
+end
+
+def gem_path
+  ENV.fetch('GEM_PATH', '').split(':')
+end
+
+def get_path(cmd)
+  Open3.popen3(unbundle_env, *cmd) { |i,o,e| o.readlines }.map(&:chomp)
+end
+
+def get_gem_path(requires)
+  get_path(%W[ruby] + requires.map { |r| "-r#{r}" } + ['-e', 'puts $:'])
+end
+
+def bundled_gem_path
+  get_path(['bundle', 'exec', 'ruby', '-e', 'puts $:'])
+end
+
+gems = []
+until ARGV.empty? or ARGV.first == '--'
+  gems << ARGV.shift
+end
+ARGV.shift if ARGV.first == '--'
+cmd = ARGV.dup
+
+abort <<USAGE if cmd.empty?
+Usage: #{$0} [gems] [--] cmd [args]
+
+Runs a command with extra external gems.
+USAGE
+
+new_path = bundled_gem_path + get_gem_path(gems)
+env = ENV.to_hash.merge('RUBYLIB' => new_path.join(':'))
+exec env, cmd.join(' ')
