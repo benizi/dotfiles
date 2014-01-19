@@ -1,6 +1,9 @@
 (global-font-lock-mode 1)
 (add-to-list 'load-path "~/.emacs.d")
 
+;; Many libs require the CL-compatibility library
+(require 'cl)
+
 ;; Set up package management
 (require 'package)
 (setq package-archives
