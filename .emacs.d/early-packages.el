@@ -17,6 +17,7 @@
     rainbow-mode
     sass-mode
     scss-mode
+    smooth-scrolling
     volatile-highlights
     yaml-mode
     yari
