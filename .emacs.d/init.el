@@ -110,12 +110,12 @@
 ;; Lispy stuff
 (require 'paredit)
 (require 'clojure-mode)
-(require 'ac-nrepl)
+(require 'cider)
 (defun turn-on-paredit () (paredit-mode 1))
 (defun turn-off-paredit () (paredit-mode 0))
 (add-hook 'clojure-mode-hook 'turn-on-paredit)
 (add-hook 'emacs-lisp-mode-hook 'turn-on-paredit)
-(add-hook 'nrepl-mode-hook 'turn-on-paredit)
+(add-hook 'cider-repl-mode-hook 'turn-on-paredit)
 (add-hook 'lisp-interaction-mode-hook 'turn-off-paredit)
 
 (defun my-paredit-mode-hook ()

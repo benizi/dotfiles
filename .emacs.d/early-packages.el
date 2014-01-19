@@ -1,6 +1,7 @@
 (defvar early-packages
   '(
     auto-complete
+    cider
     clojure-mode
     elscreen
     evil
