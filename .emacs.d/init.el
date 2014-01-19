@@ -14,6 +14,22 @@
 
 (load "early-packages")
 
+;; defaults from emacs-live
+(setq initial-major-mode 'lisp-interaction-mode
+      redisplay-dont-pause t
+      column-number-mode t
+      echo-keystrokes 0.02
+      inhibit-startup-message t
+      transient-mark-mode t
+      ;; shift-select-mode nil
+      require-final-newline t
+      truncate-partial-width-windows nil
+      delete-by-moving-to-trash nil
+      confirm-nonexistent-file-or-buffer nil
+      query-replace-highlight t
+      next-error-highlight t
+      next-error-highlight-no-select t)
+
 ;; no menu or tool bars
 (menu-bar-mode -1)
 (tool-bar-mode -1)
