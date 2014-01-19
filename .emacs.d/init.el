@@ -100,7 +100,8 @@
 (defun setup-color-theme ()
   "Set up my color theme"
   (when (setup-color-theme-p)
-    (require 'color-theme-railscasts)))
+    (require 'color-theme-railscasts)
+    (set-face-attribute 'default nil :background "#000000")))
 
 (add-hook 'window-setup-hook 'setup-color-theme)
 
