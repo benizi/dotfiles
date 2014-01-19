@@ -78,6 +78,13 @@
 (setq ido-everywhere t)
 (ido-mode t)
 
+;; better M-x (emacs-live)
+(require 'smex)
+(smex-initialize)
+(global-set-key (kbd "M-x") 'smex)
+(global-set-key (kbd "M-X") 'smex-major-mode-commands)
+(global-set-key (kbd "C-c C-c M-x") 'execute-extended-command) ; old M-x
+
 ;; set font in X11
 (if (display-graphic-p)
     (set-default-font "DejaVu Sans Mono-14"))
