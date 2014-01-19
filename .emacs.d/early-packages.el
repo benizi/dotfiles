@@ -5,10 +5,12 @@
     clojure-mode
     color-theme-railscasts
     elscreen
+    eval-sexp-fu ;; for highlighting when eval'ing
     evil
     expand-region
     haml-mode
     haskell-mode
+    highlight
     inf-ruby
     markdown-mode
     paredit
@@ -17,6 +19,7 @@
     rainbow-mode
     sass-mode
     scss-mode
+    smartparens ;; required by nrepl-eval-sexp-fu
     smex
     smooth-scrolling
     volatile-highlights

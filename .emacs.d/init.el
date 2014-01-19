@@ -131,6 +131,11 @@
 (require 'mic-paren) ;; show matching paren even when off-screen
 (paren-activate)
 
+;; highlight expr on eval
+(require 'highlight)
+(require 'eval-sexp-fu)
+(setq eval-sexp-fu-flash-duration 0.5)
+
 (defun my-paredit-mode-hook ()
   (progn
     (define-key paredit-mode-map (kbd "C-]") 'paredit-forward-slurp-sexp) ; c-] rather than c-)
