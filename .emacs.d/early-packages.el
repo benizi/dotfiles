@@ -3,6 +3,7 @@
     auto-complete
     cider
     clojure-mode
+    color-theme-railscasts
     elscreen
     evil
     expand-region
