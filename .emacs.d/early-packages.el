@@ -13,6 +13,7 @@
     highlight
     inf-ruby
     markdown-mode
+    mic-paren ;; better paren matching
     paredit
     projectile
     python
