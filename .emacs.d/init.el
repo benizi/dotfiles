@@ -121,6 +121,9 @@
 (add-hook 'cider-repl-mode-hook 'turn-on-paredit)
 (add-hook 'lisp-interaction-mode-hook 'turn-off-paredit)
 
+(require 'mic-paren) ;; show matching paren even when off-screen
+(paren-activate)
+
 (defun my-paredit-mode-hook ()
   (progn
     (define-key paredit-mode-map (kbd "C-]") 'paredit-forward-slurp-sexp) ; c-] rather than c-)
