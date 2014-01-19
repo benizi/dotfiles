@@ -119,6 +119,8 @@
 (require 'anything)
 
 ;; Lispy stuff
+(eval-after-load 'paredit
+  '(define-key paredit-mode-map (kbd "M-)") 'paredit-forward-slurp-sexp))
 (require 'paredit)
 (require 'clojure-mode)
 (require 'cider)
