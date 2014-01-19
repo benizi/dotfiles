@@ -12,8 +12,8 @@
     paredit
     projectile
     python
-    sass-mode
     rainbow-mode
+    sass-mode
     scss-mode
     volatile-highlights
     yaml-mode
