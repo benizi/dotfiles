@@ -1,44 +1,64 @@
-#!/usr/bin/env ruby
-require 'rubygems'
-require 'open3'
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use File::Temp 'tempdir';
 
-def unbundle_env
-  {
-    'BUNDLE_GEMFILE' => nil,
-    'BUNDLE_BIN_PATH' => nil,
-    'RUBYOPT' => nil,
+# Arg parsing
+my ($cmd, @gems, @cmd);
+for (@ARGV) {
+  if ($cmd) {
+    push @cmd, $_;
+    next;
   }
-end
+  if ($_ eq '--') {
+    $cmd = 1;
+  } elsif ($_ =~ /^be|bundle$/) {
+    $cmd = 1;
+    push @cmd, $_;
+  } else {
+    push @gems, $_;
+  }
+}
 
-def gem_path
-  ENV.fetch('GEM_PATH', '').split(':')
-end
+# Usage message if user didn't specify the gems and cmd
+if (!(@cmd and @gems)) {
+  die <<USAGE;
+Usage: $0 [external gems] [-- | be | bundle] cmd [args]
 
-def get_path(cmd)
-  Open3.popen3(unbundle_env, *cmd) { |i,o,e| o.readlines }.map(&:chomp)
-end
+All arguments up to '--', 'be', or 'bundle' should be gems which aren't
+currently in the Gemfile.
 
-def get_gem_path(requires)
-  get_path(%W[ruby] + requires.map { |r| "-r#{r}" } + ['-e', 'puts $:'])
-end
+'be' will be replaced by ['bundle', 'exec'].
 
-def bundled_gem_path
-  get_path(['bundle', 'exec', 'ruby', '-e', 'puts $:'])
-end
-
-gems = []
-until ARGV.empty? or ARGV.first == '--'
-  gems << ARGV.shift
-end
-ARGV.shift if ARGV.first == '--'
-cmd = ARGV.dup
-
-abort <<USAGE if cmd.empty?
-Usage: #{$0} [gems] [--] cmd [args]
-
-Runs a command with extra external gems.
+cmd [args]
 USAGE
+}
 
-new_path = bundled_gem_path + get_gem_path(gems)
-env = ENV.to_hash.merge('RUBYLIB' => new_path.join(':'))
-exec env, cmd.join(' ')
+# expand qw/be/ to qw/bundle exec/
+splice @cmd, 0, 1, qw/bundle exec/ if $cmd[0] eq 'be';
+
+# Create new Gemfile and Gemfile.lock
+# Gemfile will have the external gems tacked onto the end
+my $dir = tempdir 'with-external-gems.XXXXXXXX', TMPDIR => 1, CLEANUP => 1;
+for (qw/Gemfile Gemfile.lock/) {
+  next unless -f;
+  open my $modified, '>', "$dir/$_" or die ">$dir/$_: $!";
+  open my $original, '<', $_ or die "<$_: $!";
+  undef local $/;
+  my $file = <$original>;
+  print $modified $file;
+  next if /lock/;
+  print $modified qq{gem '$_'\n} for @gems;
+}
+
+# Clean out Bundler-related environment variables
+my %env = %ENV;
+delete $ENV{$_} for qw/BUNDLE_GEMFILE BUNDLE_BIN_PATH RUBYOPT/;
+
+# Install all gems
+$ENV{BUNDLE_GEMFILE} = "$dir/Gemfile";
+system 'bundle > /dev/null' and die "bundle failed\n";
+
+# Run the command bundled with the alternate Gemfile
+system { $cmd[0] } @cmd;
+exit $?;
