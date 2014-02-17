@@ -235,6 +235,13 @@ rails () {
   be $rails "$@"
 }
 
+zrails() {
+  local -a cmd
+  cmd=( ${0#z} "$@" )
+  [[ -e .zeus.sock ]] && cmd=( zeus $cmd[2,-1] )
+  $cmd
+}
+
 # global aliases
 alias -g L='| less'
 alias -g LS='|& less -S'
