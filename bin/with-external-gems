@@ -52,6 +52,7 @@ for (qw/Gemfile Gemfile.lock/) {
   my $file = <$original>;
   print $modified $file;
   next if /lock/;
+  print $modified "\n"; # deal with absent trailing newline
   print $modified qq{gem '$_'\n} for @gems;
 }
 
