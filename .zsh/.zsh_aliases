@@ -244,10 +244,13 @@ rails () {
   be $rails "$@"
 }
 
-zrails() {
+zrails zrake() {
   local -a cmd
   cmd=( ${0#z} "$@" )
-  [[ -e .zeus.sock ]] && cmd=( zeus $cmd[2,-1] )
+  if [[ -e .zeus.sock ]] ; then
+    cmd=( zeus $cmd[1,-1] )
+    [[ $0 == zrails ]] && cmd[2]=()
+  fi
   $cmd
 }
 
