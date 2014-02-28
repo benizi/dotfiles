@@ -35,6 +35,15 @@ done
   command $0 "${(@)argv[1,i-1]}" ${~argv[i,-1]}
 }
 
+ack-app() {
+  local -a cmd xargs
+  [[ -e .zeus.sock ]] && cmd=( zeus ) || cmd=( rails )
+  cmd+=( r 'puts $:.select { |d| Dir.exists?(d) }' )
+  xargs=( xargs )
+  (( $+commands[ack] )) && xargs+=( ack ) || xargs+=( grep -r )
+  $cmd | $xargs "$@"
+}
+
 alias ri='noglob ri'
 
 alias chroot32='sudo su - -c "linux32 chroot /32 /bin/zsh -l"'
