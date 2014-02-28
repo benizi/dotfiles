@@ -219,24 +219,34 @@ curl-api() {
 }
 curl-api-post() { curl-api "$@" -H 'Content-Type: application/json' -X POST }
 
+looks-like-env() {
+  local -a lines
+  (( $# )) || return 1
+  [[ -f $1 ]] || return 1
+  lines=( ${(f):-"$(<$1)"} )
+  [[ "${lines[1]}" = [A-Z][A-Z_0-9]*=* ]]
+}
+
 .env() {
   local arg anyfile
+  unset anyfile
   local -a opts
   while (( $# )) ; do
     arg=$1
-    if [[ -f $arg ]] ; then
+    if looks-like-env $arg ; then
       opts+=( ${(f):-"$(<$arg)"} )
       anyfile=true
       shift
     elif [[ $arg = - ]] ; then
       opts=( - "${opts[@]}" )
       shift
+    elif (( ! $+anyfile )) && [[ -f .env ]] ; then
+      set -- .env "$@"
     else
       break
     fi
   done
-  [[ -f .env ]] && (( ! $+anyfile )) && opts+=( .env )
-  env $opts "$@"
+  ${=dry+printf '%s\n'} env $opts "$@"
 }
 
 fail.() {
