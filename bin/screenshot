@@ -1,11 +1,4 @@
 #!/usr/bin/env ruby
-filename = IO.popen('dmenu', 'r+') do |io|
-  io.puts(Time.now.strftime('%Y-%m-%d-%H%M%S'))
-  io.close_write
-  io.read.chomp
-end
-exit if filename.empty?
-filename += '.png' unless filename =~ /\.\w+$/
 home = ENV['HOME'].dup
 s_dir = File.join(home, 'screenshots')
 drop = File.join(home, 'Dropbox', 'screenshots')
@@ -13,6 +6,14 @@ drop = File.join(home, 'Dropbox', 'screenshots')
 if !Dir.exists?(s_dir) and Dir.exists?(drop)
   File.symlink(drop, s_dir)
 end
+
+filename = IO.popen('dmenu', 'r+') do |io|
+  io.puts(Time.now.strftime('%Y-%m-%d-%H%M%S'))
+  io.close_write
+  io.read.chomp
+end
+exit if filename.empty?
+filename += '.png' unless filename =~ /\.\w+$/
 
 if Dir.exists?(s_dir)
   dir = s_dir
