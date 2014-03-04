@@ -6,7 +6,7 @@ clipout() { clip clipboard -out ; }
 trim() { printf '%s' "$(clipout)" | clipboard ; }
 
 case "$1" in
-  -o|-out) ;;
+  -o|-out|-O|-n) ;;
   *)
     clipboard
     trim
@@ -15,3 +15,7 @@ case "$1" in
 esac
 
 clipout
+
+case "$1" in
+  -O|-n) printf '\n' ;;
+esac
