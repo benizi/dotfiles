@@ -7,6 +7,8 @@ if !Dir.exists?(s_dir) and Dir.exists?(drop)
   File.symlink(drop, s_dir)
 end
 
+dir = Dir.exists?(s_dir) ? s_dir : home
+
 filename = IO.popen('dmenu', 'r+') do |io|
   io.puts(Time.now.strftime('%Y-%m-%d-%H%M%S'))
   io.close_write
@@ -15,11 +17,7 @@ end
 exit if filename.empty?
 filename += '.png' unless filename =~ /\.\w+$/
 
-if Dir.exists?(s_dir)
-  dir = s_dir
-else
-  filename = "screenshots-#{filename}"
-end
+filename = "screenshots-#{filename}" if dir == home
 
 filename = File.join(dir, filename)
 system('import', filename)
