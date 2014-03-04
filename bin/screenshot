@@ -17,6 +17,10 @@ def existing
   Dir[fullpath % '*']
 end
 
+def exist?(base)
+  existing.include?(fullpath % base)
+end
+
 def sorted_existing_basenames
   existing.map { |f| File.basename(f, '.png') }.sort
 end
@@ -38,5 +42,14 @@ end
 
 default = Time.now.strftime('%Y-%m-%d-%H%M%S')
 filename = dmenu_get_filename(default, *sorted_existing_basenames)
+
+if exist?(filename)
+  repl = filename.sub(/\.(?!.*\.)/, ' (1).')
+  while exist?(repl)
+    repl = repl.sub(/(\d+)(?!.*\d)/) { |m| (m.to_i + 1).to_s }
+  end
+
+  filename = dmenu_get_filename(repl, filename)
+end
 
 system('import', fullpath % filename)
