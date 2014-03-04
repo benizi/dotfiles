@@ -7,16 +7,36 @@ if !Dir.exists?(s_dir) and Dir.exists?(drop)
   File.symlink(drop, s_dir)
 end
 
-dir, template = Dir.exists?(s_dir) ? [s_dir, '%s'] : [home, 'screenshots-%s']
-fullpath = File.join(dir, template)
+@dir, @template = Dir.exists?(s_dir) ? [s_dir, '%s'] : [home, 'screenshots-%s']
 
-filename = IO.popen('dmenu', 'r+') do |io|
-  io.puts(Time.now.strftime('%Y-%m-%d-%H%M%S'))
-  io.puts(Dir[fullpath % '*'].map { |f| File.basename(f, '.png') }.sort)
-  io.close_write
-  io.read.chomp
+def fullpath
+  File.join(@dir, @template)
 end
-exit if filename.empty?
-filename += '.png' unless filename =~ /\.\w+$/
+
+def existing
+  Dir[fullpath % '*']
+end
+
+def sorted_existing_basenames
+  existing.map { |f| File.basename(f, '.png') }.sort
+end
+
+def dmenu_get(*options)
+  IO.popen('dmenu', 'r+') do |io|
+    io.puts(options)
+    io.close_write
+    io.read.chomp
+  end
+end
+
+def dmenu_get_filename(*options)
+  filename = dmenu_get(*options)
+  exit if filename.empty?
+  filename += '.png' unless filename =~ /\.\w+$/
+  filename
+end
+
+default = Time.now.strftime('%Y-%m-%d-%H%M%S')
+filename = dmenu_get_filename(default, *sorted_existing_basenames)
 
 system('import', fullpath % filename)
