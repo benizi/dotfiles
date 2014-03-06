@@ -138,10 +138,13 @@ rcop() {
 
 run-tests() {
   local ret
-  bundle &&
-  rcop &&
-  rspec $@ &&
-  cuke_prefix=run-tests cuke -r
+  (
+    [[ -n "$skip" ]] && ${=skip} () { true }
+    bundle &&
+    rcop &&
+    rspec $@ &&
+    cuke_prefix=run-tests cuke -r
+  )
   ret=$?
   git log --decorate --no-walk 2>/dev/null
   return ret
