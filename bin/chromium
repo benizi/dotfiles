@@ -5,6 +5,7 @@ case $0 in
 	*nojs) argv+=( --nojs --scratch ) ;;
 	*scratch) argv+=( --scratch ) ;;
 	*webmail) argv+=( --firefox --profile webmail ) ;;
+	*Flash) argv+=( --flash --scratch ) ;;
 	*) _profile=$0:t ;;
 esac
 function warn () { echo "\e[31m$*\e[0m" >&2 }
@@ -17,8 +18,10 @@ _userscripts=true
 _ipv6=true
 _javascript=true
 unset _asyncdns
+unset _flash
 _args=()
-_flags=( plugins logging user-scripts ipv6 async-dns )
+_flags=( plugins logging user-scripts ipv6 async-dns flash )
+_pseudo_flags=( flash )
 
 if [[ -d /Applications ]] ; then
 	_official="/Applications/Chrome.app/Contents/MacOS/Google Chrome"
@@ -343,8 +346,15 @@ _logext=$_profdir:t
 for flag in $_flags ; do
 	${(P)${:-_${flag//-}}} && _args+=( --enable-$flag ) || _args+=( --disable-$flag )
 done
+for flag in $_pseudo_flags ; do
+	_args=( ${_args#--*able-$flag} )
+done
 
-pepper_flash_dir=/opt/google/chrome/PepperFlash
+if (( $+_flash ))
+then pepper_flash_dir=$HOME/PepperFlash
+else pepper_flash_dir=/opt/google/chrome/PepperFlash
+fi
+
 if [[ -d $pepper_flash_dir ]] ; then
 	pepper_flash=$pepper_flash_dir/libpepflashplayer.so
 	pepper_flash_version=$(awk '/version/ {print $2}' $pepper_flash_dir/manifest.json | tr -dc 0-9.)
