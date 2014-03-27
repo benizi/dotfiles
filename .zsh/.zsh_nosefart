@@ -1,12 +1,15 @@
 if (( $+commands[nosefart] )) ; then
-  (( $+commands[padsp] )) && function nsf () { padsp nosefart $argv }
-  function nsf-count () { nsf -i $1 | perl -lnwe 'print for /Songs:\s(\d+)/'}
-  function nsf-track () { nsf -t $2 -a 1 $1 }
+  function nsf-count () { command nosefart -i $1 | perl -lnwe 'print for /Songs:\s(\d+)/'}
+  function nsf-track () { nosefart -t $2 -a 1 $1 }
   function playit () { for t in {1..$(nsf-count $1)} ; nsf-track $1 $t }
   nosefart() {
+    local lib file=${argv[-1]}
+    file =nosefart | grep -q 32-bit &&
+      lib=/usr/lib32/pulseaudio/libpulsedsp.so ||
+      lib=/usr/lib/pulseaudio/libpulsedsp.so
     env DSP_CLIENT_NAME=nosefart \
-      PADSP_STREAM_NAME=$1:t:r \
-      LD_PRELOAD=/usr/lib/pulseaudio/libpulsedsp.so \
+      PADSP_STREAM_NAME=${file:t:r} \
+      LD_PRELOAD=$lib \
       nosefart "$@"
   }
 fi
