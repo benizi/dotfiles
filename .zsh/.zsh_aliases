@@ -563,3 +563,54 @@ in-btrfs-snapshot() {
   (( $+keepsnap )) || sudo btrfs subvolume delete $snapshot
   return ret
 }
+
+hipchat-api-request() {
+  if [[ -z $hipchat_api_token ]] ; then
+    warn "Need to set \$hipchat_api_token"
+    return 1
+  fi
+  local arg endpoint url
+  unset endpoint
+  local -a args
+  while (( $# )) ; do
+    arg=$1
+    case "$arg" in
+      /*)
+        if (( ! $+endpoint ))
+        then endpoint=$arg
+        else warn "Endpoint already set"
+        fi
+        shift
+        ;;
+      *)
+        break
+        ;;
+    esac
+  done
+  : ${endpoint=/}
+  url=https://api.hipchat.com/v2/${endpoint#/}
+  [[ $url = *\?* ]] && url+='&' || url+='?'
+  url+=auth_token=$hipchat_api_token
+  #args+=( -H "Authorization: Bearer $hipchat_api_token" )
+  args+=( $url )
+  curl $args "$@"
+}
+
+hipchat-post-json() {
+  hipchat-api-request "$@" -X POST -H 'Content-Type: application/json' -d @-
+}
+
+hipchat-notify-self() {
+  if [[ -z $EMAIL ]] ; then
+    warn "Must set email to notify self"
+    return 1
+  fi
+  json_object message "$*" color green | hipchat-post-json /user/$EMAIL/message
+}
+
+hipchat-notify-room() {
+  local room=$1 message=$2
+  shift 2 || return 1
+  json_object message $message color gray message_format text "$@" \
+    | hipchat-post-json /room/$room/notification
+}
