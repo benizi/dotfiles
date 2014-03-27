@@ -370,3 +370,7 @@ if (( $+zsh_start_timing )) ; then
 fi
 
 (( $+commands[cpus] )) && pmake=-j$(( $(cpus) + 1 ))
+
+nixstartup=/usr/local/etc/profile.d/nix.sh
+[[ -e $nixstartup ]] && . $nixstartup
+unset nixstartup
