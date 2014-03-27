@@ -340,7 +340,7 @@ go-manager
 
 (( $+commands[nvm] )) && eval "$(nvm default)"
 
-erlang=r15b01
+erlang=r16b02
 path=( /opt/erlang/$erlang/bin $path )
 
 leapd() {
