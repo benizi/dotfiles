@@ -150,6 +150,14 @@ run-tests() {
   return ret
 }
 
+with-git-tag() {
+  if git rev-parse --git-dir &>/dev/null ; then
+    local branch=$(git symbolic-ref HEAD 2>/dev/null || printf '%s' no-branch)
+    git update-ref refs/run-tests/$EPOCHSECONDS/$branch HEAD
+  fi
+  "$@"
+}
+
 push-upstream() {
   # push to upstream, setting it up if needed
   local -a args
@@ -340,7 +348,7 @@ fi
 # fix completion for some alia
 compdef _ssh ssh-noagent
 compdef _precommand noagent hidessh noproxy with-depot with-status proxychains be
-compdef _precommand repeat-status with-fresh-test-db in-btrfs-snapshot
+compdef _precommand repeat-status with-fresh-test-db in-btrfs-snapshot with-git-tag
 
 alias Z=' exec sudo su -l bhaskell'
 hash -d afs=/afs/cs.cmu.edu/user/bhaskell/protected
