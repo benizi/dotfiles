@@ -309,3 +309,7 @@ repeat-status() {
     fi
   done
 }
+
+superscript() { perl -Mutf8 -CDS -lpwe 'y/0-9/⁰¹²³⁴⁵⁶⁷⁸⁹/' "$@" }
+subscript() { perl -Mutf8 -CDS -lpwe 'y/0-9/₀₁₂₃₄₅₆₇₈₉/' "$@" }
+normscript() { perl -Mutf8 -CDS -lpwe 'y/⁰¹²³⁴⁵⁶⁷⁸⁹₀₁₂₃₄₅₆₇₈₉/0-90-9/' "$@" }
