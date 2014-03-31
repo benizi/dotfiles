@@ -1,0 +1,9 @@
+emulate -L zsh
+setopt err_return
+local path9=$1 temp=$(mktemp -t edit9.XXXXXXXX)
+(( $#path9 && $#temp )) || return 1
+{
+  wmiir cat $path9 > $temp
+  ${EDITOR:-vi} $temp
+  wmiir write $path9 < $temp
+} always { rm $temp }

@@ -1,0 +1,3 @@
+sudo find /var/tmp/build-root/ -type f -iname \*.rpm \
+| perl -lpwe 's!(/.?RPMS)!/.$1!' \
+| xargs -iZ rsync -RPtv Z /usr/src/packages/

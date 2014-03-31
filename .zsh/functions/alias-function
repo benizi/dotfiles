@@ -1,0 +1,5 @@
+(( $# )) || { warn "alias-function function-name [saved-function-name]" ; return 1 }
+local fn=$1
+(( $+functions[$fn] )) || { warn "no such function: $fn" ; return 1 }
+local old_fn=${2:-_old_$fn}
+eval $old_fn$' () {\n'${functions[$fn]}$'\n}'

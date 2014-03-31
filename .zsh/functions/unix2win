@@ -1,0 +1,1 @@
+eol.pl -pc | iconv -f UTF-8 -t UTF-16

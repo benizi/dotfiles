@@ -1,0 +1,1 @@
+xprop -root -f PULSE_SERVER 8s -set PULSE_SERVER "$1"

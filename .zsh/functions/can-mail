@@ -1,0 +1,3 @@
+(( $+commands[mail] )) && return 0
+warn "Need to install mailx?"
+return 1

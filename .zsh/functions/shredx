@@ -1,0 +1,14 @@
+
+local arg
+local -a shred delete dirlist
+shred=( -exec shred -v {} \; )
+delete=( -delete )
+for arg ; do
+  case $arg in
+    -n|--dry*) shred=( -exec echo shred -v {} \; ) ;;
+    -k|--keep) delete=() ;;
+    *) dirlist+=( $arg ) ;;
+  esac
+done
+find $dirlist -type f $shred $delete || return 1
+(( $#delete )) && find $dirlist -empty -delete

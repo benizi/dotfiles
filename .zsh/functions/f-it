@@ -1,0 +1,7 @@
+local file=${1:-~/tgmf}
+while read line ; do
+  if (( $#line )) ; then
+    printf '%%\n%s\n' "$line" >> $file
+    strfile $file $file.dat
+  fi
+done

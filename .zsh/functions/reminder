@@ -1,0 +1,2 @@
+can-mail || return 1
+echo Mailed Reminder | mail -s "$*" $EMAIL
