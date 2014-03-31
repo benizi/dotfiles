@@ -1,8 +1,11 @@
 local -a opts
-[[ -f token ]] && opts+=( -H "X-Forever-Authorization: $(<token)" )
-if [[ -f base_url ]] && [[ $1 = /* ]] ; then
-  local url=$(<base_url)$1
+local env=${api_env+.$api_env}
+[[ -f token$env ]] && opts+=( -H "X-Forever-Authorization: $(<token$env)" )
+[[ -f base_url$env ]] || { warn "Need base_url$env" ; return 1 }
+if [[ -f base_url$env ]] && [[ $1 = /* ]] ; then
+  local url=$(<base_url$env)$1
   shift
   opts+=( $url )
 fi
+[[ -f opts$env ]] && opts+=( $(<opts$env) )
 curl-json $opts "$@"

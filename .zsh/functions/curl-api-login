@@ -1,0 +1,1 @@
+json_object email $1 password $2 | curl-api-post /mobile/login -d @- | jq -r .auth_token | tee token${api_env+.$api_env}

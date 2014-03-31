@@ -196,6 +196,7 @@ __setup_prompt () {
   (( $+fail_couchdb )) && add.bottom_row k:196 '!CouchDB!'
   (( $+incognito_mode )) && add.bottom_row k:208 '!!!'
   add.bottom_row :norm $ps_char
+  (( $+api_env )) && add.bottom_row k:167 "api=$api_env"
 
   local -a lines
   if (( $+hi_color )) ; then
