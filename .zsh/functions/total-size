@@ -1,0 +1,1 @@
+with-size | cut -f1 | total | commafy

@@ -1,0 +1,7 @@
+typeset -A __first
+first() {
+  local key="$__last_command_number $*"
+  local ret=$(( $+__first[$key] ))
+  __first+=( $key 1 )
+  return ret
+}

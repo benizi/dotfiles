@@ -14,12 +14,6 @@ setopt csh_junkie_history
 export MAILCHECK=0
 autoload -U compinit bashcompinit
 autoload -Uz age
-() {
-  local fn
-  for fn in $^zsh_dirs/autoload/*(N:t) ; do
-    autoload -Uz $fn
-  done
-}
 zmodload zsh/mathfunc 2>/dev/null
 fpath=( ${^zsh_dirs}/Completion(N/) ~$owner/git/zsh/Completion/**/*(N/) $fpath $^zsh_dirs/autoload(N/) )
 debug=( ~$owner/.zcompdump.debug{,ging}(N) )

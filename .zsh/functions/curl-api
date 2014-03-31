@@ -1,0 +1,8 @@
+local -a opts
+[[ -f token ]] && opts+=( -H "X-Forever-Authorization: $(<token)" )
+if [[ -f base_url ]] && [[ $1 = /* ]] ; then
+  local url=$(<base_url)$1
+  shift
+  opts+=( $url )
+fi
+curl-json $opts "$@"

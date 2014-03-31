@@ -1,0 +1,7 @@
+local arg char color
+(( $# )) || set -- 0
+for arg ; do
+  char=F color=red
+  (( ! arg )) && char=. color=green
+  printf '%s%s%s' ${(%):-"%F{$color}"} $char ${(%):-%f}
+done

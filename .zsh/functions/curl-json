@@ -1,0 +1,5 @@
+local -a opts
+case "$*" in
+  *-XPOST*|*-X\ POST*) opts+=( -H 'Content-Type: application/json' ) ;;
+esac
+curl -s -H 'Accept: application/json' $opts "$@"

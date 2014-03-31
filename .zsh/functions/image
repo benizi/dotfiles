@@ -1,0 +1,4 @@
+if (( ! $+commands[file] )) || [[ "$(file -b --mime-type $REPLY)" != image/* ]]
+then reply=()
+else reply=($REPLY)
+fi

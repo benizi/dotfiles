@@ -1,0 +1,48 @@
+local ret streak streak_count k arg wait_for quit
+local -a rets
+local -A counts
+
+while (( $# )) ; do
+  arg=$1
+  if [[ $arg = <-> ]] ; then
+    wait_for=$arg
+    shift
+  else
+    break
+  fi
+done
+
+(( $# )) || {
+  warn "No command given to $0"
+  return 1
+}
+
+unset quit
+setopt localtraps trapsasync
+trap 'quit=true' INT QUIT
+
+while (( ! $+quit )) ; do
+  "$@"
+  ret=$?
+  (( ret & 128 )) && quit=true
+  rets+=( $ret )
+  if (( ! $+streak )) || (( streak != ret )) ; then
+    streak_count=0
+  fi
+  (( streak_count++ ))
+  streak=$ret
+  counts[$ret]=$(( ${counts[$ret]:-0} + 1 ))
+  fail. $rets
+  printf '\n'
+  for k in ${(onk)counts} ; do
+    fail. $k
+    printf ' %d ' $counts[$k]
+  done
+  printf '\ncurrent streak: '
+  fail. $streak
+  printf ' %d\n' $streak_count
+
+  if (( ! streak )) && (( $+wait_for )) && (( wait_for == streak_count ))
+  then quit=true
+  fi
+done

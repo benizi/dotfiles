@@ -1,0 +1,1 @@
+perl -lpwe '@F=split/(\s+)/,$_,-1;for(@F){next if/\D/;1 while s/(?<=\d)(?=\d\d\d\b)/,/}$_=join"",@F'

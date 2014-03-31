@@ -1,0 +1,17 @@
+perl -lpwe '@F=split/(\s+)/,$_,-1;
+for(@f){
+  last if /[^\s\d]/;
+  next if not s/^([+\-]?)(\d+(?:\.\d+)?)$/$2/;
+  my $s = $1;
+  my $l = int(log($_||1)/log(1024));
+  my $conv = "KMGTP";
+  if ($l > 0 and $l <= length $conv) {
+    my $si=substr $conv, $l-1, 1;
+    $_ /= 1024 ** $l;
+    $_ = sprintf "%5.1f\e[%dm%s\e[0m", $_, 31+$l, $si;
+  } else {
+    $_ = sprintf "%5.1f", $_
+  }
+  1 while s/(?<=\d)(?=\d\d\d\b)/,/
+}
+$_=join"",@F'

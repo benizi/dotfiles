@@ -54,6 +54,15 @@ zsh_dirs+=( $zshenv:h $zshenv(+A:h) )
 zsh_dirs=( ${^zsh_dirs}{,.local,-}(N/) )
 ZDOTDIR=( $zshenv(+A:h) ) && ZDOTDIR=$ZDOTDIR[1]
 
+setup_autoloads() {
+  local fn dir
+  for dir in ${^zsh_dirs}/{autoload,functions}{,/**/*}(N/) ; do
+    fpath+=( $dir )
+    autoload -Uz $dir/***(N.:t) >/dev/null
+  done
+}
+setup_autoloads
+
 defaultssh=~$owner/.default.ssh
 [[ -f $defaultssh ]] && export DEFAULT_SSH="$(<$defaultssh)"
 

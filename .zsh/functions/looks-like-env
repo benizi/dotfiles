@@ -1,0 +1,5 @@
+local -a lines
+(( $# )) || return 1
+[[ -f $1 ]] || return 1
+lines=( ${(f):-"$(<$1)"} )
+[[ "${lines[1]}" = [A-Z][A-Z_0-9]*=* ]]

@@ -1,0 +1,1 @@
+command uniq $argv | perl -lpwe 's/^\s*(\d+)\s/$1\t/'
