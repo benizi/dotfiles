@@ -526,7 +526,7 @@ load_namedirs --quiet
 with-fresh-test-db() {
   local testdb=$(date +test-db-%s) url ret dropdb=true
   ruby -rubygems -rdatabase_url -e 1 || return 1
-  url="$(ruby -rubygems -rdatabase_url -ryaml -e 'f,n = ARGV ; puts DatabaseUrl.database_url(YAML.load_file(f)["test"].merge("database" => n))' config/database.yml $testdb)"
+  url="$(ruby -rubygems -rdatabase_url -ryaml -rerb -e 'f,n = ARGV ; puts DatabaseUrl.database_url(YAML.load(ERB.new(File.read(f)).result)["test"].merge("database" => n))' config/database.yml $testdb)"
   (( $? )) && return 1
   printf 'DATABASE_URL='\''%s'\''\n' $url
   if printf 'Running migrations...' && DATABASE_URL=$url testdb=$testdb RAILS_ENV=test rake db:create db:migrate VERBOSE=false ; then
