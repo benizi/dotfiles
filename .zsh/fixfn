@@ -1,0 +1,26 @@
+#!/usr/bin/env perl -i -lpw
+BEGIN {
+  $fn_start = qr/^(?:function )?(\S+)\s*\(\)\s*\{\s*/;
+  $fn_end = qr/\s+\}/;
+}
+$o = $_;
+if ($_ =~ $fn_start) {
+  $openedon = $.;
+  $filename = "functions/$1";
+  open $file, '>', $filename;# = $filename;
+}
+if ($filename) {
+  s/$fn_start// if $openedon == $.;
+  s/$fn_end// if $openedon == $.;
+  if ($o ne "}") {
+    #warn "print $file $_\n";
+    print $file $_."\n";
+  }
+  $_ = "# $o";
+}
+if ($filename
+    and (
+    (/\s+\}$/ and $openedon == $.) or $o eq "}")) {
+  undef $file;
+  undef $filename;
+}
