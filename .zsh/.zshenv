@@ -60,6 +60,7 @@ setup_autoloads() {
     fpath+=( $dir )
     autoload -Uz $dir/***(N.:t) >/dev/null
   done
+  autoload -Uz .env
 }
 setup_autoloads
 
