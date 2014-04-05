@@ -1,0 +1,11 @@
+local name val
+name=$1
+local env=API_${name:u} file=$(curl-api-file $name)
+
+if (( $+parameters[$env] ))
+then val=${(P)env}
+elif [[ -f $file ]]
+then val=$(<$file)
+fi
+
+printf '%s' $val

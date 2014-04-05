@@ -1,11 +1,10 @@
 local -a opts
-local token=$(curl-api-file token) urlfile=$(curl-api-file url) optsfile=$(curl-api-file opts)
-[[ -f $token ]] && opts+=( -H "X-Forever-Authorization: $(<$token)" )
-[[ -f $urlfile ]] || { warn "Need $urlfile" ; return 1 }
-if [[ -f $urlfile ]] && [[ $1 = /* ]] ; then
-  local url=$(<$urlfile)$1
+local token=$(curl-api-var token) url=$(curl-api-var url) api_opts=$(curl-api-var opts)
+[[ -n $token ]] && opts+=( -H "X-Forever-Authorization: $token" )
+[[ -n $url ]] || { warn "Need API URL (set in $(curl-api-file url))" ; return 1 }
+if [[ $1 = /* ]] ; then
+  opts+=( $url$1 )
   shift
-  opts+=( $url )
 fi
-[[ -f $optsfile ]] && opts+=( $(<$optsfile) )
+[[ -n $api_opts ]] && opts+=( ${=api_opts} )
 curl-json $opts "$@"
