@@ -1,11 +1,11 @@
 local -a opts
-local env=${api_env+.$api_env}
-[[ -f api.token$env ]] && opts+=( -H "X-Forever-Authorization: $(<api.token$env)" )
-[[ -f api.url$env ]] || { warn "Need api.url$env" ; return 1 }
-if [[ -f api.url$env ]] && [[ $1 = /* ]] ; then
-  local url=$(<api.url$env)$1
+local token=$(curl-api-file token) urlfile=$(curl-api-file url) optsfile=$(curl-api-file opts)
+[[ -f $token ]] && opts+=( -H "X-Forever-Authorization: $(<$token)" )
+[[ -f $urlfile ]] || { warn "Need $urlfile" ; return 1 }
+if [[ -f $urlfile ]] && [[ $1 = /* ]] ; then
+  local url=$(<$urlfile)$1
   shift
   opts+=( $url )
 fi
-[[ -f api.opts$env ]] && opts+=( $(<api.opts$env) )
+[[ -f $optsfile ]] && opts+=( $(<$optsfile) )
 curl-json $opts "$@"

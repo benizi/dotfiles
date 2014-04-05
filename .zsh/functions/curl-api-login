@@ -1,1 +1,5 @@
-json_object email $1 password $2 | curl-api-post /mobile/login -d @- | jq -r .auth_token | tee api.token${api_env+.$api_env}
+local result=$(json_object email $1 password $2 | curl-api-post /mobile/login -d @- | jq -r .auth_token)
+if [[ -n "$result" ]]
+then printf '%s' "$result" | tee $(curl-api-file token) && echo
+else warn "Couldn't login: email=$1 pw=$2"
+fi
