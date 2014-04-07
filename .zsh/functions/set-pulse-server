@@ -1,1 +1,4 @@
-xprop -root -f PULSE_SERVER 8s -set PULSE_SERVER "$1"
+if (( $# ))
+then xprop -root -f PULSE_SERVER 8s -set PULSE_SERVER "$1"
+else xprop -root -remove PULSE_SERVER
+fi
