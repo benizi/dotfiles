@@ -1,11 +1,13 @@
 #!/bin/zsh
 unset dry
 unset cycle scale no_ext check_connections
+toggle=0
 ext_pos=--right-of
 [[ -f ~/.config/mon ]] && . ~/.config/mon
 case $0 in
 	*clone) set -- "$@" --clone ;;
 	*single) set -- "$@" --single ;;
+	*toggle) set -- "$@" --toggle ;;
 esac
 for arg ; do
 	case "$arg" in
@@ -13,6 +15,8 @@ for arg ; do
 		--cycle) cycle=true ;;
 		--clone) ext_pos=--same-as ; cycle=true ;;
 		--single) no_ext=true ;;
+		--toggle) ((toggle++)) ;;
+		--no-toggle) ((toggle--)) ;;
 		-l|--left) ext_pos=--left-of ;;
 		-r|--right) ext_pos=--right-of ;;
 		-a|--above) ext_pos=--above ;;
@@ -26,6 +30,13 @@ for arg ; do
 			;;
 	esac
 done
+
+if (( $toggle )) ; then
+	if xrandr | awk '/[*]/ { total++ } END { exit total == 1 ? 0 : 1 }'
+	then exec $0 --no-toggle
+	else exec $0 --no-toggle --single
+	fi
+fi
 
 typeset -a outputs
 typeset -A active_output vid_modes
