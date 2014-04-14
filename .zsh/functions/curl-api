@@ -1,5 +1,5 @@
 local -a opts
-local token=$(curl-api-var token) url=$(curl-api-var url) api_opts=$(curl-api-var opts)
+local token="$(curl-api-var token)" url="$(curl-api-var url)" api_opts="$(curl-api-var opts)"
 [[ -n $token ]] && opts+=( -H "X-Forever-Authorization: $token" )
 [[ -n $url ]] || { warn "Need API URL (set in $(curl-api-file url))" ; return 1 }
 if [[ $1 = /* ]] ; then
