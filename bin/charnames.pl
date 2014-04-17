@@ -54,7 +54,7 @@ sub info {
 }
 
 if ($low) {
-	info for map chr, $low..$high;
+	info for map { pack 'U', $_ } $low..$high;
 	exit;
 }
 my %seen;
