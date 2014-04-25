@@ -114,6 +114,7 @@ fun! PostColorScheme()
 		end
 		hi Search cterm=NONE ctermfg=0 ctermbg=220 guifg=#000000 guibg=#ffff00
 		hi Normal guibg=black
+		hi NonText guibg=black
 		hi ColorColumn guibg=#993333
 	elseif colo == 'railscasts'
 		hi TabLine guibg=#0000cc gui=none,reverse guifg=#ffffff
