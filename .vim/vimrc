@@ -116,6 +116,9 @@ fun! PostColorScheme()
 		hi Normal guibg=black
 		hi NonText guibg=black
 		hi ColorColumn guibg=#993333
+		hi rubyRegexpDelimiter guifg=#ff9900
+		hi! link rubyRegexp Constant
+		hi! link rubyRegexpSpecial String
 	elseif colo == 'railscasts'
 		hi TabLine guibg=#0000cc gui=none,reverse guifg=#ffffff
 		hi TabLineSel guibg=#0000cc gui=none guifg=#ffffff
