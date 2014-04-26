@@ -1,1 +1,1 @@
-factor $1 | perl -lanwe '@b=(shift @F); @x=(1); while (@F) { $f = shift @F; if ($f eq $b[-1]) { $x[-1]++; else { push @b, $f; push @x, 1; } } print join " ", map { $b[$_].($x[$_] eq 1 ? "" : "^$x[$_]") } 0..$#b' }
+factor $1 | perl -lanwe '@b=(shift @F); @x=(1); while (@F) { $f = shift @F; if ($f eq $b[-1]) { $x[-1]++; } else { push @b, $f; push @x, 1; } } print join " ", map { $b[$_].($x[$_] eq 1 ? "" : "^$x[$_]") } 0..$#b'

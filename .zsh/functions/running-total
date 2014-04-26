@@ -1,1 +1,1 @@
-awk '{ t += $1 ; print t, "\t", $_' }
+awk '{ t += $1 ; print t, "\t", $_ }'
