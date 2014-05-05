@@ -1,1 +1,0 @@
-au! classpath FileType java
