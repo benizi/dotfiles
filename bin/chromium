@@ -92,6 +92,7 @@ while [ $# -gt 0 ] ; do
 		--default) _profile=Default ;;
 		-dry|--dry) _dry=true ;;
 		--nojs) unset _javascript ;;
+		--touch) _args+=( --touch-events=enabled ) ;;
 		http:*|https:*|ftp:*|file:*|/*) _url=$arg ;;
 		*) _args+=( $arg ) ;;
 	esac
