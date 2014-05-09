@@ -25,7 +25,7 @@ done
   command $0 ${~argv[1,i-1]} "${(@)argv[i,-1]}"
 }
 
-'ack'() {
+'ack' google() {
   local -i i
   for (( i=1; i<$#argv; i++ )) ; do
     [[ $argv[i] == -* ]] && continue
