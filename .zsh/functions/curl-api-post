@@ -1,1 +1,4 @@
-curl-api "$@" -H 'Content-Type: application/json' -X POST
+local -a args
+args=( -H 'Content-Type: application/json' )
+[[ " $* " = *" -X "* ]] || args+=( -X POST )
+curl-api "$@" $args
