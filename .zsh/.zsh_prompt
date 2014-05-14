@@ -186,9 +186,10 @@ __setup_prompt () {
   add.top_row k:17 '%D{%Y-%m-%d %H:%M:%S}'
   add.top_row k:68 $TERM
 
-  if (( $__prompt_return )) ; then
+  if (( $__prompt_return )) && (( $+__last_command )) ; then
     local escaped_command=${${${__last_command%%$'\n'}:gs/[$]/\\\$}:gs/[%]/%%}
     add.middle_row k:208 $escaped_command' -> %?'
+    __prompt_return=0
   fi
 
   (( $+DATABASE_URL )) && add.bottom_row k:167 "DB ${testdb:-$DATABASE_URL}"
@@ -253,10 +254,11 @@ preexec () {
   (( __last_command_number ++ ))
   fancytitle "$1 $TITLESEP "
   __reset_cursor
+  unset __prompt_return
 }
 
 precmd () {
-  __prompt_return=$?
+  __prompt_return=${__prompt_return-$?}
   __setup_prompt
   fancytitle ""
 }
