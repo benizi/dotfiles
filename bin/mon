@@ -73,7 +73,7 @@ int_mode=$vid_modes[$int]
 if (( $#active_output > 1 )) && (( ! $+no_ext )) ; then
 	for ext in ${outputs[2,-1]} ; do
 		(( $+active_output[$ext] )) || continue
-		ext_mode=$vid_modes[$ext]
+		: ${ext_mode=$vid_modes[$ext]}
 		break
 	done
 else
