@@ -1,0 +1,55 @@
+#!/usr/bin/env ruby
+
+$: << File.join(ENV['HOME'], 'git', 'database_url', 'lib')
+
+require 'yaml'
+require 'erb'
+require 'database_url'
+
+def envname
+  ENV['ENV'] || ENV['RAILS_ENV'] || 'development'
+end
+
+def ar_config
+  return unless defined?(ActiveRecord::Base)
+  ActiveRecord::Base.configurations[envname] ||
+    ActiveRecord::Base.connection_config.stringify_keys
+end
+
+def env_config
+  return unless defined?(DatabaseUrl)
+  return unless dburl = ENV['DATABASE_URL']
+  ENV['DATABASE_URL'] = dburl
+  Hash[DatabaseUrl.active_record_config.map { |k, v| [k.to_s, v] }]
+end
+
+def file_config
+  yaml = YAML.load(ERB.new(File.read(ENV['CONFIG'] || 'config/database.yml')).result)
+  yaml.values.find { |db| db['database'] }
+end
+
+def config
+  env_config || ar_config || file_config
+end
+
+def fix_adapter(config)
+  config.merge(%w[pg postgresql].include?(config['adapter']) ? {'adapter' => 'postgres'} : {})
+end
+
+dburl = DatabaseUrl.database_url(fix_adapter(config))
+
+arg = ARGV.first
+out = [dburl]
+default_var = 'DATABASE_URL'
+case arg
+when nil
+when /\A[A-Z_0-9]+\Z/
+  out = [arg] + out
+when /\A-u|--url|-s|--shell\Z/
+  out = [default_var] + out
+else
+  env = { default_var => dburl }
+  exec(env, *ARGV.dup)
+end
+
+puts out.join('=')
