@@ -13,5 +13,7 @@ if test -f $cert ; then
   set -- "$@" --servercert=$finger
 fi
 
-password-manager -h $host -p $port |
+setopt local_options 2>/dev/null || true
+set -x
+password-manager -h $host -p $port $pwopts |
 sudo openconnect --passwd-on-stdin "$@" -u $user $host:$port
