@@ -115,7 +115,10 @@ SHELL
 end
 
 action = $0 =~ /ruby-db-(\w+)$/ ? $1.to_sym : :connect
-action = ARGV.shift.to_sym if action == :tool
+if action == :tool
+  abort "Must specify action" if ARGV.empty?
+  action = ARGV.shift.to_sym
+end
 
 if yaml = YAML.load(ERB.new(File.read(ENV['CONFIG'] || 'config/database.yml')).result)
   envs = ENV['ENV'] || ENV['RAILS_ENV'] || 'development'
