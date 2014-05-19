@@ -1,0 +1,27 @@
+#!/bin/sh
+selected=""
+cmd=""
+args=""
+
+while (( $# ))
+do
+  arg=$1
+  shift
+  case "$arg" in
+    --up) selected=' && $1 != "-"' ; continue ;;
+    --down) selected=' && $1 == "-"' ; continue ;;
+    start) test -z "$selected" && set -- "$@" --down ;;
+    stop|destroy) test -z "$selected" && set -- "$@" --up ;;
+  esac
+  if test -z "$cmd"
+  then cmd=$arg
+  else args="${args}${args+ }${arg}"
+  fi
+done
+
+if test -n "$cmd"
+then awk=' { print "virsh '$cmd'", $2 "'$args'" }'
+else awk=''
+fi
+
+virsh list --all | awk "NF && NR > 2$selected$awk" | sh
