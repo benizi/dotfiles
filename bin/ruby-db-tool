@@ -120,9 +120,33 @@ if action == :tool
   action = ARGV.shift.to_sym
 end
 
-if yaml = YAML.load(ERB.new(File.read(ENV['CONFIG'] || 'config/database.yml')).result)
-  envs = ENV['ENV'] || ENV['RAILS_ENV'] || 'development'
-  envs.split.each do |env|
+db_url = nil
+begin
+  require 'database_url'
+  if db = ENV['DATABASE_URL']
+    db += '?' unless db =~ /\?/ # CGI needs query params
+    ENV['DATABASE_URL'] = db
+    db_url = Hash[DatabaseUrl.active_record_config.map { |k,v| [k.to_s, v] }]
+  end
+rescue LoadError
+  # database_url not present
+end
+
+if true
+  yaml, envs = []
+
+  if !db_url
+    yaml = YAML.load(ERB.new(File.read(ENV['CONFIG'] || 'config/database.yml')).result)
+    envs = (ENV['ENV'] || ENV['RAILS_ENV'] || 'development').split
+  else
+    yaml = { 'env' => db_url }
+  end
+
+  if envs.empty? || envs == ['all']
+    envs = yaml.keys.select { |k| yaml[k]['database'] }
+  end
+
+  envs.each do |env|
     cfg = yaml[env]
 
     if !cfg
