@@ -398,6 +398,7 @@ let g:ctrlp_switch_buffer = 'et'
 nm <Leader>n :CtrlPCurFile<CR>
 nm <expr> <Leader>e ':e '.expand('%:h').'/'
 nm <expr> <Leader>t ':tabnew '.expand('%:h').'/'
+nm <expr> <Leader>v ':vne '.expand('%:h').'/'
 
 " cycle through different ways of opening a buffer on the cmdline
 fun! SwapOpenType(cmdline)
