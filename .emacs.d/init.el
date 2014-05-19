@@ -149,6 +149,23 @@
 (require 'eval-sexp-fu)
 (setq eval-sexp-fu-flash-duration 0.5)
 
+;; extend cider to handle flashing
+;; (defun handle-flash-in-cider ()
+;;   (define-eval-sexp-fu-flash-command cider-eval-last-sexp
+;;     (eval-sexp-fu-flash (with-esf-end-of-sexp
+;;                           (bounds-of-thing-at-point 'sexp))))
+;;   (define-eval-sexp-fu-flash-command cider-pprint-eval-last-sexp
+;;     (eval-sexp-fu-flash (with-esf-end-of-sexp
+;;                           (bounds-of-thing-at-point 'sexp))))
+;;   (progn
+;;     (define-eval-sexp-fu-eval-sexp eval-sexp-fu-cider-eval-sexp
+;;       cider-eval-last-sexp)
+;;     (define-eval-sexp-fu-eval-sexp eval-sexp-fu-cider-pprint-eval-sexp
+;;       cider-pprint-eval-last-sexp))
+;;
+;;   (eval-after-load 'cider
+;;     '(handle-flash-in-cider)))
+
 (defun my-paredit-mode-hook ()
   (progn
     (define-key paredit-mode-map (kbd "C-]") 'paredit-forward-slurp-sexp) ; c-] rather than c-)
