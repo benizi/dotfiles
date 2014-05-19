@@ -30,6 +30,7 @@ Bundle 'slim-template/vim-slim'
 Bundle 'tpope/timl'
 Bundle 'elixir-lang/vim-elixir'
 
+finish " God DAMMIT Tim Pope...
 " Clojure
 Bundle 'guns/vim-clojure-static'
 Bundle 'tpope/vim-leiningen'
