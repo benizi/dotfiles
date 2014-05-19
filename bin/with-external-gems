@@ -6,7 +6,7 @@ use File::Temp 'tempdir';
 my $verbose = 0;
 
 # Arg parsing
-my ($cmd, @gems, @cmd);
+my ($cmd, @gems, @cmd, $dump);
 for (@ARGV) {
   if ($cmd) {
     push @cmd, $_;
@@ -19,13 +19,15 @@ for (@ARGV) {
   } elsif ($_ =~ /^be|bundle$/) {
     $cmd = 1;
     push @cmd, $_;
+  } elsif ($_ =~ /^--dump$/) {
+    $dump = 1;
   } else {
     push @gems, $_;
   }
 }
 
 # Usage message if user didn't specify the gems and cmd
-if (!(@cmd and @gems)) {
+if (!((@cmd || $dump) and @gems)) {
   die <<USAGE;
 Usage: $0 [external gems] [-- | be | bundle] cmd [args]
 
@@ -56,6 +58,10 @@ for (qw/Gemfile Gemfile.lock/) {
   print $modified qq{gem '$_'\n} for @gems;
 }
 
+my $list_dirs = q/ruby -e "$:.each { |dir| puts dir }"/;
+chomp(my @before = qx/bundle exec $list_dirs/);
+my %before = map {; $_ => 1 } @before;
+
 # Clean out Bundler-related environment variables
 my %env = %ENV;
 delete $ENV{$_} for qw/BUNDLE_GEMFILE BUNDLE_BIN_PATH RUBYOPT/;
@@ -65,6 +71,12 @@ $ENV{BUNDLE_GEMFILE} = "$dir/Gemfile";
 my $bundle = 'bundle';
 $bundle .= ' >/dev/null' unless $verbose;
 system $bundle and die "bundle failed\n";
+
+if ($dump) {
+  chomp(my @after = qx/bundle exec $list_dirs/);
+  print "RUBY_LIB=".join(':', grep !$before{$_}, @after)."\n";
+  exit;
+}
 
 # Run the command bundled with the alternate Gemfile
 system { $cmd[0] } @cmd;
