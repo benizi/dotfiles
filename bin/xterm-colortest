@@ -46,7 +46,7 @@ for my $ba (@escapes) {
 			}
 			$_ = $_ ? ($_*40+55) : 0 for @rgb;
 			my $txt = $rgb?sprintf("%02x%02x%02x",@rgb):$X;
-			$txt = sprintf "{%3d=%s}", $_+16, $txt if $show_number;
+			$txt = sprintf "%-3d", $_+16 if $show_number;
 			push @{$rows[int $_/$N]}, $c->($_+16, $txt);
 		}
 		if (!$rgb) {
