@@ -143,6 +143,9 @@ if yaml = YAML.load(ERB.new(File.read(ENV['CONFIG'] || 'config/database.yml')).r
         end
 
       handler = adapter_class.new(cfg)
+      unless handler.respond_to?(action)
+        raise NotImplementedError, %Q{#{adapter} adapter can't handle "#{action}" action. (env: #{env})}
+      end
       method = handler.method(action)
       args = method.arity == -1 ? ARGV.clone : []
       ret = method.call(*args)
@@ -157,8 +160,6 @@ if yaml = YAML.load(ERB.new(File.read(ENV['CONFIG'] || 'config/database.yml')).r
       else
         raise NotImplementedError, "Action returned non-string/array"
       end
-    rescue NameError
-      warn %Q{#{adapter} adapter can't handle "#{action}" action. (env: #{env})}
     rescue NotImplementedError => e
       warn e.message
     end
