@@ -1,0 +1,4 @@
+#!/bin/sh
+pst -t dzen \
+| awk '/^[[:digit:]]/ { print $1 }' \
+| xargs --verbose --no-run-if-empty kill
