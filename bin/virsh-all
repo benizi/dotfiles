@@ -21,7 +21,7 @@ done
 
 if test -n "$cmd"
 then awk=' { print "virsh '$cmd'", $2 "'$args'" }'
-else awk=''
+else awk=' { print "printf \x27%s\\n\x27 \x27" $_ "\x27" }'
 fi
 
 virsh list --all | awk "NF && NR > 2$selected$awk" | sh
