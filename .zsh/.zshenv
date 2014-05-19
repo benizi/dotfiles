@@ -51,7 +51,8 @@ typeset -U zsh_dirs
 (( $#zsh_dirs == 1 )) && zsh_admin_mode=true
 is-at-least 4.3.9 && zshenv=${(%):-"%x"} || zshenv=${(%):-"%N"}
 zsh_dirs+=( $zshenv:h $zshenv(+A:h) )
-zsh_dirs=( ${^zsh_dirs}{,.local,-}(N/) )
+zsh_dirs=( ${^zsh_dirs}{,/.zsh} )
+zsh_dirs=( ${^zsh_dirs}{,.local}(N/) )
 ZDOTDIR=( $zshenv(+A:h) ) && ZDOTDIR=$ZDOTDIR[1]
 
 setup_autoloads() {
