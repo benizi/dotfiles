@@ -421,6 +421,7 @@ let g:NERDCustomDelimiters = {
 
 let g:rtn_open_with = 'vnew'
 
+let g:txt_256color_settings = 1
 if InGUI()
 	fun! SetupGUI()
 		let &gfn = 'DejaVu Sans Mono 14'
