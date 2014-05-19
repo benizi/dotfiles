@@ -37,8 +37,21 @@ SQL
   class Postgresql < Base
     def grant
       <<SHELL
-sudo su - postgres -c 'createuser '\\''#{cfg.username}'\\'
-sudo su - postgres -c 'createdb '\\''#{cfg.database}'\\'' -O #{cfg.username}'
+-- Create User if it doesn't exist
+DO $$ BEGIN
+if not exists (select * from pg_catalog.pg_user where usename = '#{cfg.username}')
+then create user "#{cfg.username}";
+end if;
+END $$;
+-- Create Database if it doesn't exist (requires 'dblink', unfortunately)
+DO $create$ BEGIN
+if not exists (select * from pg_database where datname = '#{cfg.database}')
+then perform dblink_exec(
+  'dbname=' || current_database(),
+  $$create database "#{cfg.database}" with owner = "#{cfg.username}"$$
+);
+end if;
+END $create$;
 SHELL
     end
 
