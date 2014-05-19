@@ -34,6 +34,7 @@ GetOptions(
 	'g=s' => \(my $group),
 	'G' => \(my $show_group),
 	'q' => \(my $quiet),
+	'nice' => \(my $show_nice),
 	'<>' => sub {
 		for (@_) {
 			/^\d+$/ ? push @pids, $_
@@ -114,6 +115,7 @@ for my $p (@procs) {
 		$$p{invalid} = 1;
 		next;
 	}
+	$$p{nice} = (split ' ', $$p{stat})[18] // 0;
 	$$p{start} = (split ' ', $$p{stat})[21] // 0;
 	$$p{start} /= 100;
 	$$p{start} += $boot_time;
@@ -251,6 +253,7 @@ for my $r (@roots) {
 		push @info, ($$n{target} or !$any_marked) ? $$n{pid} : '' if $print_target_pids;
 		push @info, $$n{user} if $show_user;
 		push @info, $$n{group} if $show_group;
+		push @info, $$n{nice} if $show_nice;
 		if ($print_time) {
 			my $time = $$n{start} // 0;
 			if ($time_format eq 'relative') {
