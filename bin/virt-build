@@ -1,0 +1,97 @@
+#!/bin/sh
+
+die() {
+  tput setaf 1
+  printf '%s' "$*"
+  tput sgr0
+  printf '\n'
+  exit 1
+}
+
+name=$1
+
+test -z "$name" && die 'Need a name'
+
+shift
+
+for arg
+do
+  case "$arg" in
+    *=*) eval "$arg" ;;
+    *) die "Unknown argument: $arg" ;;
+  esac
+done
+
+: ${memory=512} ${cpus=1}
+
+disk=$name.qcow2
+
+: ${base=fedora20.qcow2}
+: ${dist="$(basename $base .qcow2)"}
+iso=$name.cidata.iso
+
+[[ -f "$base" ]] || die "Couldn't find base image: $base"
+
+make_user_data() {
+  test -n "$skip_user_data" && return
+  cat > user-data <<EOF || die "Couldn't create user-data"
+#cloud-config
+password: fedora
+chpasswd: {expire: False}
+ssh_pwauth: True
+EOF
+  if test -n "$cloud_ssh_pub" && test -f $cloud_ssh_pub
+  then
+    key="$(cat $cloud_ssh_pub)"
+    cat >> user-data <<EOF || die "Couldn't append user-data"
+ssh_authorized_keys:
+  - '$key'
+EOF
+  fi
+  cat >> user-data <<EOF || die "Couldn't append user-data"
+runcmd:
+  - [ yum, -y, remove, cloud-init ]
+  - [ poweroff ]
+EOF
+}
+
+make_meta_data() {
+  cat > meta-data <<EOF || die "Couldn't create meta-data"
+instance-id: $name
+local-hostname: $name
+EOF
+}
+
+make_cidata_iso() {
+  genisoimage -output $iso -volid cidata -joliet -r user-data meta-data
+}
+
+make_cidata() {
+  make_user_data
+  make_meta_data
+  make_cidata_iso
+}
+
+qemu-img create -b "$base" -f qcow2 "$disk" 10G ||
+  die 'Failed to create image'
+
+make_cidata ||
+  die "Couldn't create cidata"
+
+virt-install \
+  --import \
+  --name $name \
+  --memory $memory \
+  --vcpus $cpus \
+  --disk $disk,format=qcow2,cache=none,bus=virtio \
+  --disk $iso,device=cdrom \
+  --network bridge=virbr0,model=virtio \
+  --os-type linux \
+  --os-variant $dist \
+  --nographics ||
+  die "Couldn't create $name"
+
+virsh change-media $name hda --eject --config ||
+  die "Couldn't eject hda"
+
+virsh start $name

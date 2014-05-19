@@ -1,0 +1,62 @@
+#!/bin/zsh
+
+die() {
+  tput setaf 1
+  printf '%s' "$*"
+  tput sgr0
+  printf '\n'
+  exit 1
+}
+
+host=$1
+[[ -z $host ]] && die "Usage: $0 host [settings...]"
+
+kill_ssh_known() {
+  local h
+  for h in $1 $(dig +short $1)
+  do
+    ssh-keygen -R $h
+  done
+}
+
+kill_existing() {
+  local -a files
+  files=( $1.*(N) )
+  (( $#files )) && rm -rfi $files
+}
+
+delay() {
+  sleep 0.5
+}
+
+find_ip() {
+  local ip
+  while [[ -z $ip ]]
+  do
+    ip=$(virt-addr $host)
+    [[ -z $ip ]] && delay
+  done
+  [[ -n $ip ]] || die 'Failed to find IP'
+  printf '%s' "$ip"
+}
+
+kill_ssh_known $host
+
+kill_existing $host
+
+cloud_ssh_pub=$HOME/.ssh/id_00.cloud-init.test.pub virt-build $host || die 'Failed to build'
+
+#### DNS STUFF
+# ip=$(find_ip $host)
+#
+# printf 'address=/%s/%s\n' $host $ip ${host/mgmt./} $ip | sort | uniq \
+#   > /etc/dnsmasq.d/test.$host.conf
+# sudo systemctl restart dnsmasq
+
+for ((i=0; i<10; i++))
+do
+  nmap -oG - -p22 $host | grep -q /open/ && break
+  delay
+done
+
+ssh-keyscan $host >> ~/.ssh/known_hosts 2> /dev/null
