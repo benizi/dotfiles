@@ -125,6 +125,7 @@ pathtest=( /opt/fsharp/bin $^pathtest )
 pathtest=( ~$owner/git/verman/bin $^pathtest )
 pathtest+=( ~$owner/android-sdks/platform-tools )
 pathtest+=( ~/git/racket/racket/bin )
+pathtest=( /opt/djb/bin $^pathtest )
 path=( ${^pathtest}(N-/) )
 }
 
