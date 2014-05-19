@@ -282,7 +282,7 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 -- The available layouts.  Note that each layout is separated by |||,
 -- which denotes layout choice.
 --
-myLayout = windowNavigation (FS.fullscreenFocus $ myWmii ||| wmiiLike)
+myLayout = windowNavigation (FS.fullscreenFocus $ (myWmii ||| wmiiLike ||| Grid))
   where
      -- Default proportion of screen occupied by master pane
      ratio   = 1/2
