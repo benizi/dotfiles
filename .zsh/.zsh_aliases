@@ -526,6 +526,54 @@ load_namedirs() {
 
 load_namedirs --quiet
 
+alias-directory() {
+  local dir name create do_prompt do_help incorrect prompt_text current out
+  unset do_prompt do_help incorrect
+  (( $#argv < 1 )) && do_prompt=1
+  if (( $#argv > 2 )) ; then
+    do_help=1
+    incorrect=1
+  fi
+
+  (( $+do_help )) && warn "Usage: $0 shortname [dir]"
+  (( $+incorrect )) && return $incorrect
+
+  if (( ! $#namedirs )) ; then
+    namedirs=( $zsh_dirs[-1]/namedir )
+    read -q 'create?Create namedir '$namedirs[1]'? '
+
+    if [[ $create = y ]] ; then
+      mkdir -p $namedirs
+    else
+      namedirs=()
+      return 1
+    fi
+  fi
+
+  name=${1:-${${:-"$(pwd)"}:t}}
+  dir=${2:-"$(pwd)"}
+
+  prompt_text="Link $dir as ~$name"
+  out=$namedirs[1]/$name
+  if [[ -e $out ]] ; then
+    do_prompt=1
+    current=$(readlink $out)
+    if [[ $dir = $current ]] ; then
+      warn "Alias already exists at that name"
+      return 0
+    fi
+    prompt_text+=" (Currently: $current)"
+  fi
+
+  if (( $+do_prompt )) ; then
+    read -q 'create?'$prompt_text'? '
+    [[ $create = y ]] || return
+  fi
+
+  ln -nsf $dir $out
+  load_namedirs
+}
+
 with-fresh-test-db() {
   local testdb=$(date +test-db-%s) url ret dropdb=true
   ruby -rubygems -rdatabase_url -e 1 || return 1
