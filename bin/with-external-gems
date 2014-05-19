@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use File::Temp 'tempdir';
+use Cwd;
 
 my $verbose = 0;
 
@@ -41,7 +42,14 @@ USAGE
 }
 
 # expand qw/be/ to qw/bundle exec/
-splice @cmd, 0, 1, qw/bundle exec/ if $cmd[0] eq 'be';
+splice @cmd, 0, 1, qw/bundle exec/ if @cmd and $cmd[0] eq 'be';
+
+my $is_gem;
+
+{
+  local @ARGV = qw/Gemfile/;
+  $is_gem = grep /^gemspec/, <>;
+}
 
 # Create new Gemfile and Gemfile.lock
 # Gemfile will have the external gems tacked onto the end
@@ -52,10 +60,11 @@ for (qw/Gemfile Gemfile.lock/) {
   open my $original, '<', $_ or die "<$_: $!";
   undef local $/;
   my $file = <$original>;
-  print $modified $file;
-  next if /lock/;
+  print $modified $file if !$is_gem or !/^gemspec/;
+  next if /lock|gemspec/;
   print $modified "\n"; # deal with absent trailing newline
   print $modified qq{gem '$_'\n} for @gems;
+  print $modified qq{gemspec\n} if $is_gem;
 }
 
 my $list_dirs = q/ruby -e "$:.each { |dir| puts dir }"/;
@@ -68,6 +77,16 @@ delete $ENV{$_} for qw/BUNDLE_GEMFILE BUNDLE_BIN_PATH RUBYOPT/;
 
 # Install all gems
 $ENV{BUNDLE_GEMFILE} = "$dir/Gemfile";
+
+if ($is_gem) {
+  my $cwd = getcwd;
+  for my $file (grep !/^Gemfile/, glob "*") {
+    symlink "$cwd/$file", "$dir/$file";
+  }
+  $ENV{GIT_DIR} = "$cwd/.git";
+  $ENV{GIT_WORK_TREE} = $cwd;
+}
+
 my $bundle = 'bundle';
 $bundle .= ' >/dev/null' unless $verbose;
 system $bundle and die "bundle failed\n";
