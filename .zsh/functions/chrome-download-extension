@@ -1,0 +1,4 @@
+local id=$1
+[[ -z $id ]] && die "Usage: $0 ID [output-file]"
+local output=${2:-$1.crx}
+curl -L -o $output 'http://clients2.google.com/service/update2/crx?response=redirect&x=id%3D'$id'%26uc%26lang%3Den-US&prod=chrome'
