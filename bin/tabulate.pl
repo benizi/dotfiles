@@ -26,8 +26,10 @@ GetOptions(
 	'sort' => \(my $do_sort = 0),
 	'plain' => \(my $plain = 0),
 	'headersep!' => \(my $header_sep = 1),
+	'spaces' => \(my $sep_by_spaces = 0),
 ) or die 'options';
 $plain and ($sep, $texty) = ('  ', 1);
+$sep_by_spaces and $sep = /[ \t]{2,}/;
 my @headers = split /,/, $headers;
 @headers and $has_hdr = 1;
 $use_max = 1 if defined $maxl;
