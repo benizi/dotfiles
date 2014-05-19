@@ -1,0 +1,11 @@
+local arg host
+local -a args
+unset host
+args=( -c 1 )
+for arg
+do
+  args+=( $arg )
+  [[ $arg = -* ]] || host=$arg
+done
+[[ -z $host ]] && args+=( $dns_servers[Google-a] )
+ping $args

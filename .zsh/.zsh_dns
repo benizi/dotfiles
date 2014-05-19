@@ -17,5 +17,3 @@ dns_servers=(
 	Scrubit-a 67.138.54.100
 	Scrubit-b 207.225.209.66
 )
-
-alive () { ping -c 1 ${1:-$dns_servers[Google-a]} }
