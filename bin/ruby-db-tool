@@ -137,7 +137,7 @@ if yaml = YAML.load(ERB.new(File.read(ENV['CONFIG'] || 'config/database.yml')).r
       adapter_class =
         case adapter
         when 'mysql', 'mysql2' ; then Adapters::Mysql
-        when 'postgresql' ; then Adapters::Postgresql
+        when 'postgres', 'postgresql' ; then Adapters::Postgresql
         when 'sqlserver' ; then Adapters::Sqlserver
         else raise NotImplementedError, "Adapter #{adapter} not yet handled"
         end
