@@ -1,0 +1,116 @@
+#!/bin/zsh
+
+# overly-complicated bisect/build script for Vim under either hg or git
+
+#{{{1 USAGE
+# To alter what gets run, pass environment variables:
+# e.g. noclean=1 ./this.script -- doesn't build in a clean dir
+#      nocompile=1 ./this.script -- reuses the prior build
+#      keep=1 ./this.script      -- doesn't delete the compiled Vim
+#      keeptmp=1 ./this.script   -- keeps the build dir
+# All commandline args will be used as configure options
+# e.g. keep=1 ./this.script --with-features=huge --with-x --enable-gui=gtk2
+#}}}1
+
+#{{{1 utility functions
+warn () { echo $'\e[31m'$argv$'\e[0m' >&2 }
+cleanup () { (( $+builddir && ! $+keeptmp )) && [[ -d $builddir ]] && rm -rf $builddir }
+skip () { warn $argv ; cleanup ; exit 125 }
+good () { ret=0 }
+bad () { ret=1 }
+#}}}1
+
+#{{{1 VCS agnosticism
+[[ -d .git ]] && rcs=git || rcs=hg
+case $rcs in
+	git)
+	get-version () { git rev-parse HEAD }
+	create-tar () { git archive HEAD }
+	;;
+	hg)
+	get-version () { hg log -r tip --template '{node}' }
+	create-tar () { hg archive -t tar -p . - }
+	;;
+esac
+#}}}1
+
+#{{{1 setup some variables, each can be passed in
+: ${version=$(get-version)}
+: ${prefix=/tmp/vim-$rcs-$version}
+: ${makejobs:=5}
+unset builddir
+#}}}1
+
+#{{{1 compile and make
+if (( ! $+nocompile )) ; then
+	(( $makejobs )) && makeargs=( --jobs=$makejobs )
+	(( $+strip )) || makeinstall=( STRIP=nm )
+	if (( ! $+noclean )) ; then
+		builddir=$(mktemp -t -d build-vim.XXXXXXXX) || skip mktemp
+		create-tar | (cd $builddir ; tar -xf -) || skip archive
+		pushd $builddir || skip no builddir
+	fi
+	if (( ! $+noconfig )) ; then
+		./configure --prefix=$prefix $argv >& /dev/null || skip configure
+	fi
+	(make $makeargs && make $makeinstall install) >& /dev/null || skip make
+	(( $+builddir )) && popd
+	cleanup
+fi
+#}}}1
+
+#{{{1 exit unless running the test
+(( $+notest )) && exit
+pushd $prefix || skip pushd
+#}}}1
+
+#{{{1 set up the testing variables
+vi=$prefix/bin/vim
+viminfo=$prefix/viminfo
+ex=$prefix/bin/ex
+ret=1
+#}}}1
+
+#{{{1 this defines what will actually be run, vim-wise
+cmd=( $vi -Nu NONE -i $viminfo )
+cmd+=( +new +'redir! > MESSAGES' +'silent! windo verbose set spc?' +'redir END' +qa )
+#}}}1
+
+#{{{1 this kills the command after 10 seconds, if time-limit is installed
+(( $+commands[time-limit] )) && cmd=( time-limit -t 10 $cmd )
+#}}}1
+
+#{{{1 print the version, run the command, capture its return
+$vi --version | head -n 1
+$cmd
+r=$?
+# r == 109 if killed for time limit
+#}}}1
+
+#{{{1 specific to this test
+# this revision is 'good' if 'spellcapcheck' isn't "messed up"
+grep 'spellcapcheck=' MESSAGES | grep -qv 'spellcapcheck=\[' || good
+#}}}1
+
+# helpful here if testing terminal-related bugs:
+#  reset
+#  stty sane
+
+#{{{1 clean up, unless keep=1 was specified
+popd
+(( $+keep )) || rm -rf $prefix
+#}}}1
+
+#{{{1 report the command run and exit with result
+echo ran command: $cmd
+echo "(vim returned $r, bisect returned $ret)"
+case $ret in
+	0) echo good ;;
+	1) echo bad ;;
+	125) echo skip ;;
+	*) echo unknown ;;
+esac
+exit $ret
+#}}}1
+
+# vi:set fdm=marker:

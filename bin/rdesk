@@ -1,0 +1,171 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use feature ':5.10';
+use File::Spec;
+use File::Basename;
+sub find_prog {
+	my $prog = shift;
+	(grep -x, map "$_/$prog", File::Spec->path)[0]
+}
+my ($rdesktop) = grep defined, map find_prog($_), qw/xfreerdp rdesktop/;
+$rdesktop // die "Couldn't find rdesktop program\n";
+use Getopt::Long qw/:config pass_through/;
+my %opt;
+GetOptions(
+	'size|dimensions|wh|g=s' => \$opt{graphics},
+	'server=s' => \$opt{server},
+	'username|user|u=s' => \$opt{user},
+	'password|pass|p=s' => \$opt{pass},
+	'nopass' => \$opt{nopass},
+	'show-pass|showpass' => \$opt{showpass},
+	'defaults=s' => \(my $defaults_from = ''),
+	'dry' => \(my $dry = 0),
+	'verbose+' => \(my $verbose = 0),
+	'disk' => \(my $add_disk = 0),
+	'sound' => \(my $add_sound = 0),
+	'executable|cmd=s' => \$rdesktop,
+	'seamless|A' => \(my $seamless),
+) or die 'options';
+$opt{server} //= basename $0 unless 'rdesk' eq basename $0;
+$opt{server} //= shift @ARGV;
+shift @ARGV if @ARGV and $ARGV[0] eq '--';
+warn "Extra options: (@ARGV)\n" if @ARGV;
+$opt{extra} = [@ARGV];
+
+sub auto_geometry {
+	return unless my $xinerama = find_prog 'x-xinerama-info';
+	my $g = `$xinerama --first` =~ /^(\d+x\d+\+-?\d+\+-?\d+)$/ ? $1 : undef;
+	my ($w, $h, $x, $y) = $g =~ /^(\d+)x(\d+)([+\-]\d+)([+\-]\d+)$/;
+	my $bar_height = 0;
+	if (my $xprop = find_prog 'xprop') {
+		$bar_height = $1 if `$xprop -root DWM_BAR_HEIGHT` =~ /= (\d+)/m;
+	}
+	if (!$bar_height and my $wininfo = find_prog 'xwininfo') {
+		my $all_wins = `$wininfo -root -children -size`;
+		my @possible_bars = grep /no name\):|dzen2/, split /\n/, $all_wins;
+		my @dims = map [ /\)\s+(\d+)x(\d+)/ ], @possible_bars;
+		@dims = grep { @$_ and !grep !defined, @$_ } @dims;
+		$_ //= 0 for $w, $h;
+		# filter to skinny bars:
+		@dims = grep { $$_[0] < .1 * $w or $$_[1] < .1 * $h } @dims;
+		$bar_height = (map $$_[1], sort { $$b[0] <=> $$a[0] } @dims)[0] if @dims;
+	}
+	$h -= $bar_height;
+	$y += $bar_height;
+	sprintf "%dx%d", $w-4, $h-2;
+}
+
+my (%rev_alias, %ip);
+my %defaults = (
+	'' => {
+		depth => 16,
+		user => $ENV{LOGNAME},
+		extra => [ '-z' ],
+	},
+	localhost => {
+		depth => 24,
+		extra => [ '-r', 'disk:shared=/home/bhaskell/shared' ],
+	},
+);
+
+for (grep -f, "$ENV{HOME}/.config/rdesk") {
+	next unless open my $f, '<', $_;
+	eval join '', <$f>;
+}
+
+my %alias;
+while (my ($val, $arr) = each %rev_alias) { $alias{$_} = $val for @$arr; }
+die "Must specify server\n" unless defined $opt{server};
+
+my $in_server = delete $opt{server};
+for (
+	[ $defaults_from, 1, 0 ],
+	[ $in_server, 0, 0 ],
+	[ '', 0, 1 ],
+	) {
+	my ($hier, $no_server, $is_last) = @$_;
+	while (1) {
+		$hier = $alias{$hier // ''} // $hier // '';
+		my $atts = ($hier =~ s/^([^,]+),(.*)$/$1/) ? $2 : '';
+		last unless $atts;
+		for (grep length, $atts) {
+			while (s/^,?(\w+)=([^,]+)//) {
+				my ($k, $v) = ($1, $2);
+				if ($k eq 'size') {
+					($k, $v) = (graphics =>
+						{qw/small 1010x740 wide 1265x770/}->{$v});
+				}
+				$opt{$k} //= $v;
+			}
+			die "Bad attributes: $atts\n" if length $atts;
+		}
+	}
+	my @parts = split /\./, $hier;
+	next if !@parts and !$is_last;
+	$is_last and !@parts and @parts = ('');
+	$opt{server} //= $hier unless $no_server;
+	my @keys = map join('.', @parts[$_..$#parts]), 0..$#parts;
+	for my $param (qw/graphics depth user pass extra:@/) {
+		my ($o, $arr) = split /:/, $param;
+		for my $d (map $defaults{$_}||{}, @keys) {
+			last if !$arr and defined $opt{$o};
+			my $val = $$d{$o};
+			next unless defined $val;
+			if ($arr) {
+				push @{$opt{$o}}, @$val;
+			} else {
+				$opt{$o} = $val;
+			}
+		}
+	}
+}
+
+$opt{graphics} //= auto_geometry;
+my @extra = @{$opt{extra}||[]};
+push @extra, '-r', 'disk:shared=/home/bhaskell/shared' if $add_disk;
+push @extra, '-r', 'sound' if $add_sound;
+$seamless ||= grep /-A/, @extra;
+my @rcmd = (
+	$rdesktop =>
+	(grep { !$seamless and defined $opt{graphics} } -g => $opt{graphics}),
+	-a => $opt{depth},
+	-u => $opt{user},
+	grep(defined($opt{pass}), -p => $opt{pass}),
+	@extra,
+	$opt{server},
+);
+my @invalid_args;
+my $has_password = 0;
+if ($rdesktop =~ /xfreerdp/) {
+	for (reverse 0..$#rcmd-1) {
+		if ($rcmd[$_] eq '-r') {
+			my $arg = $rcmd[$_+1];
+			if ($arg =~ /^disk:(\w+)=(.+)$/) {
+				splice @rcmd, $_, 2, '--plugin', 'rdpdr', '--data', "disk:$1:$2", '--';
+			} else {
+				unshift @invalid_args, splice @rcmd, $_, 2;
+			}
+		} elsif ($rcmd[$_] eq '-p') {
+			$has_password = 1;
+		}
+	}
+	if (!$has_password and !$opt{nopass}) {
+		my $use_fake = ($dry and !$opt{showpass});
+		chomp(my $pass = $use_fake ? '{pass}' : `password-manager -h $opt{server} -u $opt{user} -P rdp`);
+		die "Failed to read password\n" if $?;
+		splice @rcmd, 1, 0, '-p', $pass if length $pass;
+	}
+	splice @rcmd, -1, 0, '--plugin', 'cliprdr';
+}
+if (@invalid_args) {
+	warn "Invalid arguments when using $rdesktop: (@invalid_args)\n";
+}
+my @no_pass = @rcmd;
+for my $i (0..$#no_pass-1) {
+	$no_pass[$i] eq '-p' and $no_pass[$i+1] = '{pass}';
+}
+warn $opt{showpass} ? "@rcmd\n" : "@no_pass\n";
+$dry and exit;
+exec { $rcmd[0] } @rcmd;
+die "Couldn't exec(",join(",",@no_pass),")\n";

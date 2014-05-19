@@ -1,0 +1,9 @@
+#!/usr/bin/env awk-run
+(!f || FILENAME != f) {
+  if (f) print ""
+  print "==>", FILENAME, "<=="
+  f = FILENAME
+}
+{
+  print
+}

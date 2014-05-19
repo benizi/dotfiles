@@ -1,0 +1,10 @@
+#!/bin/zsh
+typeset -T CLASSPATH classpath &>/dev/null
+typeset -x CLASSPATH
+if [ -f project.clj ] ; then
+  for dir in ${(s,:,):-"$(lein classpath)"} ; do
+    classpath+=( $dir )
+  done
+fi
+classpath+=( ~/lib/server-2.3.1.jar )
+~/hg/vimclojure/vim/bin/ng-server "$@"

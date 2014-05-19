@@ -1,0 +1,33 @@
+#!/bin/zsh
+kill=false
+debugging=false
+unset found_rspec
+pst -P $$ | while read line ; do
+  [[ $line = (*rspec*|*cucumber*) ]] || continue
+  print -l - $line | read pid rest
+  found_rspec=$pid
+done
+if (( ! $+SELENIUM_POPUP )) && (( $+found_rspec || $+xvfb )) ; then
+  if $kill ; then
+    kill -9 $found_rspec
+    exit 1
+  fi
+  disp=88
+  (cd ; screen-detached -1 Xvfb :$disp -screen 0 1920x1080x24)
+  export DISPLAY=:$disp
+  x-is-active -maxtry 10 -v || exit 1
+fi
+if $debugging ; then
+  date >> ~/firefox.log
+  for arg ; do
+    printf "%s\n" $arg >> ~/firefox.log
+  done
+  pst $$ >> ~/firefox.log
+fi
+newpath=()
+for p in $path ; do
+  [[ $p = $0:h ]] && continue
+  newpath+=( $p )
+done
+path=( $newpath )
+exec firefox "$@"

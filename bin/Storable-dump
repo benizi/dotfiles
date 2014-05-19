@@ -1,0 +1,14 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Storable qw/retrieve/;
+use Data::Dumper;
+use Getopt::Long qw/:config pass_through/;
+GetOptions(
+	'indent=i' => \($Data::Dumper::Indent = 1),
+	'depth|maxdepth=i' => \$Data::Dumper::Maxdepth,
+	'eval=s' => \(my $eval = ''),
+) or die 'options';
+my @t = map retrieve($_), @ARGV;
+if (length $eval) { $_ = eval $eval for @t; }
+print Dumper @t;

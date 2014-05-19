@@ -1,0 +1,228 @@
+#!/bin/zsh
+
+# Create a Chrom(e|ium) theme in the specified directory, with the specified hue
+
+rgb_to_hsv() {
+  local r g b h s v
+  r=$1
+  g=$2
+  b=$3
+  local rp=$(( r / 255.0 ))
+  local gp=$(( g / 255.0 ))
+  local bp=$(( b / 255.0 ))
+  local cmax
+  if (( rp >= gp && rp >= bp )) ; then
+    cmax=$rp
+  elif (( gp >= rp && gp >= bp )) ; then
+    cmax=$gp
+  else
+    cmax=$bp
+  fi
+  local cmin
+  if (( rp <= gp && rp <= bp )) ; then
+    cmin=$rp
+  elif (( gp <= rp && gp <= bp )) ; then
+    cmin=$gp
+  else
+    cmin=$bp
+  fi
+  local delta=$(( cmax - cmin ))
+  printf 'rgb = (%3d %3d %3d) delta=%3d cmax=%3d cmin=%3d\n' $r $g $b $delta $cmax $cmin
+  case $delta in
+    0) h=0 ; s=0 ;;
+    *)
+      if (( rp == cmax )) ; then
+        printf 'cmax = rp ; gp - bp = %s\n' $(( gp - bp ))
+        h=$(( 60.0 * (((gp - bp) / delta) % 6) ))
+      elif (( gp == cmax )) ; then
+        printf 'cmax = gp ; bp - rp = %s\n' $(( bp - rp ))
+        h=$(( 60.0 * (((bp - rp) / delta) + 2) ))
+      else
+        printf 'cmax = bp ; rp - gp = %s\n' $(( rp - gp ))
+        h=$(( 60.0 * (((rp - gp) / delta) + 4) ))
+      fi
+      ;;
+  esac
+  (( h < 0 )) && (( h += 360.0 ))
+  (( delta )) && s=$(( delta / cmax ))
+  v=$cmax
+  printf '%d %f %f\n\n' $h $s $v
+}
+
+hsv_to_rgb() {
+  local h s v r g b
+  h=$(( $1 % 360 ))
+  s=$2
+  v=$3
+  local c=$(( 1.0 * v * s ))
+  local hp=$(( h / 60.0 ))
+  local x=$hp
+  while (( x < 0 )) { (( x += 2.0 )) }
+  while (( x > 2.0 )) { (( x -= 2.0 )) }
+  (( x -= 1.0 ))
+  (( x < 0 )) && (( x = -x ))
+  (( x = 1.0 - x ))
+  (( x *= c ))
+  case $hp in
+    0*) r=$c ; g=$x ; b=0  ;;
+    1*) r=$x ; g=$c ; b=0  ;;
+    2*) r=0  ; g=$c ; b=$x ;;
+    3*) r=0  ; g=$x ; b=$c ;;
+    4*) r=$x ; g=0  ; b=$c ;;
+    5*) r=$c ; g=0  ; b=$x ;;
+  esac
+  local m=$(( v - c ))
+  (( r = (r + m) * 255.0 ))
+  (( g = (g + m) * 255.0 ))
+  (( b = (b + m) * 255.0 ))
+  printf '%d %d %d' $r $g $b
+}
+
+
+rgb_to_css() {
+  printf '#%02x%02x%02x' ${=@}
+}
+
+rgb_to_list() {
+  if (( $# == 2 || $# == 4 )) ; then # with alpha
+    printf '[ %s, %s, %s, %s ]' ${=@}
+  else
+    printf '[ %s, %s, %s ]' ${=@}
+  fi
+}
+
+create_theme() {
+  set +e
+  pushd $output_dir
+  touch 'First Run'
+
+  # Theme ID and Theme key must be "real"
+  local theme_id=bfjgbcjfpbbfepcccpaffkjofcmglifg
+  local theme_key='MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQClY8uVLNLboHrzx5431OElszuH0FpiLCZyl1ZzU5HCYYA4t6ReRvaUG7HTNWpeUUUUki73XqgJV13qv/SeawOlmBzxt3MRDPBpcOFd7LzZTwz7dXJXGbTx+gh0b4VJve+pXSgLAF88sRm/YEOU/m52Gw8qCXTvK2tT2bA+JY2cmwIDAQAB'
+
+  local theme_dir=Default/Extensions/${theme_id}
+  local k image extra_profile
+  mkdir -p $theme_dir/i
+  local -a image_colors colors tints properties settings
+  local -A image_color color tint propertie h image_dims
+
+  local hue=${HUE:-$(( RANDOM % 360 ))}
+  local hue2=$(( (hue + 240) % 360 ))
+  image_color=(
+    toolbar "$(rgb_to_css $(hsv_to_rgb $hue 0.4 1))"
+    frame "$(rgb_to_css $(hsv_to_rgb $hue 0.2 1))"
+    ntp_background "$(rgb_to_css $(hsv_to_rgb $hue2 0.2 1))"
+    # button_background '#f00'
+  )
+  image_dims=(
+    toolbar 190x190
+    frame 32x190
+    ntp_background 190x190
+    button_background 32x32
+  )
+  propertie=(
+    ntp_background_repeat repeat
+  )
+  color=(
+    # bookmark_text '[ 0, 0, 0 ]'
+    # frame '[ 255, 117, 117 ]'
+    ntp_background "$(rgb_to_list $(hsv_to_rgb $hue 0.25 1))"
+    # ntp_link '[ 0, 0, 0 ]'
+    ntp_section "$(rgb_to_list $(hsv_to_rgb $hue 0.25 1) 0.4)"
+    # ntp_section_link '[ 0, 0, 0 ]'
+    # ntp_section_text '[ 0, 0, 0 ]'
+    # ntp_text '[ 255, 0, 0 ]'
+    #ntp_header '[ 255, 216, 216 ]'
+    ntp_header "$(rgb_to_list $(hsv_to_rgb $hue 0.15 1))"
+    # tab_background_text '[ 0, 0, 0 ]'
+    # tab_text '[ 0, 255, 0 ]'
+    toolbar "$(rgb_to_list $(hsv_to_rgb $hue 0.25 1))"
+    # control_background '[ 0, 255, 0 ]'
+    # button_background '[ 255, 0, 0 ]
+  )
+  tint=(
+    # buttons '[ 0.5, 1, 0.5 ]'
+    #toolbar '[ 0.9, -1, 0.5 ]'
+    # frame '[ 0.3, -1, -1 ]'
+    # frame_inactive '[ 0.25, 0.5, -1 ]'
+    # background_tab '[ 1, 1, 0.5 ]
+  )
+  if (( $+commands[convert] )) ; then
+    for k in ${(k)image_color} ; do
+      image=i/$k.png
+      out=png:$theme_dir/$image
+      c=$image_color[$k]
+      # speckled=gray10 wavy=verticalsaw
+      # style=pattern pattern=verticalleftshingle dim=36x36
+      case ${style:-plain} in
+        plasma) img=plasma: ;;
+        plain) img=xc:$c ;;
+        pattern) : ${dim:=32x32} ; img=( pattern:${pattern:-hexagons} -fill $c -opaque black ) ;;
+      esac
+      : ${dim:=$image_dims[$k]}
+      cmd=( convert -size $dim $img $out )
+      #cmd=( convert rose: +matte $out )
+      $cmd || echo "Failed: $cmd"
+      images+=( "\"theme_$k\": \"$image\"" )
+    done
+    #convert $theme_dir/i/* +append x:
+  fi
+  for k in color tint propertie ; do
+    p=${k}s
+    h=( ${(Pkv)k} )
+    for l in ${(k)h} ; do
+      n=${(P)#p}
+      (( n += 1 ))
+      v=${h[$l]}
+      [[ $v = \[* ]] || v="\"$v\""
+      typeset $p"[$n]"="\"$l\": $v"
+    done
+  done
+  for k in images colors tints properties ; do
+    (( ${#${(P)k}} )) || continue
+    settings+=( "\"$k\": { ${(Pj:,:)k} }" )
+  done
+  if (( ! $javascript )) ; then
+    extra_profile=',
+"profile": {
+  "default_content_settings": {
+    "javascript": 2
+  }
+}'
+  fi
+  cat > Default/Preferences <<PREFSJSON
+{
+  "browser": {
+    "skip_first_run_ui": true,
+    "show_welcome_page": false,
+    "import_search_engine": false,
+    "import_history": false,
+    "import_bookmarks": false,
+    "create_all_shortcuts": false,
+    "make_chrome_default": false
+  },
+  "extensions": {
+    "settings": {
+      "${theme_id}": {
+        "manifest": {
+          "key": "${theme_key}",
+          "name": "",
+          "theme": { ${(j:,:)settings} },
+          "version": "1.0"
+        },
+        "path": "${theme_id}",
+        "location": 1,
+        "state": 1
+      }
+    },
+    "theme": { "id": "${theme_id}" }
+  }${extra_profile}
+}
+PREFSJSON
+  popd
+}
+
+output_dir=$1
+javascript=$2
+
+create_theme

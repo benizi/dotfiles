@@ -1,0 +1,18 @@
+#!/bin/sh
+URL="$1"
+if [ "x$URL" = "x" -a ! -t 0 ]
+then read URL
+fi
+echo "$@" | tai64n > /home/bhaskell/bin/firefox-dispatcher.last
+case "$URL" in
+	-remote)
+		URL=$(perl -we '$_=shift;s/^[^\(]+\(//;s/\)$//;s/,[\w\-]+$//;print' "$2") ;;
+	outbind*)
+		URL=$(perl -we '$_=shift;s|outbind://[^/]+/|http://|;print' "$URL") ;;
+	http://*) ;;
+	file://*) ;;
+	*)
+		perl -MTk -e '$m=MainWindow->new;$m->Label(qw/-width 100 -text/, "No handler for: '"$URL"'")->pack(qw/-fill both/);$m->bind("<Key>",sub{exit});MainLoop'
+		exit ;;
+esac
+echo "$URL" | nc -q 10 localhost 34733

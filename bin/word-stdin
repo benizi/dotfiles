@@ -1,0 +1,7 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+exec qw/from-stdin word-stdin STDIN STDIN/ if $0 =~ /word-$/;
+use IPC::Run 'run';
+run [ 'word-detect', shift ], '>', \my $prog;
+run [ $prog, shift ];

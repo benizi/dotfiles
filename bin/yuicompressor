@@ -1,0 +1,4 @@
+#!/bin/sh
+JAR=$(find ~/git/yuicompressor/build -name '*.jar' | sed 1q)
+[[ -z "$JAR" ]] && { echo "YUI Compressor not found" >&2 ; exit 1 ; }
+exec java -jar "$JAR" "$@"

@@ -1,0 +1,73 @@
+#!/usr/bin/env ruby
+#
+# Runs a subprocess with the correct exported PostgreSQL env vars for connecting
+#
+# For use under `rails runner`, e.g.:
+# rails r script/spawn psql    -- no better than `rails db`, just an example
+# zeus r script/spawn ENV=test psql    -- faster than `rails db -e test`
+# zeus r script/spawn go run script/privacy-list.go
+
+# re-execute under rails runner if this looks like a Rails app and we're not
+# already in it.  Use `zeus`, too, if it looks like it's running
+if !defined?(Rails) && %w[config app lib].all? { |dir| File.exists?(dir) }
+  cmd = File.exists?('.zeus.sock') ? 'zeus' : 'rails'
+  exec(cmd, 'runner', __FILE__, '--', *ARGV.dup)
+end
+
+def envname
+  @envname || Rails.env
+end
+
+def config
+  ActiveRecord::Base.configurations[envname] ||
+    ActiveRecord::Base.connection_config.stringify_keys
+end
+
+CONFIG_TO_ENV = {
+  host: 'PGHOST',
+  port: 'PGPORT',
+  username: 'PGUSER',
+  user: 'PGUSER',
+  password: 'PGPASSWORD',
+  database: 'PGDATABASE',
+}
+
+def env
+  CONFIG_TO_ENV.select do |k,v|
+    config.key?(k.to_s) && config[k.to_s]
+  end.map do |k, var|
+    [var, config[k.to_s].to_s]
+  end.to_h
+end
+
+env_arg = /\AENV=(.+)\Z/
+ARGV.grep(env_arg).each do |arg|
+  match = arg.match(env_arg)
+  @envname = match[1]
+end
+
+cmd = ARGV.reject { |arg| arg =~ env_arg }
+
+cmd.shift if cmd[0] == '--'
+
+def with_args?(cmd, *options, &block)
+  return unless options.any? { |opt| cmd.include?(opt) }
+  block.call
+  exit
+end
+
+def help
+  puts "Usage: [ENV=envname] cmd [args]"
+end
+
+with_args?(cmd, *%w[--help -h]) { help }
+
+unless %w[postgres postgresql].include?(config["adapter"])
+  abort "Only works for PostgreSQL currently"
+end
+
+with_args?(cmd, *%w[--print -p]) { puts env.map { |kv| kv.join('=') } }
+
+cmd = %w[psql] if cmd.empty?
+
+exec(env, *cmd)

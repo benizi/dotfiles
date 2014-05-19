@@ -1,0 +1,84 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Getopt::Long qw/:config pass_through/;
+sub usage {
+	die join "\n", <<USAGE, @_, '';
+This is a wrapper around 'git filter-branch' to make tree-path munging easier.
+
+Usage: $0 [options] cmd [args] -- [filter-branch options]
+Options:
+	--help / --usage        Print this message
+	-n / --dry-run          Just print the command that would be run
+	--preset NAME           Run a preset collection of path munging.
+
+Presets:
+	tofull       Convert from split reorg/htdocs back to full repo
+	tosplit      Convert from full repo paths back to split reorg/htdocs
+USAGE
+}
+
+GetOptions(
+	'help|usage' => \(my $help),
+	'n|dry-run' => \(my $dry),
+	'preset=s' => \(my $preset_name = ''),
+) or usage;
+usage if $help;
+
+sub path_sub {
+	$_ = (ref) ? $$_ : quotemeta($_) for my ($from, $to) = @_;
+	's{(?<=\t)("?)'.$from.'}{$1'.$to.'}';
+}
+
+if ($preset_name eq 'tofull') {
+	unshift @ARGV,
+		'perl', '-lpwe',
+		join ' or ',
+		map path_sub(@$_),
+		[ 'htdocs', 'www/trunk' ],
+		[ \'(?!reorganization/)', 'reorganization/' ];
+} elsif ($preset_name eq 'tosplit') {
+} elsif ($preset_name) {
+	usage "No such preset: {$preset_name}";
+}
+
+my (@cmd, @git_args);
+my $quoting = '';
+while (@ARGV and $ARGV[0] ne '--') {
+	my $arg = shift @ARGV;
+	if ($quoting) {
+		if ($quoting eq 'flags') {
+			$quoting = 'args' if $arg !~ /^-/;
+		}
+		$arg = quotemeta $arg if $quoting eq 'args';
+	} else {
+		if ($arg =~ m{(?:^|/)(?:\w+)$}) {
+			$quoting = 'flags';
+		}
+	}
+	push @cmd, $arg;
+}
+shift @ARGV if @ARGV and $ARGV[0] eq '--';
+
+push @git_args, splice @ARGV;
+
+@cmd or usage;
+
+my $update_index = 'GIT_INDEX_FILE="$GIT_INDEX_FILE.new" git update-index --index-info';
+my $create_empty_index = qq{printf '%d %040d\\t%s\\n' 100644 0 empty 0 0 empty | $update_index};
+my @git = (
+	git => 'filter-branch' =>
+	'--index-filter' => join(' | ',
+		'git ls-files -s',
+		"@cmd",
+		$update_index,
+	).' ; if ! test -s "$GIT_INDEX_FILE.new" ; then '.$create_empty_index.' ; fi ; mv "$GIT_INDEX_FILE.new" "$GIT_INDEX_FILE" || true',
+	@git_args
+);
+
+if ($dry) {
+	print "argv[$_]=$git[$_]\n" for 0..$#git;
+} else {
+	exec { $git[0] } @git;
+	die "Fail\n";
+}

@@ -1,0 +1,10 @@
+#!/bin/sh
+verbose=1 \
+  keep=1 \
+  keeptmp=1 \
+  noclean=1 \
+  prefix=/usr/local \
+  bisect-vim \
+  --enable-{lua,python,python3,tcl,ruby,perl}interp=yes \
+  --with-features=huge &&
+  vim +vnew +new

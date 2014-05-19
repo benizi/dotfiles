@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+require 'csv'
+CSV.parse(ARGF.read) do |row|
+  fields = row.map do |field|
+    (field || '').gsub(/[\\\r\t\n]/,
+                       "\\" => "\\\\",
+                       "\r" => "",
+                       "\t" => "\\t",
+                       "\n" => "\\n")
+  end
+  puts fields.join("\t")
+end

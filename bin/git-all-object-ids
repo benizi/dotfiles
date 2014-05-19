@@ -1,0 +1,14 @@
+#!/bin/dash
+{
+  # list packed objects
+  find "${GIT_DIR:-.git}/objects/pack" -name 'pack*.idx' |
+  perl -we 'BEGIN{chomp(@f=<STDIN>); } for (@f) { open STDIN, "<", $_; system "git show-index"; close STDIN }' |
+  awk '{print $2}'
+
+  # list loose objects
+  find "${GIT_DIR:-.git}/objects" -maxdepth 1 -type d -name '??' |
+  xargs -iZ find Z -type f |
+  awk -F/ '{ print $(NF-1) $NF }'
+
+  # then sort them all
+} | sort | uniq

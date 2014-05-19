@@ -1,0 +1,47 @@
+#!/bin/sh
+power=/sys/class/power_supply
+find $power/ -mindepth 1 | grep -q . || exit
+do_ac=false
+do_pct=true
+as_bool=false
+vb=false
+for arg ; do
+	case $arg in
+		-v|*verb*) vb=true ;;
+		-a|*ac*) do_ac=true ;;
+		-A|*no*p*) do_ac=true ; do_pct=false ;;
+		-p|*plug*) do_ac=true ; as_bool=true ;;
+	esac
+done
+contents () {
+	awk '{ print FILENAME, $_ }' "$@"
+}
+$do_ac && for ac in $power/{AC,ADP}* ; do
+	online=$ac/online
+	[ -f $online ] || continue
+	if $vb ; then
+		contents $online
+	else
+		[ "$(cat $online)" = 1 ] && plugged=true || plugged=false
+		if $as_bool ; then
+			printf '%s ' $plugged
+		else
+			$plugged && printf '%s' '=' || printf '%s' '!'
+		fi
+	fi
+done
+$do_pct && for bat in $power/BAT* ; do
+	for l in now full ; do
+		for pre in charge energy ; do
+			f=$bat/${pre}_$l
+			[[ -e $f ]] && typeset $l=$f
+		done
+	done
+	if [ ! -f $now ] || [ ! -f $full ] ; then
+		echo -1
+	elif $vb ; then
+		contents $now $full
+	else
+		perl -lnwe 'if($a){print int(100*$a/$_)}else{$a=$_}' $now $full
+	fi
+done

@@ -1,0 +1,52 @@
+#!/bin/zsh
+unset host
+_dry=false
+_argv=()
+case $0:t in
+	*dell) host=dell:0 ;;
+	*win) host=acer2k3:0 ;;
+	on*) host=${${0:t}#on}:0 ;;
+esac
+if (( ! $+host )) && [ $# -gt 0 ] ; then
+	case $1 in
+		*:*) host=$1 ;;
+		*) host="$1":0 ;;
+	esac
+	(( $+host )) && shift
+fi
+(( $+host )) && [[ $host != *:* ]] && host=$host\:0
+if (( ! $+host )) ; then
+	echo "No host set" >&2
+	exit 1
+fi
+while (( $#argv )) ; do
+	arg=$1
+	shift
+	(( $#_argv )) && _argv+=( $arg ) && continue
+	case "$arg" in
+		--dry) _dry=true ;;
+		--) _argv+=( $1 ) ; shift ;;
+		-*) echo "Unknown option: $arg" ; exit 1 ;;
+		*) _argv+=( $arg ) ;;
+	esac
+done
+argv=($_argv)
+
+if (( $+commands[x-is-active] )) ; then
+	if ! env DISPLAY=$host x-is-active ; then
+		if (( $+SSH_CONNECTION )) ; then
+			xhost=$SSH_CONNECTION[(w)3]
+		elif (( $+commands[hostname] )) ; then
+			xhost=$(hostname -f)
+		else
+			xhost=$HOST
+		fi
+		auth=( ssh ${host%:*} DISPLAY=:0 xhost +$xhost )
+		$_dry && print -l $auth || $auth
+	fi
+fi
+
+(( $#argv )) || argv=( urxvt )
+argv=( env DISPLAY=$host $argv )
+$_dry && argv=( echo $argv )
+$argv

@@ -1,0 +1,13 @@
+#!/bin/zsh
+for file ; do
+  bak=$file.bak
+  if [[ -f $file ]] && [[ -f $bak ]] ; then
+    echo "Both $file and .bak exist!"
+  elif [[ -f $file ]] ; then
+    mv -v $file $bak
+  elif [[ -f $bak ]] ; then
+    mv -v $bak $file
+  else
+    echo "Neither $file nor .bak exist!"
+  fi
+done

@@ -1,0 +1,2 @@
+#!/bin/sh
+startx && echo sleeping for 15 && sleep 15 && sudo halt

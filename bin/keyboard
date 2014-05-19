@@ -1,0 +1,141 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use feature ':5.10';
+use FindBin '$Bin';
+use Getopt::Long qw/:config pass_through/;
+use IPC::Run;
+my %opt;
+my @xkbopts = qw/model layout variant keycodes/;
+my @includes;
+
+my $is_macbook = do {
+	my $mac = 0;
+	my $id = "/sys/devices/virtual/dmi/id/board_version";
+	if (-e $id) {
+		my $name = do { undef local $/; open my $f, '<', $id; <$f> };
+		$mac = $name =~ /MacBook/;
+	}
+	$mac
+};
+
+my $xkb_dir = "$Bin/xkb";
+
+GetOptions(
+	(map {; "$_=s" => \$opt{$_} } @xkbopts),
+	'reset=s' => \$opt{reset},
+	'o|option=s@' => \($opt{options}=[]),
+	'O|old-options' => \(my $old_options = 0),
+	'menu' => \(my $menu = 0),
+	'dry' => \(my $dry_run = 0),
+	'extra=s@' => \my @extra,
+	'ion!' => \(my $ion = `pgrep ion3`),
+	'mod3' => \(my $mod3),
+	'modmap=s' => \(my $modmap = "$xkb_dir/.xmodmap"),
+	'M|justmod' => \(my $just_modmap = 0),
+	'clear' => \(my $clear_mods),
+	'I=s@' => \@includes,
+	'macbook' => \$is_macbook,
+	'print' => \(my $just_print),
+) or die 'options';
+@includes = grep -d, $xkb_dir unless @includes;
+sub run_it {
+	my @flat = map ref() ? @$_ : $_, grep { (!ref) or ('ARRAY' eq ref) } @_;
+	$_ = (length) ? $_ : "''" for @flat;
+	print "@flat\n";
+	$dry_run and return;
+	@_ = [@_] unless grep ref, @_;
+	&IPC::Run::run;
+}
+my $default_options = [
+	grep($old_options, qw/lv3:ralt_switch altwin:super_win/),
+	qw/terminate:ctrl_alt_bksp/
+];
+my %defaults = (
+	'' => {
+		model => 'pc104',
+		layout => 'benizi',
+		variant => 'intl',
+		keycodes => 'evdev',
+		reset => 1,
+		options => $default_options,
+	},
+);
+my @defopt = qw/layout variant/;
+for (@defopt) { $opt{$_} //= shift @ARGV if @ARGV; }
+push @extra, @ARGV if @ARGV;
+warn "Extra options: (@extra)\n" if @extra;
+
+my $path = $opt{layout} || '';
+my $sep = '.';
+do {
+	for my $k (keys %{$defaults{''}}) {
+		next unless exists $defaults{$path}{$k};
+		my $v = $defaults{$path}{$k};
+		if ($v and ref($v) and 'ARRAY' eq ref $v) {
+			push @{$opt{$k}}, @$v;
+		} else {
+			$opt{$k} //= $v;
+		}
+	}
+} while $path =~ s/^((?:(?!\Q$sep\E).)+)(?=\Q$sep\E|$)//;
+if ($menu) {
+	for ($opt{options}) {
+		@$_ = grep !/^compose:menu/, grep !/^altwin/, @$_;
+		push @$_, 'altwin:menu';
+	}
+}
+if (!$just_modmap) {
+	my @cmd = ('setxkbmap');
+	push @cmd, map {; "-$_" => $opt{$_} } grep length($opt{$_}), @xkbopts;
+	push @cmd, -option => '' if $opt{reset};
+	push @cmd, -option => $_ for @{$opt{options}};
+	push @cmd, @extra;
+	@cmd = (
+		[@cmd, '-print'],
+		'|',
+		[xkbcomp => -w => 3 => map("-I$_", @includes), '-', $ENV{DISPLAY}]
+	) if @includes;
+	@cmd = @{$cmd[0]} if $just_print;
+	run_it @cmd;
+}
+
+sub swap_mods {
+	my ($key, $old, $new) = @_;
+	run_it xmodmap => -e => "remove $old = $key";
+	run_it xmodmap => -e => "add $new = $key";
+}
+
+if ($mod3 or $just_modmap or $is_macbook or -f $modmap) {
+	run_it xmodmap => $modmap if -f $modmap;
+	if ($is_macbook) {
+		my ($b2, $b3) = (64, 108);
+		run_it xmodmap => -e => "keycode $b2 = Pointer_Button2";
+		run_it xmodmap => -e => "keycode $b3 = Pointer_Button3";
+		run_it xkbset => 'm';
+	} else {
+		my ($old, $new) = map "mod$_", ($ion or $mod3) ? (4, 3) : (3, 4);
+		swap_mods 'Super_L', $old, $new;
+	}
+	swap_mods 'Alt_R', 'mod1', 'mod3';
+}
+if ($clear_mods) {
+	run_it xdotool => keyup => $_
+		for qw/
+		Hyper_L Hyper_R
+		Super_L Super_R
+		Alt_L Alt_R
+		Control_L Control_R
+		Shift_L Shift_R
+		/;
+}
+__END__
+setxkbmap
+-model pc104
+-layout us
+-variant intl
+-option ''
+-option lv3:ralt_switch
+-option altwin:super_win
+-option ctrl:nocaps
+-option compose:menu

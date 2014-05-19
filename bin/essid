@@ -1,0 +1,13 @@
+#!/bin/zsh
+if (( $+commands[nmcli] )) ; then
+  nmcli="$(nmcli -t -f name con status)"
+  if [[ -n $nmcli ]] ; then
+    printf '%s\n' $nmcli
+    exit
+  fi
+elif (( $+commands[wicd-cli] )) ; then
+  invalid='Invalid wireless network identifier.'
+  wicd-cli --wireless -p Essid | grep -Fv $invalid || printf '(none)'
+  exit
+fi
+list-essids

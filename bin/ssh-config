@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+require 'net/ssh'
+
+opts = {}
+require 'optparse'
+OptionParser.new do |o|
+  o.on('-v', '--verbose') { opts[:verbose] = true }
+  o.parse!
+end
+
+host = ARGV.shift
+
+config = Net::SSH::Config.for(host)
+
+if opts[:verbose]
+  config.each do |k,v|
+    case v
+    when Array
+      v.each_with_index { |val,i| puts "#{k}.#{i}\t#{val}" }
+    else
+      puts "#{k}\t#{v}"
+    end
+  end
+else
+  puts config[:host_name]
+end

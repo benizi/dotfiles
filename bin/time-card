@@ -1,0 +1,284 @@
+#!/usr/bin/env ruby
+
+ENV['TZ'] = 'America/New_York'
+begin
+	Encoding.default_external = 'BINARY'
+rescue
+end
+
+require 'pp'
+require 'ostruct'
+require 'optparse'
+require 'tempfile'
+require 'open3'
+
+opts = OpenStruct.new
+use = { :histfile => false, :vimtrack => false, :chromium => false }
+opts.cutoff = 14
+opts.chunk = 10
+optparse = OptionParser.new do |o|
+	o.on('-h') { use[:histfile] = true }
+	o.on('-v') { use[:vimtrack] = true }
+	o.on('-c') { use[:chromium] = true }
+	o.on('--cutoff N', Integer) { |n| opts.cutoff = n }
+	o.on('--chunk N', Integer) { |n| opts.chunk = n }
+	o.on('-w N', Integer) { |n| opts.width = n }
+	o.on('--whour N', Integer) { |n| opts.whour = n }
+	o.on('--urls') { opts.urls = true }
+	o.on('--week TIME') { |t| opts.week = t }
+end.parse!(ARGV)
+
+opts.width ||= 10000
+opts.whour ||= 30
+
+unless use.select { |k,v| v }.length > 0
+	use.each { |k,v| use[k] = true }
+	ARGV << "#{ENV['HOME']}/.historyfile" if ARGV.size.zero?
+end
+
+def week_interval(wk, yr=nil)
+	require 'date'
+	yr ||= Time.new.strftime('%Y').to_i
+	monday = Date.commercial(yr, wk, 1)
+	min_date = Time.at((monday-1).strftime('%s').to_i)
+	max_date = Time.at((monday+6).strftime('%s').to_i)
+	[ min_date, max_date ]
+end
+
+now = Time.new
+min_date = nil
+max_date = now
+case opts.week
+when nil
+	min_date = now - 86400 * opts.cutoff
+when '0'
+	min_date, max_date = week_interval(now.strftime('%W').to_i)
+when /^(-?)(\d+)$/
+	wk = $1.empty? ? $2.to_i : now.strftime('%W').to_i - $2.to_i
+	min_date, max_date = week_interval(wk)
+else
+	warn "Couldn't parse this --week: #{opts.week}, using this week"
+	min_date, max_date = week_interval(now.strftime('%W').to_i)
+end
+
+times = {}
+min_max = {}
+min_chunk = opts.chunk
+abort "min_chunk should divide 60 (but is #{min_chunk})" if 60 % min_chunk != 0
+
+@wk_fmt = '%Y week %U'
+@day_fmt = '%Y-%m-%d - %a'
+@blk_fmt = '%H:%M'
+
+all_times = []
+
+if use[:histfile]
+	ARGV << ENV['HOME']+'/.historyfile' if ARGV.empty?
+	ARGF.each do |line|
+		m = line.match(/^: (\d+):\d+;/) or next
+		all_times << [ 'hist', Time.at(m[1].to_i) ]
+	end
+end
+
+def vim_rtp
+	temp = Tempfile.new(['vim-rtp.', '.txt'])
+	vim = [ 'vim' ]
+	vim << '+:call append(0, split(&rtp, ","))'
+	vim << '+$d'
+	vim << '+wq'
+	vim << temp.path
+	Open3.popen3(*vim) { |i,o,e| i.close ; o.close ; e.read }
+	temp.read.split("\n")
+end
+
+if use[:vimtrack]
+	read_any = false
+	tried = []
+	begin
+		require 'rubygems'
+		require 'dbi'
+		vimdirs = vim_rtp
+		if !vimdirs or vimdirs.empty?
+			vimdirs = %w{.vim .vim.local}.map { |base| File.join(Dir.home, base) }
+		end
+		vimdirs.each do |dir|
+			file = dir + '/timetrack.sqlite3'
+			next unless File.exists?(file)
+			tried << file
+			begin
+				dbh = DBI.connect('DBI:SQLite3:' + file)
+				sth = dbh.prepare('select time from edited_files')
+				sth.execute
+				while r = sth.fetch
+					all_times << [ 'vim', Time.at(r[0].to_i) ]
+				end
+				sth.finish
+				dbh.disconnect
+				read_any = true
+			rescue
+				puts "Failed to read #{file}"
+			end
+		end
+	rescue Exception => e
+		puts "Couldn't read Vim tracking from:\n#{tried.join("\n")}" unless read_any
+	end
+end
+
+if use[:chromium]
+	begin
+		require 'find'
+		require 'open3'
+		@dbfiles = []
+		dirs = ['google-chrome','chromium'].map { |d| ENV['HOME'] + '/.config/' + d }
+		dirs = dirs.select { |dir| File.exists?(dir) }
+		Find.find(*dirs) do |path|
+			case File.basename(path)
+			when 'History'
+				if File.mtime(path) >= min_date
+					@dbfiles << path
+				end
+			end
+		end
+		@dbfiles = @dbfiles.map { |path| [ path, path + '.readonly' ] }
+		@readonly = @dbfiles.map do |paths|
+			file, readonly = paths
+			cmd = ['rsync','-av',file,readonly]
+			Open3.popen3(*cmd)
+			readonly
+		end
+
+		require 'rubygems'
+		require 'dbi'
+		require 'date'
+
+		@windows_epoch = Date.civil(1601,1,1).strftime("%s").to_f
+		def from_chrometime(nanoseconds)
+			Time.at(@windows_epoch + (nanoseconds.to_i / 1e6))
+		end
+
+		def to_chrometime(time)
+			Time.at(1e6 * time.to_i - @windows_epoch).strftime("%s")
+		end
+
+		url_debugging = { :reject => [], :accept => [] }
+		@readonly.each do |path|
+			# Open3.popen3('sqlite3',path,'.schema') { |i,o,e| puts o.read }
+			# next
+			dbh = DBI.connect("DBI:SQLite3:#{path}")
+			sth = dbh.prepare(<<SQL)
+select urls.url, visit_time
+from visits
+join urls on visits.url = urls.id
+where length(title) > 0
+order by visit_time
+SQL
+			sth.execute
+			while r = sth.fetch
+				url, time = r
+				status = :reject
+				case url
+				when /google/, /benizi/, /webmail/, # mail autorefresh
+					/reviews[^\/]*\/dashboard/, # reviewboard autorefresh
+					/smcp\/action_items/ # smcp autorefresh
+				else
+					all_times << [ 'chromium', from_chrometime(time) ]
+					status = :accept
+				end
+				url_debugging[status] << [ from_chrometime(time), url ] if opts.urls
+			end
+			sth.finish
+			dbh.disconnect
+		end
+	end
+	if opts.urls
+		[:reject,:accept].each do |status|
+			url_debugging[status].sort_by {|x| x[0] }.each do |t,u|
+				puts "#{status} #{t} #{u}"
+			end
+		end
+	end
+end
+
+all_times.select {|t| t[-1] >= min_date && t[-1] < max_date }.each do |info|
+	label, t = info
+	r = Time.at(t - t.to_i % (min_chunk * 60))
+	wk = r.strftime("%Y week %U")
+	day = r.strftime("%Y-%m-%d - %a")
+	block = r.strftime("%H:%M")
+
+	min_max[day] ||= {}
+	mmd = min_max[day]
+	mmd[:min] ||= t
+	mmd[:max] ||= t
+	mmd[:min] = t if t < mmd[:min]
+	mmd[:max] = t if t > mmd[:max]
+
+	times[wk] ||= {}
+	times[wk][day] ||= {}
+	times[wk][day][block] ||= 0
+	times[wk][day][block] += 1
+	# times[f] << t.strftime("%Y-%m-%d %H:%M")
+end
+
+times.keys.sort.each do |wk|
+	puts '',wk
+	times[wk].keys.sort.each do |day|
+		h = times[wk][day]
+		(0..23).each do |hr|
+			(0...60).each do |min|
+				next if 0 != min % min_chunk
+				h[sprintf "%02d:%02d", hr, min] ||= 0
+			end
+		end
+		x = {}
+		h.each do |k,v|
+			hr = k[0,2].to_i
+			newk = hr < 9 ? "..:" << k[3,2] : hr > 21 ? ">>:" << k[3,2] : k
+			x[newk] ||= 0
+			x[newk] += v
+		end
+		h = x
+
+		ordered = h.keys.sort
+		# Unicode box-drawing chars: 0x2502 = vertical line, ones in @vals are shaded boxes
+		sep = [ 0x2502 ].pack("U")
+		@vals = [ [ 0, 0x20 ], [ 1, 0x2591 ], [ 3, 0x2592 ], [ 7, 0x2593 ], [ 10, 0x2588 ] ].reverse
+		def val_to_chr(val)
+			@vals.each do |x|
+				v, c = x
+				return [c].pack("U") if val >= v
+			end
+			return '-'
+		end
+
+		hourline = []
+		minuteline = []
+		timeline = []
+
+		chunk = 60 / min_chunk
+		ordered.each_slice(chunk) do |keys|
+			hourline << sep
+			minuteline << sep
+			timeline << ''
+			keys.each_with_index do |x,i|
+				hourline << (i > 2 ? ' ' : i > 0 ? '' : x[0,2])
+				minuteline << (i > 0 ? x[3,2] : '  ')
+				timeline << (h[x].to_i > 0 ? val_to_chr(h[x]) : ' ')
+			end
+		end
+
+		# hourline << ' ' + day
+		puts "#{day} min(#{min_max[day][:min].strftime("%H:%M:%S")}) max(#{min_max[day][:max].strftime("%H:%M:%S")})"
+		lines = ['','']
+		while hourline.length > 0
+			[ hourline, timeline ].each_with_index do |arr,i|
+				lines[i] << arr.shift(1 + chunk).join('')
+			end
+			if lines[0].length > opts.width || lines[0].length > (chunk + 1) * opts.whour || hourline.length == 0
+				lines.each { |x| puts x }
+				lines = ['','']
+			end
+		end
+		#[ hourline, timeline ].each { |arr| puts arr.join('') }
+	end
+end

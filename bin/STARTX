@@ -1,0 +1,2 @@
+#!/bin/sh
+startx && echo sleeping for 15 && perl -MTerm::ReadKey -we '$|=1;$n=15;ReadMode 4;END{ReadMode 0;} for (1..$n) { print "."; my $k = ReadKey 1; next if not defined $k; ($k eq "q") and exit 0; exit 1; }' && sudo halt

@@ -1,0 +1,13 @@
+#!/bin/zsh
+case $0 in
+	*-mute) mute=true ;;
+	*-unmute) mute=false ;;
+	*)
+		case $(pacmd dump | grep set-sink-mute | cut -f3 -d' ') in
+			no) mute=true ;;
+			*) mute=false ;;
+		esac
+	;;
+esac
+$mute && arg=yes || arg=no
+pacmd set-sink-mute 0 $arg >& /dev/null

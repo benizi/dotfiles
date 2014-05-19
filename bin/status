@@ -1,0 +1,157 @@
+#!/bin/zsh
+unset dzen
+(( $#argv )) && dzen=true fg=$1 bg=$2
+(( $+WMII_TERM )) && wmii=true || wmii=false
+if [[ -f ~/tz ]] ; then
+	date="$(TZ=$(<~/tz) date +'%s %Y-%m-%d %H:%M:%S %Z')"
+else
+	date="$(date +'%s %Y-%m-%d %H:%M:%S')"
+fi
+epoch=${date%% *}
+date=${date#* }
+out=( $date )
+typeset -A files
+files+=( messages '' )
+files+=( warnings '' )
+for f in ${(k)files} ; do
+	file=$HOME/$f
+	color=$files[$f]
+	if [[ -f $file ]] ; then
+		for msg in ${(f):-"$(<$file)"} ; do
+			out=( $color$msg $out )
+		done
+	fi
+done
+
+out=( "$(essid)" $out )
+
+out=(
+	${(f):-"$(awk '
+function report(t,f,usecolor){
+used = kb(t-f)
+color = (usecolor && used) ? "^fg(#ff9900)^ca(1,sudo swapoff -a && sudo swapon -a)" : ""
+nocolor = color ? "^fg()^ca()" : ""
+return color used "/" kb(t) nocolor
+}
+function kb(b){return int(b/1024)}
+{ stats[$1] = $2 }
+END {
+print "mem:" report(stats["MemTotal:"], stats["MemFree:"] + stats["Cached:"])
+if (stats["SwapTotal:"]) print "swp:" report(stats["SwapTotal:"], stats["SwapFree:"], 1)
+}
+' /proc/meminfo)"}
+	$out
+)
+
+if (( $+commands[uptime] )) ; then
+	up=${${:-$(uptime)}[-3]:s/,//}
+	(( up > 10 )) && up=" !!! LOAD $up LOAD !!! "
+	out=( load:$up $out )
+fi
+
+if (( $+commands[battery] )) ; then
+	spinner=${${:-'-/|\\'}[1 + ($date[-1] % 4)]}
+	battery -p | read plugged pct
+	$plugged && plugmark='+' || plugmark=''
+	bat=$pct
+	unset do_warning
+	[[ $pct -gt 0 && $pct -le 5 ]] && ! $plugged && do_warning=true
+	if (( $+do_warning )) ; then
+		battery_warn=$HOME/.battery.warned
+		now="$(date +%s)"
+		last_warned="$(stat -c %Y $battery_warn 2>/dev/null)"
+		[[ -z $last_warned ]] && last_warned=0
+		if (( now - last_warned > 60 )) ; then
+			xmessage -timeout 60 -buttons 'IGNORE:1,Sleepy time:0' BATTERY IS ABOUT TO DIE && sudo pm-suspend
+			touch $battery_warn
+		else
+			unset do_warning
+		fi
+	fi
+	bcol=''
+	if (( ! $+do_warning )) && [[ $pct -gt 0 && $pct -le 10 ]] && ! $plugged ; then
+		for i in {1..20} ; do
+			bat="$spinner$bat$spinner"
+		done
+		(( $+dzen )) && bcol='^bg(red)'
+	elif (( $+dzen )) ; then
+		if $plugged ; then
+			bcol='^bg(#336633)'
+		elif (( pct <= 20 )) ; then
+			bcol='^fg(black)^bg(#cccc00)'
+		else
+			bcol='^bg(#339933)'
+		fi
+	fi
+	[[ $pct -lt 10 ]] && ! $plugged && (( $+commands[osd] )) && (osd -d 2 $bat &)
+	out=( ${bcol}bat:$plugmark$bat $out )
+fi
+
+(( $+commands[x-kbstate] )) && out=( "$(x-kbstate -u)" $out )
+if (( $+commands[nyxmms2] )) && [[ ! -f $HOME/.no-xmms2-status ]] ; then
+	song="$(nyxmms2 current 2>/dev/null || nyxmms2 status)"
+	#song="$(nyxmms2 status)"
+	# song=${song/Playing \(/▶ }
+	[[ $song = Playing* ]] && playing=true || playing=false
+	song=${song/Playing \(/\\->}
+	song=${song/Paused \(/II}
+	song=${song/Stopped \(/[]}
+	song=${song/\): / }
+	if $playing && false ; then
+		timing=${song%% *}
+		song=${song#* }
+		song=$timing$song[(($epoch % $#song)),-1]
+	else
+		unset inp
+		while [[ "$song" != "$inp" ]] ; do
+			inp=$song
+			song=${inp//  / }
+		done
+		a=0
+		while (( $#song > 40 && a < 10 )) ; do
+			song=${song% │ [^│]*}
+			(( a = a + 1 ))
+		done
+		a=0
+		while (( $#song > 40 && a < 10 )) ; do
+			song=${song% - *}
+			(( a = a + 1 ))
+		done
+	fi
+	out=( $song $out )
+fi
+
+if (( $+commands[pomo] )) && ! $wmii ; then
+	pomo="$(pomo status)"
+	[[ -n $pomo ]] && out+=( "$pomo" )
+fi
+
+if (( $+commands[ip] )) ; then
+	if ip -6 addr show dev sixxs &> /dev/null ; then
+		if (( $+dzen ))
+		then ipv6="^fg(black)^bg(#ff9900)^ca(1,/usr/bin/sudo systemctl stop aiccu.service)V6^ca()"
+		else ipv6=V6
+		fi
+	else
+		if (( $+dzen ))
+		then ipv6="^fg()^bg()^ca(1,/usr/bin/sudo systemctl start aiccu.service)v6^ca()"
+		else ipv6=v6
+		fi
+	fi
+	(( $+ipv6 )) && out=( $ipv6 $out )
+fi
+
+(( $+dzen )) && normcolor="^fg()^bg()" || normcolor=''
+toprint=''
+for thing in $out ; do
+	[[ -z $toprint ]] || toprint+=$normcolor'│'
+	toprint+=$thing
+done
+unset inp
+while [[ "$toprint" != "$inp" ]] ; do
+	inp="$toprint"
+	toprint="${inp//  / }"
+done
+$wmii && toprint="label $toprint"
+print -n -r - $toprint
+(( $+dzen )) && echo

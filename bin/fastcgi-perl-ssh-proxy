@@ -1,0 +1,26 @@
+#!/bin/zsh
+
+unset stop
+host=ap
+port=4321
+for arg ; do
+  case $arg in
+    *stop) stop=true ;;
+    [[:digit:]]*) port=$arg ;;
+    *) host=$arg ;;
+  esac
+done
+
+doit () {
+  printf "%s\n" "$*"
+  $@
+}
+
+# stop the old server
+doit screen -r fastcgi-perl -X quit
+
+# start the new one
+cmd=()
+(( $+stop )) || cmd=( ssh-proxy $host $port -N )
+cmd+=( screen-detached -1 fastcgi-perl -f --no-exec )
+doit $cmd

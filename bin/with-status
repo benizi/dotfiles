@@ -1,0 +1,32 @@
+#!/bin/zsh
+(( $#argv )) || { echo "Usage: ${0:h} cmd [args] [-- message]" >&2 ; exit 1 }
+trap 'returned=SIGNAL' INT TERM
+starttime=$(date +%s)
+cmd=()
+unset msg
+for arg ; do
+	if (( $+msg )) ; then
+		msg+=( $arg )
+		continue
+	fi
+	case $arg in
+		--) msg=() ;;
+		*) cmd+=( $arg ) ;;
+	esac
+done
+(( $+msg )) || msg=()
+(( $#cmd )) || cmd=( true )
+(( $#msg )) || msg=( $cmd )
+$cmd
+returned=$?
+endtime=$(date +%s)
+msgcmd=()
+if [[ -n "$WMII_ADDRESS" ]] ; then
+	msgcmd=( wmii-alert.pl -- )
+else
+	msgcmd=( notify-send -t 0 )
+fi
+mess="$msg"
+[[ $returned != "0" ]] && mess="[!$returned]: $mess"
+[[ "$cmd" = true ]] || mess="$mess [time: $(( endtime - starttime ))]"
+$msgcmd $mess || print -r $'\a'$mess

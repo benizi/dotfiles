@@ -1,0 +1,73 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Sys::Hostname;
+use IPC::Cmd 'run_forked';
+use Getopt::Long qw/:config pass_through/;
+GetOptions(
+	'1' => \(my $just_one),
+	'r' => \(my $do_exec),
+	'v' => \(my $verbose),
+	'dry-run' => \(my $dry),
+	'ssh-script!' => \(my $ssh_script = 1),
+	't|term=s' => \(my $term),
+);
+
+sub ssh_script {
+	my $script = "$ENV{HOME}/ssh-script";
+	return unless -f $script;
+	return unless open my $f, '<', $script;
+	local $_;
+	while (<$f>) {
+		next unless /^(SSH_[^=]+)=([^;]+);/;
+		$ENV{$1} = $2;
+	}
+}
+
+$verbose //= $dry;
+my ($hosts, @hosts, %hosts);
+my %default_other = (
+	'hp' => 'usc.vpn',
+	'bhaskell-pc' => 'hp',
+	'bhaskell-laplin' => 'b',
+	'averatec' => 'hp',
+	'bhaskell-mb' => 'pgh.benizi.com',
+);
+
+if (@ARGV) {
+	@hosts = @ARGV;
+} else {
+	@ARGV = ("$ENV{HOME}/.ssh/known_hosts");
+	!/^#/ and undef @hosts{map split(/,/), (split)[0]} while <>;
+	@ARGV = ("$ENV{HOME}/.ssh/config");
+	/^Host(?:Name)?\s/ and undef @hosts{(split)} while <>;
+	@hosts = grep !/\*/, grep /[^\d.:]/, grep !/^[\[*|]/, grep !/Host/,
+		sort { length $a <=> length $b or $a cmp $b }
+		keys %hosts;
+}
+if ($just_one or not @hosts) {
+	if (open my $default, '<', "$ENV{HOME}/.default.ssh") {
+		chomp(@hosts = <$default>);
+	} else {
+		@hosts = $ENV{DEFAULT_SSH}
+		// $default_other{hostname()}
+		// 'localhost'
+	}
+}
+$hosts = join "", map "$_\n", sort @hosts;
+print $hosts and exit unless $do_exec;
+my $out;
+if ($just_one) {
+	$out = $hosts;
+} else {
+	$out = run_forked dmenu => { child_stdin => $hosts };
+	chomp($out = $$out{stdout}) if $out;
+}
+chomp $out;
+exit 1 unless length $out;
+my @cmd = ($term // 'term', '-e', 'env', 'TERM=xterm-256color', 'ssh', split ' ', $out);
+print "@cmd\n" if $verbose;
+exit if $dry;
+open STDERR, '>', '/dev/null';
+ssh_script if $ssh_script;
+exec { $cmd[0] } @cmd;

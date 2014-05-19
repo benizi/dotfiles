@@ -1,0 +1,22 @@
+#!/bin/zsh
+files=()
+for arg ; do
+  if [[ -d $arg ]] ; then
+    files+=( $arg/**/*.rb(N) )
+  elif [[ -f $arg ]] ; then
+    files+=( $arg )
+  fi
+done
+files=( $argv )
+if (( ! $#files )) ; then
+  root=$(rails-root "$@")
+  [[ -z $root ]] && return 0
+  files=( $root/spec/**/*.rb(N) )
+fi
+(( ! $#files )) && return 0
+perl -lnw <<'PERL' $files
+BEGIN { $any = 0; }
+++$any and print $ARGV if $. == 1 and /^describe/;
+close ARGV if eof;
+END { exit $any ? 1 : 0 }
+PERL

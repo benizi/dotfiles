@@ -1,0 +1,21 @@
+#!/bin/sh
+
+clip() { xclip -selection "$@" ; }
+clipboard() { clip clipboard "$@" ; }
+clipout() { clip clipboard -out ; }
+trim() { printf '%s' "$(clipout)" | clipboard ; }
+
+case "$1" in
+  -o|-out|-O|-n) ;;
+  *)
+    clipboard
+    trim
+    clipout | clip primary
+    ;;
+esac
+
+clipout
+
+case "$1" in
+  -O|-n) printf '\n' ;;
+esac

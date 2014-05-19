@@ -1,0 +1,19 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Getopt::Long;
+my $n;
+Getopt::Long::Configure(qw/pass_through/);
+GetOptions(
+	'n=i' => \ ($n = 0),
+) or die "options";
+@ARGV = grep { not /^--?(\d+)$/ ? ($n = $1) : 0 } @ARGV;
+while (<>) {
+	chomp;
+	my (@kv) = split /\t/, $_, 2;
+	push @kv, '' while @kv < 2;
+	my @l = map length, @kv;
+	print "+", join(',', @l), ":", join('->', @kv), $/;
+	last if $. == $n;
+}
+print $/;

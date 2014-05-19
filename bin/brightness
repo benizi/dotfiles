@@ -1,0 +1,35 @@
+#!/bin/sh
+
+die() {
+  printf 'Error: %s\n' "$*"
+  exit 1
+}
+
+# use /sys/class/backlight to simulate `xbacklight`
+hash xbacklight 2>/dev/null || xbacklight() {
+  glob='/sys/class/backlight/*'
+  op=$1 pct=$2
+  set -- $glob
+  if [ "$1" != "$glob" ] ; then
+    bl=$1
+    max="$(cat $bl/max_brightness)"
+    cur="$(cat $bl/brightness)"
+    delta=$(( pct * max / 100 ))
+
+    [ "$op" = "=" ] && val=$delta || val=$(( cur $op delta ))
+    if [ -z "$val" ] || [ $val -lt 1 ] ; then
+      die Not setting zero brightness
+    fi
+    echo $val | sudo sh -c "cat - > $bl/brightness"
+  fi
+}
+
+[ $# -eq 0 ] && die "Usage: $0 up | down | min | max | op pct"
+
+case "$1" in
+  up) xbacklight + 10 ;;
+  down) xbacklight - 10 ;;
+  min) xbacklight '=' 10 ;;
+  max) xbacklight '=' 100 ;;
+  *) xbacklight "$@" ;;
+esac

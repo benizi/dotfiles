@@ -1,0 +1,176 @@
+#!/bin/zsh
+case $0 in
+	*-fresh) argv+=( --scratch http://${${0//-fresh/}:t} ) ;;
+	*chromium*|*open|*sensible-browser) ;;
+	*nojs) argv+=( --nojs --scratch ) ;;
+	*scratch) argv+=( --scratch ) ;;
+	*webmail) argv+=( --firefox --profile webmail ) ;;
+	*Flash) argv+=( --flash --scratch ) ;;
+	*) _profile=$0:t ;;
+esac
+function warn () { echo "\e[31m$*\e[0m" >&2 }
+function die () { warn $* ; exit 1 }
+_dry=false
+_plugins=true
+unset _url _ua _scratch
+_logging=false
+_userscripts=true
+_ipv6=true
+_javascript=true
+unset _asyncdns
+unset _flash
+_args=()
+_flags=( plugins logging user-scripts ipv6 async-dns flash )
+_pseudo_flags=( flash )
+
+if [[ -d /Applications ]] ; then
+	_official="/Applications/Chrome.app/Contents/MacOS/Google Chrome"
+	_config_dirs=(
+		~/Library/Application\ Support/Google/Chrome
+	)
+	_remote=false
+else
+	_official=/opt/google/chrome/chrome
+	_config_dirs=(
+		~/.config/google-chrome
+		~/.config/chromium
+	)
+	_remote=true
+fi
+
+find_exe () {
+	unset exe
+	if [[ -f $_official ]] ; then
+		exe=$_official
+	else
+		path=( ${${path:#$HOME/bin*}/${${(%):-"%x"}:h}} )
+		for command in chromium chromium-bin chrome ; do
+			(( $+commands[$command] )) || continue
+			exe==$command
+			break
+		done
+	fi
+	(( $+exe )) || { echo "Couldn't find chromium/chrome" >&2 ; exit 1 }
+}
+
+# check for chromedriver invocation
+unset noparse
+for arg ; do
+	case "$arg" in
+		*TestingInterface*) noparse=true ;;
+	esac
+done
+
+if (( $+noparse )) ; then
+	find_exe
+	exec $exe $@
+fi
+
+while [ $# -gt 0 ] ; do
+	arg=$1 ; shift
+	for l in $_flags ; do
+		_found=true
+		alt=${l//-}
+		#local -a yes no
+		yes=( -{,-}{$l,$alt} )
+		no=( -{,-}no{,-}{$l,$alt} )
+		case $arg in
+			${~${(j:|:)yes}}) eval "_$alt=true" ;;
+			${~${(j:|:)no}}) eval "_$alt=false" ;;
+			*) _found=false ;;
+		esac
+		$_found && break
+	done
+	$_found && continue
+	case "$arg" in
+		-profile*|--profile*) _profile=${arg/*=}
+			if [ "$arg" = "$_profile" ] ; then _profile="$1" ; shift ; fi
+			[ -z "$_profile" ] && die "Bad argument: $arg" ;;
+		--scratch) _scratch=true ;;
+		--firefox) _ua='Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.4) Gecko/20100527 SUSE/3.6.4-2.2 Firefox/3.6.4' ;;
+		--googlebot) _ua='Googlebot/2.1 (+http://www.google.com/bot.html)' ;;
+		--default) _profile=Default ;;
+		-dry|--dry) _dry=true ;;
+		--nojs) unset _javascript ;;
+		--touch) _args+=( --touch-events=enabled ) ;;
+		//*) _url=https:$arg ;;
+		http:*|https:*|ftp:*|file:*|/*) _url=$arg ;;
+		*) _args+=( $arg ) ;;
+	esac
+done
+
+cleanup_tmp () { [[ $_profdir = *scratch* ]] && rm -rf $_profdir }
+if (( $+_scratch )) ; then
+	(( $+_profile || $+_profdir )) && die "Can't use --scratch with --profile/--profdir"
+	_profile=SCRATCH
+	_profdir=$(mktemp -t -d chromium-scratch.XXXXXXXX)
+	(( $+_profdir )) || die "Couldn't create tmp dir?"
+	trap cleanup_tmp EXIT INT TERM
+	chromium-theme $_profdir $+_javascript
+fi
+
+: ${_profile=Default}
+: ${_profdir=$_profile}
+if ! [[ $_profdir = */* ]] ; then
+	for loc in $_config_dirs ; do
+		_profdir=$loc/$_profile
+		[[ -e $_profdir ]] && break
+	done
+	if [[ $_profile = Default ]] ; then
+		_profdir=$_profdir:h
+		[[ -e $_profdir ]] || unset _profdir
+	fi
+fi
+_logext=$_profdir:t
+(( $+_profdir )) && _args+=( --user-data-dir=$_profdir )
+(( $+_ua )) && _args+=( --user-agent=$_ua )
+: ${_plugins=true}
+: ${_logext=default}
+for flag in $_flags ; do
+	${(P)${:-_${flag//-}}} && _args+=( --enable-$flag ) || _args+=( --disable-$flag )
+done
+for flag in $_pseudo_flags ; do
+	_args=( ${_args#--*able-$flag} )
+done
+
+if (( $+_flash ))
+then pepper_flash_dir=$HOME/PepperFlash
+else pepper_flash_dir=/opt/google/chrome/PepperFlash
+fi
+
+if [[ -d $pepper_flash_dir ]] ; then
+	pepper_flash=$pepper_flash_dir/libpepflashplayer.so
+	pepper_flash_version=$(awk '/version/ {print $2}' $pepper_flash_dir/manifest.json | tr -dc 0-9.)
+	_args+=( --ppapi-flash-path=$pepper_flash --ppapi-flash-version=$pepper_flash_version )
+fi
+
+_echo=()
+$_dry && _echo=(echo)
+_exec=()
+(( $+_scratch )) || _exec=(exec)
+if [[ -n "$_url" ]] ; then
+	if $_remote ; then
+		(( $+commands[dwm-activate] )) && dwm-activate browser &
+		_args+=( --remote "$_url" )
+	else
+		exec $_echo open $_url
+	fi
+fi
+find_exe
+_cmd=( $_echo $_exec $exe $_args )
+if $_logging ; then
+	_logfile=~/logs/errors-chromium-${_logext}-$(date +%Y-%m-%d-%H%M%S)
+	if $_dry ; then
+		echo LOG file: $_logfile
+		echo $_cmd
+		exit
+	fi
+	[[ -d $_logfile:h ]] || mkdir -p $_logfile:h
+	if (( $+commands[tai64n] )) ; then
+		$_cmd |& tai64n > $_logfile
+	else
+		$_cmd |& perl -pwe '$|=1; s/^/time . "\t"/e' > $_logfile
+	fi
+else
+	$_cmd
+fi

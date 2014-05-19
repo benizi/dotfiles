@@ -1,0 +1,13 @@
+#!/bin/zsh
+args=()
+while (( $# )) ; do
+  arg=$1
+  shift
+  case $arg in
+    -f) file=$1 ; shift ;;
+    *) args+=( "$arg" ) ;;
+  esac
+done
+set -- $args
+[[ -n $file ]] && set -- "$@" "$(cat $file)"
+exec /usr/bin/notify-send "$@"

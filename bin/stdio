@@ -1,0 +1,80 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+my @prog;
+my ($stdin, $stdout, $dry, $keep);
+while (@ARGV) {
+	$_ = shift;
+	if (/^-(\w+)$/) {
+		unshift @ARGV, map "--$_", split //, $1;
+	} elsif (/^--b(?:lock)?$/) {
+		$stdin //= "[stdin]";
+		$stdout //= "[stdout]";
+	} elsif (/^--stdin(?:=(.*))?$/) {
+		$stdin = length($1) ? $1 : shift;
+	} elsif (/^--stdout(?:=(.*))?$/) {
+		$stdout = length($1) ? $1 : shift;
+	} elsif (/^--dry(?:-run)?$/) {
+		$dry = 1;
+	} elsif (/^--keep(?:-?te?mp)?$/) {
+		$keep = 1;
+	} else {
+		unshift @ARGV, $_;
+		@prog = splice @ARGV;
+	}
+}
+$stdin //= "--stdin";
+$stdout //= "--stdout";
+my @use_stdin;
+my @use_stdout;
+for my $i (0..$#prog) {
+	$_ = $prog[$i];
+	for my $io ($stdin, $stdout) {
+		next unless s/^\Q$io\E//;
+		splice @prog, $i, 1, [ $io, $_ ];
+		last;
+	}
+}
+use File::Temp 'tempfile';
+use File::Basename;
+my %temp;
+my $donestdin;
+for my $i (0..$#prog) {
+	$_ = $prog[$i];
+	next unless ref;
+	my ($io, $suffix) = @$_;
+	my ($subname, $do_stdin) = ($io eq $stdin) ? (in=>1) : (out=>0);
+	$temp{$io} ||= {};
+	if (!exists $temp{$io}{$suffix}) {
+		my $info = {};
+		@$info{qw/handle name/} = tempfile
+			basename($0)."-$subname-XXXXXXXX",
+			TMPDIR=>1,
+			grep(!$keep, UNLINK=>1),
+			grep(length($suffix), SUFFIX=>$suffix);
+		if ($do_stdin) {
+			undef local $/;
+			my $fh = $$info{handle};
+			if ($donestdin) {
+				seek $donestdin, 0, 0;
+				my $in = <$donestdin>;
+				print $fh $in;
+			} else {
+				print $fh <STDIN>;
+				$donestdin = $fh;
+			}
+		}
+		$temp{$io}{$suffix} = $info;
+	}
+	splice @prog, $i, 1, $temp{$io}{$suffix}{name};
+}
+warn "$0={@prog}\n";
+system { $prog[0] } @prog unless $dry;
+for my $info (values %{$temp{$stdout}}) {
+	my $fh = $$info{handle};
+	seek $fh, 0, 0;
+	binmode $fh;
+	undef local $/;
+	$_ = <$fh>;
+	print;
+}

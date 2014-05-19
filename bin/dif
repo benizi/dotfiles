@@ -1,0 +1,194 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Getopt::Long qw/:config pass_through/;
+use IPC::Cmd 'run';
+use Digest::MD5 'md5_hex';
+sub usage {
+	die <<USAGE;
+$0 [options]                -- stdin mode
+$0 [options] file1 file2    -- run-diff mode
+
+Options:
+	-g / --graphical / --files      Create files for the diffs
+	--diffcmd CMD                   Diff cmd for graphical output
+	--mac                           Handle Mac (bare CR) line endings
+	--keep                          Keep the temporary files
+	--no-pager                      Don't automatically page the output
+	-u #                            Number of lines of context (0 = unlimited)
+USAGE
+}
+GetOptions(
+	'g|graphical|files' => \(my $create_files = 0),
+	'diffcmd=s' => \(my $diff_cmd = 'kdiff3'),
+	'mac' => \(my $handle_bare_cr = 0),
+	'keep' => \(my $keep = 0),
+	'pager!' => \(my $pager = 1),
+	'u=s' => \(my $unified_lines),
+) or usage;
+usage if @ARGV and @ARGV != 2;
+my $input;
+if (@ARGV) {
+	my @cmd = (diff => -ur => @ARGV);
+	if (defined $unified_lines) {
+		$unified_lines = -1 unless $unified_lines;
+		splice @cmd, 1, 0, '-U', $unified_lines;
+	}
+	my ($yay, $err, $full, $stdout, $stderr) = run command => \@cmd, verbose => 0;
+	$input = join '', @$stdout;
+} else {
+	warn "Reading diff from terminal\n" if -t 0;
+	$input = do { undef local $/; <> };
+}
+my $need_hunk = 0;
+my @AB = \my (@A, @B);
+my @ind;
+my @in;
+sub dollar { my ($str, $n) = @_; substr $str, $-[$n], $+[$n]-$-[$n] }
+open my $diff, '<', \$input;
+while (<$diff>) {
+	my $orig = $_;
+	if ($need_hunk and $handle_bare_cr and /\r(?!\n)/) {
+		my ($type) = /^([+\-\ ])/;
+		s/\r(?!\n)/\n/g;
+	}
+	if (/^\\ No newline at end of file/ and @in == 1) {
+		my $lines = $in[0][-1];
+		$lines // die "No newline at end of what file?\n";
+		$$lines[-1] =~ s/(?=[\r\n]*$)/<no newline>/;
+	} elsif (/^Files (.*?) and (.*?) differ/) {
+		push @{$AB[$_]},
+			[{ filename => dollar $orig, $_+1 }],
+			[ 'Binary files differed' ]
+			for 0..$#AB;
+	} elsif (/^Only in (.*?): (.*?)$/) {
+		push @{$AB[$_]},
+			[{ filename => $1.'/'.$2.'('.$_.')' }],
+			[ 'Path only in one or the other' ]
+			for 0..$#AB
+	} elsif ($need_hunk) {
+		@in = (
+			s/^ // ? (\@A,\@B) :
+			s/^-// ? (\@A) :
+			s/^\+// ? (\@B) :
+			die "Expecting line of hunk, but got: $orig\n"
+		);
+		my $nolead = $_;
+		push @{$$_[-1]}, $nolead for @in;
+		$need_hunk-- for @in;
+	} elsif (/^\@\@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? \@\@/) {
+		$need_hunk = ($2//1) + ($4//1);
+		if (@ind) {
+			@ind == 2 or die "Didn't find proper indexes around line $.\n";
+			push @$_, [{ filename => shift @ind }] for @AB;
+		}
+		push @$_, [] for @AB;
+	} else {
+		# if (/^diff\s(?:-\S+\s)*(\S+) (\S+)/) {
+		# push @ind, $1, $2;
+		# } els
+		if (/^--- (\S+)/) {
+			@ind >= 2 or unshift @ind, $1;
+		} elsif (/^\+\+\+ (\S+)/) {
+			@ind >= 2 or push @ind, $1;
+		} else {
+			# header etc.
+			push @$_, [{ header => $orig }] for \@A, \@B;
+		}
+	}
+}
+close $diff;
+for my $arr (@AB) {
+	for my $i (reverse 0..$#$arr-1) {
+		my ($this, $next) = @$arr[$i,$i+1];
+		next if grep !@$_, $this, $next;
+		next if grep !ref($$_[0]), $this, $next;
+		next if grep !exists($$_{header}), map $$_[0], $this, $next;
+		$$this[0]{header} .= $$next[0]{header};
+		splice @$arr, $i+1, 1;
+	}
+}
+use ColorDiff;
+#ColorDiff::Format('html');
+ColorDiff::Split('punc');
+#ColorDiff::Split('words');
+my (@files, @filenames);
+my @md5s = map Digest::MD5->new, 1, 2;
+if ($create_files) {
+	eval 'use File::Temp; 1' or die "$@";
+	for ("diff-000-before.XXXXXXXX", "diff-001-after.XXXXXXXX") {
+		my ($fh, $filename) = File::Temp::tempfile($_, TMPDIR => 1);
+		push @files, $fh;
+		push @filenames, $filename;
+	}
+} else {
+	if ($pager and -t 1) {
+		$pager = $ENV{PAGER} // 'less';
+		open STDOUT, "| $pager";
+	}
+}
+for (0..$#A) {
+	my ($l, $r) = ($A[$_],$B[$_]);
+	$md5s[$$_[0]]->add(join '', @{$$_[1]}) for [0,$l],[1,$r];
+	if (@$l and ref($$l[0])) {
+		my @lr = ($l, $r) = map shift(@$_), $l, $r;
+		if ($$l{filename}) {
+			if (@files) {
+				for (0..$#lr) {
+					my $fh = $files[$_];
+					print $fh "====> $lr[-1]{filename} <====\n";
+				}
+			} else {
+				print ColorDiff::color_diff(
+					["--- $$l{filename}"],
+					["+++ $$r{filename}",''],
+				);
+			}
+		} elsif ($$l{header}) {
+			my @toprint = @files ? @files : (\*STDOUT);
+			my @lines = map [$$l{header}], @toprint;
+			if(1){#if (@files) {
+				unshift @{$lines[$_]},
+					map { ($_ x 72)."\n" }
+					'=', grep(0, [qw/< >/]->[-$_]), '='
+					for 0..$#lines;
+			}
+			print $_ @{shift @lines} for @toprint;
+			#print $_ "HEADER\n$$l{header}" for (@files) ? @files : (\*STDOUT);
+		} else {
+			die "Unknown special field: @{[keys %$l]}\n";
+		}
+	} else {
+		if (@files) {
+			my @line_arrays = ($l, $r);
+			for my $i (0..$#files) {
+				my $fh = $files[$i];
+				my $lines = $line_arrays[$i];
+				print $fh map { "\n" } 1..5;
+				print $fh @$lines;
+			}
+		} else {
+			print ColorDiff::color_diff($l, $r);
+			print "\n";
+		}
+	}
+}
+my ($md1, $md2) = map $_->hexdigest, @md5s;
+warn "MD5's are equal\n" if $md1 eq $md2;
+sub close_files { close $_ for @files; @files = () }
+sub unlink_files { $keep or unlink $_ for @filenames; @filenames = () }
+close_files;
+if ($create_files) {
+	my @cmd;
+	if ($diff_cmd =~ /%/) {
+		for (split ' ', $diff_cmd) {
+			push @cmd, /%s/ ? shift @filenames : $_;
+		}
+	} else {
+		@cmd = ($diff_cmd, @filenames);
+	}
+	system { $cmd[0] } @cmd;
+}
+unlink_files;
+close STDOUT;
+END { close_files; unlink_files; }

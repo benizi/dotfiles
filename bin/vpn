@@ -1,0 +1,19 @@
+. ensure-in-term "$0" "$@"
+
+. ~/.config/vpn 2>/dev/null
+
+: ${domain=${EMAIL#*@}}
+: ${user=$EMAIL}
+: ${host=vpn.$domain}
+: ${port=443}
+
+cert=$HOME/.config/vpn.$host.crt
+if test -f $cert ; then
+  finger=$(openssl x509 -noout -in $cert -sha1 -fingerprint | sed 's/^.*=//;s/://g')
+  set -- "$@" --servercert=$finger
+fi
+
+setopt local_options 2>/dev/null || true
+set -x
+password-manager -h $host -p $port $pwopts |
+sudo openconnect --passwd-on-stdin "$@" -u $user $host:$port

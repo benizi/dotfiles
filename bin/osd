@@ -1,0 +1,34 @@
+#!/bin/zsh
+
+delay=1
+
+while (( $# )) ; do
+  arg=$1
+  case $arg in
+    -d|--delay) shift ; delay=$1 ;;
+    *) break ;;
+  esac
+  shift
+done
+
+if (( ! $+font )) ; then
+  # take font from dwm config if it exists
+  cfg=$HOME/hg/dwm/config.h
+  if [[ -f $cfg ]] ; then
+    font="$(grep static.const.char.font $cfg | cut -f2 -d\" | perl -lpwe 's/(\d+)/2 * $1/e')"
+  fi
+fi
+
+# positioning
+args=( -p top -A right -o 20 )
+
+# delay
+args+=( -d $delay )
+
+# shadow
+args+=( -s 1 )
+
+# font
+(( $+font )) && args+=( -f $font )
+
+printf "%s" "$*" | osd_cat $args &

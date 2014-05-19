@@ -1,0 +1,7 @@
+#!/bin/sh
+if hash xdotool 2>/dev/null ; then
+  xdotool selectwindow windowunmap
+else
+  echo "Need to install xdotool" >&2
+  exit 1
+fi

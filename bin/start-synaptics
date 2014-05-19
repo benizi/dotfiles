@@ -1,0 +1,49 @@
+#!/bin/zsh
+
+find_dev () {
+	dev=$(xinput list | awk -F= $1' { print $2 }' | awk '{ print $1 }')
+	[[ -n $dev ]] && get_props
+}
+
+typeset -A props
+
+get_props () {
+	props=()
+	xinput list-props $dev | while read line ; do
+		[[ $line = *\([[:digit:]]*\):* ]] || continue
+		name=${line%\ \(*}
+		id=${line#*\(}
+		id=${id%\)*}
+		props+=( $name $id )
+	done
+}
+
+prop () {
+	(( $+props[$1] )) && xinput set-prop $dev $props[$1] ${@:2}
+}
+
+if (( $#argv )) ; then
+	if find_dev $1 ; then
+		shift
+		if (( ! $#argv )) ; then
+			xinput list-props $dev
+		else
+			prop $@
+		fi
+	fi
+	exit
+fi
+
+if find_dev '/Synaptics|Elantech.Touchpad|Cypress.Trackpad/' ; then
+	prop 'Synaptics Finger' 10 15 256
+	prop 'Synaptics Tap Action' 0 0 0 0 1 2 2
+	prop 'Synaptics Two-Finger Scrolling' 1 1
+	prop 'Synaptics Scrolling Distance' 111 50
+	prop 'Synaptics Edge Scrolling' 0 0 0
+fi
+
+if find_dev /IBM.TrackPoint/ ; then
+	prop 'Evdev Wheel Emulation' 1
+	prop 'Evdev Wheel Emulation Button' 2
+	prop 'Evdev Wheel Emulation Axes' 6 7 4 5
+fi

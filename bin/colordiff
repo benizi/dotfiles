@@ -1,0 +1,48 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use CGI;
+use Getopt::Long;
+Getopt::Long::Configure(qw/bundling/);
+my ($f, $g);
+my %split;
+my %format;
+GetOptions(
+	'svn' => \(my $use_svn = 0),
+	'c' => \$format{ignoresame},
+	'n' => \ (my $no_color = 0),
+	'split=s' => \$split{custom},
+	'alllines' => \$format{alllines},
+	's' => \$split{s},
+	'l' => \$split{l},
+	'U' => \$split{U},
+	'p' => \$split{p},
+	'w' => \$split{w},
+	'h' => \$format{HTML},
+	'b' => \ (my $background = 0),
+	'd' => \ (my $debug = 0),
+	'<>' => sub {
+		unless (defined($f)) { ($f) = @_; return; }
+		unless (defined($g)) { ($g) = @_; return; }
+		die "too many files";
+	},
+);
+my @extra;
+my @split = map /custom/?$split{$_}:$_, grep defined($split{$_}), keys %split;
+my @format = grep $format{$_}, keys %format;
+die "Too many split options specified: @split\n" if @split > 1;
+push @extra, split => 'p';
+#warn "SPLIT(@split) FORMAT(@format)\n";
+if ($f and !$g and $use_svn) {
+	$g = $f;
+	($f = $g) =~ s{/([^/]+)$}{/.svn/text-base/$1.svn-base};
+	push @extra, preprocess => 'svn';
+}
+die "Usage: $0 [options] file1 file2\n" unless $f and $g;
+
+require ColorDiff;
+ColorDiff->import('color_diff_files',
+	format=>join('-', @format),
+	@extra,
+);
+print for color_diff_files($f,$g);

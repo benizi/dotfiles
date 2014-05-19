@@ -1,0 +1,128 @@
+#!/usr/bin/env ruby
+require 'fileutils'
+require 'optparse'
+require 'etc'
+
+original_args = ARGV.dup
+
+abort unless system('dtach --version > /dev/null')
+
+@dir = nil
+
+opts = {
+	:mode => :new,
+	:redraw => ENV['TERM'] =~ /^st/ ? 'winch' : 'ctrl_l',
+}
+parser = OptionParser.new do |o|
+	o.on('-n') { opts[:mode] = :detach }
+	o.on('-S NAME', '--name NAME') { |n| opts[:name] = n }
+	o.on('--dir DIR') { |d| @dir = d }
+	o.on('-r') { opts[:mode] = :resume }
+	o.on('-R') { opts[:mode] = :resume_or_new }
+	o.on('-l','-ls','--ls') { opts[:mode] = :list }
+	o.on('--dry-run') { opts[:dry] = true }
+	o.on('--_rerun') { opts[:rerun] = true }
+	o.on('--check') { opts[:mode] = :check }
+end
+parser.order!(ARGV)
+
+@dir ||= ENV['DTACH_DIR']
+@dir ||= '/tmp/dtach.' + Etc.getlogin
+
+FileUtils.mkdir_p(@dir, :mode => 01700)
+
+def sock_for(name)
+	File.join(@dir, (name||'').split('/').last)
+end
+
+def sock?(name)
+	File.exist?(sock_for(name))
+end
+
+def socks
+	ret = []
+	Dir.new(@dir).each do |f|
+		next if %w{. ..}.include?(f)
+		ret << f
+	end
+	ret.sort
+end
+
+def suffixed(name, exist)
+	name ||= ''
+	name = name.gsub(/^.*\//,'')
+	already = socks.grep(/^#{name}\d{0,2}$/).sort
+	return already[0] if exist
+	ret = nil
+	(0..100).each do |i|
+		testname = "#{name}"
+		testname << i.to_s if i > 0
+		next if testname.empty? or already.include?(testname)
+		ret = testname
+		break
+	end
+	ret
+end
+
+if opts[:mode] == :list
+	me = ENV['DTACH'] ? ENV['DTACH'].split('/')[-1] : nil
+	socks.each do |sock|
+		print '*' if sock == me
+		puts sock
+	end
+	exit
+end
+
+case opts[:mode]
+when :resume, :resume_or_new, :check
+	opts[:name] ||= ARGV[0] || ENV['SHELL'] || 'bash'
+	if opts[:mode] == :resume_or_new
+		opts[:mode] = sock?(opts[:name]) ? :resume : :new
+	end
+end
+
+case opts[:mode]
+when :new, :detach
+	ARGV << (ENV['SHELL'] || 'bash') if ARGV.empty?
+	opts[:name] = suffixed(opts[:name] || ARGV[0], false) || opts[:name]
+end
+
+sock = sock_for(opts[:name])
+
+if opts[:mode] == :resume
+	abort "No such socket: #{sock}" unless sock?(opts[:name])
+elsif opts[:mode] == :check
+	exit 1 unless sock?(opts[:name])
+	exec(%Q{fuser -s #{sock}})
+end
+
+cmd = ['dtach']
+case opts[:mode]
+when :resume ; cmd << '-a'
+when :new ; cmd << '-A'
+when :detach ; cmd << '-n'
+end
+cmd << sock
+cmd += %W{-r #{opts[:redraw]}}
+
+cmd += ARGV unless opts[:mode] == :resume
+
+if ENV['DTACH'] and ENV['DTACH'] == sock and not opts[:force]
+	abort "Already in dtach?"
+end
+
+if opts[:dry]
+	puts <<INFO
+DTACH=#{sock}
+cmd=#{cmd.join(' ')}
+INFO
+	exit
+end
+
+started = Time.now
+exit if system(Hash[ENV].merge('DTACH' => sock), *cmd)
+if Time.now - started < 1 and File.exist?(sock) and not system(%Q{fuser -s #{sock}})
+	exit 1 if opts[:rerun]
+	cmd = %W[#{$0} --_rerun] + original_args
+	exec(*cmd) if File.unlink(sock)
+end
