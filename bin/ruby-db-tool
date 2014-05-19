@@ -56,7 +56,30 @@ SHELL
     end
 
     def connect
-      %W[psql] + [cfg.database, cfg.username]
+      [_env] + %w[psql]
+    end
+
+    def _method_vars
+      {
+        host: 'PGHOST',
+        port: 'PGPORT',
+        username: 'PGUSER',
+        user: 'PGUSER',
+        password: 'PGPASSWORD',
+        database: 'PGDATABASE',
+      }
+    end
+
+    def _env
+      Hash[_method_vars.select do |method, var|
+        cfg.send(method)
+      end.map do |method, var|
+        [var, cfg.send(method).to_s]
+      end]
+    end
+
+    def spawn
+      [_env] + ARGV.dup
     end
   end
 
