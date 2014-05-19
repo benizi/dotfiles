@@ -122,6 +122,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     ---- process monitoring
     , ((mod4Mask,           xK_h     ), spawn $ XMonad.terminal conf ++ " -e htop")
     , ((mod4Mask,           xK_i     ), spawn $ XMonad.terminal conf ++ " -e sudo iotop")
+    , ((mod4Mask,           xK_p     ), spawn $ XMonad.terminal conf ++ " -e sudo powertop")
 
     ---- web browsers
     , ((modm,               xK_c     ), spawn "chromium")
