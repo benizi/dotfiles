@@ -8,6 +8,7 @@
     eval-sexp-fu ;; for highlighting when eval'ing
     evil
     expand-region
+    git-gutter
     haml-mode
     haskell-mode
     highlight
