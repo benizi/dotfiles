@@ -1,1 +1,3 @@
+local -a lvm
+(( UID )) && lvm=( sudo lvm ) || lvm=( lvm )
 for l in vgs pvs lvs ; do lvm $l ; done
