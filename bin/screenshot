@@ -52,4 +52,5 @@ if exist?(filename)
   filename = dmenu_get_filename(repl, filename)
 end
 
-system('import', fullpath % filename)
+cmd = system('scrot --version') ? %w[scrot -s] : %w[import]
+system(*cmd, fullpath % filename)
