@@ -1,5 +1,6 @@
 local password=$2
-[[ -z "$password" ]] && read -s 'password?Password: ' && echo
+[[ -z "$password" ]] && read -s 'password?Password [password]: ' && echo
+[[ -z "$password" ]] && password=password
 local result=$(json_object email $1 password $password | curl-api-post /mobile/login -d @- | jq -r .auth_token)
 if [[ -n "$result" ]]
 then printf '%s' "$result" | tee $(curl-api-file token) && echo
