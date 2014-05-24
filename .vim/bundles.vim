@@ -29,6 +29,7 @@ Bundle 'nono/vim-handlebars'
 Bundle 'slim-template/vim-slim'
 Bundle 'tpope/timl'
 Bundle 'elixir-lang/vim-elixir'
+call AddToRtp($HOME.'/git/rust/src/etc/vim')
 
 finish " God DAMMIT Tim Pope...
 " Clojure
