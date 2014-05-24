@@ -16,11 +16,16 @@ endfun
 let s:dirs = [ s:home_vim, s:home_vim.'.local' ]
 \ + [ s:home_vim.'/vundle' ]
 \ + map(['vim-addon-manager','vim-pathogen'],'s:BundleDir(v:val)')
+
+fun! AddToRtp(dir)
+	if index(split(&rtp,','), a:dir) < 0
+		let &rtp = join([ a:dir, &rtp, a:dir.'/after' ], ',')
+	endif
+endf
+
 for dir in map(s:dirs, 'expand(v:val)')
 	if isdirectory(dir)
-		if index(split(&rtp,','), dir) < 0
-			let &rtp = join([ dir, &rtp, dir.'/after' ], ',')
-		endif
+		call AddToRtp(dir)
 	endif
 endfor
 
