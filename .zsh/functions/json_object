@@ -1,0 +1,12 @@
+local ret= key= val= i=
+i=0
+while (( $# > 0 )) ; do
+  key=$1
+  (( $# > 1 )) && val=$2 || val=''
+  shift $(( ($# > 1) ? 2 : 1 ))
+  (( i++ )) && ret+=,
+  ret+=$(json_string $key)
+  ret+=:
+  ret+=$(json_string $val)
+done
+printf '{%s}' $ret
