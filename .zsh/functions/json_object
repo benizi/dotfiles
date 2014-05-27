@@ -7,6 +7,6 @@ while (( $# > 0 )) ; do
   (( i++ )) && ret+=,
   ret+=$(json_string $key)
   ret+=:
-  ret+=$(json_string $val)
+  ret+=$(json_string_or_int $val)
 done
 printf '{%s}' $ret
