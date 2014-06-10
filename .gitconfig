@@ -56,9 +56,9 @@
 	bdm = "! : branch delete merged ; bdm () { set +e ; for branch in $(git branch | grep -v '^\\*' | cut -c3-) ; do extra=\"\" ; if git rev-parse $branch@{upstream} >/dev/null 2>/dev/null ; then branch_pos=\"$(git rev-parse $branch)\" ; upstream=\"$(git rev-parse $branch@{upstream})\" ; [ \"$branch_pos\" != \"$upstream\" ] && echo \"Did not delete $branch (different from upstream)\" && continue ; extra=\" (same as upstream)\" ; fi ; git branch -d \"$branch\" >/dev/null 2>&1 && echo \"Deleted $branch$extra\" || echo \"Did not delete $branch$extra\" ; done ; } ; bdm"
 	# co = "! : checkout or clone ; co () { if [ $# -eq 1 ] && [ \"$1\" = [a-z]*:* ] ; then git clone \"$1\" ; else git checkout \"$@\" ; fi ; } ; co"
 	com = checkout master
-	cod = checkout development
+	cod = checkout dev
 	comb = checkout master -b
-	codb = checkout development -b
+	codb = checkout dev -b
 	ci = "!eval `git cd` ; git check-email && git commit"
 	cia = "!git ci --amend"
 	cin = "!git ci --no-verify"
@@ -75,11 +75,11 @@
 	rea = rebase --abort
 	refeature = "!usage() { echo \"Usage: git refeature branch [onto]\" >&2 ; [[ $# -gt 0 ]] && echo \"$@\" >&2 ; exit 1 ; } ; rf () { unset branch onto ; case $# in 1) branch=$1 onto=master ;; 2) branch=$1 onto=$2 ;; *) usage ;; esac ; base=\"$(git merge-base $branch $onto)\" ; [[ -z \"$base\" ]] && usage \"Couldn't find base for $branch onto $onto\" ; cmd=( git rebase --onto $onto $base $branch ) ; ${cmd[@]} || echo \"${cmd[@]} failed\" ; } ; rf"
 	rem = rebase master
-	red = rebase development
+	red = rebase dev
 	reu = rebase @{upstream}
 	ri = rebase --interactive
 	rim = rebase --interactive master
-	rid = rebase --interactive development
+	rid = rebase --interactive dev
 	riu = rebase --interactive @{upstream}
 	sm = submodule
 	up = pull --ff-only
