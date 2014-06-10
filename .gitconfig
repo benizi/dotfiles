@@ -127,5 +127,3 @@
 [github]
 	user = benizi
 	token = "f1e16775462d45c3c324dbef2e84c508"
-[heroku]
-	account = 4moms
