@@ -39,6 +39,7 @@
 	# allow "git git cmd" typo:
 	k = !gitk
 	ka = "!gitk --all"
+	kas = "!git ka --simplify-by-decoration"
 	# s = shell -- simple interactive shell
 	s = "!d() { d=\"$(git rev-parse --show-toplevel)\" ; b=\"$(git config --get alias.bc >/dev/null && git bc)\" ; d=\"$d${b:+[branch:$b]}\" ; } ; s() { d ; unset cmdprefix ; while echo -e \"$d git${cmdprefix:+ $cmdprefix}> \\c\" ; do read cmd ; handled=true ; case $cmd in \\!*) eval ${cmd#\\!} ;; /*) cd $cmd ;; \"\") [ -z \"$cmdprefix\" ] && break ; echo \"(locked, not quitting: q/quit)\" ; handled=false ;; q|quit) break ;; \\?) git help ${cmdprefix:---all} ;; prefix*) cmdprefix=\"${cmd#prefix }\" ;; lock*) cmdprefix=\"${cmd#lock }\" ;; noprefix*|unprefix*|unlock*) unset cmdprefix ;; *) handled=false ;; esac ; d ; $handled && continue ; git $cmdprefix $cmd ; done ; echo ; } ; s"
 	st = "! : status via ls-files ; eval `git cd` ; do_ls() { git nopipe ls-files -tdom --no-empty-directory --exclude-standard \"$@\" ; } ; st() { noredo=false ; dir=\"\" ; actual_args=false ; for arg ; do case $arg in -c) noredo=true ;; --directory) ;; *) actual_args=true ;; esac ; done ; do_ls \"$@\" | grep . && return 0 ; $noredo && return 0 ; if ! $actual_args ; then if ! git diff --cached | awk '1..1 { exit 1; }' ; then echo \"Staged changes awaiting commit\" ; else echo \"$(do_ls -c \"$@\" | wc -l) cached files\" ; fi ; return 0 ; fi ; st -c \"$@\" ; } ; st"
