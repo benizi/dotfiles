@@ -10,14 +10,6 @@
 	tool = vimdiff
 [push]
 	default = tracking
-[guitool "Display"]
-	cmd = display $FILENAME
-	needsfile = yes
-	noconsole = yes
-[guitool "gqView"]
-	cmd = gqview $FILENAME
-	needsfile = yes
-	noconsole = yes
 [user]
 	name = Benjamin R. Haskell
 	email = bhaskell@4moms.com
