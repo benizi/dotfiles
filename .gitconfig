@@ -12,12 +12,6 @@
 	default = tracking
 [user]
 	name = Benjamin R. Haskell
-	email = bhaskell@4moms.com
-[post-review]
-	username = bhaskell
-	passfile = imap-pass-mail
-	autopublish = false
-	targets = g.LSE
 [disable]
 	reset = true
 [pack]
