@@ -10,6 +10,8 @@
 	tool = vimdiff
 [push]
 	default = tracking
+[rebase]
+	autosquash = true
 [user]
 	name = Benjamin R. Haskell
 [disable]
