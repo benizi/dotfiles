@@ -57,8 +57,10 @@
 	# co = "! : checkout or clone ; co () { if [ $# -eq 1 ] && [ \"$1\" = [a-z]*:* ] ; then git clone \"$1\" ; else git checkout \"$@\" ; fi ; } ; co"
 	com = checkout master
 	cod = checkout dev
+	cor = checkout release-candidate
 	comb = checkout master -b
 	codb = checkout dev -b
+	corb = checkout release-candidate -b
 	ci = "!eval `git cd` ; git check-email && git commit"
 	cia = "!git ci --amend"
 	cin = "!git ci --no-verify"
