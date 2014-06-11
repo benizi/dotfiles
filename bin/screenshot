@@ -57,7 +57,7 @@ if exist?(filename)
     repl = repl.sub(/(\d+)(?!.*\d)/) { |m| (m.to_i + 1).to_s }
   end
 
-  filename = dmenu_get_filename(repl, filename)
+  filename = dmenu_get_filename(filename, repl)
 end
 
 system(*cmd, fullpath % filename)
