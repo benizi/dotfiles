@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=sensible-browser
+MimeType=text/html;
+Exec=sensible-browser %u
+NoDisplay=true
+StartupNotify=true
+Icon=

@@ -1,0 +1,29 @@
+# all root dirs and files
+/*
+
+# except...
+!/.zsh*
+!/.zsh.local
+*.historyfile
+.zsh*/*-history
+.zsh*/reminder*
+
+!/.vim*
+/.vim-bundle
+/.vim-tmp
+/.viminfo
+!/bin
+!/bin.local
+!/perl-lib
+!/Usable
+
+!/hg
+/hg/*
+!/hg/dwm
+/hg/dwm/.hg*
+/hg/dwm/*.o
+/hg/dwm/dwm
+/hg/dwm/[A-Z]*
+
+!/.git*
+/.gitk
