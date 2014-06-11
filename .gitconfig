@@ -48,7 +48,7 @@
 	svnup = "!svnup () { git svn fetch && git com && git merge --ff-only git-svn && git slg ; } ; svnup"
 	b = branch
 	t = tag
-	ab = "! : archive branch ; ab() { if [ $# -lt 1 ] ; then echo \"Usage: git ab branch [tag]\" >&2 ; exit 1 ; fi ; branch=$1 ; shift ; if [ $# -gt 0 ] ; then tag=$1 ; else tag=$branch ; fi ; git tag \"$tag\" \"$branch\" && git branch -D \"$branch\" ; } ; ab"
+	ab = "! : archive branch ; ab() { if [ $# -lt 1 ] ; then echo \"Usage: git ab branch [name]\" >&2 ; exit 1 ; fi ; branch=$1 ; shift ; if [ $# -gt 0 ] ; then ref=$1 ; else ref=archived/$branch ; fi ; git update-ref \"refs/$ref\" \"$branch\" && git branch -D \"$branch\" ; } ; ab"
 	base = diff-base
 	base-range = "!ra () { [[ $# -gt 0 ]] || set -- HEAD ; b=\"$(git diff-base \"$@\")\" ; echo $b..$1 ; } ; ra"
 	# TODO: fix --contains version, any/all
