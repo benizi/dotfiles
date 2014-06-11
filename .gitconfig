@@ -116,6 +116,7 @@
 	lgbase = "!lg() { withuser=\" %Cblue<%aE>%Creset\" ; set -- --users \"$@\" ; args=\"\" ; for arg ; do case $arg in -no-u|--no-u|--no-users) userstuff=\"\" ;; -u|--users) userstuff=\"$withuser\" ;; *) args+=( \"$arg\" ) ;; esac ; done ; git log --graph --pretty=format:\"%Cred%h%Creset -%C(yellow)%d%Creset$userstuff %s %Cgreen(%ar)%Creset\" --abbrev-commit --date=relative ${args[@]} | perl -lpwe \"BEGIN{\\$SIG{PIPE}=undef;} s/(wip)(?![ie])/\\e[32;7m\\$1\\e[0m/ig\" | ${PAGER:-less} ; } ; lg"
 	lg = "!git nopipe lgbase --branches"
 	slg = "!git nopipe log --graph --pretty=format:'%Cred%h%Creset%Cgreen=SVN%H=%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset %Cblue<%aE>%Creset' --abbrev-commit --date=relative --all | perl -MFile::Find -lpwe 'BEGIN{ @d=grep -d, q<.git/svn>; if (@d) { @maps=(); find sub { /^\\.rev_map/ and push @maps, qq{$File::Find::dir/$_}; }, q<.git/svn>; %revs=reverse unpack q<(NH40)*>, join q<>, map { open $f, q.<., $_; do { undef local $/; <$f> } } grep -r, @maps; $_=qq{(r$_)} for values %revs; } } s!=SVN(\\w+)=!$revs{$1}||qq..!e; s|<([^\\@]+)\\@[^>]+>(?!.*<)|<$1>|' | ${PAGER:-less}"
+	glog = log --graph --decorate --simplify-by-decoration --oneline
 	ag = all lg -15
 	bmf = bind-mount-fixer
 	# apply a Review Board patch and commit the changed files
