@@ -484,3 +484,5 @@ fun! CleanBlankLinesOrBackspace(...)
 	return exit_insert_mode.delete_blank_lines.add_blank_line."\<CR>"
 endf
 nn <silent> <expr> <BS> CleanBlankLinesOrBackspace()
+
+run! after/vimrc
