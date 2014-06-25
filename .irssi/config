@@ -108,7 +108,6 @@ chatnets = {
   Freenode = {
     type = "IRC";
     nick = "benizi";
-    autosendcmd = "/msg nickserv identify PFnAlDvM ; wait 2000";
   };
 };
 
