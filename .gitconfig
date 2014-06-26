@@ -135,4 +135,4 @@
 	huburl = "! : GitHub URL ; url () { url=\"$(git remote -v | awk '{print $2}' | awk '/gh:/ || /github/ { gsub(\"gh:\", \"github.com:\") ; gsub(\"git@\", \"\") ; gsub(\".com:\", \".com/\") ; gsub(/\\.git$/, \"\") ; print \"https://\" $_ ; exit }')\" ; if [ $# -gt 0 ] ; then url=\"$url/commit/$(git rev-parse \"$@\")\" ; fi ; printf \"%s\\n\" \"$url\" ; } ; url"
 	hubo = "! : open on GitHub ; gh () { open \"$(git huburl \"$@\")\" ; true ; } ; gh"
 	cleaner = "clean -xdfe /.*-version"
-	pr = "!pr() { against=$1 ; if [[ -z \"$against\" ]] ; then echo no auto-detect yet ; return 1 ; fi ; open \"$(git huburl)/compare/${against}...$(git bc | tr / \\;)?expand=1\" ; git log --reverse --format=%s%n%n%b ${against}.. | clip >/dev/null 2>/dev/null ; true ; } ; pr"
+	pr = "!pr() { against=$1 current=$2 ; [[ -z \"$current\" ]] && current=\"$(git bc)\" ; if [[ -z \"$against\" ]] ; then echo no auto-detect yet ; return 1 ; fi ; open \"$(git huburl)/compare/${against}...$(echo $current | tr / \\;)?expand=1\" ; git log --reverse --format=%s%n%n%b ${against}..${current} | clip >/dev/null 2>/dev/null ; true ; } ; pr"
