@@ -1,0 +1,8 @@
+\pset null ¤
+\pset linestyle unicode
+\pset border 2
+
+\set PROMPT1 '%[%`tput setaf 4`%]%M %~ %#%[%`tput sgr0`%] '
+\set PROMPT2 '%[%`tput setaf 4`%]%R%[%`tput sgr0`%] '
+
+\set conns 'select usename, count(*) as count from pg_stat_activity group by usename order by usename;'
