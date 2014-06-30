@@ -1,4 +1,4 @@
-
 [Default Applications]
 x-scheme-handler/http=sensible-browser.desktop
 x-scheme-handler/https=sensible-browser.desktop
+application/pdf=xpdf.desktop
