@@ -4,7 +4,6 @@
 // $XdotOrg: xc/programs/xkbcomp/symbols/us,v 1.1.4.3 2004/03/05 13:41:33 eich Exp $
 // $XFree86: xc/programs/xkbcomp/symbols/us,v 1.6 2003/10/31 14:32:05 pascal Exp $
 
-default
 partial alphanumeric_keys modifier_keys 
 xkb_symbols "basic" {
 
@@ -72,6 +71,23 @@ xkb_symbols "caps" {
     key <CAPS> { [ Multi_key ] };
 };
 
+partial alphanumeric_keys modifier_keys
+xkb_symbols "caps-ctrl" {
+    key <CAPS> { [ Control_L ] };
+    modifier_map Control { <CAPS> };
+};
+
+partial alphanumeric_keys modifier_keys
+xkb_symbols "caps-ctrl-esc" {
+    include "benizi(caps-ctrl)"
+    replace key <CAPS> { [ Control_L, Escape ] };
+};
+
+partial alphanumeric_keys modifier_keys
+xkb_symbols "caps-esc" {
+    replace key <CAPS> { [ Escape ] };
+};
+
 partial modifier_keys
 xkb_symbols "menu-menu" {
     key <MENU> { [ Menu ] };
@@ -80,6 +96,26 @@ xkb_symbols "menu-menu" {
 partial modifier_keys
 xkb_symbols "menu-multi" {
     key <MENU> { [ Menu ] };
+};
+
+partial modifier_keys
+xkb_symbols "menu-compose" {
+    key <MENU> { [ Multi_key ] };
+};
+
+partial modifier_keys
+xkb_symbols "ralt-iso3" {
+    key <RALT> {
+      type[Group1]="TWO_LEVEL",
+      symbols[Group1] = [ ISO_Level3_Shift, Multi_key ]
+    };
+};
+
+partial modifier_keys
+xkb_symbols "ralt-mod3" {
+    replace key <RALT> { [ Alt_R, Meta_R ] };
+    modifier_map Mod1 { Alt_L, Meta_L };
+    modifier_map Mod3 { Alt_R, Meta_R };
 };
 
 partial alphanumeric_keys
@@ -446,13 +482,6 @@ key.type[group1]="FOUR_LEVEL_ALPHABETIC";
 partial hidden alphanumeric_keys
 xkb_symbols "intl-shared" {
 
-    include "benizi(caps)"
-
-    key <RALT> {
-      type[Group1]="TWO_LEVEL",
-      symbols[Group1] = [ ISO_Level3_Shift, Multi_key ]
-    };
-
     key <AE01>	{ [         1,     exclam,  onesuperior,   exclamdown ]	};
     key <AE02>	{ [         2,         at,  twosuperior,    oneeighth ]	};
     key <AE03>	{ [         3, numbersign, threesuperior,    sterling ]	};
@@ -509,16 +538,28 @@ xkb_symbols "intl-shared" {
 default partial alphanumeric_keys modifier_keys
 xkb_symbols "intl" {
     include "benizi(intl-shared)"
-    include "benizi(menu-menu)"
+    include "benizi(caps-esc)"
+    include "benizi(menu-compose)"
+    include "benizi(ralt-mod3)"
 };
 
-default partial alphanumeric_keys modifier_keys
+partial alphanumeric_keys modifier_keys
+xkb_symbols "old" {
+    include "benizi(intl-shared)"
+    include "benizi(caps)"
+    include "benizi(menu-menu)"
+    include "benizi(ralt-iso3)"
+};
+
+partial alphanumeric_keys modifier_keys
 xkb_symbols "intl-no-menu" {
     include "benizi(intl-shared)"
+    include "benizi(caps)"
     include "benizi(menu-multi)"
+    include "benizi(ralt-iso3)"
 };
 
-default partial alphanumeric_keys
+partial alphanumeric_keys
 xkb_symbols "halfq" {
 	include "pc(common)"
 	name[Group1]= "U.S. English - with Half-QWERTY spacebar";
