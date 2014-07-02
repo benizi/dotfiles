@@ -12,9 +12,34 @@ fun! s:BundleDir(...)
 	return join(extend([s:home_vim.'/bundle'],a:000),'/')
 endfun
 
+let s:vundle = expand(s:home_vim.'/vundle')
+let s:vundle_failed = 0
+
+if !isdirectory(s:vundle)
+	if confirm('Install vundle?', "&Ok\n&Cancel") != 1
+		let s:vundle_failed = 1
+	end
+
+	if !s:vundle_failed
+		let url = 'https://github.com/benizi/vundle'
+		let clone = 'git clone '.url.' '.shellescape(s:vundle)
+		exe '!'.clone
+		if v:shell_error
+			echom 'Failed to run:' clone
+			let s:vundle_failed = 1
+		end
+	end
+end
+
+if s:vundle_failed
+	echom 'Most Vim plugins will not be set up'
+	se noloadplugins vi=
+	finish
+end
+
 " Add various directories to &rtp, with their '/after' dirs
 let s:dirs = [ s:home_vim, s:home_vim.'.local' ]
-\ + [ s:home_vim.'/vundle' ]
+\ + [ s:vundle ]
 \ + map(['vim-addon-manager','vim-pathogen'],'s:BundleDir(v:val)')
 
 fun! AddToRtp(dir)
