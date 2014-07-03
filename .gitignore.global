@@ -13,3 +13,14 @@ log/newrelic*
 # custom Cap files
 /recipes/bhaskell*.rb
 /vendor/plugins/*/recipes/bhaskell*.rb
+
+# Pow files
+/.powenv
+/.powrc
+/restart.txt
+
+# Passenger
+/tmp/restart.txt
+
+# version manager files
+.*-version
