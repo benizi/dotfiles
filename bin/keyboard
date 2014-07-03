@@ -19,7 +19,7 @@ my $is_macbook = do {
 	$mac
 };
 
-my $xkb_dir = "$Bin/xkb";
+my $xkb_dir = "$Bin/../xkb";
 
 GetOptions(
 	(map {; "$_=s" => \$opt{$_} } @xkbopts),
