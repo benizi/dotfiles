@@ -100,7 +100,7 @@ catch
 endtry
 
 try
-	call vundle#rc(s:BundleDir()) " set up Vundle
+	call vundle#begin(s:BundleDir()) " set up Vundle
 	exe 'so' s:home_vim.'/bundles.vim'
 catch
 	echom 'Caught exception trying to activate Vundle:'
