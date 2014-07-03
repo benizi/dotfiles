@@ -1,0 +1,68 @@
+# Usage:
+#
+## Put this file somewhere in $PATH
+#
+## Load the functions by sourcing this file
+# . json-helpers
+#
+## json_object arguments are key value pairs as separate arguments
+#
+# json_object email benizi@example.com password '1#@!%@$%$#' profile $'a\nb'
+# => {"email":"benizi@example.com","password":"1#@!%@$%$#","profile":"a\nb"}
+
+json_object() {
+  local ret= key= val= i=
+  i=0
+  while (( $# > 0 )) ; do
+    key="$1"
+    shift
+
+    if (( $# > 0 ))
+    then val="$2" ; shift
+    else val=''
+    fi
+
+    if (( i++ ))
+    then ret+=,
+    fi
+
+    ret+="$(json_string "$key")"
+    ret+=:
+    ret+="$(json_string_or_int "$val")"
+  done
+  printf '{%s}' "$ret"
+}
+
+json_string_or_int() {
+  # Print raw input if it looks like a number
+  if [[ "$1" =~ (^[0-9][0-9]*$|^[0-9][0-9]*.[0-9][0-9]*$) ]]
+  then printf '%s' "$1"
+  else json_string "$1"
+  fi
+}
+
+json_string() {
+  local ret='' uni= letter= rest="$1"
+  while [[ -n "$rest" ]] ; do
+    letter="${rest:0:1}"
+    rest="${rest:1}"
+    case "$letter" in
+      [\\\"]) ret+='\'"$letter" ;;
+      $'\b') ret+='\b' ;;
+      $'\f') ret+='\f' ;;
+      $'\n') ret+='\n' ;;
+      $'\r') ret+='\r' ;;
+      $'\t') ret+='\t' ;;
+      *)
+        # printf quirk: \'{character} converts to integer in locale charset
+        uni=$(printf '%d' \'"$letter")
+        if (( uni < 0x20 )) || (( uni > 0x7e )) ; then
+          ret+='\u'$(printf "%04x" $uni)
+        else
+          ret+="$letter"
+        fi
+        ;;
+    esac
+  done
+  printf '"%s"' "$ret"
+}
