@@ -22,9 +22,9 @@ die "Usage: git $0 repo [dest]\n" unless @ARGV;
 my ($repo, $dest) = @ARGV;
 my $repochar = qr/[\w-]/;
 my $userchar = qr/(?:[.]|$repochar)/;
-if ($repo =~ /\A(?:[a-z]+:)?($repochar+\/$userchar+)\Z/
-    or $repo =~ m{^[a-z]+://}
-    or $repo =~ m{\Agh:($repochar+)\Z}) {
+if ($repo =~ /\A(?:[a-z]+:)?($repochar+\/$userchar+)\Z/i
+    or $repo =~ m{^[a-z]+://}i
+    or $repo =~ m{\Agh:($repochar+)\Z}i) {
   $repo =~ s/^(?![a-z]+:)/gh:/;
   $repo =~ s{^(gh:)(\w+)$}{$1$2/$2};
   my $upstream = $repo =~ /^gh:([^\/]+)/ ? $1 : '';
