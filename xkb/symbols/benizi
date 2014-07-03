@@ -78,9 +78,9 @@ xkb_symbols "caps-ctrl" {
 };
 
 partial alphanumeric_keys modifier_keys
-xkb_symbols "caps-ctrl-esc" {
+xkb_symbols "caps-ctrl-multi" {
     include "benizi(caps-ctrl)"
-    replace key <CAPS> { [ Control_L, Escape ] };
+    replace key <CAPS> { [ Control_L, Multi_key ] };
 };
 
 partial alphanumeric_keys modifier_keys
@@ -538,7 +538,7 @@ xkb_symbols "intl-shared" {
 default partial alphanumeric_keys modifier_keys
 xkb_symbols "intl" {
     include "benizi(intl-shared)"
-    include "benizi(caps-esc)"
+    include "benizi(caps-ctrl-multi)"
     include "benizi(menu-compose)"
     include "benizi(ralt-mod3)"
 };
