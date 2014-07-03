@@ -354,6 +354,7 @@ if (( $+commands[verman] )) ; then
 _verman() { eval "$(VERMAN_EVAL=1 verman "$@")" }
 
 _verman erlang use 17.0
+_verman rust use 0.11-pre
 fi
 
 leapd() {
