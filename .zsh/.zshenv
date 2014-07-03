@@ -350,9 +350,11 @@ go-manager
 
 (( $+commands[nvm] )) && eval "$(nvm default)"
 
+if (( $+commands[verman] )) ; then
 _verman() { eval "$(VERMAN_EVAL=1 verman "$@")" }
 
 _verman erlang use 17.0
+fi
 
 leapd() {
   if [[ -e /opt/leap/usr/bin ]] ; then
