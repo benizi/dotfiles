@@ -19,8 +19,31 @@ def envname
 end
 
 def config
+  heroku_config ||
   ActiveRecord::Base.configurations[envname] ||
     ActiveRecord::Base.connection_config.stringify_keys
+end
+
+def heroku_config
+  appname = envname.sub(/^heroku:/, '')
+  return if appname == envname
+  url_to_config %x{heroku config:get DATABASE_URL -a #{appname}}.chomp
+end
+
+def url_to_config(url)
+  u = URI(url)
+  u.define_singleton_method(:database) { u.path[1..-1] }
+  Hash[{
+    scheme: 'adapter',
+    host: 'host',
+    port: 'port',
+    user: 'user',
+    password: 'password',
+    database: 'database',
+  }.map do |method, key|
+    val = u.send(method)
+    val ? [key, val] : nil
+  end.compact]
 end
 
 CONFIG_TO_ENV = {
