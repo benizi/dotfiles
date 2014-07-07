@@ -269,6 +269,8 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- mod-button3, Set the window to floating mode and resize by dragging
     , ([modm, mod1Mask], button3, (\w -> focus w >> mouseResizeWindow w))
+    , ([modm, mod1Mask], button4, (\w -> moveTo Prev NonEmptyWS))
+    , ([modm, mod1Mask], button5, (\w -> moveTo Next NonEmptyWS))
     ]
 
 ------------------------------------------------------------------------
