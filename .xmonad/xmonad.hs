@@ -280,12 +280,12 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
     , ([modm, mod1Mask], button3, (\w -> focus w >> mouseResizeWindow w))
 
     -- alt + scroll = workspace up/down
-    , ([modm, mod1Mask], button4, (\w -> moveTo Prev NonEmptyWS))
-    , ([modm, mod1Mask], button5, (\w -> moveTo Next NonEmptyWS))
+    , ([modm, mod1Mask], button4, (\w -> windowUp))
+    , ([modm, mod1Mask], button5, (\w -> windowDown))
 
     -- Win + scroll = window/tab up/down
-    , ([mod4Mask], button4, (\w -> windowUp))
-    , ([mod4Mask], button5, (\w -> windowDown))
+    , ([mod4Mask], button4, (\w -> moveTo Prev NonEmptyWS))
+    , ([mod4Mask], button5, (\w -> moveTo Next NonEmptyWS))
     ]
 
 ------------------------------------------------------------------------
