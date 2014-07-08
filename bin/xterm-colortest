@@ -5,79 +5,87 @@ use utf8;
 use open qw/:std :utf8/;
 use Encode 'decode_utf8';
 $_ = do { my $v = eval { decode_utf8($_, Encode::FB_CROAK); }; $v // $_ } for @ARGV;
-use Getopt::Long;
-my @esc;
-GetOptions(
-	'text=s' => \(my $text = ''),
-	'num!' => \(my $show_number),
-	'escape|extra-escape=s@' => \@esc,
-	'split=s' => \(my $split = chr 0x2502),
-	'raw' => \(my $raw = 0),
-	'square!' => \(my $square = 1),
-	'list!' => \(my $list),
-	'gray|grey!' => \(my $grey = 1),
-	'stdin' => \(my $stdin = 0),
-	'rgb' => \(my $rgb = 0),
-	'88' => \(my $c88 = 0),
-	'ramp!' => \(my $ramp_24bit),
-) or die 'options';
-$show_number //= 1-$square;
-$ramp_24bit //= 1;
-$list //= 1-$ramp_24bit;
-chomp($text = do { undef local $/; <STDIN> }) if $stdin;
-($show_number, $split) = (0, '') if $raw;
-my $X = $text || 'X'; # ╬▛░▒▓█
-$text ||= $X if $raw;
-my @escapes = @esc ? @esc : qw/48;5;16 0;1 48;5;231;7/;
 
-# by entheon, do whatever the hell you want with this file
-
-for my $ba (@escapes) {
-	my $c = sub { "\e[$ba;38;5;$_[0]m$_[1]\e[0m" };
-	my $N = $c88 ? 4 : 6;
-	if ($square) {
-		my @rows;
-		for (0..($N**3-1)) {
-			my @rgb;
-			my $n = $_;
-			while (@rgb < 3) {
-				unshift @rgb, $n % $N;
-				$n = ($n-$rgb[0])/$N;
-			}
-			$_ = $_ ? ($_*40+55) : 0 for @rgb;
-			my $txt = $rgb?sprintf("%02x%02x%02x",@rgb):$X;
-			$txt = sprintf "%-3d", $_+16 if $show_number;
-			push @{$rows[int $_/$N]}, $c->($_+16, $txt);
-		}
-		if (!$rgb) {
-			splice @{$rows[$#rows% $N]}, $N, 0, map @$_, pop @rows while @rows > $N;
-			my $n = $c88 ? 4 : 3;
-			my $n2 = $c88 ? 2 : 3;
-			for (0..$#rows) {
-				my $R = $rows[$_];
-				my @n = $_*$n..$_*$n+$n-1;
-				my @n2 = $_*$n2..$_*$n2+$n2-1;
-				splice @$R, 0, 0, map $_<16?$c->($_, $X):" ", @n;
-				splice @$R, 0+@$R, 0, map $_<8*($N-3)?$c->($_+($c88?80:232), $X):" ", @n2;
-			}
-		}
-		print @$_, "\n" for @rows;
-	} elsif ($list) {
-		for (0..($grey?($c88?87:255):($c88?79:231))) {
-			print $c->($_, join '', grep($show_number, $_), $text, $split);
-		}
-	}
-	if ($ramp_24bit) {
-		for my $fgbg (38, 48) {
-			for (qw/100 110 010 011 001 101/) {
-				my $mult = [split //];
-				for my $n (grep !($_ % 6), 1..255) {
-					printf "\e[%d;2;%d;%d;%dm%s\e[0m", $fgbg, (map $n * $_, @$mult), $X;
-				}
-				print "\n";
-			}
-		}
-		$ramp_24bit = 0;
-	}
+sub esc {
+	sprintf '\e[%sm', join ';', @_
 }
-print "\n" unless $square;
+
+sub indexed_ansi {
+	my ($i, $bg) = @_;
+	esc $i + ($bg ? 40 : 30)
+}
+
+sub indexed_256 {
+	my ($i, $bg) = @_;
+	esc $bg ? 48 : 38, 5, $i
+}
+
+sub COLORS () { 0 + ($ENV{COLORS} || 256) }
+sub HI () { COLORS == 256 }
+
+my @available = (256, 88);
+if (!grep $_ == COLORS, @available) {
+	my $set = '{'.join(', ', @available).'}';
+	die "Colors should be one of $set\nWas: ".COLORS."\n";
+}
+
+my @low = (
+	[ 0x00, 0x00, 0x00 ],
+	[ 0xcd, 0x00, 0x00 ],
+	[ 0x00, 0xcd, 0x00 ],
+	[ 0xcd, 0xcd, 0x00 ],
+	# ? xterm 256-color : rxvt 88-color
+	HI ? [ 0x00, 0x00, 0xee ] : [ 0x00, 0x00, 0xcd ],
+	[ 0xcd, 0x00, 0xcd ],
+	[ 0x00, 0xcd, 0xcd ],
+	[ 0xe5, 0xe5, 0xe5 ],
+	HI ? [ 0x7f, 0x7f, 0x7f ] : [ 0x4d, 0x4d, 0x4d ],
+	[ 0xff, 0x00, 0x00 ],
+	[ 0x00, 0xff, 0x00 ],
+	[ 0xff, 0xff, 0x00 ],
+	HI ? [ 0x5c, 0x5c, 0xff ] : [ 0x00, 0x00, 0xff ],
+	[ 0xff, 0x00, 0xff ],
+	[ 0x00, 0xff, 0xff ],
+	[ 0xff, 0xff, 0xff ],
+);
+
+sub max_color { COLORS - 1 }
+sub cube_start { 16 }
+sub grey_start { HI ? 232 : 80 }
+sub levels {
+	HI
+	? [0, map 95 + 40 * $_, 0..4]
+	: [0x00, 0x8b, 0xcd, 0xff]
+}
+sub grey88 () { 23.18181818 }
+sub grey_level {
+	my $i = shift;
+	HI
+	? (8 + 10 * $i)
+	: int((2 + $i + ($i > 0)) * grey88)
+}
+
+sub rgb_to_hex {
+	sprintf "#%02x%02x%02x", @_
+}
+
+sub combos {
+	my @ret = ([]);
+	for (1..3) {
+		my @newret;
+		for my $v (@{levels()}) {
+			push @newret, map [$v, @$_], @ret;
+		}
+		@ret = @newret;
+	}
+	[@ret]
+}
+
+sub indexed_rgb {
+	my $i = shift;
+	($i >= grey_start) ? (grey_level($i - grey_start)) x 3 :
+	($i < cube_start) ? @{$low[$i]} :
+	@{combos()->[$i - cube_start]}
+}
+
+print rgb_to_hex indexed_rgb $_ and print "\n" for 0..max_color;
