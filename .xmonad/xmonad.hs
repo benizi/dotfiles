@@ -106,6 +106,17 @@ myPrompt = defaultXPConfig { bgColor = statusColorBG
 ------------------------------------------------------------------------
 -- Key bindings. Add, modify or remove key bindings here.
 --
+
+-- probably-broken window movement commands.  Using two competing
+-- metaphors (tabs and stacks), so we do both actions.
+--
+windowDown = do
+    sendMessage $ Go D
+    focusDown
+windowUp = do
+    sendMessage $ Go U
+    focusUp
+
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- launch a terminal
@@ -199,10 +210,8 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- Directional movement
     [ ((modm, xK_h), sendMessage $ Go L)
-    , ((modm, xK_j), sendMessage $ Go D) -- probably broken to do this...
-    , ((modm, xK_j), focusDown)          -- ...and this
-    , ((modm, xK_k), sendMessage $ Go U) -- probably broken to do this...
-    , ((modm, xK_k), focusUp)            -- ...and this
+    , ((modm, xK_j), windowDown)
+    , ((modm, xK_k), windowUp)
     , ((modm, xK_l), sendMessage $ Go R)
     , ((modm .|. shiftMask, xK_j), sendMessage $ Swap D)
     , ((modm .|. shiftMask, xK_j), swapDown)
