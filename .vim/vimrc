@@ -22,9 +22,12 @@ fun! AddToRtp(dir)
 endf
 
 fun! BundleActivate(name)
-	let dir = s:BundleDir(a:name)
-	if AddToRtp(dir)
-		exe 'run! '.dir.'/plugin/*.vim'
+	return BundleActivateDir(s:BundleDir(a:name))
+endf
+
+fun! BundleActivateDir(dir)
+	if AddToRtp(a:dir)
+		exe 'run! '.a:dir.'/plugin/*.vim'
 	end
 endf
 
@@ -55,8 +58,9 @@ let g:mapleader = ','
 let g:maplocalleader = g:mapleader
 
 for dir in filter(glob(vim_dir.'/bundle/*', 1, 1), 'isdirectory(v:val)')
-	call BundleActivate(fnamemodify(dir, ':t'))
+	call BundleActivateDir(dir)
 endfor
+call BundleActivateDir(vim_dir)
 
 " absurdly-large tabpagemax (to open all `-p` arguments)
 se tpm=1000
