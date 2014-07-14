@@ -1,3 +1,17 @@
+fun! Plugin(git, ...)
+  let [user, repo] = split(a:git, '/')
+  let dest = a:0 ? a:1 : BundleDir(repo)
+  if a:0
+    echoe 'Second argument to Plugin not currently supported'
+    return
+  end
+  if !isdirectory(dest)
+    call system('git clone https://github.com/'.user.'/'.repo.' '.shellescape(dest))
+  end
+endf
+
+com -nargs=* Plugin :call Plugin(<args>)
+
 Plugin 'Twinside/vim-haskellConceal'
 Plugin 'Lokaltog/vim-powerline'
 Plugin 'altercation/vim-colors-solarized'
