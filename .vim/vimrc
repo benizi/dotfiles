@@ -57,10 +57,10 @@ endfun
 let g:mapleader = ','
 let g:maplocalleader = g:mapleader
 
+call BundleActivateDir(vim_dir)
 for dir in filter(glob(vim_dir.'/bundle/*', 1, 1), 'isdirectory(v:val)')
 	call BundleActivateDir(dir)
 endfor
-call BundleActivateDir(vim_dir)
 
 " absurdly-large tabpagemax (to open all `-p` arguments)
 se tpm=1000
