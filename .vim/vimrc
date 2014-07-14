@@ -36,21 +36,21 @@ if !executable('stat')
 	finish
 end
 
-let vimrc = expand('<sfile>')
-let abs_path = vimrc
-let owner_home = '~'
-let owner_home .= split(system('stat -L -c %U '.shellescape(vimrc)))[0]
+let g:vimrc = expand('<sfile>')
+let g:abs_path = vimrc
+let g:owner_home = '~'
+let g:owner_home .= split(system('stat -L -c %U '.shellescape(vimrc)))[0]
 if system('stat -c %F '.shellescape(vimrc)) =~ 'link'
 	let link = split(system('readlink '.shellescape(vimrc)), "\n")[0]
-	let abs_path = substitute(vimrc, '[^/]\+$', link, '')
+	let g:abs_path = substitute(vimrc, '[^/]\+$', link, '')
 end
-let vim_dir = fnamemodify(abs_path, ':h')
-let vim_local = expand(owner_home . '/.vim.local')
-let s:bundle_dir = vim_dir.'/bundle' " needed above
+let g:vim_dir = fnamemodify(abs_path, ':h')
+let g:vim_local = expand(owner_home . '/.vim.local')
+let g:bundle_dir = vim_dir.'/bundle' " needed above
 
 " Get directory under the set of 'bundled' files
 fun! s:BundleDir(...)
-	return join(extend([s:bundle_dir],a:000),'/')
+	return join(extend([bundle_dir],a:000),'/')
 endfun
 
 " Set leader chars before activating addons
