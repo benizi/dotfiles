@@ -9,20 +9,20 @@ endfun
 
 fun! s:AsRoot()
 	if !exists('s:as_root')
-		let s:as_root = getftype(expand('~/.vim')) != 'dir'
+		let s:as_root = (expand(g:owner_home) != expand('$HOME'))
 	endif
 	return s:as_root
 endfun
 
 fun! s:Chown(file, ...)
-	let ref = expand(a:0 ? a:1 : '~/.vim')
+	let ref = expand(a:0 ? a:1 : g:vim_dir)
 	let chown = '!chown --reference '.shellescape(ref).' '.shellescape(a:file)
 	silent! exe chown
 endfun
 
 fun! DefaultFilename(...)
 	if !exists('s:default_filename') || (a:0 && a:1)
-		let dir = s:AsRoot() ? '~/.vim/../.vim.local' : '~/.vim.local'
+		let dir = g:vim_local
 		if isdirectory(expand(dir)) < 1 && exists('*mkdir')
 			call mkdir(expand(dir), 'p', 0700)
 			call s:Chown(dir)
