@@ -107,12 +107,6 @@ catch
 	echom v:exception
 endtry
 
-let s:ng = expand(s:home.'/hg/vimclojure/client/ng')
-if executable(s:ng)
-	let vimclojure#WantNailgun = 1
-	let vimclojure#NailgunClient = s:ng
-endif
-
 let g:Powerline_symbols = s:limited_terminal ? 'compatible' : 'unicode'
 let g:Powerline_cache_enabled = 0
 
