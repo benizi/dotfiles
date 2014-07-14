@@ -1,70 +1,66 @@
-" different locations if running as root
-let owner_home = '~'
-let s:script = shellescape(expand('~/.vimrc'))
-if executable('stat') && system('stat -c %F '.s:script) =~ 'link'
-	let owner_home .= split(system('stat -L -c %U '.s:script))[0]
-endif
-let s:home = owner_home
-let s:home_vim = s:home.'/.vim'
-
-" Get directory under the set of 'bundled' files
-fun! s:BundleDir(...)
-	return join(extend([s:home_vim.'/bundle'],a:000),'/')
-endfun
-
-let s:vundle = expand(s:home_vim.'/vundle')
-let s:vundle_failed = 0
-
-if !isdirectory(s:vundle)
-	if confirm('Install vundle?', "&Ok\n&Cancel") != 1
-		let s:vundle_failed = 1
+" call if setup fails, then call `finish`
+fun! s:SetupFailed(...)
+	if a:0
+		echom a:1
 	end
-
-	if !s:vundle_failed
-		let url = 'https://github.com/benizi/vundle'
-		let clone = 'git clone '.url.' '.shellescape(s:vundle)
-		exe '!'.clone
-		if v:shell_error
-			echom 'Failed to run:' clone
-			let s:vundle_failed = 1
-		end
-	end
-end
-
-if s:vundle_failed
 	echom 'Most Vim plugins will not be set up'
 	se noloadplugins vi=
+endf
+
+fun! s:AnyMissingDirs(dirs)
+	return len(filter('!isdirectory(v:val)', a:dirs))
+endf
+
+" Add to runtimepath, without duplicates
+fun! AddToRtp(dir)
+	let added = 0
+	if index(split(&rtp,','), a:dir) < 0
+		let &rtp = join([ a:dir, &rtp, a:dir.'/after' ], ',')
+		let added += 1
+	endif
+	return added
+endf
+
+fun! BundleActivate(name)
+	let dir = s:BundleDir(a:name)
+	if AddToRtp(dir)
+		exe 'run! '.dir.'/plugin/*.vim'
+	end
+endf
+
+if !executable('stat')
+	call s:SetupFailed('Cannot execute "stat" command')
 	finish
 end
 
-" Add various directories to &rtp, with their '/after' dirs
-let s:dirs = [ s:home_vim, s:home_vim.'.local' ]
-\ + [ s:vundle ]
-\ + map(['vim-addon-manager','vim-pathogen'],'s:BundleDir(v:val)')
+let vimrc = expand('<sfile>')
+let abs_path = vimrc
+let owner_home = '~'
+let owner_home .= split(system('stat -L -c %U '.shellescape(vimrc)))[0]
+if system('stat -c %F '.shellescape(vimrc)) =~ 'link'
+	let link = split(system('readlink '.shellescape(vimrc)), "\n")[0]
+	let abs_path = substitute(vimrc, '[^/]\+$', link, '')
+end
+let vim_dir = fnamemodify(abs_path, ':h')
+let vim_local = expand(owner_home . '/.vim.local')
+let s:bundle_dir = vim_dir.'/bundle' " needed above
 
-fun! AddToRtp(dir)
-	if index(split(&rtp,','), a:dir) < 0
-		let &rtp = join([ a:dir, &rtp, a:dir.'/after' ], ',')
-	endif
-endf
-
-for dir in map(s:dirs, 'expand(v:val)')
-	if isdirectory(dir)
-		call AddToRtp(dir)
-	endif
-endfor
+" Get directory under the set of 'bundled' files
+fun! s:BundleDir(...)
+	return join(extend([s:bundle_dir],a:000),'/')
+endfun
 
 " Set leader chars before activating addons
 let g:mapleader = ','
 let g:maplocalleader = g:mapleader
 
+for dir in filter(glob(vim_dir.'/bundle/*', 1, 1), 'isdirectory(v:val)')
+	call BundleActivate(fnamemodify(dir, ':t'))
+endfor
+
 fun! InGUI()
 	return has('gui') && has('gui_running')
 endf
-
-" keep some plugins around w/o loading by default...
-let g:pathogen_disabled = []
-call add(g:pathogen_disabled, 'CSApprox')
 
 let s:limited_terminal = $TERM =~ 'linux'
 
@@ -89,23 +85,6 @@ if exists('$KONSOLE_DBUS_SERVICE')
 	let &t_SI="\<Esc>]50;CursorShape=1\x7"
 	let &t_EI="\<Esc>]50;CursorShape=0\x7"
 end
-
-try
-	call vam#ActivateAddons() " set up VAM functions
-	call pathogen#infect(s:BundleDir() . '/{}') " activate everything
-catch
-	echomsg 'Caught exception:'
-	echomsg v:exception
-	echomsg 'Perhaps pathogen or vim-addon-manager is not installed?'
-endtry
-
-try
-	call vundle#begin(s:BundleDir()) " set up Vundle
-	exe 'so' s:home_vim.'/bundles.vim'
-catch
-	echom 'Caught exception trying to activate Vundle:'
-	echom v:exception
-endtry
 
 let g:Powerline_symbols = s:limited_terminal ? 'compatible' : 'unicode'
 let g:Powerline_cache_enabled = 0
@@ -396,9 +375,12 @@ endif
 set backupdir=~/.vim-tmp//,~/.tmp//,~/tmp//,/tmp//
 set directory=~/.vim-tmp//,~/.tmp//,~/tmp//,/tmp//
 "^^ from http://items.sjbach.com/319/configuring-vim-right ***
-if filereadable(expand(s:home.'/.vimrc.local'))
-	exe 'source '.s:home.'/.vimrc.local'
-endif
+for local in [owner_home, fnamemodify(vimrc, ':h'), vim_dir, vim_local]
+	let file = expand(local.'/.vimrc.local')
+	if filereadable(file)
+		exe 'so '.file
+	end
+endfor
 
 let g:no_time_tracking = 1
 
