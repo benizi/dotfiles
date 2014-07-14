@@ -58,6 +58,9 @@ for dir in filter(glob(vim_dir.'/bundle/*', 1, 1), 'isdirectory(v:val)')
 	call BundleActivate(fnamemodify(dir, ':t'))
 endfor
 
+" absurdly-large tabpagemax (to open all `-p` arguments)
+se tpm=1000
+
 fun! InGUI()
 	return has('gui') && has('gui_running')
 endf
