@@ -22,7 +22,7 @@ fun! AddToRtp(dir)
 endf
 
 fun! BundleActivate(name)
-	return BundleActivateDir(s:BundleDir(a:name))
+	return BundleActivateDir(BundleDir(a:name))
 endf
 
 fun! BundleActivateDir(dir)
@@ -49,8 +49,8 @@ let g:vim_local = expand(owner_home . '/.vim.local')
 let g:bundle_dir = vim_dir.'/bundle' " needed above
 
 " Get directory under the set of 'bundled' files
-fun! s:BundleDir(...)
-	return join(extend([bundle_dir],a:000),'/')
+fun! BundleDir(...)
+	return join(extend([g:bundle_dir],a:000),'/')
 endfun
 
 " Set leader chars before activating addons
