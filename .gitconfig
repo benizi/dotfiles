@@ -91,6 +91,8 @@
 	rim = rebase --interactive master
 	rid = rebase --interactive dev
 	riu = rebase --interactive @{upstream}
+	# TODO: rmup is a misnomer; it just prints invalid upstreams
+	rmup = "! : remove invalid upstreams ; rmup() { for branch in $(git bb) ; do git config branch.$branch.remote | grep -q . || continue ; git rev-parse --verify $branch@{upstream} 2>/dev/null | grep -q . && continue ; echo $branch ; done ; } ; rmup"
 	sm = submodule
 	sub = submodule
 	tagreflog = "! : create tags for all reflog entries ; tagreflog() { limit='' ; [[ $# -gt 0 ]] && limit=${1}q ; eval \"$(git reflog --format='%gd %H' | awk -F'[{} ]' '{ print \"git tag reflog-\" $2, $4 }' | sed \"$limit\")\" ; } ; tagreflog"
