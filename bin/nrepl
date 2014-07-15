@@ -6,7 +6,7 @@
 ":"; addcp() { group=$(printf '%s\n' "$1" | sed 's!\.!/!g') ; lib=$2 ; v=$3 ; jar="$base/$group/$lib/$v/$lib-$v.jar" ; cp="$cp${cp+:}$jar" ; }
 ":";
 ":";: Clojure
-":"; addcp org.clojure clojure 1.5.1
+":"; addcp org.clojure clojure ${clojure_version:-1.5.1}
 ":";
 ":";: nREPL
 ":"; addcp org.clojure tools.nrepl 0.2.3
