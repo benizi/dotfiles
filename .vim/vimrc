@@ -43,6 +43,7 @@ let g:owner_home .= split(system('stat -L -c %U '.shellescape(vimrc)))[0]
 if system('stat -c %F '.shellescape(vimrc)) =~ 'link'
 	let link = split(system('readlink '.shellescape(vimrc)), "\n")[0]
 	let g:abs_path = substitute(vimrc, '[^/]\+$', link, '')
+	let g:abs_path = substitute(g:abs_path, '^.\+//', '/', '')
 end
 let g:vim_dir = fnamemodify(abs_path, ':h')
 let g:vim_local = expand(owner_home . '/.vim.local')
