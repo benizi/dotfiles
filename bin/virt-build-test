@@ -15,6 +15,7 @@ kill_ssh_known() {
   local h
   for h in $1 $(dig +short $1)
   do
+    [[ "$h" = ';'* ]] && break
     ssh-keygen -R $h
   done
 }
