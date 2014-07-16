@@ -6,6 +6,8 @@
 \setenv LESS '-R -i -M --shift 5 -F -X -j4 -S'
 \pset pager always
 
+\timing
+
 \set PROMPT1 '%[%`tput setaf 4`%]%M %~ %#%[%`tput sgr0`%] '
 \set PROMPT2 '%[%`tput setaf 4`%]%R%[%`tput sgr0`%] '
 
