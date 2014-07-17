@@ -53,7 +53,7 @@
 	ab = "! : archive branch ; ab() { if [ $# -lt 1 ] ; then echo \"Usage: git ab branch [name]\" >&2 ; exit 1 ; fi ; branch=$1 ; shift ; if [ $# -gt 0 ] ; then ref=$1 ; else ref=archived/$branch ; fi ; git update-ref \"refs/$ref\" \"$branch\" && git branch -D \"$branch\" ; } ; ab"
 	base = diff-base
 	base-range = "!ra () { [[ $# -gt 0 ]] || set -- HEAD ; b=\"$(git diff-base \"$@\")\" ; echo $b..$1 ; } ; ra"
-	bb = !git branch | awk '{ print substr($0, 3) }'
+	bb = !git branch | awk '!/->/ { print substr($0, 3) }'
 	# TODO: fix --contains version, any/all
 	bc = "!bc () { if [[ $# -eq 0 ]] ; then git branch | grep '^[*]' | cut -c3- ; return ; fi ; bargs=() ; revs=() ; any=true ; found=() ; for arg ; do case \"$arg\" in --any) any=true ;; --all) any=false ;; -*) bargs+=( \"$arg\" ) ;; *) revs+=( \"$arg\" ) ;; esac ; done ; for rev in \"${revs[@]}\" ; do toprocess=\"${toprocess:+$toprocess /// }`git branch \"${bargs[@]}\" --contains $rev | cut -c3-`\" ; done ; thispass=( $toprocess ) ; for c in \"${thispass[@]}\" ; do echo $c ; done ; } ; bc"
 	bd = branch -d
