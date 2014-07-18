@@ -1,0 +1,12 @@
+action_1 2
+action_2 3
+action_3 4
+action_4
+save_filelist
+jump_random r
+reload_minus
+reload_plus
+zoom_fit slash x
+zoom_default z 1
+zoom_in plus
+zoom_out minus
