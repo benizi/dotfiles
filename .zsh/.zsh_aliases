@@ -124,9 +124,8 @@ cuke() {
     fi
     if-able cucumber $args
     ret=$?
-    if (( $+doretry ))
-    then [[ ! -s $retrylog ]] && break
-    else break
+    if (( ! ret )) || (( ! $+doretry ))
+    then break
     fi
   done
   return ret
