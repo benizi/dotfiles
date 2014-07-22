@@ -42,7 +42,7 @@ if find_dev '/Synaptics|Elantech.Touchpad|Cypress.Trackpad/' ; then
 	prop 'Synaptics Edge Scrolling' 0 0 0
 fi
 
-if find_dev /IBM.TrackPoint/ ; then
+if find_dev '/IBM.TrackPoint|ThinkPad.USB.Keyboard.*pointer/' ; then
 	prop 'Evdev Wheel Emulation' 1
 	prop 'Evdev Wheel Emulation Button' 2
 	prop 'Evdev Wheel Emulation Axes' 6 7 4 5
