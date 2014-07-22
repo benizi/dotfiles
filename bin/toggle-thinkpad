@@ -1,0 +1,19 @@
+#!/bin/zsh
+
+devices=(
+  $(xinput list |
+    awk -F= '/Trackpad.*pointer/ || /AT.*keyboard.*keyboard/ { print $2 }' |
+    awk '{ print $1 }')
+)
+
+total=0
+for device in $devices ; do
+  enabled=$(xinput list-props $device | awk '/Device Enabled/ { print $NF }')
+  (( total += enabled ))
+done
+
+(( total == $#devices )) && action=disable || action=enable
+
+for device in $devices ; do
+  xinput $action $device
+done
