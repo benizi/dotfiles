@@ -61,7 +61,7 @@
 	bv = "log --no-walk --branches --date-order --format='%<(24)%Cgreen%cr%Creset %<(50)%s%<(20)%C(auto)%d%Creset %Cblue%ae%Creset'"
 	bva = "!git bv --remotes"
 	close = "! : close merged branch ; remote() { git remote | sed 1q ; } ; branch() { git branch | awk '/^\\*/ { print $2 }' ; } ; ismerged() { git branch --merged=\"$1\" | cut -c3- | grep -qxF \"$2\" ; } ; closeit() { branch=${1:-$(branch)} ; remote=${2:-$(remote)/dev} ; if ! ismerged $remote $branch ; then printf '%s is not merged into %s\\n' $branch $remote ; return 1 ; fi ; git push $(remote) :$branch ; git ab $branch merged/$branch ; } ; closeit"
-	# co = "! : checkout or clone ; co () { if [ $# -eq 1 ] && [ \"$1\" = [a-z]*:* ] ; then git clone \"$1\" ; else git checkout \"$@\" ; fi ; } ; co"
+	co = checkout
 	com = checkout master
 	cod = checkout dev
 	cor = checkout release-candidate
