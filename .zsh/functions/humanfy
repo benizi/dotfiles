@@ -1,5 +1,5 @@
 perl -lpwe '@F=split/(\s+)/,$_,-1;
-for(@f){
+for(@F){
   last if /[^\s\d]/;
   next if not s/^([+\-]?)(\d+(?:\.\d+)?)$/$2/;
   my $s = $1;
