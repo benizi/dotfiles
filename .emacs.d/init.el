@@ -140,6 +140,8 @@
 (add-hook 'emacs-lisp-mode-hook 'turn-on-paredit)
 (add-hook 'cider-repl-mode-hook 'turn-on-paredit)
 (add-hook 'lisp-interaction-mode-hook 'turn-off-paredit)
+(add-hook 'racket-mode-hook 'turn-on-paredit)
+(add-hook 'racket-repl-mode-hook 'turn-on-paredit)
 
 (require 'mic-paren) ;; show matching paren even when off-screen
 (paren-activate)
