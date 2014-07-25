@@ -6,13 +6,13 @@ devices=(
     awk '{ print $1 }')
 )
 
-total=0
+any_enabled=0
 for device in $devices ; do
   enabled=$(xinput list-props $device | awk '/Device Enabled/ { print $NF }')
-  (( total += enabled ))
+  (( any_enabled += enabled ))
 done
 
-(( total == $#devices )) && action=disable || action=enable
+(( any_enabled )) && action=disable || action=enable
 
 for device in $devices ; do
   xinput $action $device
