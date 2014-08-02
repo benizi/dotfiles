@@ -167,10 +167,10 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((0, xF86XK_AudioMute), spawn "pavucontrol")
 
     ---- brightness
-    , ((modm, xK_F5), spawn "brightness down")
-    , ((modm .|. shiftMask, xK_F5), spawn "brightness min")
-    , ((modm, xK_F6), spawn "brightness up")
-    , ((modm .|. shiftMask, xK_F6), spawn "brightness max")
+    , ((modm, xK_F5), spawn "brightness min")
+    , ((modm .|. shiftMask, xK_F5), spawn "brightness down")
+    , ((modm, xK_F6), spawn "brightness max")
+    , ((modm .|. shiftMask, xK_F6), spawn "brightness up")
 
     ---- choose wifi
     , ((mod4Mask, xK_w), spawn "wifi-chooser \"<cli>\"")
