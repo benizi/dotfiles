@@ -183,7 +183,7 @@ static void usage() {
   printf("  -u/--user USERNAME\n");
   printf("  -h/--host HOSTNAME | -s/--server SERVER | -d/--domain DOMAIN\n");
   printf("     HOST = SERVER.DOMAIN\n");
-  printf("  -P/--protocol PROTOCOL | -p/--port PORTNUMBER \n");
+  printf("  -P/--protocol PROTOCOL | -p/--port PORTNUMBER | -N/--no-port\n");
   printf("     PROTOCOL = numeric PORT\n");
   printf("  --passfd N = specify a password via file descriptor\n");
   printf("\n");
@@ -221,6 +221,7 @@ int main(int argc, char **argv) {
   int i, tried, verbose = 0, remove = 0, list = 0;
   int set_domain = 0, set_host = 0, set_server = 0;
   int set_protocol = 0, set_port = 0, set_passfd = 0;
+  int no_port = 0;
   int dry = 0;
 
   char *user = default_user();
@@ -249,6 +250,8 @@ int main(int argc, char **argv) {
       I_OPT_Q(port);
     } else if (LARG(passfd)) {
       I_OPT_Q(passfd);
+    } else if (ARG(N) || LARG(no-port)) {
+      no_port = 1;
     } else if (ARG(v) || LARG(verbose)) {
       verbose = 1;
     } else if (ARG(R) || LARG(remove)) {
@@ -287,20 +290,22 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  if ((set_port + set_protocol) == 1) {
-    if (set_protocol) {
-      set_port_by_protocol(&port, protocol);
-    } else if (set_port) {
-      set_protocol_by_port(&protocol, port);
+  if (!no_port) {
+    if ((set_port + set_protocol) == 1) {
+      if (set_protocol) {
+        set_port_by_protocol(&port, protocol);
+      } else if (set_port) {
+        set_protocol_by_port(&protocol, port);
+      }
+    } else if (!(set_port || set_protocol || list)) {
+      fprintf(stderr, "Must set exactly one of --port, --protocol, and --no-port\n");
+      return 1;
     }
-  } else if (!(set_port || set_protocol || list)) {
-    fprintf(stderr, "Must set at least one of --port or --protocol\n");
-    return 1;
-  }
 
-  if (set_protocol && !port) {
-    fprintf(stderr, "Couldn't determine port for --protocol %s\n", protocol);
-    return 1;
+    if (set_protocol && !port) {
+      fprintf(stderr, "Couldn't determine port for --protocol %s\n", protocol);
+      return 1;
+    }
   }
 
   if (verbose && !list) {
