@@ -74,7 +74,6 @@ short_key_listing(gchar *keyring, guint32 id)
     if (schema_p && 0) printf(" {%s}", schema);
     if (name_p) printf(" name=%s", name);
     if (magic_p) printf(" magic=%s", magic);
-    printf("\n");
     gnome_keyring_attribute_list_free(attlist);
   }
 }
@@ -103,8 +102,35 @@ detailed_key_listing(gchar *keyring, guint32 id)
   }
 }
 
+static void
+print_secret(GnomeKeyringItemInfo *info)
+{
+  char *pass = gnome_keyring_item_info_get_secret(info);
+  printf(" SECRET[%ld]=\"", strlen(pass));
+  for (; *pass; pass++) {
+    switch (*pass) {
+      case '\n':
+        printf("\\n");
+        break;
+      case '\t':
+        printf("\\t");
+        break;
+      case '"':
+        printf("\\\"");
+        break;
+      default:
+        if (*pass < 0x20 || *pass > 0x7f) {
+          printf("\\x%02x", *pass);
+        } else {
+          printf("%c", *pass);
+        }
+    }
+  }
+  printf("\"");
+}
+
 static int
-key_listing(int verbose)
+key_listing(int verbose, int secret)
 {
   GList *keyrings, *current;
   if (gnome_keyring_list_keyring_names_sync(&keyrings) != OK) {
@@ -130,6 +156,11 @@ key_listing(int verbose)
         short_key_listing(keyring, GPOINTER_TO_INT(cid->data));
         if (verbose)
           detailed_key_listing(keyring, GPOINTER_TO_INT(cid->data));
+        if (secret) {
+          if (verbose) printf(" ");
+          print_secret(info);
+        }
+        printf("\n");
 
         gnome_keyring_item_info_free(info);
       } else {
@@ -275,7 +306,7 @@ int main(int argc, char **argv) {
   GnomeKeyringResult result;
   GList *results;
   char *host;
-  int i, tried, verbose = 0, remove = 0, list = 0;
+  int i, tried, verbose = 0, secret = 0, remove = 0, list = 0;
   int set_user = 0;
   int set_domain = 0, set_host = 0, set_server = 0;
   int set_protocol = 0, set_port = 0, set_passfd = 0;
@@ -312,6 +343,8 @@ int main(int argc, char **argv) {
       no_port = 1;
     } else if (ARG(v) || LARG(verbose)) {
       verbose = 1;
+    } else if (ARG(S) || LARG(secret)) {
+      secret = 1;
     } else if (ARG(R) || LARG(remove)) {
       MODE(remove);
     } else if (ARG(l) || LARG(list)) {
@@ -422,7 +455,7 @@ int main(int argc, char **argv) {
   }
 
   if (list)
-    return key_listing(verbose);
+    return key_listing(verbose, secret);
 
   for (tried = 0; tried < 2; tried++) {
     result = gnome_keyring_find_network_password_sync(
