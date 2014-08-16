@@ -276,6 +276,7 @@ int main(int argc, char **argv) {
   GList *results;
   char *host;
   int i, tried, verbose = 0, remove = 0, list = 0;
+  int set_user = 0;
   int set_domain = 0, set_host = 0, set_server = 0;
   int set_protocol = 0, set_port = 0, set_passfd = 0;
   int no_port = 0;
@@ -324,8 +325,45 @@ int main(int argc, char **argv) {
       usage();
       return 0;
     } else {
-      fprintf(stderr, "Unknown argument: %s\n", argv[i]);
-      return 1;
+      break;
+    }
+  }
+
+  while (i < argc) {
+    char *arg, *found;
+    arg = argv[i++];
+    while (*arg) {
+      if (*arg == '[' && (found = index(arg, ']')) && !strcmp(found, "]")) {
+        if (!set_port) {
+          arg++;
+          protocol = arg;
+          set_protocol = 1;
+          no_port = 0;
+          *found = '\0';
+        }
+        break;
+      } else if (!set_user && (found = index(arg, '@'))) {
+        user = arg;
+        set_user = 1;
+        *found = '\0';
+        arg = found + 1;
+      } else if (!(set_host || set_server || set_domain)) {
+        if ((found = index(arg, ':'))) {
+          host = arg;
+          set_host = 1;
+          *found = '\0';
+          port = strtol(found + 1, NULL, 0);
+          set_port = 1;
+        } else {
+          host = arg;
+          set_host = 1;
+          no_port = 1;
+        }
+        break;
+      } else {
+        printf("Unknown argument: %s\n", arg);
+        return 1;
+      }
     }
   }
 
