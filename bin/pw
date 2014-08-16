@@ -1,3 +1,12 @@
 #!/bin/sh
-args="$(password-manager -l | sort | awk '/^ [^ ]/' | dmenu)"
+
+case "$(xdotool getactivewindow getwindowname)" in
+  *Chromium) default=github.com:80 ;;
+esac
+
+args="$({
+  [[ -n "$default" ]] && echo $default
+  password-manager -l | sort | awk '/^ [^ ]/'
+} | dmenu)"
+
 test -n "$args" && password-manager $args | clip
