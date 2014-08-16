@@ -66,7 +66,7 @@ short_key_listing(gchar *keyring, guint32 id)
       }
     }
     printf(" ");
-    if (user_p) printf("%s@", user);
+    if (user_p && strcmp(user, default_user())) printf("%s@", user);
     if (server_p) printf("%s", server);
     if (domain_p) printf(".%s", domain);
     if (port_p) printf(":%d", port);
