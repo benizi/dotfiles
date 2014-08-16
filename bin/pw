@@ -1,0 +1,3 @@
+#!/bin/sh
+args="$(password-manager -l | sort | awk '/^ [^ ]/' | dmenu)"
+test -n "$args" && password-manager $args | clip
