@@ -22,6 +22,63 @@ default_user(void)
   return ret;
 }
 
+#define FIND_NAMED_KIND(ATT, NAME, KIND) \
+  if (!strcmp(att.name, NAME)) { \
+    ATT = att.value.KIND; \
+    ATT ## _p = 1; \
+    continue; \
+  }
+#define FIND_STRING(ATT) FIND_NAMED_KIND(ATT, #ATT, string)
+#define FIND_INT(ATT) FIND_NAMED_KIND(ATT, #ATT, integer)
+
+static void
+short_key_listing(gchar *keyring, guint32 id)
+{
+  GnomeKeyringAttributeList *attlist;
+  GnomeKeyringResult result =
+    gnome_keyring_item_get_attributes_sync(keyring, id, &attlist);
+
+  char *user, *server, *domain, *protocol, *schema;
+  int user_p = 0, server_p = 0, domain_p = 0, protocol_p = 0, schema_p = 0;
+  char *name, *magic;
+  int name_p = 0, magic_p = 0;
+  int port;
+  int port_p = 0;
+
+  if (result == GNOME_KEYRING_RESULT_OK) {
+    GnomeKeyringAttribute att, *atts;
+    int i;
+    atts = (GnomeKeyringAttribute *)attlist->data;
+    for (i = 0; i < attlist->len; i++) {
+      att = atts[i];
+      if (att.type == GNOME_KEYRING_ATTRIBUTE_TYPE_STRING) {
+        FIND_NAMED_KIND(schema, "xdg:schema", string);
+        FIND_STRING(user);
+        FIND_STRING(server);
+        FIND_STRING(domain);
+        FIND_STRING(protocol);
+        FIND_STRING(name);
+        FIND_STRING(magic);
+        printf("UNHANDLED STRING: %s\n", att.name);
+      } else if (att.type == GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32) {
+        FIND_INT(port);
+        printf("UNHANDLED INT: %s\n", att.name);
+      }
+    }
+    printf(" ");
+    if (user_p) printf("%s@", user);
+    if (server_p) printf("%s", server);
+    if (domain_p) printf(".%s", domain);
+    if (port_p) printf(":%d", port);
+    if (protocol_p) printf(" [%s]", protocol);
+    if (schema_p && 0) printf(" {%s}", schema);
+    if (name_p) printf(" name=%s", name);
+    if (magic_p) printf(" magic=%s", magic);
+    printf("\n");
+    gnome_keyring_attribute_list_free(attlist);
+  }
+}
+
 static void
 detailed_key_listing(gchar *keyring, guint32 id)
 {
@@ -70,7 +127,7 @@ key_listing(int verbose)
       GnomeKeyringResult result =
         gnome_keyring_item_get_info_full_sync(keyring, GPOINTER_TO_INT(cid->data), GNOME_KEYRING_ITEM_INFO_SECRET, &info);
       if (result == GNOME_KEYRING_RESULT_OK) {
-        printf(" %s\n", gnome_keyring_item_info_get_display_name(info));
+        short_key_listing(keyring, GPOINTER_TO_INT(cid->data));
         if (verbose)
           detailed_key_listing(keyring, GPOINTER_TO_INT(cid->data));
 
