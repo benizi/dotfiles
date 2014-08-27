@@ -77,6 +77,14 @@ def cwd(pid)
 	File.readlink("/proc/#{pid}/cwd")
 end
 
+def default_link
+  File.expand_path('~/.config/in-cwd.default')
+end
+
+def default_dir
+  File.symlink?(default_link) && File.readlink(default_link)
+end
+
 # command to run is whatever args you pass or the default config'ed above
 def cmd_to_run
 	arr = ARGV.dup
@@ -100,7 +108,7 @@ begin
 	when /(\A|\/)(?:u?rxvt|st|u?xterm|term(?:inal)?)$/i # if it looks term-ish, find subshell
 		pid = subvim(pid) || subshell(pid)
 	end
-	dir ||= cwd(pid)
+	dir ||= default_dir || cwd(pid)
 	Dir.chdir(dir)
 ensure
 	ENV.delete_if { |k,v| k =~ /^RBENV/ }
