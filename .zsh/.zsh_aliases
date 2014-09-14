@@ -498,14 +498,27 @@ named-gem-directory () {
   else bcmd=( ruby -rubygems -rbundler/setup -e )
   fi
 
-  [[ $1 = d ]] && return 1
-  local -a gemdir
-  gemdir=( $($bcmd 'puts Gem.loaded_specs["'$2'"].gem_dir') )
-  (( $? )) && return 1
-  gemdir=( $gemdir[-1] )
-  [[ -d $gemdir ]] || return 1
-  [[ -z $gemdir ]] && return 1
-  reply=( $gemdir )
+  case $1 in
+    d) # /opt/ruby/.../gems/football -> football
+      return 1 # unimplemented
+      ;;
+    n) # ~[football] -> /opt/ruby/.../gems/football
+      local -a gemdir
+      gemdir=( $($bcmd 'puts Gem.loaded_specs["'$2'"].gem_dir') )
+      (( $? )) && return 1
+      gemdir=( $gemdir[-1] )
+      [[ -d $gemdir ]] || return 1
+      [[ -z $gemdir ]] && return 1
+      reply=( $gemdir )
+      ;;
+    c) # completion
+      local expl
+      local -a dirs
+      dirs=( $($bcmd 'puts Gem.loaded_specs.keys.sort') )
+      _wanted dynamic-dirs expl 'gem directory' compadd -S\] -a dirs
+      ;;
+    *) return 1 ;;
+  esac
 }
 zsh_directory_name_functions+=( named-gem-directory )
 
