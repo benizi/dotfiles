@@ -489,9 +489,18 @@ done
 }
 
 named-gem-directory () {
+  local -a bcmd
+
+  if [[ -e .zeus.sock ]]
+  then bcmd=( zeus runner )
+  elif [[ -f bin/rails ]] || [[ -f script/rails ]]
+  then bcmd=( rails runner )
+  else bcmd=( ruby -rubygems -rbundler/setup -e )
+  fi
+
   [[ $1 = d ]] && return 1
   local -a gemdir
-  gemdir=( ${(f)"$(bundle show $2 2>&1)"} )
+  gemdir=( $($bcmd 'puts Gem.loaded_specs["'$2'"].gem_dir') )
   (( $? )) && return 1
   gemdir=( $gemdir[-1] )
   [[ -d $gemdir ]] || return 1
