@@ -162,6 +162,20 @@ run-tests() {
   return ret
 }
 
+run-tests-status() {
+  local ref
+  if [[ "$(git name-rev --name-only HEAD)" = github/*/merge ]]
+  then ref=$(git rev-parse 'HEAD^2')
+  else ref=$(git rev-parse HEAD)
+  fi
+
+  pr-status -ref $ref pending running tests locally
+  if run-tests
+  then pr-status -ref $ref success tests passed
+  else pr-status -ref $ref failure tests failed
+  fi
+}
+
 with-git-tag() {
   if git rev-parse --git-dir &>/dev/null ; then
     local branch=$(git symbolic-ref HEAD 2>/dev/null || printf '%s' no-branch)
