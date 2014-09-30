@@ -104,6 +104,11 @@ xkb_symbols "menu-compose" {
 };
 
 partial modifier_keys
+xkb_symbols "menu-compose-latch" {
+    key <MENU> { [ Multi_key, ISO_Level3_Latch ] };
+};
+
+partial modifier_keys
 xkb_symbols "ralt-iso3" {
     key <RALT> {
       type[Group1]="TWO_LEVEL",
@@ -539,7 +544,7 @@ default partial alphanumeric_keys modifier_keys
 xkb_symbols "intl" {
     include "benizi(intl-shared)"
     include "benizi(caps-ctrl-multi)"
-    include "benizi(menu-compose)"
+    include "benizi(menu-compose-latch)"
     include "benizi(ralt-mod3)"
 };
 
