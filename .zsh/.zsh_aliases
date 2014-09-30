@@ -226,7 +226,7 @@ wipcuke() {
 wipit() { wipspec "$@" && wipcuke "$@" }
 
 executable() {
-  (( $+commands[$1] || $+aliases[$1] || $+functions[$1] || $+builtins[$1] ))
+  (( $+commands[$1] || $+aliases[$1] || $+functions[$1] || $+builtins[$1] )) || [[ -x $1 ]]
 }
 
 if-able() {
