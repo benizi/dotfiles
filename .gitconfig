@@ -145,3 +145,5 @@
 	pr = "!pr() { against=$1 current=$2 ; [[ -z \"$current\" ]] && current=\"$(git bc)\" ; if [[ -z \"$against\" ]] ; then echo no auto-detect yet ; return 1 ; fi ; open \"$(git huburl)/compare/${against}...${current}?expand=1\" ; git log --reverse --format=%s%n%n%b ${against}..${current} | clip >/dev/null 2>/dev/null ; true ; } ; pr"
 	merged = "!mg() { commit=$1 ; into=${2:-dev} ; git rev-list --ancestry-path --merges --reverse $commit..$into | sed 1q | git log --no-walk --stdin ; } ; mg"
 	pulled = "!pulled() { number=$(git merged \"$@\" | awk '/Merge.pull.request/ { print $4 }') ; url=$(git huburl) ; printf '%s\\n' \"$url/pull/${number#?}\" ; } ; pulled"
+[tag]
+	sort = version:refname
