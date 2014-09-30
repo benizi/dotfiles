@@ -1,3 +1,6 @@
 #!/bin/sh
 hash clip 2>/dev/null && test -t 1 && cmd=clip || cmd=cat
-printf '(╯°□°)╯︵ ┻━┻' | $cmd
+if (( $# ))
+then printf '(ﾉಥ益ಥ）ﾉ ┻━┻'
+else printf '(╯°□°)╯︵ ┻━┻'
+fi | $cmd
