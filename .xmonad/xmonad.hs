@@ -138,6 +138,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     ---- web browsers
     , ((modm,               xK_c     ), spawn "chromium")
     , ((mod4Mask,           xK_c     ), spawn "chromium --incognito")
+    , ((mod4Mask, xK_s), spawn "scratch")
 
     ---- ssh
     , ((modm,               xK_u     ), spawn "ssh-choose -r -1")
