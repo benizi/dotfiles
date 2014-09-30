@@ -138,12 +138,22 @@ rcop() {
   fi
 }
 
+jshint() {
+  if executable bin/jshint
+  then bin/jshint
+  elif (( $+commands[jshint] ))
+  then command jshint
+  else true
+  fi
+}
+
 run-tests() {
   local ret
   (
     [[ -n "$skip" ]] && ${=skip} () { true }
     bundle &&
     rcop &&
+    jshint &&
     rspec $@ &&
     cuke_prefix=run-tests cuke -r
   )
