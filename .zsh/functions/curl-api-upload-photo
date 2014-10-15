@@ -1,4 +1,4 @@
-local batch cmd file uuid auth=$(curl-api-file auth)
+local batch cmd file tmpfile uploadfile uuid auth=$(curl-api-file auth)
 local -a cmds
 cmds=( jq s3cmd uuidgen )
 if [[ ! -s $auth ]] ; then warn "Not logged in" ; return 1 ; fi
@@ -16,7 +16,18 @@ s3args=(
 for file ; do
   [[ -z "$batch" ]] && batch=$(curl-api-post /batches | jq -r .id)
   uuid=$(uuidgen)
-  if ! s3cmd $s3args put $file s3://$bucket/$uuid.$file:e ; then
+  if [[ -n "$uuidstamp" ]] ; then
+    if ! tmpfile=`mktemp` ; then
+      warn "Failed to create temp file for uuidstamping"
+      continue
+    fi
+    printf 'uuidstamp %s' "$(uuidgen)" \
+      | convert $file -set comment @- ${file:e}:$tmpfile
+    uploadfile=$tmpfile
+  else
+    uploadfile=$file
+  fi
+  if ! s3cmd $s3args put $uploadfile s3://$bucket/$uuid.$file:e ; then
     warn "Failed to upload $file to S3 (bucket=$bucket)"
     continue
   fi
@@ -24,9 +35,10 @@ for file ; do
     url from-$0 \
     key $uuid.$file:e \
     filename $file:t \
-    size $(stat -c %s $file) \
+    size $(stat -c %s $uploadfile) \
     batch_id $batch \
     | jq -c -r '{"files":.}' \
     | curl-api-post /photos -d @- \
   && echo
+  [[ -n $tmpfile ]] && rm $tmpfile
 done
