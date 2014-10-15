@@ -5,7 +5,7 @@ local ret
   rcop &&
   jshint &&
   tsp &&
-  rspec $@ &&
+  rspec &&
   cuke_prefix=run-tests cuke -r
 )
 ret=$?
