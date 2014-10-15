@@ -198,8 +198,9 @@ push-upstream() {
   # push to upstream, setting it up if needed
   local -a args
   local branch=${1:-"$(git branch | awk '/^\*/ { print $2 }')"}
+  (( $# )) && shift
   if ! git rev-parse $branch@{upstream} &> /dev/null ; then
-    local remote=$(git remote | sed 1q)
+    local remote=$(git config push-upstream.remote | grep . 2> /dev/null || git remote | sed 1q)
     args=( -u $remote $branch )
   fi
   setopt local_options xtrace
