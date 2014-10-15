@@ -1,13 +1,31 @@
-local ret
+local ret outvar
+local -a runners
+runners=(
+  'Bundle bundle'
+  'RuboCop rcop'
+  'JSHint jshint'
+  'Teaspoon tsp'
+  'Specs rspec'
+  'Cukes cuke -r'
+)
+outvar=${1:-outvar}
+
 (
   [[ -n "$skip" ]] && ${=skip} () { true }
-  bundle &&
-  rcop &&
-  jshint &&
-  tsp &&
-  rspec &&
-  cuke_prefix=run-tests cuke -r
+  for (( i=1; i<=$#runners; i++)) ; do
+    cmd=( ${=${runners[i]}} )
+    name=$cmd[1]
+    shift cmd
+    cuke_prefix=run-tests $cmd && continue
+    return i
+  done
 )
 ret=$?
+
+if (( ret ))
+then eval "$outvar='failure ${${=${runners[ret]}}[1]} failed'"
+else eval "$outvar='success All tests passed'"
+fi
+
 git --no-pager log --decorate --no-walk 2>/dev/null
 return ret
