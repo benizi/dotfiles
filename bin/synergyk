@@ -97,6 +97,9 @@ end
 
 def config(screens, screen_opts, links, alia)
 	cfg = ''
+
+	cfg += section 'options', 'screenSaverSync = false'
+
 	cfg += section 'screens', screens.map { |s|
 		opt = screen_opts[s]
 		"#{s}:" +
