@@ -142,7 +142,7 @@ if ($rdesktop =~ /xfreerdp/) {
 		if ($rcmd[$_] eq '-r') {
 			my $arg = $rcmd[$_+1];
 			if ($arg =~ /^disk:(\w+)=(.+)$/) {
-				splice @rcmd, $_, 2, '--plugin', 'rdpdr', '--data', "disk:$1:$2", '--';
+				splice @rcmd, $_, 2, '--plugin', 'rdpdr', '--data', "drive:$1:$2", '--';
 			} else {
 				unshift @invalid_args, splice @rcmd, $_, 2;
 			}
