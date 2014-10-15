@@ -1,6 +1,6 @@
-until alive
+until alive "$@"
 do
   dmesg | tail
   sleep 1
 done
-dig google.com
+dig ${1:-google.com}
