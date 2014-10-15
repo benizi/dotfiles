@@ -1,0 +1,3 @@
+local -a file
+file=( $REPLY(+A) )
+reply=( file://${file[1]} )
