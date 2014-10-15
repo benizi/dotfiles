@@ -27,7 +27,7 @@ for file ; do
   else
     uploadfile=$file
   fi
-  if ! s3cmd $s3args put $uploadfile s3://$bucket/$uuid.$file:e ; then
+  if ! s3cmd $s3args put $uploadfile s3://$bucket/$s3_prefix${s3_prefix+.}$uuid.$file:e ; then
     warn "Failed to upload $file to S3 (bucket=$bucket)"
     continue
   fi
