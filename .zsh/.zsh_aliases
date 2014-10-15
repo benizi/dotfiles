@@ -559,11 +559,10 @@ zsh_directory_name_functions+=( named-gem-directory )
 
 alias cd.='cd "$(pwd)"'
 
-typeset -a namedirs
-
 load_namedirs() {
   local dir
   local -a target
+  (( $+parameters[namedirs] )) || local -a namedirs
   namedirs=( ${^zsh_dirs}/{,.}namedir(N/) )
   if (( ! $#namedirs )) ; then
     if (( ! $#argv )) ; then
