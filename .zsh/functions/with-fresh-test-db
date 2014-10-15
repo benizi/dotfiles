@@ -1,0 +1,14 @@
+local testdb=$(date +test-db-%s) url ret dropdb=true
+ruby -rubygems -rdatabase_url -e 1 || return 1
+url="$(ruby -rubygems -rdatabase_url -ryaml -rerb -e 'f,n = ARGV ; puts DatabaseUrl.database_url(YAML.load(ERB.new(File.read(f)).result)["test"].merge("database" => n))' config/database.yml $testdb)"
+(( $? )) && return 1
+printf 'DATABASE_URL='\''%s'\''\n' $url
+if printf 'Running migrations...' && DATABASE_URL=$url testdb=$testdb RAILS_ENV=test rake db:create db:migrate VERBOSE=false ; then
+  printf ' Done.\n'
+  DATABASE_URL=$url testdb=$testdb "${@:-$SHELL}"
+fi
+ret=$?
+[[ -n $keepdb ]] || (( ! $# )) && unset dropdb
+(( $+dropdb )) && sudo -i -u postgres dropdb $testdb && unset testdb
+(( $# )) && [[ -n $testdb ]] && printf 'testdb=%s\nDATABASE_URL='\''%s'\''\n' $testdb $url
+return ret
