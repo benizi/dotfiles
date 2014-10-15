@@ -1,0 +1,13 @@
+if (( $+commands[ack] )) && ! ack @wip spec/features(N) features(N) | grep -q . ; then
+  warn "No wip cukes"
+  return 0
+fi
+
+local cfg=config/cucumber.yml
+local -a args
+if [[ -f $cfg ]] && grep -q '^wip:' $cfg
+then args=( -p wip )
+else args=( -t @wip )
+fi
+
+if-able cucumber $args "$@"

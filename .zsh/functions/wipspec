@@ -1,0 +1,6 @@
+if (( $+commands[ack] )) && ! ack 'wip:|:wip' spec | grep -q . ; then
+  warn "No wip specs"
+  return 0
+fi
+
+if-able rspec -t @wip "${@:-spec}"
