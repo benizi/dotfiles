@@ -148,5 +148,6 @@
 	pulled = "!pulled() { number=$(git merged \"$@\" | awk '/Merge.pull.request/ { print $4 }') ; url=$(git huburl) ; printf '%s\\n' \"$url/pull/${number#?}\" ; } ; pulled"
 	cot = "!cot() { branch=\"$(git bb -r | dmenu -b -l 40)\" ; test -n \"$branch\" && git co -t \"$branch\" ; } ; cot"
 	cob = "!cob() { branch=\"$(git bb | dmenu -b -l 40)\" ; test -n \"$branch\" && git co \"$branch\" ; } ; cob"
+	wci = !GIT_AUTHOR_NAME='Whitespace Patrol' GIT_COMMITTER_NAME='Whitespace Patrol' git commit
 [tag]
 	sort = version:refname
