@@ -50,3 +50,4 @@ if (!$ENV{SSH_CLIENT}) {
 my @s_args = ('-f');
 push @s_args, join ':', $host, $port if $client;
 exec { $synergy } $synergy, @s_args;
+die 'Failed to exec('.join(', ', $synergy, @s_args).")\n";
