@@ -1,0 +1,6 @@
+if executable bin/jshint
+then bin/jshint
+elif (( $+commands[jshint] ))
+then command jshint
+else true
+fi

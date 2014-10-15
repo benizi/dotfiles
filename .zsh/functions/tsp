@@ -1,0 +1,6 @@
+if executable bin/teaspoon
+then bin/teaspoon
+elif (( $+commands[teaspoon] ))
+then teaspoon
+else true
+fi

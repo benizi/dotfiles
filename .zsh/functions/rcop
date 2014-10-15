@@ -1,0 +1,4 @@
+if executable rubocop
+then be rubocop "$@"
+else true
+fi
