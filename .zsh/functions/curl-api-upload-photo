@@ -1,4 +1,4 @@
-local batch cmd file tmpfile uploadfile uuid auth=$(curl-api-file auth)
+local batch cmd file tmpfile uploadfile json uuid auth=$(curl-api-file auth)
 local -a cmds
 cmds=( jq s3cmd uuidgen )
 if [[ ! -s $auth ]] ; then warn "Not logged in" ; return 1 ; fi
@@ -8,7 +8,7 @@ for cmd in $cmds ; do
   return 1
 done
 local bucket=$(jq -r .drop_bucket < $auth)
-local -a s3args
+local -a s3args blobs
 s3args=(
   --access_key=$(jq -r .access_key < $auth)
   --secret_key=$(jq -r .secret_key < $auth)
@@ -31,14 +31,22 @@ for file ; do
     warn "Failed to upload $file to S3 (bucket=$bucket)"
     continue
   fi
-  json_object \
+
+  json="$(json_object \
     url from-$0 \
     key $uuid.$file:e \
     filename $file:t \
     size $(stat -c %s $uploadfile) \
     batch_id $batch \
-    | jq -c -r '{"files":.}' \
-    | curl-api-post /photos -d @- \
-  && echo
+    | jq -c -r '{"files":.}'
+  )"
+  if [[ -z $batched ]]
+  then printf %s $json | curl-api-post /photos -d @- && echo
+  else blobs+=( $json )
+  fi
   [[ -n $tmpfile ]] && rm $tmpfile
+done
+
+for json in $blobs ; do
+  printf %s $json | curl-api-post /photos -d @- && echo
 done
