@@ -157,6 +157,7 @@ if_exists perl5lib ~$owner/perl-lib ~$owner/Usable
 eval "$(tied_export LD_LIBRARY_PATH)"
 if_exists ld_library_path ~$owner/lib $ld_library_path
 eval "$(tied_export CLASSPATH)"
+eval "$(tied_export PKG_CONFIG_PATH)"
 if_exists MOZ5PROF ~/.mozilla/firefox/default
 if_exists AXIS2_HOME /opt/axis2-1.3
 unset auto_proxy
