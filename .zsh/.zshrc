@@ -55,7 +55,14 @@ done
   done
 }
 
-cat ${^zsh_dirs}/{.zsh,}reminder{,s} 2>/dev/null
+() {
+  local file
+  for file in ${^zsh_dirs}/{.zsh,}reminder{,s}(N) ; do
+    printf '==> %s <==\n' ${file/$HOME/'~'}
+    cat $file 2>/dev/null
+  done
+}
+
 run_local_versions ${(%):-"%x"}
 #screen -ls 2>/dev/null | grep -q Detached && exec screen -rr
 #[ -n "$SSH_CLIENT" ] && [ "$TERM" != "screen" ] && exec screen -RR -- zsh -l
