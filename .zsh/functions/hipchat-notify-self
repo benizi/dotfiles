@@ -1,0 +1,5 @@
+if [[ -z $EMAIL ]] ; then
+  warn "Must set email to notify self"
+  return 1
+fi
+json_object message "$*" color green | hipchat-post-json /user/$EMAIL/message

@@ -1,0 +1,28 @@
+if [[ -z $hipchat_api_token ]] ; then
+  warn 'Need to set $hipchat_api_token'
+  return 1
+fi
+local arg endpoint url
+unset endpoint
+local -a args
+while (( $# )) ; do
+  arg=$1
+  case "$arg" in
+    /*)
+      if (( ! $+endpoint ))
+      then endpoint=$arg
+      else warn "Endpoint already set"
+      fi
+      shift
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+: ${endpoint=/}
+url=https://api.hipchat.com/v2/${endpoint#/}
+[[ $url = *\?* ]] && url+='&' || url+='?'
+url+=auth_token=$hipchat_api_token
+args+=( $url )
+curl $args "$@"

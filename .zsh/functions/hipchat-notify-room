@@ -1,0 +1,4 @@
+local room=$1 message=$2
+shift 2 || return 1
+json_object message $message color gray message_format text "$@" \
+  | hipchat-post-json /room/$room/notification
