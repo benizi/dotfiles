@@ -629,30 +629,6 @@ alias-directory() {
   load_namedirs
 }
 
-in-btrfs-snapshot() {
-  local snapshot dir relative ret quit
-  setopt localtraps trapsasync
-  trap 'quit=true' INT QUIT
-  if [[ -z $snapshot_base ]] ; then
-    warn "Need to set snapshot_base to use $0"
-    return 1
-  fi
-  snapshot=~/snapshot-$(date +%Y%m%d%H%M%S)
-  dir=$(pwd)
-  [[ $dir = $snapshot_base* ]] && relative=$snapshot${dir/$snapshot_base}
-  btrfs subvolume snapshot $snapshot_base $snapshot || {
-    warn "Snapshot failed $snapshot_base -> $snapshot"
-    return 1
-  }
-  printf 'snapshot=%s\n' $snapshot
-  pushd ${relative:-$snapshot}
-  snapshot=$snapshot "${@:-$SHELL}"
-  ret=$?
-  popd
-  (( $+keepsnap )) || sudo btrfs subvolume delete $snapshot
-  return ret
-}
-
 hipchat-api-request() {
   if [[ -z $hipchat_api_token ]] ; then
     warn "Need to set \$hipchat_api_token"
