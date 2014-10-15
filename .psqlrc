@@ -12,3 +12,4 @@
 \set PROMPT2 '%[%`tput setaf 4`%]%R%[%`tput sgr0`%] '
 
 \set conns 'select usename, count(*) as count from pg_stat_activity group by usename order by usename;'
+\set locks '\\i ~/.pg/locks.sql'
