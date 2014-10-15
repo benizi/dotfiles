@@ -1,0 +1,13 @@
+local ret
+(
+  [[ -n "$skip" ]] && ${=skip} () { true }
+  bundle &&
+  rcop &&
+  jshint &&
+  tsp &&
+  rspec $@ &&
+  cuke_prefix=run-tests cuke -r
+)
+ret=$?
+git --no-pager log --decorate --no-walk 2>/dev/null
+return ret
