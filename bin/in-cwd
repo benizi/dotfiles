@@ -1,10 +1,20 @@
 #!/usr/bin/env ruby
 
+require 'pathname'
+
 # substitute your own tools here
+
+def has_prog?(prog)
+  ENV.fetch('PATH', '').split(RbConfig::CONFIG['PATH_SEPARATOR']).detect do |dir|
+    Pathname.new(dir).join(prog).exist?
+  end
+end
 
 # command to find the active X11 window ID
 def active_window
-  if File.exists?(wmii_namespace)
+  if has_prog?('x-active-id')
+    'x-active-id'
+  else if File.exists?(wmii_namespace)
     'wmiir cat /client/sel/ctl | sed 1q'
   else
     %q[xprop -root _NET_ACTIVE_WINDOW | awk '/#/ { print $(NF) ; exit } END { exit 1 }' || xdotool getwindowfocus]
