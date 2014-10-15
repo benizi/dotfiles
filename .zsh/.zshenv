@@ -323,6 +323,7 @@ if (( $+commands[verman] )) ; then
 _verman() { eval "$(VERMAN_EVAL=1 verman "$@")" }
 
 _verman erlang use 17.0
+_verman elixir use v1.0.0
 _verman rust use 0.12.0-pre-nightly-2014-07-27
 
 export VERMAN_GO_ROOT=/opt/gvm
