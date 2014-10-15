@@ -143,16 +143,6 @@ if (( $+commands[nvm] )) ; then
   chpwd_functions+=( setup_nvm_version )
 fi
 
-if [[ -e $GVM_ROOT ]] ; then
-  . $GVM_ROOT/scripts/completion
-
-  setup_gvm_directories () {
-    hash -d go=$GOROOT
-    hash -d gopkg=${GOPATH%:*}/src
-  }
-  chpwd_functions+=( setup_gvm_directories )
-fi
-
 setup_real_pwd() {
   local actual
   actual="$(pwd -r)"
