@@ -270,6 +270,9 @@ cmap <esc><bs> <C-w><C-w>
 " pastetoggle
 se pastetoggle=<F7>
 
+" avoid: E492: Not an editor command: W
+com! W :w
+
 " Try adding extensions to the detected filename under the cursor
 fun! OpenGlobUnderCursor()
 	let paths = split(globpath(&path, expand('<cfile>').'.*'), '\n')
