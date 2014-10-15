@@ -43,6 +43,8 @@ Plugin 'nono/vim-handlebars'
 Plugin 'slim-template/vim-slim'
 Plugin 'tpope/timl'
 Plugin 'elixir-lang/vim-elixir'
+Plugin 'derekwyatt/vim-scala'
+Plugin 'cespare/vim-toml'
 call AddToRtp($HOME.'/git/rust/src/etc/vim')
 
 finish " God DAMMIT Tim Pope...
