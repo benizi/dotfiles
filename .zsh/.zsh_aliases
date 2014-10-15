@@ -147,6 +147,15 @@ jshint() {
   fi
 }
 
+tsp() {
+  if executable bin/teaspoon
+  then bin/teaspoon
+  elif (( $+commands[teaspoon] ))
+  then teaspoon
+  else true
+  fi
+}
+
 run-tests() {
   local ret
   (
@@ -154,6 +163,7 @@ run-tests() {
     bundle &&
     rcop &&
     jshint &&
+    tsp &&
     rspec $@ &&
     cuke_prefix=run-tests cuke -r
   )
