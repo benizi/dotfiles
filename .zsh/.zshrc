@@ -197,3 +197,5 @@ zle-clip-line() { printf '%s' $BUFFER | clip &> /dev/null }
 zle -N zle-clip-line
 bindkey '^[[2^' zle-clip-line
 bindkey '^[[2;5~' zle-clip-line
+
+load-namedirs --quiet
