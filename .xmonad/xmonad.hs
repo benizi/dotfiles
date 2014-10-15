@@ -494,7 +494,7 @@ myStartupHook = ewmhDesktopsStartup
 main = do
     xmonadDir <- getProgPath
     statusproc <- spawnPipe $ statusBarProc xmonadDir
-    barPid <- spawnPID $ "while sleep 1 ; do status '" ++ statusColorNormalFG ++ "' '" ++ statusColorBG ++ "' ; done"
+    barPid <- spawnPID $ "status '" ++ statusColorNormalFG ++ "' '" ++ statusColorBG ++ "'"
                    ++ " | dzen2 -ta r -w 900 -x -964 -fn 'DejaVu Sans Mono'"
                    ++ " -fg '" ++ statusColorNormalFG ++ "' -bg '" ++ statusColorBG ++ "'"
     xmonad $ ewmh
