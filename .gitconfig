@@ -49,6 +49,7 @@
 	svnrevtags = "!git log --all -z --pretty=format:'%H%n%s%n%b' | perl -ln0e 'open STDOUT, qq{>.git/refs/tags/r$2} and print $1 if /\\A(.{40}).*git-svn-id:\\s\\S+\\@(\\d+)/s'"
 	svnup = "!svnup () { git svn fetch && git com && git merge --ff-only git-svn && git slg ; } ; svnup"
 	b = branch
+	bl = blame
 	t = tag
 	ab = "! : archive branch ; ab() { if [ $# -lt 1 ] ; then echo \"Usage: git ab branch [name]\" >&2 ; exit 1 ; fi ; branch=$1 ; shift ; if [ $# -gt 0 ] ; then ref=$1 ; else ref=archived/$branch ; fi ; git update-ref \"refs/$ref\" \"$branch\" && git branch -D \"$branch\" ; } ; ab"
 	base = diff-base
