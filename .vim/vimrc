@@ -58,8 +58,18 @@ endfun
 let g:mapleader = ','
 let g:maplocalleader = g:mapleader
 
+" handle backwards-incompatible change to `glob()`
+fun! GlobList(expr, nosuf)
+	try
+		let globs = glob(a:expr, a:nosuf, 1)
+	catch
+		let globs = split(glob(a:expr, a:nosuf), "\n")
+	endtry
+	return globs
+endf
+
 call BundleActivateDir(vim_dir)
-for dir in filter(glob(vim_dir.'/bundle/*', 1, 1), 'isdirectory(v:val)')
+for dir in filter(GlobList(vim_dir.'/bundle/*', 1), 'isdirectory(v:val)')
 	call BundleActivateDir(dir)
 endfor
 
