@@ -13,3 +13,5 @@
 
 \set conns 'select usename, count(*) as count from pg_stat_activity group by usename order by usename;'
 \set locks '\\i ~/.pg/locks.sql'
+
+\set HISTSIZE 10000000
