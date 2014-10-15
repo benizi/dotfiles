@@ -59,7 +59,7 @@ list-essids:	src/list-essids.c
 	$(CC) $(CFLAGS) -o $@ $< -liw -lm
 
 password-manager:	src/password-manager.c
-	$(CC) $(CFLAGS) $(shell pkg-config --cflags gnome-keyring-1) -o $@ $< $(shell pkg-config --libs gnome-keyring-1)
+	$(CC) $(CFLAGS) -Wno-deprecated-declarations $(shell pkg-config --cflags gnome-keyring-1) -o $@ $< $(shell pkg-config --libs gnome-keyring-1)
 
 time-limit:	src/time-limit.c
 	$(CC) $(CFLAGS) -I../include -L../lib -o $@.tmp $< -lmyc
