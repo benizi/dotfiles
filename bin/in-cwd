@@ -118,8 +118,14 @@ begin
 	when /(\A|\/)(?:u?rxvt|st|u?xterm|term(?:inal)?)$/i # if it looks term-ish, find subshell
 		pid = subvim(pid) || subshell(pid)
 	end
-	dir ||= default_dir || cwd(pid)
+	dir ||=
+		begin
+			bypid = cwd(pid)
+			bypid == File.expand_path('~') ? default_dir : bypid
+		end
 	Dir.chdir(dir)
+rescue => e
+	warn "ERR: #{e}"
 ensure
 	ENV.delete_if { |k,v| k =~ /^RBENV/ }
 	# but start the cmd regardless of whether we could find the cwd
