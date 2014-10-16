@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+# Run a script with a fresh X11 server
+
+# {{{1 break out of bundler
+bundler_vars = %w{BUNDLE_GEMFILE BUNDLE_BIN_PATH RUBYOPT}
+fail_marker = '_RE_EXEC'
+found_bundler_vars = bundler_vars.select { |var| ENV[var] }
+if found_bundler_vars.any?
+  unbundled_env = ENV.to_hash
+  found_bundler_vars.each { |var| unbundled_env[var] = nil }
+  unbundled_env[fail_marker] = $$.to_s
+  re_exec = %W{/usr/bin/env ruby} + [$0] + ARGV
+  if found = ENV[fail_marker] # prevent infinite exec() loop
+    abort "Failed to break out of Bundler: found ENV[#{found_bundler_vars.inspect}]"
+  end
+  exec(unbundled_env, *re_exec)
+end
+
+# {{{1 require gems we need
+require "rubygems"
+require "headless"
+
+# {{{1 detect whether a command is "native"
+# modified from: http://stackoverflow.com/a/5471032/82723
+def which(cmd)
+  exts = ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
+  ENV['PATH'].split(File::PATH_SEPARATOR).flat_map do |path|
+    exts.map { |ext| File.join(path, cmd + ext) }
+  end.find { |file| File.executable?(file) }
+end
+
+# {{{1 wrap non-"native" commands
+def system_args(args)
+  cmd = args.first
+  # wrap in shell unless actual executable file
+  which(cmd) ? args : ['sh', '-c'] + [args.join(' ')]
+end
+
+# {{{1 run the command
+Headless.run do
+  warn "Running Headlessly on DISPLAY=#{ENV['DISPLAY']}"
+  system(*system_args(ARGV))
+end
+exit $?.exitstatus
