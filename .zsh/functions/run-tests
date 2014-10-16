@@ -12,10 +12,12 @@ outvar=${1:-outvar}
 
 (
   [[ -n "$skip" ]] && ${=skip} () { true }
+  [[ -n "$only" ]] && run=( ${=only} )
   for (( i=1; i<=$#runners; i++)) ; do
     cmd=( ${=${runners[i]}} )
     name=$cmd[1]
     shift cmd
+    (( $#run )) && (( ! $+run[(R)${cmd[1]}] )) && continue
     cuke_prefix=run-tests $cmd && continue
     return i
   done
