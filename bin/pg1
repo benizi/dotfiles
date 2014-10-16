@@ -1,0 +1,10 @@
+#!/bin/sh
+dir=`mktemp -d -t pg1.XXXXXXXX`
+test -z "$dir" && exit 1
+trap 'test -n "$dir" && rm -r "$dir"' INT QUIT TERM EXIT
+sock="$dir/sock"
+mkdir -p "$sock" || exit 1
+export PGDATA="$dir/data"
+export PGPORT=${PGPORT:-5433}
+initdb
+postgres -k "$sock"
