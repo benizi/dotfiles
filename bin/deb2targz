@@ -1,0 +1,20 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use bytes;
+
+$/ = "\n";
+while (<>) {
+  chomp;
+  if (m{^(\S+)/?.*?(\d+)\s*`}) {
+    my ($file, $len) = ($1, $2);
+    #warn "FILE $file of LENGTH $len\n";
+    $/ = \$len;
+    my $data = <>;
+    $/ = "\n";
+    if ($file =~ /^data\.tar(.+)$/) {
+      print $data;
+      exit;
+    }
+  }
+}
