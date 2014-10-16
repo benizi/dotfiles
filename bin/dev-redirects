@@ -1,0 +1,81 @@
+#!/bin/zsh
+
+typeset -A portmap
+typeset -a exclude_nets
+mode=up
+: ${chain=DEVHTTP}
+
+for arg
+do
+  case $arg in
+    <->:<->) ports=( ${(s.:.)arg} ) ; portmap[$ports[1]]=$ports[2] ;;
+    */<->) exclude_nets+=( $arg ) ;;
+    down) mode=down ;;
+    -v) set +x ;;
+  esac
+done
+
+(( $#exclude_nets )) || exclude_nets=( 172.0.0.0/8 192.168.122.0/24 )
+(( $#portmap )) || portmap=( 80 3000 )
+
+iptables() {
+  sudo iptables "$@"
+}
+
+ensure_chain() {
+  if ! iptables -t nat -L $chain &> /dev/null
+  then iptables -t nat -N $chain
+  fi
+}
+
+setup_chain() {
+  for net in $exclude_nets
+  do
+    iptables -t nat -A $chain -s $net -j RETURN
+  done
+  iptables -t nat -A $chain -m addrtype ! --dst-type LOCAL -j RETURN
+  for src in ${(k)portmap}
+  do
+    iptables -t nat -A $chain -m tcp -p tcp --dport $src -j REDIRECT --to-ports $portmap[$src]
+  done
+}
+
+add_chain_to() {
+  for other
+  do
+    iptables -t nat -A $other -j $chain
+  done
+}
+
+all_chains() {
+  iptables -t nat -S | awk '/^-[PN]/ { print $2 }'
+}
+
+kill_other_chain_rules() {
+  for other in $(all_chains)
+  do
+    [[ $other = $chain ]] && continue
+    iptables -t nat -L $other -n --line-numbers | \
+      awk 'NR > 2 && $2 == "'$chain'" { print $1 }' | \
+      tac | \
+      while read number
+      do
+        iptables -t nat -D $other $number
+      done
+  done
+}
+
+kill_chain() {
+  iptables -t nat -F $chain
+  iptables -t nat -X $chain
+}
+
+if [[ $mode = up ]]
+then
+  ensure_chain
+  setup_chain
+  add_chain_to PREROUTING OUTPUT
+else
+  kill_other_chain_rules
+  kill_chain
+fi
