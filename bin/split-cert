@@ -1,0 +1,70 @@
+#!/usr/bin/env perl
+#
+# Split certificate file(s) into useful blocks of certificates.
+#
+# Given these example certificates, in PEM format (so, wrapped in blocks like):
+#     -----BEGIN CERTIFICATE-----
+#     -----END CERTIFICATE-----
+#
+#   > self-signed.crt
+#     # server certificate
+#
+#   > multiple-certs.crt
+#     # server certificate
+#     # intermediate cert1
+#     # intermediate cert2
+#     # root cert
+#
+# Running this command:
+#   $ split-cert multiple-certs.crt self-signed.crt
+#
+# Creates these sets of files:
+#
+#   > multiple-certs.standalone.crt
+#     # server certificate
+#   > multiple-certs.authorities.crt
+#     # intermediate cert1
+#     # intermediate cert2
+#     # root cert
+#   > multiple-certs.combined.crt
+#     # same as multiple-certs.crt
+#
+#   > self-signed.standalone.crt
+#     # server certificate
+#   > self-signed.authorities.crt
+#     # empty file
+#   > self-signed.combined.crt
+#     # same as self-signed.crt
+
+@ARGV or die "Usage: $0 cert [cert2 ...]\n";
+my @cert_files = @ARGV;
+
+for my $cert (@cert_files) {
+  (my $base = $cert) =~ s/\.(ce?rt|pem)$//;
+  $base =~ s/\.combined//;
+
+  my $server_cert = '';
+  my $rest = '';
+
+  {
+    local @ARGV = ($cert);
+    my $target = \$server_cert;
+    for (<>) {
+      $target = \$rest if /BEGIN CERT/ and $server_cert;
+      $$target .= $_;
+    }
+  }
+
+  my %output = (
+    standalone => $server_cert,
+    authorities => $rest,
+    combined => $server_cert.$rest,
+  );
+
+  while (my ($name, $content) = each %output) {
+    my $outfile_name = "$base.$name.crt";
+    next if $outfile_name eq $cert; # don't overwrite input file
+    open my $out, '>', $outfile_name or die ">$outfile_name: $!";
+    print $out $content;
+  }
+}
