@@ -1,0 +1,63 @@
+#!/usr/bin/env ruby
+#
+# Runs `docker run` with environment variables set from `dotenv` or `figaro`
+# files (either KEY=value lines or YAML).
+
+require 'rubygems'
+require 'erb'
+require 'yaml'
+
+ENV_VAR = %r/[A-Z0-9_]+/
+ENV_SETTING = Regexp.new('^' + ENV_VAR.to_s + '=')
+
+def envname
+  ENV['RAILS_ENV'] || ENV['ENV'] || 'development'
+end
+
+def env_or_yaml(name)
+  contents = File.read(name)
+  if contents.lines.first =~ /^[A-Z0-9_]+=.*\n$/
+    contents.lines.map(&:chomp)
+  else
+    yaml(contents)
+  end
+end
+
+class Hash
+  def as_vars
+    map { |k,v| [k, v.to_s].join('=') }
+  end
+end
+
+def yaml(contents)
+  vars = YAML.load(ERB.new(contents).result)
+  root = vars.select { |k,v| k =~ ENV_VAR && !v.is_a?(Hash) }.to_h.as_vars
+  per_env = (envname ? vars[envname] || vars[envname.to_s] : vars).as_vars
+  root + per_env
+rescue
+  []
+end
+
+envs = []
+args = []
+
+ARGV.each do |arg|
+  if args.any?
+    args << arg
+  elsif File.exists?(arg)
+    envs += env_or_yaml(arg)
+  elsif arg =~ ENV_SETTING
+    envs << arg
+  elsif arg =~ ENV_VAR
+    val = ENV[arg]
+    envs += { arg => val }.as_vars if val
+  else
+    args << arg
+  end
+end
+
+def cmd(envs, args)
+  %w[docker run] + envs.flat_map { |e| ['-e', e] } + args
+end
+
+exec(*(cmd(envs, args)))
