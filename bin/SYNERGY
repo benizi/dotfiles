@@ -1,0 +1,19 @@
+#!/bin/zsh
+
+# keep track of all spawned processes
+typeset -a kids
+
+# set up a Synergy server for the current host and others listed as args
+synergys -f -a 127.0.0.1 -c =(synergyk "$(hostname)" "$@") &
+kids+=( $! )
+
+trap 'kill $kids' INT
+
+# run synergy-killer on each remote host, forwarding port 24800 to localhost
+for host
+do
+  ssh -c blowfish -R 24800:localhost:24800 $host 'synergy-killer -c' &
+  kids+=( $! )
+done
+
+wait $kids
