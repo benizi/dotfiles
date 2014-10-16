@@ -1,6 +1,6 @@
 CFLAGS := -Wall
 SRC = src
-allsource = $(wildcard $(SRC)/*.c)
+allsource = $(wildcard $(SRC)/*.c $(SRC)/*.go)
 
 all:	$(notdir $(basename $(allsource)))
 
