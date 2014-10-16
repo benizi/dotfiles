@@ -10,11 +10,13 @@ fi
 (( $+incorrect )) && return $incorrect
 
 if (( ! $#namedirs )) ; then
-  namedirs=( $zsh_dirs[-1]/namedir )
-  read -q 'create?Create namedir '$namedirs[1]'? '
+  dir=$zsh_dirs[-1]/namedir
+  namedirs=( $dir(N/) )
+  (( $#namedirs )) && create=y || read -q 'create?Create namedir '$dir'? '
 
   if [[ $create = y ]] ; then
-    mkdir -p $namedirs
+    mkdir -p $dir || return 1
+    namedirs=( $dir )
   else
     namedirs=()
     return 1
