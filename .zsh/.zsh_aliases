@@ -398,9 +398,13 @@ named-gem-directory () {
       return 1 # unimplemented
       ;;
     n) # ~[football] -> /opt/ruby/.../gems/football
+      local printcmd='gem "'$2'" ; puts Gem.loaded_specs["'$2'"].gem_dir'
       local -a gemdir
-      gemdir=( $($bcmd 'puts Gem.loaded_specs["'$2'"].gem_dir') )
-      (( $? )) && return 1
+      gemdir=( $($bcmd $printcmd 2>/dev/null) )
+      if (( $? )) ; then
+        gemdir=( $(command ruby -rubygems -e $printcmd 2>/dev/null) )
+        (( $? )) && return 1
+      fi
       gemdir=( $gemdir[-1] )
       [[ -d $gemdir ]] || return 1
       [[ -z $gemdir ]] && return 1
