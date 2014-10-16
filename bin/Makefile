@@ -16,6 +16,9 @@ place-holder:	src/place-holder.c
 	$(CC) $(CFLAGS) -I$(HOME)/include $(shell pkg-config --cflags x11) -o $@.tmp $< $(shell pkg-config --libs x11)
 	mv $@.tmp $@
 
+%:	src/%.go
+	go build -o $@ $<
+
 x-active-id:	src/X11/x-active-id.c
 	$(CC) $(CFLAGS) -o $@.tmp $< $(shell pkg-config --cflags --libs xcb-atom)
 	mv $@.tmp $@
