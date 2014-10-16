@@ -1,0 +1,12 @@
+#!/bin/sh
+for cmd in {un,}load-module
+do
+  pacmd $cmd module-zeroconf-discover
+done
+
+# set default sink to first remote
+default_sink=$(pacmd list-sinks | awk '/index:/ { n = $NF } /tunnel.remote.server/ { print n ; exit }')
+pacmd set-default-sink $default_sink
+
+# move all current streams to that sink
+pacmd list-sink-inputs | awk '/index:/ { print $NF }' | xargs -iZ pacmd move-sink-input Z $default_sink
