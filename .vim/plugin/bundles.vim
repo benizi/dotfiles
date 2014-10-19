@@ -10,7 +10,7 @@ fun! Plugin(git, ...)
   end
 endf
 
-com -nargs=* Plugin :call Plugin(<args>)
+com! -nargs=* Plugin :call Plugin(<args>)
 
 Plugin 'Twinside/vim-haskellConceal'
 Plugin 'Lokaltog/vim-powerline'
@@ -43,9 +43,11 @@ Plugin 'nono/vim-handlebars'
 Plugin 'slim-template/vim-slim'
 Plugin 'tpope/timl'
 Plugin 'elixir-lang/vim-elixir'
+call AddToRtp($HOME.'/git/rust/src/etc/vim')
+verb call BundleActivateDir($HOME.'/git/forever-inc/forever-tools/vim')
+
 Plugin 'derekwyatt/vim-scala'
 Plugin 'cespare/vim-toml'
-call AddToRtp($HOME.'/git/rust/src/etc/vim')
 
 finish " God DAMMIT Tim Pope...
 " Clojure

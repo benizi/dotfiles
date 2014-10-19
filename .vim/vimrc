@@ -26,9 +26,31 @@ fun! BundleActivate(name)
 endf
 
 fun! BundleActivateDir(dir)
+	if &verbose
+		echom 'Activating' a:dir
+	end
+	if AddToRtp(a:dir)
+		for file in glob(a:dir.'/plugin/*.vim', 1, 1)
+			if &verbose
+				echom 'sourcing' file
+			end
+			exe 'so! '.file
+		endfor
+	else
+		if &verbose
+			echom a:dir 'was already in &rtp'
+		end
+	end
+endf
+
+fun! BundleActivateDir(dir)
 	if AddToRtp(a:dir)
 		exe 'run! '.a:dir.'/plugin/*.vim'
 	end
+endf
+
+fun! BundleActivateDir(dir)
+	call AddToRtp(a:dir)
 endf
 
 if !executable('stat')
@@ -72,6 +94,8 @@ call BundleActivateDir(vim_dir)
 for dir in filter(GlobList(vim_dir.'/bundle/*', 1), 'isdirectory(v:val)')
 	call BundleActivateDir(dir)
 endfor
+run plugin/bundles.vim
+run! plugin/pivotal.vim
 
 " absurdly-large tabpagemax (to open all `-p` arguments)
 se tpm=1000

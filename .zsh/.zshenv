@@ -328,9 +328,16 @@ _verman erlang use 17.0
 _verman elixir use v1.0.0
 _verman rust use 0.12.0-pre-nightly-2014-07-27
 
-export VERMAN_GO_ROOT=/opt/gvm
-export VERMAN_GO_VERSIONS=$VERMAN_GO_ROOT/gos
-_verman go use go1.3
+path=( ${path:#/opt/gvm*} )
+ld_library_path=( ${ld_library_path:#/opt/gvm*} )
+pkg_config_path=( ${pkg_config_path:#/opt/gvm*} )
+unset gvm_go_name gvm_pkgset_name
+unset GOPATH GOROOT
+unset GVM_OVERLAY_PREFIX GVM_PATH_BACKUP GVM_ROOT
+unset VERMAN_GO_ROOT
+unset VERMAN_GO_VERSIONS
+
+_verman go use go1.3.3
 fi
 
 leapd() {
