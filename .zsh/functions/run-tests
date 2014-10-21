@@ -4,6 +4,7 @@ runners=(
   'Bundle bundle'
   'RuboCop rcop'
   'JSHint jshint'
+  'JSCS jscs'
   'Teaspoon tsp'
   'Specs rspec'
   'Cukes cuke -r'

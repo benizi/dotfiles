@@ -1,0 +1,6 @@
+if executable bin/jscs
+then bin/jscs "$@"
+elif (( $+commands[jscs] ))
+then command jscs "${@:-app}"
+else true
+fi
