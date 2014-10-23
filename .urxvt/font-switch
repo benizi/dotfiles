@@ -1,0 +1,44 @@
+sub on_init {
+	my ($self) = @_;
+
+	$$self{font_switch_original} = $self->x_resource('font');
+
+	()
+}
+
+sub on_osc_seq_perl {
+	my ($self, $seq, $end_response) = @_;
+
+	return unless $seq =~ s/^font-switch;//;
+
+	my @fonts = split /,/, $self->resource('font');
+
+	for my $action (split /;/, $seq) {
+		if ($action eq 'reset') {
+			@fonts = $$self{font_switch_original};
+		} else {
+			my ($abs, $scale) =
+				($action =~ /size=(\d+)/) ? (1, $1) :
+				($action =~ /scale=([\d.]+)/) ? (0, $1) :
+				($action =~ /^\+|up$/) ? (0, 1.1) :
+				(0, 0.9);
+			for (@fonts) {
+				if (my ($size) = /size=(\d+)/) {
+					my $newsize = int(($abs ? 1 : $size) * $scale);
+					if ($size == $newsize and not $abs) {
+						$newsize += 1 - 2 * ($scale < 1);
+					}
+					s/(?<=size=)\d+/$newsize/;
+				}
+			}
+		}
+	}
+
+	my $new_font = join ',', @fonts;
+
+	$self->cmd_parse("\e]710;$new_font\a");
+
+	()
+}
+
+# vim:ft=perl ts=4 sts=4 sw=4 noet:
