@@ -1,0 +1,61 @@
+! Usually installed, and has the best `l/i/I` `0/O` distinctions, IMO:
+URxvt*font: xft:Bitstream Vera Sans Mono:size=10
+
+! GAH. PrintScreen? Seriously?
+URxvt.print-pipe: cat > /home/bhaskell/tmp/printscreen
+
+! Scrollbars how I like them:
+URxvt.scrollBar_right: true
+URxvt.scrollstyle: plain
+URxvt.secondaryScroll: true
+
+! Bell = urgent:
+URxvt.urgentOnBell: true
+
+! Map <Shift>+{<Up>,<Down>} to single line scroll
+URxvt.keysym.S-Up: command:\033]720;1\007
+URxvt.keysym.S-Down: command:\033]721;1\007
+
+! <Ctrl>+<Meta>+<0> => regex scrollback search:
+URxvt.searchable-scrollback: CM-0
+
+! Win + minus,0,equal = decrease,reset,increase font size
+URxvt.keysym.4-0: command:\033]777;font-switch;reset\007
+URxvt.keysym.4-1: command:\033]777;font-switch;reset;size=10\007
+URxvt.keysym.4-2: command:\033]777;font-switch;reset;size=14\007
+URxvt.keysym.4-3: command:\033]777;font-switch;reset;size=28\007
+URxvt.keysym.4-4: command:\033]777;font-switch;reset;size=40\007
+URxvt.keysym.4-5: command:\033]777;font-switch;reset;size=72\007
+URxvt.keysym.4-minus: command:\033]777;font-switch;down\007
+URxvt.keysym.4-equal: command:\033]777;font-switch;up\007
+
+! Perl extensions:
+URxvt*perl-ext-common: default,font-switch
+URxvt*perl-lib: /home/bhaskell/.urxvt
+
+! Allow terminal bracketed paste sequences:
+URxvt.insecure: true
+
+! Override modifier detection (so Alt_L works despite presence of Mod3)
+URxvt.modifier: mod1
+
+! Disable intrusive <Shift>+<Space> shortcuts:
+URxvt.iso14755: false
+URxvt.iso14755_52: false
+
+! (temporary?) fix for DPI misdetection:
+Xcursor.size: 16
+
+! Colors:
+URxvt*background: black
+URxvt*foreground: white
+URxvt*cursorColor: gray70
+
+!make yellow orange, for readability against white
+*VT100*color3: orange3
+*color3: orange3
+*VT100*color11: orange2
+*color11: orange2
+
+! standard blue looks awful on black background
+*color4: #9999ff
