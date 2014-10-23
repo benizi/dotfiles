@@ -1,7 +1,7 @@
 ! Usually installed, and has the best `l/i/I` `0/O` distinctions, IMO:
 URxvt*font: xft:Bitstream Vera Sans Mono:size=10
 
-! GAH. PrintScreen? Seriously?
+! GAH. PrintScreen? Seriously? - TODO: hard-coded path
 URxvt.print-pipe: cat > /home/bhaskell/tmp/printscreen
 
 ! Scrollbars how I like them:
@@ -31,6 +31,7 @@ URxvt.keysym.4-equal: command:\033]777;font-switch;up\007
 
 ! Perl extensions:
 URxvt*perl-ext-common: default,font-switch
+! TODO: hard-coded path
 URxvt*perl-lib: /home/bhaskell/.urxvt
 
 ! Allow terminal bracketed paste sequences:
