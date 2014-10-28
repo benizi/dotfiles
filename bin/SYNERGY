@@ -1,16 +1,30 @@
 #!/bin/zsh
 
 # keep track of all spawned processes
-typeset -a kids
+typeset -a kids hosts
+unset added_self
+self="$(hostname)"
+
+for arg
+do
+  if [[ $arg = . ]] ; then
+    added_self=true
+    hosts+=( $self )
+  else
+    hosts+=( $arg )
+  fi
+done
+
+(( $+added_self )) || hosts=( $self $hosts )
 
 # set up a Synergy server for the current host and others listed as args
-synergys -f -a 127.0.0.1 -c =(synergyk "$(hostname)" "$@") &
+synergys -f -a 127.0.0.1 -c =(synergyk $hosts) &
 kids+=( $! )
 
 trap 'kill $kids' INT
 
 # run synergy-killer on each remote host, forwarding port 24800 to localhost
-for host
+for host in ${(R)hosts/$self}
 do
   ssh -c chacha20-poly1305@openssh.com,blowfish-cbc -R 24800:localhost:24800 $host 'synergy-killer -c' &
   kids+=( $! )
