@@ -7,4 +7,4 @@ verbose=1 \
   bisect-vim \
   --enable-{lua,python,python3,tcl,ruby,perl}interp=yes \
   --with-features=huge &&
-  vim +vnew +new
+  vim --version
