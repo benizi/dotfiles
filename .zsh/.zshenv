@@ -200,131 +200,13 @@ __clean_ruby_path () {
   unset RUBIES
 }
 
-ruby-manager () {
-  local arg save last_manager=~$owner/.ruby-manager
-  unset save ruby_manager rbfu_dir
-  for arg ; do
-    case $arg in
-      --save) save=true ;;
-      *) ruby_manager=$arg ;;
-    esac
-  done
-  parent_ruby_manager=${PARENT_RUBY_MANAGER:-none}
-  if (( ! $+ruby_manager )) ; then
-    [[ -s $last_manager ]] && ruby_manager=$(<$last_manager) || ruby_manager=rbenv
-  fi
-  if (( ! UID )) && [[ $ruby_manager = rvm ]] ; then
-    ruby_manager=rbenv
-    ruby_manager_warnings+=( "RVM does not play well with root - using $ruby_manager" )
-  fi
-
-  if (( $+save )) && (( $#ruby_manager )) ; then
-    if (( UID )) ; then
-      echo $ruby_manager > $last_manager
-    else
-      echo Not setting manager as root
-    fi
-  fi
-
-  if [[ -o login ]] || [[ $ruby_manager != $parent_ruby_manager ]] ; then
-    __clean_ruby_path
-  fi
-
-  # non-interactive setup
-  local -a extra_bin
-  case $ruby_manager in
-    chruby)
-      local script=/usr/local/share/chruby/chruby.sh
-      if [[ ! -f $script ]] ; then
-        unset ruby_manager
-        return 1
-      fi
-      . $script
-      ;;
-    rbenv)
-      local bin=~$owner/.rbenv/bin
-      if [[ ! -r $bin ]] ; then
-        unset ruby_manager
-        return 1
-      fi
-      extra_bin=( $bin )
-      export RBENV_ROOT=$bin:h
-      extra_bin=( $RBENV_ROOT/shims $extra_bin )
-
-      rbenv () {
-        cmd=$1
-        shift
-        case "$cmd" in
-          shell) eval `rbenv sh-$cmd "$@"` ;;
-          *) command rbenv $cmd "$@" ;;
-        esac
-      }
-      ;;
-    rbfu)
-      local rbfu
-      unset rbfu_dir
-      for rbfu in /opt/rbfu ~$owner/.rbfu ; do
-        [[ -d $rbfu/bin ]] || continue
-        rbfu_dir=$rbfu
-        extra_bin=( $rbfu/bin )
-        break
-      done
-      ;;
-    prb)
-      extra_bin=( ~g/prb/shims ~g/prb/bin ~$owner/.rbenv/shims )
-      [[ -o interactive ]] && . ~$owner/.rbenv/completions/rbenv.zsh
-      rbenv rehash 2>/dev/null
-      ;;
-  esac
-  (( $+use_prb )) && extra_bin=( ~$owner/prb-bin $extra_bin )
-
-  path=( $extra_bin $path )
-
-  case $ruby_manager in
-    chruby)
-      [[ -f ~$owner/.ruby-version ]] && chruby "$(<~$owner/.ruby-version)"
-      ;;
-    rbfu)
-      eval "$(rbfu_dir=$rbfu_dir rbfu --init)"
-      unalias rbfu-env
-      rbfu-env () { source rbfu "$@" }
-      if [[ -f $rbfu_dir/default ]] ; then
-        source rbfu @"$(<$rbfu_dir/default)"
-      else
-        ruby_manager_warnings+=( "No default ruby specified in $rbfu_dir/default" )
-        source rbfu @system
-      fi &> /dev/null
-      ;;
-  esac
-
-  if [[ -o interactive || -o login ]] ; then
-    case $ruby_manager in
-      rbenv)
-        local rbenv_comp=$RBENV_ROOT/libexec/../completions/rbenv.zsh
-        [[ -e $rbenv_comp ]] && . $rbenv_comp
-        ;;
-      rvm)
-        local rvmsource rvmscripts=~$owner/.rvm/scripts
-        for rvmsource in $rvmscripts/{rvm,completion} ; do
-          [[ -x $rvmsource ]] && . $rvmsource
-        done
-        rvm-unfuckup-options() { setopt nokshglob }
-        chpwd_functions+=( rvm-unfuckup-options )
-        ;;
-    esac
-  fi
-  (( $+functions[ruby-manager-startup] )) && ruby-manager-startup
-  export PARENT_RUBY_MANAGER=$ruby_manager
-}
-
-ruby-manager
-
 if (( $+commands[verman] )) ; then
 _verman() { eval "$(VERMAN_EVAL=1 verman "$@")" }
 
 _verman erlang use 17.0
 _verman elixir use v1.0.0
 _verman node use v0.10.33
+_verman ruby use 2.1.1
 _verman rust use 0.12.0-pre-nightly-2014-07-27
 
 path=( ${path:#/opt/gvm*} )

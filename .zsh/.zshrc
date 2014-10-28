@@ -49,13 +49,6 @@ for dir in $zsh_dirs ; do
 done
 
 () {
-  local warning
-  for warning in $ruby_manager_warnings ; do
-    warn $warning
-  done
-}
-
-() {
   local file
   for file in ${^zsh_dirs}/{.zsh,}reminder{,s}(N) ; do
     printf '==> %s <==\n' ${file/$HOME/'~'}
