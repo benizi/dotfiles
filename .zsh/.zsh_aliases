@@ -315,62 +315,10 @@ hash_if_exist ht /srv/www/htdocs
 
 (( $+commands[xwininfo] )) && alias x-click-id='xwininfo | grep Window.id | cut -f4 -d" "'
 
-setup_rbfu_directory_aliases () {
-  hash_if_exist -r rb "${${path[(r)*rbfu/rubies/*]}:h}"
-  hash_if_exist -r gem $GEM_HOME/gems
-  hash_if_exist -r rdoc $GEM_HOME/doc
-}
-
 if (( $+commands[ruby-build] )) ; then
   ruby-install rbfu-install () { ruby-build $1 $rbfu_dir/rubies/$1 "$@" }
   compdef _ruby-build rbfu-install ruby-install
 fi
-
-rbfu-local () {
-  (( $# )) || return 0
-  echo ${1#@} > .ruby-version
-  rbfu-env >&/dev/null
-}
-compdef _rbfu rbfu-local
-
-ruby-manager-startup () {
-  if (( $+functions[rbfu-env] )) ; then
-    setup_rbfu_version () {
-      local version
-      if [[ -f .rbfu-version ]] || [[ -f .ruby-version ]] ; then
-        rbfu-env &> /dev/null
-      elif [[ -f .rvmrc ]] ; then
-        version=${(f):-"$(<.rvmrc)"}
-        [[ $version = rvm\ * ]] && version=${version#rvm }
-        version=${version//.}
-        rbfu-env @$version &> /dev/null
-      fi
-    }
-    rbfu-env () {
-      source rbfu "$@"
-      setup_rbfu_directory_aliases
-    }
-    setup_rbfu_version
-    setup_rbfu_directory_aliases
-    chpwd_functions+=( setup_rbfu_version )
-  elif (( $+functions[rbenv] )) ; then
-    setup_rbenv_directory_aliases () {
-      local ver="$(rbenv version-name)"
-      case $ver in
-        system) ;;
-        *)
-          hash_if_exist -r rb ~/.rbenv/versions/$ver
-          hash_if_exist -r gem ~/.rbenv/versions/$ver/lib/ruby/gems/*/gems(N[1])
-          hash_if_exist -r rdoc ~/.rbenv/versions/$ver/lib/ruby/gems/*/doc(N[1])
-          ;;
-      esac
-    }
-    setup_rbenv_directory_aliases
-    chpwd_functions+=( setup_rbenv_directory_aliases )
-  fi
-}
-
-ruby-manager-startup
 
 () {
 local dir

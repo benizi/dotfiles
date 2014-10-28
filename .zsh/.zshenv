@@ -29,13 +29,6 @@ else
   A () { reply=("$(perl -MCwd=realpath -we 'print realpath shift' $REPLY)") }
 fi
 
-typeset -a ruby_manager_warnings
-
-if (( $+RUBYOPT )) ; then
-  ruby_manager_warnings+=( "RUBYOPT was set ($warn_rubyopt)... shouldn't be" )
-  unset RUBYOPT
-fi
-
 # find owner of Zsh files (different behavior if root)
 if zmodload -F zsh/stat b:zstat 2>/dev/null ; then
   owner="$(zstat -s +uid ${(%):-"%x"})"
