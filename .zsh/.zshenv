@@ -177,22 +177,6 @@ fi
 
 run_local_versions
 
-__clean_ruby_path () {
-  local dir
-  local -a new_path funcs
-  new_path=()
-  for dir in $path ; do
-    case $dir in
-      ~$owner/.rbenv*|~$owner/.rvm*|~$owner/.rbfu*|/opt/rbfu/*) ;;
-      *) new_path+=( $dir ) ;;
-    esac
-  done
-  path=( $new_path )
-  funcs=( ${(k)functions[(I)chruby*|rvm*|rbenv*|rbfu*]} )
-  (( $#funcs )) && unfunction $funcs
-  unset RUBIES
-}
-
 if (( $+commands[verman] )) ; then
 _verman() { eval "$(VERMAN_EVAL=1 verman "$@")" }
 
