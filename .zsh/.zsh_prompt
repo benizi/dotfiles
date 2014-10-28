@@ -83,19 +83,6 @@ __prompt_vcs () {
   done
 }
 
-__prompt_ruby_manager () {
-  if (( $+ruby_manager )) ; then
-    case $ruby_manager in
-      chruby) printf %s "chruby:${RUBY_ROOT:t}" ;;
-      prb) printf %s "prb:$(prb version --short)" ;;
-      rbenv) printf %s "$(rbenv version-name)" ;;
-      rvm) printf %s "rvm:${${:-$(rvm current)}#ruby-}" ;;
-      rbfu) printf %s ${RBFU_RUBY_VERSION:-rbfu@system} ;;
-      *) printf %s "$ruby_manager:?" ;;
-    esac
-  fi
-}
-
 __setup_prompt () {
   setopt promptsubst
 
@@ -113,7 +100,6 @@ __setup_prompt () {
 
   local x11 deleted socks fail_couchdb current_dir virtenv_info
   unset x11 deleted socks fail_couchdb virtenv_info
-  local ruby_info="$(__prompt_ruby_manager)"
   (( $+VIRTUAL_ENV )) && virtenv_info=$VIRTUAL_ENV:t
 
   [[ ! -e $PWD ]] && deleted=true
@@ -177,7 +163,7 @@ __setup_prompt () {
   add.top_row k:128 $screen
   add.top_row k:20 $^vcs[1,1]
   add.top_row f:184 $^vcs[2,-1]
-  add.top_row k:88 $ruby_info
+  (( $+ruby_version )) && add.top_row k:88 $ruby_version
   (( $+node_version )) && add.top_row k:128 ${node_version#v}
   (( $+go_version )) && add.top_row k:166 ${go_version#go}
   add.top_row k:22 $virtenv_info
