@@ -12,7 +12,7 @@ trap 'kill $kids' INT
 # run synergy-killer on each remote host, forwarding port 24800 to localhost
 for host
 do
-  ssh -c blowfish -R 24800:localhost:24800 $host 'synergy-killer -c' &
+  ssh -c chacha20-poly1305@openssh.com,blowfish-cbc -R 24800:localhost:24800 $host 'synergy-killer -c' &
   kids+=( $! )
 done
 
