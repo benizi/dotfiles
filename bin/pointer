@@ -47,3 +47,7 @@ if find_dev '/IBM.TrackPoint|ThinkPad.USB.Keyboard.*pointer/' ; then
 	prop 'Evdev Wheel Emulation Button' 2
 	prop 'Evdev Wheel Emulation Axes' 6 7 4 5
 fi
+
+if find_dev '/TPPS.2.IBM.TrackPoint/' ; then
+	prop 'Device Accel Profile' 2
+fi
