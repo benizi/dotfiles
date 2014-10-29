@@ -183,12 +183,18 @@ run_local_versions
 
 if (( $+commands[verman] )) ; then
 _verman() { eval "$(VERMAN_EVAL=1 verman "$@")" }
+_version() {
+  local lang=$1 version=$2
+  (( $+3 )) || (( ! $+parameters[${lang}_version] )) || return 0
+  _verman $lang use $version
+  export ${lang}_version
+}
 
-_verman erlang use 17.0
-_verman elixir use v1.0.0
-_verman node use v0.10.33
-_verman ruby use 2.1.1
-_verman rust use 0.12.0-pre-nightly-2014-07-27
+_version erlang 17.0
+_version elixir v1.0.0
+_version node v0.10.33
+_version ruby 2.1.1
+_version rust 0.12.0-pre-nightly-2014-07-27
 
 path=( ${path:#/opt/gvm*} )
 ld_library_path=( ${ld_library_path:#/opt/gvm*} )
@@ -199,7 +205,7 @@ unset GVM_OVERLAY_PREFIX GVM_PATH_BACKUP GVM_ROOT
 unset VERMAN_GO_ROOT
 unset VERMAN_GO_VERSIONS
 
-_verman go use go1.3.3
+_version go go1.3.3
 fi
 
 leapd() {
