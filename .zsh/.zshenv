@@ -70,12 +70,16 @@ function run_local_versions () {
 }
 
 setup_term () {
+  local dir
+  local -a terminfo_dirs
   if (( ! $+commands[infocmp] )) ; then
     return 0
   fi
   term_color_test () { infocmp &> /dev/null }
   if ! term_color_test ; then
-    terminfo_dirs=( ${^zsh_dirs}/{.,}terminfo(N/) /usr/share/terminfo(N) )
+    for dir in ${^zsh_dirs}{,(:h)} ~$owner ; do
+      terminfo_dirs+=( $dir/{.,}terminfo(N-/) )
+    done
     (( $#terminfo_dirs )) && export TERMINFO=$terminfo_dirs[1] 2>/dev/null
   fi
   if ! term_color_test ; then
