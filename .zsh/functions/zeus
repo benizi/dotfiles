@@ -1,2 +1,2 @@
-[[ -e .zeus.sock ]] && ! fuser -s .zeus.sock && rm .zeus.sock || true
+[[ -e .zeus.sock ]] && ! fuser -s .zeus.sock 2>/dev/null && rm .zeus.sock || true
 command zeus "$@"
