@@ -176,6 +176,22 @@ cd_env() {
 }
 chpwd_functions+=( cd_env )
 
+if (( $+functions[_verman] )) ; then
+  auto_version() {
+    local v
+    if [[ -f .ruby-version ]] ; then
+      v=$(<.ruby-version)
+      unset ruby_version
+      _version ruby $v
+      if [[ $ruby_version = $v ]]
+      then notice "ruby => $v"
+      else warn "No such ruby: $v"
+      fi
+    fi
+  }
+  chpwd_functions+=( auto_version )
+fi
+
 local cmd
 for cmd in $chpwd_functions ; do $cmd ; done
 
