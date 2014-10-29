@@ -1,0 +1,1 @@
+notice() { printfc 2 '%s\n' "$@" >&2 }
