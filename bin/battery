@@ -24,12 +24,13 @@ $do_ac && for ac in $power/{AC,ADP}* ; do
 	else
 		[ "$(cat $online)" = 1 ] && plugged=true || plugged=false
 		if $as_bool ; then
-			printf '%s ' $plugged
+			printf '%s' $plugged
 		else
 			$plugged && printf '%s' '=' || printf '%s' '!'
 		fi
 	fi
 done
+$do_ac && skip_space=false || skip_space=true
 $do_pct && for bat in $power/BAT* ; do
 	for l in now full ; do
 		for pre in charge energy ; do
@@ -42,6 +43,9 @@ $do_pct && for bat in $power/BAT* ; do
 	elif $vb ; then
 		contents $now $full
 	else
-		perl -lnwe 'if($a){print int(100*$a/$_)}else{$a=$_}' $now $full
+		pct=$(( 100 * $(cat $now) / $(cat $full) ))
+		$skip_space || printf ' '
+		skip_space=false
+		printf '%d' $pct
 	fi
 done
