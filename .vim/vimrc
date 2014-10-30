@@ -169,6 +169,11 @@ fun! PostColorScheme()
 		hi TabLineSel guibg=#0000cc gui=none guifg=#ffffff
 		hi TabLineFill guibg=#0000cc gui=none,reverse guifg=#ffffff
 		hi Search gui=reverse guifg=#ff9900 guibg=#000000
+	elseif colo == 'solarized'
+		if &t_Co > 1000 && &bg == 'light'
+			" cursor = dull yellow in 24-bit mode with light bg
+			sil! !printf '\e[38;7;216;216;0m'
+		end
 	end
 endf
 aug PostColorScheme
