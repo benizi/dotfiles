@@ -185,7 +185,8 @@ if (( $+commands[verman] )) ; then
 _verman() { eval "$(VERMAN_EVAL=1 verman "$@")" }
 _version() {
   local lang=$1 version=$2
-  (( $+3 )) || (( ! $+parameters[${lang}_version] )) || return 0
+  local var=${lang}_version
+  (( $+3 )) || (( ! $+parameters[$var] )) || [[ ${(P)var} = $version ]] || return 0
   _verman $lang use $version
   export ${lang}_version
 }
