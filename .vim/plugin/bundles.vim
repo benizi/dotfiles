@@ -43,6 +43,7 @@ Plugin 'nono/vim-handlebars'
 Plugin 'slim-template/vim-slim'
 Plugin 'tpope/timl'
 Plugin 'elixir-lang/vim-elixir'
+Plugin 'benizi/vim-txt-256color'
 call AddToRtp($HOME.'/git/rust/src/etc/vim')
 verb call BundleActivateDir($HOME.'/git/forever-inc/forever-tools/vim')
 
