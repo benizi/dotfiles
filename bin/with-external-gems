@@ -70,9 +70,13 @@ if (-f $existing_lock) {
   close $lock;
 }
 
+# for use by $dump later
+my %before;
 my $list_dirs = q/ruby -e "$:.each { |dir| puts dir }"/;
-chomp(my @before = qx/bundle exec $list_dirs/);
-my %before = map {; $_ => 1 } @before;
+if ($dump) {
+  chomp(my @before = qx/bundle exec $list_dirs/);
+  %before = map {; $_ => 1 } @before;
+}
 
 # Clean out Bundler-related environment variables
 my %env = %ENV;
