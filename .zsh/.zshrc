@@ -98,7 +98,7 @@ auto_git_alias () {
 (( $+commands[git] )) && command_not_found_handlers+=( auto_git_alias )
 
 TRAPZERR () {
-  local dir= choice prompt3=
+  local dir= choice banner=${${:-"$(printf '%*s' $COLUMNS)"}// /*}
   unset choice
   local -a dirs
   set -- ${=__last_command}
@@ -109,12 +109,10 @@ TRAPZERR () {
   dir=${~1}
   dirs=( ${~:-$dir*}(-/N) )
   if [[ ! -e $dir ]] && (( $#dirs > 1 )) ; then
-    prompt3=$PROMPT3
-    PROMPT3="Use one of these instead? "
-    select choice in No Create $dirs ; do break ; done
-    PROMPT3=$prompt3
-    [[ $choice = No ]] && return 0
-    if [[ $choice != Create ]] ; then
+    choice="$(printf '%s\n' $banner "Create $dir" $dirs $banner | dmenu -b -l 40)"
+    if [[ -z $choice ]] || [[ $choice = $banner ]] ; then
+      return 0
+    elif [[ $choice != Create* ]] ; then
       cd $choice
       return 0
     fi
