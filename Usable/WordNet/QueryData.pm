@@ -1,0 +1,1 @@
+/home/bhaskell/hg/qdwrap/WordNet/QueryData.pm
