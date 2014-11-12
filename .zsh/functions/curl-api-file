@@ -1,3 +1,0 @@
-local -a parts
-parts=( api "$@" ${api_env:-default} )
-printf '%s' ${(pj:.:)parts}
