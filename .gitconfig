@@ -151,5 +151,6 @@
 	cob = "!cob() { branch=\"$(git bb | dmenu -b -l 40)\" ; test -n \"$branch\" && git co \"$branch\" ; } ; cob"
 	wci = !env NAME='Whitespace Patrol' EMAIL=$EMAIL git cia
 	cia = "! : check in as a different user ; cia() { unset email ; if [[ $1 = *@* ]] ; then email=$1 ; shift ; else email=$EMAIL ; fi ; test -n \"$email\" || { echo 'Must set email (first arg or $EMAIL)' ; return 1 ; } ; unset name ; test -n \"$NAME\" && name=\"$NAME\" ; env ${name:+\"GIT_AUTHOR_NAME=$name\"} ${name:+\"GIT_COMMITTER_NAME=$name\"} GIT_COMMITTER_EMAIL=$email GIT_AUTHOR_EMAIL=$email git ci \"$@\" ; } ; cia"
+	first-remote = !git config --get-regexp 'remote.*.url' | awk -F. '{print $2 }' | sed q
 [tag]
 	sort = version:refname
