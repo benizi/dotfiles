@@ -6,7 +6,7 @@ use FindBin '$Bin';
 use Getopt::Long qw/:config pass_through/;
 use IPC::Run;
 my %opt;
-my @xkbopts = qw/model layout variant keycodes/;
+my @xkbopts = qw/rules model layout variant keycodes/;
 my @includes;
 
 my $is_macbook = do {
@@ -53,6 +53,7 @@ my $default_options = [
 ];
 my %defaults = (
 	'' => {
+		rules => 'benizi',
 		model => 'pc104',
 		layout => 'benizi',
 		variant => 'intl',
@@ -87,6 +88,7 @@ if ($menu) {
 }
 if (!$just_modmap) {
 	my @cmd = ('setxkbmap');
+	push @cmd, map "-I$_", @includes;
 	push @cmd, map {; "-$_" => $opt{$_} } grep length($opt{$_}), @xkbopts;
 	push @cmd, -option => '' if $opt{reset};
 	push @cmd, -option => $_ for @{$opt{options}};
