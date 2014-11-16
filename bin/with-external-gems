@@ -70,6 +70,8 @@ if (-f $existing_lock) {
   close $lock;
 }
 
+symlink File::Spec->rel2abs('.bundle'), "$dir/.bundle" if -e '.bundle';
+
 # for use by $dump later
 my %before;
 my $list_dirs = q/ruby -e "$:.each { |dir| puts dir }"/;
