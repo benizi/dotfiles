@@ -93,7 +93,7 @@ $ENV{BUNDLE_GEMFILE} = "$dir/Gemfile";
 for my $cmd ('check', '--local', undef, 'failed') {
   die "Could not satisfy bundle requirements\n" if ($cmd || '') eq 'failed';
   my $bundle = join ' ', grep defined, bundle => $cmd, grep !$verbose, '>/dev/null';
-  system $bundle or break;
+  system $bundle or last;
 }
 
 if ($dump) {
