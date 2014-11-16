@@ -152,5 +152,6 @@
 	wci = !env NAME='Whitespace Patrol' EMAIL=$EMAIL git cia
 	cia = "! : check in as a different user ; cia() { unset email ; if [[ $1 = *@* ]] ; then email=$1 ; shift ; else email=$EMAIL ; fi ; test -n \"$email\" || { echo 'Must set email (first arg or $EMAIL)' ; return 1 ; } ; unset name ; test -n \"$NAME\" && name=\"$NAME\" ; env ${name:+\"GIT_AUTHOR_NAME=$name\"} ${name:+\"GIT_COMMITTER_NAME=$name\"} GIT_COMMITTER_EMAIL=$email GIT_AUTHOR_EMAIL=$email git ci \"$@\" ; } ; cia"
 	first-remote = !git config --get-regexp 'remote.*.url' | awk -F. '{print $2 }' | sed q
+	new-commits = "! : find commits not present on remote ; nc () { local=\"${1:-HEAD}\" ; remote=\"$(git first-remote)\" ; (git rev-list $local | sed 's/^/L /' ; git rev-list --remotes=$remote | sed 's/^/R /') | awk '/^R/ { remote[$2] = $1 } /^L/ { local[$2] = $1 } END { for (commit in local) if (!remote[commit]) print commit }' ; } ; nc"
 [tag]
 	sort = version:refname
