@@ -19,12 +19,18 @@ my $is_macbook = do {
 	$mac
 };
 
+{
+	my $id_file = '/sys/devices/virtual/dmi/id/product_version';
+	my $product = eval { undef local $/; local @ARGV = ($id_file); <> };
+	push @{$opt{options}}, 'benizi:x240' if !$@ and $product =~ /X240/;
+}
+
 my $xkb_dir = "$Bin/../xkb";
 
 GetOptions(
 	(map {; "$_=s" => \$opt{$_} } @xkbopts),
 	'reset=s' => \$opt{reset},
-	'o|option=s@' => \($opt{options}=[]),
+	'o|option=s@' => \$opt{options},
 	'O|old-options' => \(my $old_options = 0),
 	'menu' => \(my $menu = 0),
 	'dry' => \(my $dry_run = 0),
