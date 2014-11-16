@@ -1,0 +1,5 @@
+! model
+  benizi Benizi custom layout
+
+! variant
+  intl benizi: Based on old us(intl) layout

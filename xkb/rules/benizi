@@ -1,0 +1,11 @@
+! model = keycodes types compat
+  * = evdev complete complete
+
+! model = symbols
+  * = pc+inet(evdev)+%l(%v)
+
+! model = geometry
+  * = pc(%m)
+
+! option = symbols
+  terminate:ctrl_alt_bksp = +terminate(ctrl_alt_bksp)
