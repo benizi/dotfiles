@@ -67,6 +67,15 @@ xkb_symbols "basic" {
 };
 
 partial alphanumeric_keys modifier_keys
+xkb_symbols "x240" {
+	key <PRSC> {
+		type= "TWO_LEVEL",
+		symbols[Group1]= [ Multi_key, ISO_Level3_Latch ]
+	};
+	key <I152> { [ Print ] };
+};
+
+partial alphanumeric_keys modifier_keys
 xkb_symbols "caps" {
     key <CAPS> { [ Multi_key ] };
 };

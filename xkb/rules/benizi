@@ -9,3 +9,4 @@
 
 ! option = symbols
   terminate:ctrl_alt_bksp = +terminate(ctrl_alt_bksp)
+  benizi:x240 = +benizi(x240)

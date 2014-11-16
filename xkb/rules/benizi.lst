@@ -3,3 +3,6 @@
 
 ! variant
   intl benizi: Based on old us(intl) layout
+
+! option
+  x240 Swap Print and XF86Explore
