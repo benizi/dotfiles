@@ -1,3 +1,21 @@
+#!/bin/sh
+# vim: set ft=ruby: -*- mode: ruby; -*-
+=begin 2>/dev/null
+
+# wrapper so this works even if ruby is missing:
+
+if hash term 2>/dev/null
+then default=term
+else default=urxvt
+fi
+
+if hash ruby 2>/dev/null
+then exec ruby $0 "$@"
+else cd; exec "${@:-$default}"
+fi
+
+=end 2>/dev/null
+# need this next shebang line for Ruby to recognize the script:
 #!/usr/bin/env ruby
 
 require 'pathname'
