@@ -6,8 +6,8 @@ use Getopt::Long;
 GetOptions(
 	'client|c' => \(my $client = 0),
 	'server|s' => \(my $server = 0),
+	'kill|k' => \(my $just_kill = 0),
 	'host=s' => \(my $host = 'localhost'),
-	'kill24800!' => \(my $kill_24800 = 1),
 	'port=i' => \(my $port = 24800),
 ) or die 'options';
 $client++ unless $server;
@@ -34,19 +34,17 @@ my %ppids;
 		$max = length $pref;
 	}
 }
-if ($kill_24800) {
+
+if ($just_kill) {
 	chomp(my @procs = readpipe "sudo lsof -i :$port -Fp");
 	s/^p// for @procs = grep /^p/, @procs;
 	@procs = grep !$ppids{$_}, @procs;
 	my_kill for @procs;
-	@procs and die "Killed old SSH process(es). Should reconnect now.\n";
-}
-chomp(my @already = readpipe "pgrep $synergy");
-my_kill for @already;
-if (!$ENV{SSH_CLIENT}) {
-	warn "Killed ".(0+@already)." process".(1==@already?"":"es")."\n";
+	my $es = @procs == 1 ? "" : "es";
+	print "Killed ", 0 + @procs, " old Synergy process$es: @procs\n";
 	exit;
 }
+
 my @s_args = ('-f');
 push @s_args, join ':', $host, $port if $client;
 exec { $synergy } $synergy, @s_args;

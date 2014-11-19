@@ -23,10 +23,15 @@ kids+=( $! )
 
 trap 'kill $kids' INT
 
+fastssh() {
+  ssh -c chacha20-poly1305@openssh.com,blowfish-cbc $@
+}
+
 # run synergy-killer on each remote host, forwarding port 24800 to localhost
 for host in ${(R)hosts/$self}
 do
-  ssh -c chacha20-poly1305@openssh.com,blowfish-cbc -R 24800:localhost:24800 $host 'synergy-killer -c' &
+  fastssh $host 'synergy-killer -k'
+  fastssh -R 24800:localhost:24800 $host 'synergy-killer -c' &
   kids+=( $! )
 done
 
