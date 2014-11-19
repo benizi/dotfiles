@@ -158,6 +158,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     ---- monitor toggle
     , ((mod4Mask, xK_t), spawn "montoggle")
     , ((0, xF86XK_Display), spawn "montoggle")
+    , ((shiftMask, xF86XK_Display), spawn "mon --cycle")
 
     ---- xmms2
     , ((0,                  xF86XK_AudioPlay), spawn "nyxmms2 play")
