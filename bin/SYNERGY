@@ -18,7 +18,7 @@ done
 (( $+added_self )) || hosts=( $self $hosts )
 
 # set up a Synergy server for the current host and others listed as args
-synergys -f -a 127.0.0.1 -c =(synergyk $hosts) &
+synergys -f -a 127.0.0.1 -c =(synergyk $hosts) |& sed "s/^/synergys -f /" &
 kids+=( $! )
 
 trap 'kill $kids' INT
@@ -30,8 +30,8 @@ fastssh() {
 # run synergy-killer on each remote host, forwarding port 24800 to localhost
 for host in ${(R)hosts/$self}
 do
-  fastssh $host 'synergy-killer -k'
-  fastssh -R 24800:localhost:24800 $host 'synergy-killer -c' &
+  fastssh $host 'synergy-killer -k' |& sed "s/^/$host /"
+  fastssh -R 24800:localhost:24800 $host 'synergy-killer -c' |& sed "s/^/$host /" &
   kids+=( $! )
 done
 
