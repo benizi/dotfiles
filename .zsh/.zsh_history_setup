@@ -2,12 +2,12 @@ normal_history_mode () {
   setopt extended_history
   setopt hist_ignore_dups hist_ignore_space hist_no_store
   setopt inc_append_history
-  export HISTSIZE=50000000
-  export SAVEHIST=$HISTSIZE
+  HISTSIZE=50000000
+  SAVEHIST=$HISTSIZE
   if (( UID )) ; then
-    export HISTFILE=~/.historyfile
+    HISTFILE=~/.historyfile
   else
-    export HISTFILE=$zsh_dirs[-1]/$LOGNAME.historyfile
+    HISTFILE=$zsh_dirs[-1]/$LOGNAME.historyfile
     [[ ! -f $HISTFILE ]] && touch $HISTFILE && chown --reference=${(%):-%N} $HISTFILE
   fi
   TRAPUSR1 () { fc -W $zsh_dirs[-1]/emergency-zsh-backup-$(date +%Y%m%d-%H%M%S)-$$ }
