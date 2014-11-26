@@ -42,6 +42,7 @@ if ($just_kill) {
 	my_kill for @procs;
 	my $es = @procs == 1 ? "" : "es";
 	print "Killed ", 0 + @procs, " old Synergy process$es: @procs\n";
+	system { 'killall' } qw/killall synergyc/;
 	exit;
 }
 
