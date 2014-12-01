@@ -16,8 +16,9 @@ end
 
 def env_or_yaml(name)
   contents = File.read(name)
-  if contents.lines.first =~ /^[A-Z0-9_]+=.*\n$/
-    contents.lines.map(&:chomp)
+  lines = contents.lines.reject { |l| l =~ /^#/ } # remove comments
+  if lines.first =~ /^[A-Z0-9_]+=.*\n$/
+    lines.map(&:chomp)
   else
     yaml(contents)
   end
