@@ -33,7 +33,7 @@ end
 def yaml(contents)
   vars = YAML.load(ERB.new(contents).result)
   root = vars.select { |k,v| k =~ ENV_VAR && !v.is_a?(Hash) }.to_h.as_vars
-  per_env = (envname ? vars[envname] || vars[envname.to_s] : vars).as_vars
+  per_env = (envname ? vars[envname] || vars[envname.to_s] : vars).to_h.as_vars
   root + per_env
 rescue
   []
