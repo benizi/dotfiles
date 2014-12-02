@@ -2,7 +2,7 @@
 if test -z "$ZSH_VERSION" && test -e /bin/zsh ; then exec /bin/zsh $0 ; fi
 
 # TODO: not sure why these aren't being pulled in by exec'ing zsh
-export LC_ALL=en_US.UTF-8 LC_COLLATE=POSIX
+export LANG=en_US.UTF-8 LC_COLLATE=POSIX
 
 exec 2> ~/.wm.errors
 
