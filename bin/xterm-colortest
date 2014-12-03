@@ -4,6 +4,7 @@ use warnings;
 use utf8;
 use open qw/:std :utf8/;
 use Encode 'decode_utf8';
+use POSIX 'ceil';
 $_ = do { my $v = eval { decode_utf8($_, Encode::FB_CROAK); }; $v // $_ } for @ARGV;
 
 sub esc {
@@ -50,8 +51,8 @@ my @low = (
 );
 
 sub max_color { COLORS - 1 }
-sub cube_start { 16 }
-sub grey_start { HI ? 232 : 80 }
+sub cube_start () { 16 }
+sub grey_start () { HI ? 232 : 80 }
 sub levels {
 	HI
 	? [0, map 95 + 40 * $_, 0..4]
@@ -88,4 +89,69 @@ sub indexed_rgb {
 	@{combos()->[$i - cube_start]}
 }
 
-print rgb_to_hex indexed_rgb $_ and print "\n" for 0..max_color;
+my $show_number = 0;
+
+sub Xfmt { $show_number ? '%3d' : '%s' }
+sub X { $show_number ? shift : 'X' }
+
+sub ramp {
+	my ($fgbg, $hue) = @_;
+	(map {
+		my $n = $_;
+		my @rgb = map $n * $_, split //, $hue;
+		sprintf "\e[%d;2;%d;%d;%dm".Xfmt."\e[0m", $fgbg, @rgb, X $n;
+	} grep !($_ % 6), 1..max_color), "\n"
+}
+
+sub grid {
+	my $esc = shift;
+	my $entry = sub {
+		my $n = shift;
+		sprintf "\e[%s;38;5;%dm".Xfmt."\e[0m", $esc, $n, X $n;
+	};
+	my @rows;
+	my @ret;
+	for my $batch (map [map $entry->($_), @$_],
+		[0..cube_start-1],
+		[cube_start..grey_start-1],
+		[grey_start..max_color],
+	) {
+		@rows = map [], 1..@{levels()} unless @rows;
+		my $large = @$batch > @rows * @rows;
+		my $splice = $large ? 0 + @rows : ceil(@$batch / @rows);
+		my $i = 0;
+		while (@$batch) {
+			push @{$rows[$i % @rows]}, splice @$batch, 0, $splice;
+			$i++;
+		}
+		if ($show_number) {
+			push @ret, map join("", @$_).($large ? "\n" : ""), @rows;
+			push @ret, "\n" unless $large;
+			@rows = ();
+		} else {
+			my ($first, $last) = @rows[0, -1];
+			push @$last, ($entry->(0)) x (@$first - @$last) if @$last < @$first;
+		}
+	}
+	@ret ? @ret : map join("", @$_)."\n", @rows
+}
+
+my $ramp = 0;
+
+@ARGV = grep {!(
+	(/--ramp/) ? ($ramp = 1) :
+	(/--num/) ? ($show_number = 1) :
+0)} @ARGV;
+
+die join("\n", "Unknown argument".(@ARGV == 1 ? "" : "s").":", @ARGV, "") if @ARGV;
+
+if ($ramp) {
+	print grid $_ for qw/48;5;16 0;1 48;5;231;7/;
+	for my $fgbg (38, 48) {
+		for my $bits (qw/100 110 010 011 001 101/) {
+			print ramp $fgbg, $bits;
+		}
+	}
+} else {
+	print rgb_to_hex indexed_rgb $_ and print "\n" for 0..max_color;
+}
