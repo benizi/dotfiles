@@ -238,7 +238,11 @@ if (( $+zsh_start_timing )) ; then
   exec 2>&3 3>&-
 fi
 
-(( $+commands[cpus] )) && pmake=-j$(( $(cpus) + 1 ))
+if (( ! $+MAKEFLAGS )) && (( $+commands[nproc] ))
+then
+  pmake=-j$(nproc)
+  export MAKEFLAGS=$pmake
+fi
 
 nixstartup=/usr/local/etc/profile.d/nix.sh
 [[ -e $nixstartup ]] && . $nixstartup
