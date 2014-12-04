@@ -1,5 +1,5 @@
 (global-font-lock-mode 1)
-(add-to-list 'load-path "~/.emacs.d")
+(add-to-list 'load-path "~/.emacs.d/lisp")
 
 ;; Many libs require the CL-compatibility library
 (require 'cl)

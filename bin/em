@@ -1,7 +1,12 @@
-if expr "$TERM" : ".*-24bit$" >/dev/null && test -d ~/.emacs.d/term
+has_term() {
+  test -d ~/.emacs.d/lisp/term || test -d ~/.emacs.d/term
+}
+
+if expr "$TERM" : ".*-24bit$" >/dev/null && has_term
 then better="$TERM-super"
-elif test -d ~/.emacs.d/term
+elif has_term
 then better="$TERM"
 else better=xterm-256color
 fi
+
 env TERM=$better emacs -nw "$@"
