@@ -4,4 +4,14 @@ shift
 printf '%s\n' "$*" \
 | text2wave \
 | sox -v 10 - -t wav - \
-| ssh $host 'f=/tmp/sound.wav ; cat > $f && afplay $f && rm $f'
+| ssh $host 'f=/tmp/sound.wav
+cat > $f || exit
+if type afplay 2>/dev/null
+then afplay $f
+elif type paplay 2>/dev/null
+then paplay $f
+elif test -e /dev/audio
+then cat $f > /dev/audio
+else printf "%s\\n" no way to play audio on remote host
+fi
+rm $f'
