@@ -158,8 +158,8 @@ fun! PostColorScheme()
 			sil! !printf '\e]12;8\a'
 		end
 		hi Search cterm=NONE ctermfg=0 ctermbg=220 guifg=#000000 guibg=#ffff00
-		hi Normal guibg=black
-		hi NonText guibg=black
+		hi Normal guibg=black ctermbg=0
+		hi NonText guibg=black ctermbg=0
 		hi ColorColumn guibg=#993333
 		hi rubyRegexpDelimiter guifg=#ff9900
 		hi! link rubyRegexp Constant
