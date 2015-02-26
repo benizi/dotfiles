@@ -6,6 +6,7 @@ fun! Plugin(git, ...)
     return
   end
   if !isdirectory(dest)
+    echom 'Installing' a:git
     call system('git clone https://github.com/'.user.'/'.repo.' '.shellescape(dest))
   end
 endf
