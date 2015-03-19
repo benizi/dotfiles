@@ -4,13 +4,13 @@ use warnings;
 use IPC::Run 'run';
 use Getopt::Long;
 GetOptions(
-	'client|c' => \(my $client = 0),
+	'client|c=s' => \my $client,
 	'server|s' => \(my $server = 0),
 	'kill|k' => \(my $just_kill = 0),
 	'host=s' => \(my $host = 'localhost'),
 	'port=i' => \(my $port = 24800),
 ) or die 'options';
-$client++ unless $server;
+$client ||= 1 unless $server;
 my $cs = $client ? 'c' : 's';
 my $synergy = "synergy$cs";
 
@@ -47,6 +47,7 @@ if ($just_kill) {
 }
 
 my @s_args = ('-f');
+push @s_args, '-n', $client if $client and $client ne '1';
 push @s_args, join ':', $host, $port if $client;
 exec { $synergy } $synergy, @s_args;
 die 'Failed to exec('.join(', ', $synergy, @s_args).")\n";
