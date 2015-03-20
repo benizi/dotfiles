@@ -31,7 +31,7 @@ fastssh() {
 for host in ${(R)hosts/$self}
 do
   fastssh $host 'synergy-killer -k' |& sed "s/^/$host /"
-  fastssh -R 24800:localhost:24800 $host 'synergy-killer -c' |& sed "s/^/$host /" &
+  fastssh -R 24800:localhost:24800 $host "synergy-killer -c $host" |& sed "s/^/$host /" &
   kids+=( $! )
 done
 
