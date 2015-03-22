@@ -92,7 +92,7 @@ rgb_to_list() {
 }
 
 create_theme() {
-  set +e
+  set -e
   pushd $output_dir
   touch 'First Run'
 
