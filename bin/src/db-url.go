@@ -17,6 +17,8 @@ var (
 	environment string
 	configPath string
 	dbURL string
+	herokuApp string
+	herokuEnvVar = "DATABASE_URL"
 )
 
 type Config map[string]interface{}
@@ -54,13 +56,28 @@ func path() string {
 
 // Pull database URL from:
 // 1. explicitly-set string
-// 2. $DATABASE_URL environment variable
+// 2. Heroku app config var
+// 3. $DATABASE_URL environment variable
 func uri() string {
 	if len(dbURL) != 0 {
 		return dbURL
 	}
+
+	if len(herokuApp) != 0 {
+		return fetchHerokuConfig()
+	}
+
 	dbURL = os.Getenv("DATABASE_URL")
 	return dbURL
+}
+
+func fetchHerokuConfig() string {
+	args := []string{"config:get", herokuEnvVar, "-a", herokuApp}
+	out, err := exec.Command("heroku", args...).Output()
+	if err == nil {
+		return string(out[0:len(out)-1]) // strip trailing newline
+	}
+	return ""
 }
 
 // Only Ruby can parse embedded Ruby (ERB)
@@ -279,6 +296,8 @@ func main() {
 
 	flag.BoolVar(&parseYAML, "fromyaml", parseYAML, "Parse starting config from YAML")
 	flag.BoolVar(&parseURL, "fromurl", parseURL, "Parse starting config from URL")
+	flag.StringVar(&herokuApp, "fromheroku", herokuApp, "Heroku app name")
+	flag.StringVar(&herokuEnvVar, "herokuvar", herokuEnvVar, "Heroku environment variable name")
 
 	// Output options
 	emitURL := false
@@ -298,6 +317,13 @@ func main() {
 	flag.StringVar(&dbName, "dbname", dbName, "Use this as the database name")
 
 	flag.Parse()
+
+	if len(herokuApp) != 0 {
+		parseURL = true
+		if len(environment) == 0 {
+			environment = herokuApp
+		}
+	}
 
 	cfg := inputConfig(parseURL, parseYAML)
 	cfg.Transform(dbName)
