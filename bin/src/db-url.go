@@ -139,6 +139,7 @@ func fromURL(uri string) Config {
 		case 2:
 			port, err := strconv.ParseInt(hostPort[1], 0, 0)
 			if err == nil {
+				ret["host"] = hostPort[0]
 				ret["port"] = port
 			} else {
 				ret["host"] = parsed.Host
