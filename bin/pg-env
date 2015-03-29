@@ -9,10 +9,15 @@
 
 # re-execute under rails runner if this looks like a Rails app and we're not
 # already in it.  Use `zeus`, too, if it looks like it's running
+
+RE_EXEC_MARKER = %w[-- __re-exec__]
+
 if !defined?(Rails) && %w[config app lib].all? { |dir| File.exists?(dir) }
   cmd = File.exists?('.zeus.sock') ? 'zeus' : 'rails'
-  exec(cmd, 'runner', __FILE__, '--', *ARGV.dup)
+  exec(cmd, 'runner', __FILE__, *RE_EXEC_MARKER, *ARGV.dup)
 end
+
+ARGV.shift(RE_EXEC_MARKER.size) if ARGV.slice(0, RE_EXEC_MARKER.size) == RE_EXEC_MARKER
 
 def envname
   @envname || Rails.env
@@ -64,32 +69,44 @@ def env
 end
 
 env_arg = /\AENV=(.+)\Z/
-ARGV.grep(env_arg).each do |arg|
+args = []
+cmd = []
+
+while ARGV.any?
+  arg = ARGV.shift
   match = arg.match(env_arg)
-  @envname = match[1]
+
+  if match
+    @envname = match[1]
+  elsif arg == '--'
+    cmd += ARGV
+    break
+  elsif arg =~ /^-/
+    args << arg
+  else
+    cmd << arg
+    cmd += ARGV
+    break
+  end
 end
 
-cmd = ARGV.reject { |arg| arg =~ env_arg }
-
-cmd.shift if cmd[0] == '--'
-
-def with_args?(cmd, *options, &block)
-  return unless options.any? { |opt| cmd.include?(opt) }
+def with_args?(args, *options, &block)
+  return unless options.any? { |opt| args.include?(opt) }
   block.call
   exit
 end
 
 def help
-  puts "Usage: [ENV=envname] cmd [args]"
+  puts "Usage: [ENV=envname | -h | --help | -p | --print] [--] cmd [args]"
 end
 
-with_args?(cmd, *%w[--help -h]) { help }
+with_args?(args, *%w[--help -h]) { help }
 
 unless %w[postgres postgresql].include?(config["adapter"])
   abort "Only works for PostgreSQL currently"
 end
 
-with_args?(cmd, *%w[--print -p]) { puts env.map { |kv| kv.join('=') } }
+with_args?(args, *%w[--print -p]) { puts env.map { |kv| kv.join('=') } }
 
 cmd = %w[psql] if cmd.empty?
 
