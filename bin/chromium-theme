@@ -219,7 +219,11 @@ create_theme() {
         "state": 1
       }
     },
-    "theme": { "id": "${theme_id}" }
+    "theme": { "id": "${theme_id}" },
+    "ui": { "developer_mode": true }
+  },
+  "session": {
+    "restore_on_startup": 1
   }${extra_profile}
 }
 PREFSJSON
