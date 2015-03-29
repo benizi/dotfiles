@@ -11,10 +11,12 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"syscall"
 )
 
 var (
 	environment string
+	envVar = "DATABASE_URL"
 	configPath string
 	dbURL string
 	herokuApp string
@@ -67,7 +69,7 @@ func uri() string {
 		return fetchHerokuConfig()
 	}
 
-	dbURL = os.Getenv("DATABASE_URL")
+	dbURL = os.Getenv(envVar)
 	return dbURL
 }
 
@@ -289,6 +291,26 @@ func (c Config) Transform(name string) {
 	}
 }
 
+func execWithEnv(cfg Config, args []string) {
+	cmd := args[0]
+	argv0, err := exec.LookPath(cmd)
+	if err != nil {
+		log.Fatalf("Couldn't find %s in PATH", cmd)
+	}
+
+	env := []string{}
+
+	for _, nameVal := range os.Environ() {
+		if !strings.HasPrefix(nameVal, fmt.Sprintf("%s=", envVar)) {
+			env = append(env, nameVal)
+		}
+	}
+
+	env = append(env, fmt.Sprintf("%s=%s", envVar, cfg.ToURL().String()))
+
+	log.Fatal(syscall.Exec(argv0, args, env))
+}
+
 func main() {
 	// Input options
 	parseYAML := false
@@ -308,6 +330,7 @@ func main() {
 
 	// Selection options
 	flag.StringVar(&environment, "env", environment, "Environment name")
+	flag.StringVar(&envVar, "var", envVar, "Environment variable name")
 	flag.StringVar(&configPath, "path", configPath, "database.yml file to parse")
 	flag.StringVar(&dbURL, "dburl", dbURL, "database URL to parse")
 
@@ -327,5 +350,10 @@ func main() {
 
 	cfg := inputConfig(parseURL, parseYAML)
 	cfg.Transform(dbName)
-	outputConfig(cfg, emitURL, emitYAML)
+
+	if len(flag.Args()) > 0 {
+		execWithEnv(cfg, flag.Args())
+	} else {
+		outputConfig(cfg, emitURL, emitYAML)
+	}
 }
