@@ -44,9 +44,9 @@ find_exe () {
 		exe=$_official
 	else
 		path=( ${${path:#$HOME/bin*}/${${(%):-"%x"}:h}} )
-		for command in chromium chromium-bin chrome ; do
+		for command in google-chrome{-unstable,} chromium chromium-bin chrome ; do
 			(( $+commands[$command] )) || continue
-			exe==$command
+			exe=${commands[$command]}
 			break
 		done
 	fi
