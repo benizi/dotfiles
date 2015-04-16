@@ -36,6 +36,8 @@
 	cmd = "ls -l \"$LOCAL\" \"$REMOTE\" ; convert \"$LOCAL\" -write mpr:orig +delete \"$REMOTE\" -write mpr:new +delete '(' mpr:orig mpr:new -compose Difference -composite -write mpr:diff +delete ')' '(' mpr:diff -auto-level -write mpr:norm +delete ')' '(' mpr:diff mpr:orig -append ')' '(' mpr:norm mpr:new -append ')' +append x:"
 [cd]
 	cd = "[[ -n \"$GIT_PREFIX\" ]] && cd \"$GIT_PREFIX\""
+[url "https://github.com/"]
+	insteadOf = ghh:
 [alias]
 	alias = "!a() { pattern=. ; extrased=\"\" ; args=() ; for arg ; do case $arg in --name-only) extrased=\"s/=.*$//\" ; pattern=. ;; *) pattern=\"^$arg=\" ;; esac ; done ; git config --get-regexp '^alias\\.' | sed \"s/alias.//; s/ /=/; $extrased\" | grep \"$pattern\" ; } ; a"
 	# allow "git git cmd" typo:
