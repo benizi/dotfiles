@@ -1,9 +1,48 @@
-function () {
-  local cfg cmd
-  for cmd in dt screen ; do
-    (( $+commands[$cmd] )) || warn "$cmd is not installed"
+map() {
+  local cmd=$1
+  shift
+  local arg
+  for arg
+  do $cmd $arg
   done
-  for cfg in .Xdefaults .gitconfig .screenrc .vim .vimrc ; do
-    [[ -e ~/$cfg ]] || warn "$cfg doesn't exist"
-  done
+}
+
+check_command_installed() {
+  local cmd=$1
+  (( $+commands[$cmd] )) || warn "$cmd is not installed"
+}
+
+check_config_exists() {
+  local cfg=$1
+  [[ -e ~/$cfg ]] || warn "$cfg doesn't exist"
+}
+
+check_config_exists_graphical() {
+  (( ! $+DISPLAY )) || check_config_exists "$@"
+}
+
+() {
+  map check_command_installed dt screen
+
+  local -a configs
+
+  configs=(
+    .emacs.d
+    .gitconfig
+    .tmux.conf
+    .vimrc
+    .zshenv
+    bin
+    perl-lib
+  )
+
+  map check_config_exists $configs
+
+  configs=(
+    .Xdefaults
+    .urxvt/ext
+    .xmonad
+  )
+
+  map check_config_exists_graphical $configs
 }
