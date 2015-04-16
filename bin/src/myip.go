@@ -52,11 +52,6 @@ func getExternal() []net.Addr {
   return []net.Addr{network}
 }
 
-func succeed(addr string) {
-  fmt.Println(addr)
-  os.Exit(0)
-}
-
 type foundAddr struct {
   ip net.IP
   preferred bool
@@ -127,18 +122,32 @@ func parseNetwork(cidr string) (*net.IPNet, error) {
 }
 
 func main() {
-  only6 := flag.Bool("6", false, "Limit to IPv6")
-  external := flag.Bool("x", false, "Fetch external address")
+  only6 := false
+  external := false
+  excludeDocker := true
   docker := "172.17.0.0/16"
-  flag.Parse()
+  printAll := false
+  sorted := false
 
-  _, dockerNet, err := net.ParseCIDR(docker)
-  if err != nil {
-    log.Fatalln("Failed to parse Docker network", docker)
-  }
+  flag.BoolVar(&only6, "6", only6, "Limit to IPv6")
+  flag.BoolVar(&external, "x", external, "Fetch external address")
+  flag.BoolVar(&excludeDocker, "nodocker", excludeDocker, "Exclude Docker interface")
+  flag.StringVar(&docker, "dockernet", docker, "Docker network to exclude")
+  flag.BoolVar(&printAll, "all", printAll, "Print all addresses")
+  flag.BoolVar(&sorted, "sort", sorted, "Sort addresses (only applicable with --all)")
+  flag.Parse()
 
   var acceptable []net.IPNet
   var rejectable []net.IPNet
+
+  if excludeDocker {
+    _, dockerNet, err := net.ParseCIDR(docker)
+    if err != nil {
+      log.Fatalln("Failed to parse Docker network", docker)
+    }
+
+    rejectable = append(rejectable, *dockerNet)
+  }
 
   for _, arg := range flag.Args() {
     if len(arg) == 0 {
@@ -159,13 +168,9 @@ func main() {
     *addTo = append(*addTo, *network)
   }
 
-  if len(rejectable) == 0 {
-    rejectable = append(rejectable, *dockerNet)
-  }
-
   found := make([]foundAddr, 0)
 
-  addrs := getAddresses(*external)
+  addrs := getAddresses(external)
   for _, addr := range addrs {
     network, ok := addr.(*net.IPNet)
     if !ok {
@@ -181,11 +186,18 @@ func main() {
     })
   }
 
-  sort.Sort(ByAttributes{found, *only6})
-
-  if len(found) > 0 {
-    succeed(found[0].ip.String())
+  if len(found) == 0 {
+    os.Exit(1)
   }
 
-  os.Exit(1)
+  if sorted || !printAll {
+    sort.Sort(ByAttributes{found, only6})
+  }
+
+  for _, addr := range found {
+    fmt.Println(addr.ip.String())
+    if !printAll {
+      break
+    }
+  }
 }
