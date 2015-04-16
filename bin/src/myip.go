@@ -7,9 +7,12 @@ import (
   "flag"
   "fmt"
   "io/ioutil"
+  "log"
   "net"
   "net/http"
   "os"
+  "sort"
+  "strings"
 )
 
 const (
@@ -54,35 +57,134 @@ func succeed(addr string) {
   os.Exit(0)
 }
 
+type foundAddr struct {
+  ip net.IP
+  preferred bool
+  rejected bool
+  loopback bool
+  v6 bool
+}
+
+func xor(a, b bool) bool {
+  return (a && !b) || (!a && b)
+}
+
+type ByAttributes struct {
+  addrs []foundAddr
+  prefer6 bool
+}
+
+func (v ByAttributes) Len() int { return len(v.addrs) }
+func (v ByAttributes) Swap(i, j int) { v.addrs[i], v.addrs[j] = v.addrs[j], v.addrs[i] }
+func (v ByAttributes) Less(i, j int) bool {
+  a := v.addrs[i]
+  b := v.addrs[j]
+  if xor(a.v6, b.v6) {
+    return !xor(a.v6, v.prefer6)
+  }
+  if xor(a.preferred, b.preferred) {
+    return a.preferred
+  }
+  if xor(a.rejected, b.rejected) {
+    return !a.rejected
+  }
+  if xor(a.loopback, b.loopback) {
+    return !a.loopback
+  }
+  return a.ip.String() < b.ip.String()
+}
+
+func anyContains(networks []net.IPNet, ip net.IP) bool {
+  for _, network := range networks {
+    if network.Contains(ip) {
+      return true
+    }
+  }
+  return false
+}
+
+func parseNetwork(cidr string) (*net.IPNet, error) {
+  _, network, err := net.ParseCIDR(cidr)
+  if err == nil {
+    return network, nil
+  }
+
+  // Try parsing it as an octet or octets
+  // e.g. "10" => "10.0.0.0/8", "192.168" => "192.168.0.0/16"
+  dots := strings.Count(cidr, ".")
+  needed := 3 - dots
+  if needed < 0 {
+    return nil, err
+  }
+  cidr = fmt.Sprintf("%s%s/%d", cidr, strings.Repeat(".0", needed), 32 - 8 * needed)
+  _, network, e := net.ParseCIDR(cidr)
+  if e == nil {
+    return network, nil
+  }
+
+  // return the original error
+  return nil, err
+}
+
 func main() {
   only6 := flag.Bool("6", false, "Limit to IPv6")
   external := flag.Bool("x", false, "Fetch external address")
+  docker := "172.17.0.0/16"
   flag.Parse()
+
+  _, dockerNet, err := net.ParseCIDR(docker)
+  if err != nil {
+    log.Fatalln("Failed to parse Docker network", docker)
+  }
+
+  var acceptable []net.IPNet
+  var rejectable []net.IPNet
+
+  for _, arg := range flag.Args() {
+    if len(arg) == 0 {
+      continue
+    }
+
+    addTo := &acceptable
+    if arg[0] == '!' || arg[0] == 'x' {
+      addTo = &rejectable
+      arg = arg[1:len(arg)]
+    }
+
+    network, err := parseNetwork(arg)
+    if err != nil {
+      log.Fatal(err)
+    }
+
+    *addTo = append(*addTo, *network)
+  }
+
+  if len(rejectable) == 0 {
+    rejectable = append(rejectable, *dockerNet)
+  }
+
+  found := make([]foundAddr, 0)
 
   addrs := getAddresses(*external)
   for _, addr := range addrs {
     network, ok := addr.(*net.IPNet)
-    if !ok || network.IP.IsLoopback() {
+    if !ok {
       continue
     }
 
-    // skip IPv6 unless we want it
-    is6 := network.IP.To4() == nil
-    if (!*only6 && is6) || (*only6 && !is6) {
-      continue
-    }
-
-    // skip Docker address
-    if network.Contains(net.IPv4(172, 17, 0, 1)) {
-      continue
-    }
-
-    succeed(network.IP.String())
+    found = append(found, foundAddr{
+      ip: network.IP,
+      preferred: anyContains(acceptable, network.IP),
+      rejected: anyContains(rejectable, network.IP),
+      loopback: network.IP.IsLoopback(),
+      v6: network.IP.To4() == nil,
+    })
   }
 
-  // print the IPv6 or Docker address if it's the only one
-  if len(addrs) > 0 {
-    succeed(addrs[0].String())
+  sort.Sort(ByAttributes{found, *only6})
+
+  if len(found) > 0 {
+    succeed(found[0].ip.String())
   }
 
   os.Exit(1)
