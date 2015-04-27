@@ -179,7 +179,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm .|. shiftMask, xK_F6), spawn "brightness up")
 
     ---- choose wifi
-    , ((mod4Mask, xK_w), spawn "wifi-chooser \"<cli>\"")
+    , ((mod4Mask, xK_w), spawn "wifi-chooser")
 
     -- launch gmrun
     , ((modm .|. shiftMask, xK_p     ), spawn "gmrun")
