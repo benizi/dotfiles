@@ -123,6 +123,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     [ ((modm, xK_Return), spawn $ "in-cwd " ++ XMonad.terminal conf)
     , ((mod1Mask, xK_Return), spawn $ "in-cwd " ++ XMonad.terminal conf)
     , ((mod4Mask, xK_Return), spawn $ "LC_ALL=en_US.UTF-8 term -e /bin/bash -l")
+    , ((mod4Mask, xK_t), spawn "tmux-choose")
 
     -- launch dmenu
     , ((mod4Mask,           xK_r     ), spawn "dmenu_run")
@@ -156,7 +157,6 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((0,                  xK_Print ), spawn "screenshot")
 
     ---- monitor toggle
-    , ((mod4Mask, xK_t), spawn "montoggle")
     , ((0, xF86XK_Display), spawn "montoggle")
     , ((shiftMask, xF86XK_Display), spawn "mon --cycle")
 
