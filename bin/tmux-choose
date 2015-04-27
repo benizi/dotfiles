@@ -1,0 +1,10 @@
+#!/bin/sh
+session="$(
+  (tmux ls -F '#{session_name}' 2>/dev/null ;
+  hash mux 2>/dev/null && mux completions start | sed 's!$!:mux!'
+  ) | dmenu)"
+test -n "$session" || exit
+case "$session" in
+  *:mux) in-term mux start "${session%:mux}" ;;
+  *) in-term tmux-attach-or-new "$session"
+esac
