@@ -203,6 +203,7 @@ create_theme() {
     "import_history": false,
     "import_bookmarks": false,
     "create_all_shortcuts": false,
+    "custom_chrome_frame": false,
     "make_chrome_default": false
   },
   "extensions": {
