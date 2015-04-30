@@ -30,8 +30,7 @@ fastssh() {
 # run synergy-killer on each remote host, forwarding port 24800 to localhost
 for host in ${(R)hosts/$self}
 do
-  fastssh $host 'synergy-killer -k' |& sed "s/^/$host /"
-  fastssh -R 24800:localhost:24800 $host "synergy-killer -c $host" |& sed "s/^/$host /" &
+  fastssh -R 24800:localhost:24800 $host "synergyc -1 -f -n $host localhost" |& sed "s/^/$host /" &
   kids+=( $! )
 done
 
