@@ -32,7 +32,27 @@ done
     break
   done
   ((i++))
-  command ack "${(@)argv[1,i-1]}" ${~argv[i,-1]}
+  ack-like "${(@)argv[1,i-1]}" ${~argv[i,-1]}
+}
+
+ack-like() {
+  local cmd found=false
+  local -a args
+  for cmd in ack ack-grep
+  do
+    (( $+commands[$cmd] )) || continue
+    found=true
+    break
+  done
+
+  if ! $found && (( $+commands[grep] ))
+  then cmd=grep found=true args=( -r )
+  fi
+
+  if $found
+  then $cmd $args "$@"
+  else warn "No ack-like command found" ; return 1
+  fi
 }
 
 ack-app bing() {
