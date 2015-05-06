@@ -15,7 +15,7 @@ alias rehash=' builtin rehash'
 alias cave='noglob cave'
 () {
 local cmd
-for cmd in $commands[(I)find*] ack ; do
+for cmd in $commands[(I)find*] ; do
   alias $cmd="noglob $cmd"
 done
 }
@@ -25,7 +25,7 @@ done
   command $0 ${~argv[1,i-1]} "${(@)argv[i,-1]}"
 }
 
-'ack' google() {
+google() {
   local -i i
   for (( i=1; i<$#argv; i++ )) ; do
     [[ $argv[i] == -* ]] && continue
