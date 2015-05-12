@@ -14,7 +14,11 @@ check_command_installed() {
 
 check_config_exists() {
   local cfg=$1
-  [[ -e ~/$cfg ]] || warn "$cfg doesn't exist"
+  if [[ ! -e ~/$cfg ]]
+  then warn "$cfg doesn't exist"
+  elif [[ ! -L ~/$cfg ]]
+  then warn "$cfg isn't a link"
+  fi
 }
 
 check_config_exists_graphical() {
