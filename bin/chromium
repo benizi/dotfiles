@@ -135,13 +135,16 @@ done
 
 if (( $+_flash ))
 then pepper_flash_dir=$HOME/PepperFlash
-else pepper_flash_dir=/opt/google/chrome/PepperFlash
+else pepper_flash_dir=$_profdir/PepperFlash
 fi
 
 if [[ -d $pepper_flash_dir ]] ; then
 	pepper_flash=$pepper_flash_dir/libpepflashplayer.so
 	pepper_flash_version=$(awk '/version/ {print $2}' $pepper_flash_dir/manifest.json | tr -dc 0-9.)
 	_args+=( --ppapi-flash-path=$pepper_flash --ppapi-flash-version=$pepper_flash_version )
+	if [[ ! -d $_profdir ]]
+	then mkdir -p $_profdir && cp -r $pepper_flash_dir $_profdir/PepperFlash
+	fi
 fi
 
 _echo=()
