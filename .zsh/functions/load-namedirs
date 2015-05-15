@@ -11,7 +11,7 @@ if (( ! $#namedirs )) ; then
 fi
 for dir in ${^namedirs}/*(N@-/) ; do
   [[ -e $dir ]] || continue
-  target=( $dir(:A) )
+  target=( $dir(+A) )
   (( $#target )) || continue
   hash -d ${dir:t}=$target[1]
 done
