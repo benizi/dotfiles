@@ -142,9 +142,12 @@ if (( $+commands[nvm] )) ; then
 fi
 
 setup_real_pwd() {
-  local actual
-  actual="$(pwd -r)"
-  [[ $actual != $PWD ]] && real_pwd=$actual || unset real_pwd
+  local -a actual
+  actual=( "$(pwd -r)"(+A) )
+  if [[ ${actual[1]} != $PWD ]]
+  then real_pwd=${actual[1]//$HOME/\~}
+  else unset real_pwd
+  fi
 }
 chpwd_functions+=( setup_real_pwd )
 
