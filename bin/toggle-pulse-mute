@@ -1,0 +1,18 @@
+#!/bin/sh
+headphones() {
+  pactl list sinks | awk '
+  BEGIN { notplugged = 1 }
+  /^\s*Active Port/ && $NF ~ /headphone/ { notplugged = 0 }
+  END { exit notplugged }
+  '
+}
+
+togglespeakers() {
+  sink="$(pactl list sinks | awk '
+  /^Sink/ { sink = substr($2, 2) }
+  /^\s*Active Port/ && $NF ~ /speaker/ { print sink ; exit }
+  ')"
+  pactl set-sink-mute $sink toggle
+}
+
+headphones || togglespeakers
