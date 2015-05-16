@@ -1,0 +1,15 @@
+local url base=https://api.digitalocean.com/v2
+local -a opts
+unset url
+opts=( -H 'Authorization: Bearer '$digitalocean_api_token )
+for arg
+do
+  if (( ! $+url )) && [[ $arg = (http*|/*) ]]
+  then url=$arg
+  else opts+=( "$arg" )
+  fi
+done
+
+(( ! $+url )) || [[ $url = /* ]] && url=$base$url
+
+curl-json $url "${opts[@]}"
