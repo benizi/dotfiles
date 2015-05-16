@@ -1,0 +1,4 @@
+#!/bin/sh
+output=$(xrandr | awk '/ connected/ { print $1 ; exit }')
+input="$(xinput list | awk -F= '/Touchscreen/ { print $2 }' | cut -f1)"
+test -z "$input" || xinput map-to-output $input $output
