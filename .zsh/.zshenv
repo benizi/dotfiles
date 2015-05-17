@@ -129,6 +129,13 @@ pathtest=( /opt/djb/bin $^pathtest )
 path=( ${^pathtest}(N-/) )
 }
 
+# Remove duplicate paths in Arch (where {/bin,/sbin,/usr/sbin} -> /usr/bin)
+function () {
+local -a arch_same
+arch_same=( /{usr/,}{s,}bin(N@) )
+(( $#arch_same == 3 )) && path=( ${(@)path:#${(~j,|,)arch_same}} )
+}
+
 export PATH
 manpath=( /usr/share/man /usr/csl/man /usr/cogsci/man /usr/cogsci/X11/man /usr/dt/man /usr/openwin/man /usr/man /usr/local/man )
 manpath=( ${^manpath}(N-/) )
