@@ -1,0 +1,14 @@
+#!/bin/sh
+flag=/tmp/power-button
+test -e $flag && last_touched=$(stat -c %X $flag)
+now=$(date +%s)
+
+if (( last_touched > now - 2 ))
+then exit
+fi
+
+touch $flag
+
+XAUTHORITY=/home/bhaskell/.Xauthority \
+DISPLAY=:0 \
+$(dirname $0)/toggle-thinkpad &
