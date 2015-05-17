@@ -250,9 +250,10 @@ then
   export MAKEFLAGS=$pmake
 fi
 
-nixstartup=/usr/local/etc/profile.d/nix.sh
-[[ -e $nixstartup ]] && . $nixstartup
-unset nixstartup
+nix() {
+  local nixstartup=~/.nix-profile/etc/profile.d/nix.sh
+  [[ -e $nixstartup ]] && . $nixstartup
+}
 
 # TODO: only run the following under ansible?
 . ${^zsh_dirs}/.zsh_ssh
