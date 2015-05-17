@@ -188,8 +188,6 @@ if (( $+XAUTHLOCALHOSTNAME )) && (( ! $+XAUTHORITY )) ; then
   export XAUTHORITY=~$owner/.Xauthority
 fi
 
-run_local_versions
-
 if (( $+commands[verman] )) ; then
 _verman() { eval "$(VERMAN_EVAL=1 verman "$@")" }
 _version() {
@@ -254,6 +252,8 @@ nix() {
   local nixstartup=~/.nix-profile/etc/profile.d/nix.sh
   [[ -e $nixstartup ]] && . $nixstartup
 }
+
+run_local_versions
 
 # TODO: only run the following under ansible?
 . ${^zsh_dirs}/.zsh_ssh
