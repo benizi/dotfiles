@@ -48,6 +48,9 @@ zsh_dirs=( $zshenv(+A:h) ${zshenv:h}/.zsh )
 [[ $owner != $USER ]] && zsh_dirs+=( ~$owner/.zsh )
 zsh_dirs=( ${^zsh_dirs}{,.local}(N/) )
 ZDOTDIR=( $zshenv(+A:h) ) && ZDOTDIR=$ZDOTDIR[1]
+if [[ $ZDOTDIR != $zshenv(:h) ]] && [[ $ZDOTDIR = */dotfiles/* ]]
+then dotfiles=$ZDOTDIR:h
+fi
 
 setup_autoloads() {
   local fn dir
