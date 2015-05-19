@@ -216,7 +216,7 @@ unset GVM_OVERLAY_PREFIX GVM_PATH_BACKUP GVM_ROOT
 unset VERMAN_GO_ROOT
 unset VERMAN_GO_VERSIONS
 
-_version go go1.3.3
+_version go go1.4.1
 fi
 
 leapd() {
