@@ -254,6 +254,3 @@ nix() {
 }
 
 run_local_versions
-
-# TODO: only run the following under ansible?
-. ${^zsh_dirs}/.zsh_ssh
