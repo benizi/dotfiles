@@ -37,7 +37,6 @@ check_config_exists_graphical() {
     .vimrc
     .zshenv
     bin
-    perl-lib
   )
 
   map check_config_exists $configs

@@ -162,7 +162,7 @@ tied_export () {
 (( UID )) && umask 077 || umask 022
 export WORDCHARS='*?_-.[]~&;!#$%^(){}<>'
 eval "$(tied_export PERL5LIB)"
-if_exists perl5lib ~$owner/perl-lib ~$owner/Usable
+if_exists perl5lib $dotfiles/perl-lib ~$owner/Usable
 eval "$(tied_export LD_LIBRARY_PATH)"
 if_exists ld_library_path ~$owner/lib $ld_library_path
 eval "$(tied_export CLASSPATH)"
