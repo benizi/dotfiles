@@ -202,7 +202,7 @@ _version() {
 }
 
 _version erlang 17.0
-_version elixir v1.0.0
+_version elixir v1.0.4
 _version node v0.10.33
 _version ruby 2.1.1
 _version rust 1.0.0
