@@ -205,7 +205,7 @@ _version erlang 17.0
 _version elixir v1.0.0
 _version node v0.10.33
 _version ruby 2.1.1
-_version rust 0.12.0-pre-nightly-2014-07-27
+_version rust 1.0.0
 
 path=( ${path:#/opt/gvm*} )
 ld_library_path=( ${ld_library_path:#/opt/gvm*} )
