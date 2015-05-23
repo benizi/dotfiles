@@ -31,8 +31,6 @@ URxvt.keysym.4-equal: command:\033]777;font-switch;up\007
 
 ! Perl extensions:
 URxvt*perl-ext-common: default,font-switch
-! TODO: hard-coded path
-URxvt*perl-lib: /home/bhaskell/.urxvt
 
 ! Allow terminal bracketed paste sequences:
 URxvt.insecure: true
