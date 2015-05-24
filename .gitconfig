@@ -11,6 +11,8 @@
 	chainreplyto = no
 [merge]
 	tool = vimdiff
+[mergetool]
+	writeToTemp = true
 [push]
 	default = tracking
 [rebase]
