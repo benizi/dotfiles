@@ -1,1 +1,2 @@
 /db/schema.rb merge=railsschema
+*.encrypted.js filter=encryptedjs
