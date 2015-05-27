@@ -192,31 +192,31 @@ if (( $+XAUTHLOCALHOSTNAME )) && (( ! $+XAUTHORITY )) ; then
 fi
 
 if (( $+commands[verman] )) ; then
-_verman() { eval "$(VERMAN_EVAL=1 verman "$@")" }
-_version() {
-  local lang=$1 version=$2
-  local var=${lang}_version
-  (( $+3 )) || (( ! $+parameters[$var] )) || [[ ${(P)var} = $version ]] || return 0
-  _verman $lang use $version
-  export ${lang}_version
-}
+  _verman() { eval "$(VERMAN_EVAL=1 verman "$@")" }
+  _version() {
+    local lang=$1 version=$2
+    local var=${lang}_version
+    (( $+3 )) || (( ! $+parameters[$var] )) || [[ ${(P)var} = $version ]] || return 0
+    _verman $lang use $version
+    export ${lang}_version
+  }
 
-_version erlang 17.0
-_version elixir v1.0.4
-_version node v0.10.33
-_version ruby 2.1.1
-_version rust 1.0.0
+  _version erlang 17.0
+  _version elixir v1.0.4
+  _version node v0.10.33
+  _version ruby 2.1.1
+  _version rust 1.0.0
 
-path=( ${path:#/opt/gvm*} )
-ld_library_path=( ${ld_library_path:#/opt/gvm*} )
-pkg_config_path=( ${pkg_config_path:#/opt/gvm*} )
-unset gvm_go_name gvm_pkgset_name
-unset GOPATH GOROOT
-unset GVM_OVERLAY_PREFIX GVM_PATH_BACKUP GVM_ROOT
-unset VERMAN_GO_ROOT
-unset VERMAN_GO_VERSIONS
+  path=( ${path:#/opt/gvm*} )
+  ld_library_path=( ${ld_library_path:#/opt/gvm*} )
+  pkg_config_path=( ${pkg_config_path:#/opt/gvm*} )
+  unset gvm_go_name gvm_pkgset_name
+  unset GOPATH GOROOT
+  unset GVM_OVERLAY_PREFIX GVM_PATH_BACKUP GVM_ROOT
+  unset VERMAN_GO_ROOT
+  unset VERMAN_GO_VERSIONS
 
-_version go go1.4.1
+  _version go go1.4.1
 fi
 
 leapd() {
