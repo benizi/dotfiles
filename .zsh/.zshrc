@@ -177,7 +177,7 @@ cd_env() {
 }
 chpwd_functions+=( cd_env )
 
-if (( $+functions[_verman] )) ; then
+if (( $+functions[_version] )) ; then
   auto_version() {
     local v
     if [[ -f .ruby-version ]] ; then
