@@ -192,6 +192,7 @@ if (( $+XAUTHLOCALHOSTNAME )) && (( ! $+XAUTHORITY )) ; then
 fi
 
 if (( $+commands[verman] )) ; then
+  fpath=( $commands[verman]:h:h/zsh $fpath )
   verman_eval() { eval "$(VERMAN_EVAL=1 verman "$@")" }
   _version() {
     local lang=$1 version=$2
