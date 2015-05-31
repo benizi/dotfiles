@@ -202,7 +202,7 @@ if (( $+commands[verman] )) ; then
     export ${lang}_version
   }
 
-  _version erlang 17.0
+  _version erlang 17.5.1
   _version elixir v1.0.4
   _version node v0.10.33
   _version ruby 2.1.1
