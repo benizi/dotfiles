@@ -197,9 +197,13 @@ if (( $+commands[verman] )) ; then
   _version() {
     local lang=$1 version=$2
     local var=${lang}_version
-    (( $+3 )) || (( ! $+parameters[$var] )) || [[ ${(P)var} = $version ]] || return 0
+    [[ ${(P)var} == $version ]] && return 0
+    if (( $+parameters[$var] )) && [[ $parameters[$var] = *-export ]]
+    then
+      [[ -o interactive ]] && [[ -t 1 ]] && warn "Not overriding exported $var"
+      return 1
+    fi
     verman_eval $lang use $version
-    export ${lang}_version
   }
 
   _version erlang 17.5.1
