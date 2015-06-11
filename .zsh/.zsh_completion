@@ -76,4 +76,4 @@ _push-upstream() {
   _git-branch -d "$@"
 }
 compdef {_,}push-upstream
-compdef verman_eval=verman
+(( $+functions[verman_eval] )) && compdef verman_eval=verman
