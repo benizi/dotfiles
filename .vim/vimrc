@@ -143,7 +143,10 @@ let g:Powerline_cache_enabled = 0
 " default 2-space tabstops, no actual tab chars
 se noet sts=2 ts=2 sw=2
 set list listchars=tab:\ \ ,trail:·
-se nowrap cc=80,120
+se nowrap
+if exists('+cc')
+	se cc=80,120
+endif
 if $TERM =~ 'rxvt' || $TERM =~ 'xterm'
 	set mouse=a
 endif
