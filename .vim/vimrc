@@ -201,11 +201,13 @@ filetype plugin indent on
 syntax enable
 syntax sync maxlines=2000
 
-" no maximum syntax column, but only if the first line isn't long
+" no maximum syntax column, but only if there are no really long lines
 aug NoMaxSyntaxLength
 	au!
-	au BufReadPre * let &l:smc = 3000
-	au BufRead * let &l:smc = len(getline(1)) < 3000 ? 0 : 3000
+	au BufReadPre * let &l:smc = 100
+	au BufRead *
+		\ let b:maxline = max(map(range(1,line('$')), 'len(getline(v:val))')) |
+		\ let &l:smc = b:maxline > 5000 ? 100 : 0
 aug END
 
 set foldmethod=marker
