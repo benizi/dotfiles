@@ -53,16 +53,25 @@ fun! BundleActivateDir(dir)
 	call AddToRtp(a:dir)
 endf
 
-if !executable('stat')
-	call s:SetupFailed('Cannot execute "stat" command')
-	finish
-end
+" Run a file test portably
+fun! SysTest(op, file)
+	cal system('test '.a:op.' '.shellescape(expand(a:file)))
+	return !v:shell_error
+endf
+
+" Print a file's owner's username portably
+fun! FileOwner(file)
+	let e = 'chomp($_ = <>); print +(getpwuid((stat)[4]))[0]'
+	return split(system('perl -lwe '.shellescape(e), expand(a:file)), "\n")[0]
+endf
 
 let g:vimrc = expand('<sfile>')
 let g:abs_path = vimrc
 let g:owner_home = '~'
-let g:owner_home .= split(system('stat -L -c %U '.shellescape(vimrc)))[0]
-if system('stat -c %F '.shellescape(vimrc)) =~ 'link'
+if !SysTest('-O', vimrc)
+	let g:owner_home .= FileOwner(vimrc)
+end
+if SysTest('-L', vimrc)
 	let link = split(system('readlink '.shellescape(vimrc)), "\n")[0]
 	let g:abs_path = substitute(vimrc, '[^/]\+$', link, '')
 	let g:abs_path = substitute(g:abs_path, '^.\+//', '/', '')
