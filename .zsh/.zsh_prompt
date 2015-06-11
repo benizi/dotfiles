@@ -175,6 +175,9 @@ __setup_prompt () {
   (( $+ruby_version )) && add.top_row k:88 $ruby_version
   (( $+node_version )) && add.top_row k:128 ${node_version#v}
   (( $+go_version )) && add.top_row k:166 ${go_version#go}
+  (( $+erlang_version )) && add.top_row k:88 $erlang_version
+  (( $+elixir_version )) && add.top_row k:93 ${elixir_version#v}
+  (( $+rust_version )) && add.top_row k:130 ${rust_version#v}
   add.top_row k:22 $virtenv_info
   (( $+socks )) && add.top_row k:22 "socks:$socks"
   (( $+x11 )) && add.top_row k:27 "display $x11"
