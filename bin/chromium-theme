@@ -204,6 +204,7 @@ create_theme() {
     "import_bookmarks": false,
     "create_all_shortcuts": false,
     "custom_chrome_frame": false,
+    "check_default_browser": false,
     "make_chrome_default": false
   },
   "extensions": {
