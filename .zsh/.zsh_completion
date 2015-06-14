@@ -77,3 +77,4 @@ _push-upstream() {
 }
 compdef {_,}push-upstream
 (( $+functions[verman_eval] )) && compdef verman_eval=verman
+[[ -e $OPAMROOT ]] && . $OPAMROOT/opam-init/complete.zsh
