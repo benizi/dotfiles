@@ -1,5 +1,5 @@
 #!/bin/sh
-hash clip 2>/dev/null && test -t 1 && cmd=clip || cmd=cat
+hash clip 2>/dev/null && ! test -p /dev/stdout && cmd=clip || cmd=cat
 if (( $# ))
 then printf '(ﾉಥ益ಥ）ﾉ ┻━┻'
 else printf '(╯°□°)╯︵ ┻━┻'
