@@ -1,0 +1,63 @@
+#!/bin/sh
+
+usage() {
+  local prog=${0##*/}
+  cat <<USAGE
+Usage: $prog file1 file2 [.ext] program [args]
+
+Edit two files in vimdiff, but pass them through a filter first.
+
+[.ext] allows you to specify an extension for the temp files that are created.
+(It must include the leading \`.\`) By default, it will be derived from the
+input files.
+
+E.g., diff two single-line JSON files, but pretty-printed with `jq`:
+  $prog /tmp/profile{1,2}/Default/Preferences .json jq -r .
+USAGE
+}
+
+die() {
+  usage
+  exit 1
+}
+
+test $# -gt 2 || die
+
+set -e
+
+# Input files
+a=$1
+b=$2
+shift 2
+test -n "$a"
+test -n "$b"
+
+# Next argument can specify an extension
+if expr "$1" : '\.' > /dev/null
+then
+  ax=${1#?}
+  bx=${1#?}
+  shift
+else
+  ax=${a##*/}
+  ax=${ax##*.}
+  bx=${b##*/}
+  bx=${bx##*.}
+fi
+
+rmtempfiles() {
+  for file
+  do
+    if test -n "$file"
+    then rm "$file"
+    fi
+  done
+}
+trap 'rmtempfiles "$ta" "$tb"' EXIT INT HUP QUIT KILL
+ta="$(mktemp ${TMPDIR:-/tmp}/vimdiff-map.XXXXXXXXXX.a.$ax)"
+tb="$(mktemp ${TMPDIR:-/tmp}/vimdiff-map.XXXXXXXXXX.b.$bx)"
+
+"$@" "$a" > "$ta"
+"$@" "$b" > "$tb"
+
+vimdiff "$ta" "$tb"
