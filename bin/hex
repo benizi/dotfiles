@@ -1,0 +1,16 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use bytes;
+
+my $block = 0;
+@ARGV = grep { !(
+  /^(?:-b|--block)(?:=(\d+))?$/ ? ($block = $1 || 16) :
+0) } @ARGV;
+
+$/ = \1;
+while (<>) {
+  print ' ' if $block and $. % $block != 1;
+  printf '%02x', ord;
+  print "\n" if eof or ($block and not $. % $block);
+}
