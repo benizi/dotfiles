@@ -31,6 +31,10 @@ for arg ; do
 	esac
 done
 
+run() {
+	${dry+echo} "$@"
+}
+
 if (( $toggle )) ; then
 	if xrandr | awk '/[*]/ { total++ } END { exit total == 1 ? 0 : 1 }'
 	then exec $0 --no-toggle
@@ -114,7 +118,7 @@ fi
 
 if (( $+cycle )) ; then
 	for output in $outputs ; do
-		${dry+echo} xrandr --output $output --off
+		run xrandr --output $output --off
 	done
 fi
 
@@ -124,4 +128,4 @@ fi
 for mon in $deactivate ; do
 	cmd+=( --output $mon --off )
 done
-${dry+echo} $cmd
+run $cmd
