@@ -129,3 +129,4 @@ for mon in $deactivate ; do
 	cmd+=( --output $mon --off )
 done
 run $cmd
+run xinput map-to-output 'ELAN Touchscreen' $int 2>/dev/null || true
