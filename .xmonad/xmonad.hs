@@ -36,7 +36,7 @@ import XMonad.Layout.Renamed (renamed, Rename(CutWordsLeft))
 import XMonad.Layout.Simplest
 import XMonad.Layout.Tabbed (addTabs)
 
-import System.Environment.FindBin
+import System.Directory (getHomeDirectory)
 import GHC.IO.Handle.Types (Handle)
 
 import qualified XMonad.StackSet as W
@@ -498,8 +498,8 @@ myStartupHook = ewmhDesktopsStartup
 -- Run xmonad with the settings you specify. No need to modify this.
 --
 main = do
-    xmonadDir <- getProgPath
-    statusproc <- spawnPipe $ statusBarProc xmonadDir
+    homeDir <- getHomeDirectory
+    statusproc <- spawnPipe $ statusBarProc (homeDir ++ "/.xmonad")
     barPid <- spawnPID $ "status '" ++ statusColorNormalFG ++ "' '" ++ statusColorBG ++ "'"
                    ++ " | dzen2 -ta r -w 900 -x -964 -fn 'DejaVu Sans Mono'"
                    ++ " -fg '" ++ statusColorNormalFG ++ "' -bg '" ++ statusColorBG ++ "'"
