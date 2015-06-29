@@ -280,20 +280,22 @@ modsMouseBindings (ms, b, f) = map (\m -> ((m, b), f)) $ ms
 myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
     concat $ map modsMouseBindings $
     -- mod-button1, Set the window to floating mode and move by dragging
-    [ ([modm, mod1Mask], button1, (\w -> focus w >> mouseMoveWindow w))
-    , ([modm, mod1Mask], button2, (\w -> focus w >> windows W.shiftMaster))
+    [ (mainmods, button1, (\w -> focus w >> mouseMoveWindow w))
+    , (mainmods, button2, (\w -> focus w >> windows W.shiftMaster))
 
     -- mod-button3, Set the window to floating mode and resize by dragging
-    , ([modm, mod1Mask], button3, (\w -> focus w >> mouseResizeWindow w))
+    , (mainmods, button3, (\w -> focus w >> mouseResizeWindow w))
 
     -- alt + scroll = workspace up/down
-    , ([modm, mod1Mask], button4, (\w -> windowUp))
-    , ([modm, mod1Mask], button5, (\w -> windowDown))
+    , (mainmods, button4, (\w -> windowUp))
+    , (mainmods, button5, (\w -> windowDown))
 
     -- Win + scroll = window/tab up/down
     , ([mod4Mask], button4, (\w -> moveTo Prev NonEmptyWS))
     , ([mod4Mask], button5, (\w -> moveTo Next NonEmptyWS))
     ]
+        where
+            mainmods = [modm, mod1Mask]
 
 ------------------------------------------------------------------------
 -- Layouts:
