@@ -41,6 +41,15 @@ fun! ResetSpacingErrors(...)
 	let w:spacing_match_groups = []
 endf
 
+fun! ToggleSpacingErrors()
+	if exists('w:spacing_match_groups') && len(w:spacing_match_groups)
+		cal ResetSpacingErrors()
+	else
+		cal HighlightSpacingErrors()
+	end
+endf
+com! ToggleSpacingErrors cal ToggleSpacingErrors()
+
 fun! SetInModeline(var)
 	redir => last_set
 	exe "silent! verbose set ".a:var."?"
