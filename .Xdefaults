@@ -1,5 +1,5 @@
 ! Usually installed, and has the best `l/i/I` `0/O` distinctions, IMO:
-URxvt*font: xft:Bitstream Vera Sans Mono:size=10
+URxvt*font: xft:Bitstream Vera Sans Mono:size=10,xft:APL385 Unicode:size=10
 
 ! GAH. PrintScreen? Seriously? - TODO: hard-coded path
 URxvt.print-pipe: cat > /home/bhaskell/tmp/printscreen
