@@ -44,6 +44,28 @@ if (stats["SwapTotal:"]) printf(" swp:%s", report(stats["SwapTotal:"], stats["Sw
 }
 funcs+=( add-mem )
 
+toggle-middle() {
+  if (( ! epoch % 10 )) || (( ! $+togglemiddle ))
+  then
+    local trackpoints="$(xinput list --short | awk '/Lite-On/&&/TrackPoint/&&/pointer/' | sed -e 's/^.*=//' -e 's/[[:space:]].*$//' | tac | sed 1q)"
+    local id toggle
+    togglemiddle=
+    for id in ${=trackpoints}
+    do
+      if [[ "$(xinput list-props $id | awk '/Evdev Wheel Emulation/ { print $NF }' | sed 1q)" = 1 ]]
+      then toggle=0
+      else togglemiddle+='^fg(#ff9900)^bg(#ff9900)' toggle=1
+      fi
+      togglemiddle+='^ca(1,xinput set-prop '$id' "Evdev Wheel Emulation" '$toggle')'
+      (( toggle )) && togglemiddle+='^r(7x8)^p(-7)'
+      togglemiddle+='^i('${(%):-%x}'.middle.xpm)'
+      togglemiddle+='^fg()^bg()^ca()'
+    done
+  fi
+  printf '%s' $togglemiddle
+}
+funcs=( toggle-middle $funcs )
+
 setup() {
   info=()
   for fn in $funcs

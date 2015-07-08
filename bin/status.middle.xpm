@@ -1,0 +1,16 @@
+/* XPM */
+static char *middle[] = {
+"8 10 2 1",
+"X c #ffffff",
+". c None",
+"XXXXXXX.",
+"X.XXX.X.",
+"XXXXXXX.",
+"X.....X.",
+"X.....X.",
+"X.....X.",
+"X.....X.",
+"X.....X.",
+".X...X..",
+"..XXX...",
+};
