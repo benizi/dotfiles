@@ -94,7 +94,7 @@ xkb_symbols "caps-ctrl-multi" {
 
 partial alphanumeric_keys modifier_keys
 xkb_symbols "caps-group" {
-    key <CAPS> { [ ISO_Next_Group ] };
+    key <CAPS> { [ Mode_switch ] };
 };
 
 partial alphanumeric_keys modifier_keys
