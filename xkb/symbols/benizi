@@ -93,6 +93,11 @@ xkb_symbols "caps-ctrl-multi" {
 };
 
 partial alphanumeric_keys modifier_keys
+xkb_symbols "caps-group" {
+    key <CAPS> { [ ISO_Next_Group ] };
+};
+
+partial alphanumeric_keys modifier_keys
 xkb_symbols "caps-esc" {
     replace key <CAPS> { [ Escape ] };
 };
@@ -552,9 +557,10 @@ xkb_symbols "intl-shared" {
 default partial alphanumeric_keys modifier_keys
 xkb_symbols "intl" {
     include "benizi(intl-shared)"
-    include "benizi(caps-ctrl-multi)"
+    include "benizi(caps-group)"
     include "benizi(menu-compose-latch)"
     include "benizi(ralt-mod3)"
+    include "apl(dyalog):2"
 };
 
 partial alphanumeric_keys modifier_keys
