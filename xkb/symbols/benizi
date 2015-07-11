@@ -560,7 +560,7 @@ xkb_symbols "intl" {
     include "benizi(caps-group)"
     include "benizi(menu-compose-latch)"
     include "benizi(ralt-mod3)"
-    include "apl(dyalog):2"
+    include "apl(dyalog_base):2"
 };
 
 partial alphanumeric_keys modifier_keys
