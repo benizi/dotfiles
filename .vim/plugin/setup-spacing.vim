@@ -160,8 +160,15 @@ fun! SetupSpacingAutocmd()
 	aug SetupSpacing
 		au!
 		au BufWinEnter * call SetupSpacing()
+		au Filetype * call ConditionallyHighlightSpacingErrors()
 	aug END
 endfun
+
+fun! ConditionallyHighlightSpacingErrors()
+	if !get(get(g:, 'setup_spacing_ignore_whitespace', {}), &ft, 0)
+		cal HighlightSpacingErrors()
+	end
+endf
 
 fun! SetupSpacing(...)
 	if exists('b:setup_spacing') && !a:0
@@ -177,7 +184,6 @@ fun! SetupSpacing(...)
 		let type = (a:1 ? 'tabbed' : 'spaced')
 		if exists('g:setup_spacing_default_{type}')
 			call call('SetupTabstop', g:setup_spacing_default_{type})
-			call HighlightSpacingErrors()
 		endif
 		return
 	endif
@@ -224,6 +230,5 @@ fun! SetupSpacing(...)
 	endfor
 	if len(params)
 		call call('SetupTabstop', params)
-		call HighlightSpacingErrors()
 	endif
 endfun
