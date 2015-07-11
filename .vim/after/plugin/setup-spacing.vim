@@ -4,4 +4,7 @@ let g:setup_spacing_filetypes = {
 \ 'python': [4,1],
 \ }
 let g:setup_spacing_default = [2,1]
+let g:setup_spacing_ignore_whitespace = {
+\ 'xkb': 1,
+\ }
 call SetupSpacingAutocmd()
