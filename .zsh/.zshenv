@@ -254,3 +254,10 @@ nix() {
 }
 
 run_local_versions
+
+# Use local SSH agent under Ansible when not forwarding
+if (( $+TERM && $+SSH_CONNECTION )) &&
+  (( ! $+SSH_AUTH_SOCK && ! $+SSH_AGENT_PID )) &&
+  [[ ! -o interactive ]]
+then . ${^zsh_dirs}/.zsh_ssh(N) &> /dev/null
+fi
