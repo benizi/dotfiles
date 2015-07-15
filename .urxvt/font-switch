@@ -15,7 +15,7 @@ sub on_osc_seq_perl {
 
 	for my $action (split /;/, $seq) {
 		if ($action eq 'reset') {
-			@fonts = $$self{font_switch_original};
+			@fonts = split /,/, $$self{font_switch_original};
 		} else {
 			my ($abs, $scale) =
 				($action =~ /size=(\d+)/) ? (1, $1) :
