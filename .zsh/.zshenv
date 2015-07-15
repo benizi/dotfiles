@@ -228,13 +228,8 @@ preso_file=~$owner/presentation
 setup_preso() {
   local size=0 force=${1:-false}
   [[ $TERM = *rxvt* ]] || return
-
-  : ${preso_font="Bitstream Vera Sans Mono"}
-  [[ -f $preso_file ]] && size=${preso_large:-18} || size=${preso_normal:-11}
-
-  if (( size )) ; then
-    printf '\e]710;xft:%s:size=%d\a' $preso_font $size
-  fi
+  [[ -f $preso_file ]] && size=${preso_large:-18}
+  if (( size )) ; then printf '\e]777;font-switch;reset;size=%d\a' $size ; fi
 }
 
 if (( $+zsh_start_timing )) ; then
