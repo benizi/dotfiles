@@ -50,6 +50,7 @@ verb call BundleActivateDir($HOME.'/git/forever-inc/forever-tools/vim')
 
 Plugin 'derekwyatt/vim-scala'
 Plugin 'cespare/vim-toml'
+Plugin 'benizi/vim-apl'
 
 finish " God DAMMIT Tim Pope...
 " Clojure
