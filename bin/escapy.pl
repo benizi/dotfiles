@@ -5,7 +5,7 @@ $|=1;
 #use open ':utf8', ':std';
 use bytes;
 use MIME::Base64 qw/encode_base64 decode_base64/;
-use Digest::SHA1 qw/sha1_hex sha1_base64/;
+use Digest::SHA qw/sha1_hex sha1_base64/;
 use Digest::MD5 qw/md5_hex md5_base64/;
 use URI::Escape qw/uri_escape_utf8 uri_unescape/;
 use Encode;
