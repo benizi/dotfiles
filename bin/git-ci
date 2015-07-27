@@ -1,0 +1,29 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use POSIX 'strftime';
+
+my $uselatest = $0 =~ /cit$/;
+@ARGV = grep {!(
+  /^--modified/ ? ($uselatest = 1) :
+0)} @ARGV;
+
+my @times;
+
+my @changed = grep length, split /\x00/, qx{git diff -z --cached --name-only};
+my @files = (@ARGV, @changed);
+
+push @times, map +(stat)[9], grep -f, @files;
+chdir $ENV{GIT_PREFIX} if $ENV{GIT_PREFIX};
+push @times, map +(stat)[9], grep -f, @files;
+
+# git commit --all
+push @times, map +(stat)[9], split /\x00/, qx{git ls-files -z -m} unless @times;
+
+if ($uselatest) {
+  my $tz = strftime "%z", localtime;
+  my $latest = (sort { $b <=> $a } @times)[0] || time;
+  $ENV{$_} = "$latest $tz" for qw/GIT_AUTHOR_DATE GIT_COMMITTER_DATE/;
+}
+system { 'git' } 'git', 'check-email';
+system { 'git' } 'git', 'commit', @ARGV;
