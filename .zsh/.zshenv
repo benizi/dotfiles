@@ -98,8 +98,7 @@ setup_term () {
 }
 [[ $TERM = 9term ]] || setup_term
 
-unset hi_color
-(( $+terminfo[colors] )) && (( $terminfo[colors] > 8 )) && hi_color=true
+(( ${terminfo[colors]:-8} > 8 )) && hi_color=true || unset hi_color
 
 typeset -U path
 function () {
