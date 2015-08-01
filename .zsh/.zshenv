@@ -98,7 +98,10 @@ setup_term () {
 }
 [[ $TERM = 9term ]] || setup_term
 
-(( ${terminfo[colors]:-8} > 8 )) && hi_color=true || unset hi_color
+if zmodload -F -e zsh/terminfo +p:terminfo && (( $terminfo[colors] > 8 ))
+then hi_color=true
+else unset hi_color
+fi
 
 typeset -U path
 function () {
