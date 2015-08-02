@@ -561,6 +561,7 @@ xkb_symbols "intl" {
     include "benizi(menu-compose-latch)"
     include "benizi(ralt-mod3)"
     include "benizi(gnu-apl):2"
+    include "benizi(fix-fn-keys)"
 };
 
 partial alphanumeric_keys modifier_keys
@@ -652,4 +653,20 @@ xkb_symbols "gnu-apl" {
   include "apl(dyalog_base)"
   key <AD02> { [ U2375, U2379 ] }; // w = ⍵ ⍹
   key <AC01> { [ U237A, U2376 ] }; // a = ⍺ ⍶
+};
+
+partial alphanumeric_keys
+xkb_symbols "fix-fn-keys" {
+  key <FK13> { [ F13 ] };
+  key <FK14> { [ F14 ] };
+  key <FK15> { [ F15 ] };
+  key <FK16> { [ F16 ] };
+  key <FK17> { [ F17 ] };
+  key <FK18> { [ F18 ] };
+  key <FK19> { [ F19 ] };
+  key <FK20> { [ F20 ] };
+  key <FK21> { [ F21 ] };
+  key <FK22> { [ F22 ] };
+  key <FK23> { [ F23 ] };
+  key <FK24> { [ F24 ] };
 };
