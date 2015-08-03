@@ -1,19 +1,30 @@
 #!/bin/zsh
 
-devices=(
-  $(xinput list |
-    awk -F= '/Trackpad.*pointer/ || /AT.*keyboard.*keyboard/ { print $2 }' |
-    awk '{ print $1 }')
+external='/ThinkPad USB Keyboard/'
+internal=(
+  '/Synaptics.TouchPad/'
+  '/TPPS.*TrackPoint/'
+  '/ThinkPad Extra Buttons/'
+  '/AT Translated Set 2 keyboard/'
 )
 
-any_enabled=0
-for device in $devices ; do
-  enabled=$(xinput list-props $device | awk '/Device Enabled/ { print $NF }')
-  (( any_enabled += enabled ))
-done
+device_id() { xinput list | awk -F'[=\t]' "$1"' {print $3;exit}' }
 
-(( any_enabled )) && action=disable || action=enable
+is_active() {
+  local id="$(device_id "$1")"
+  test -n $id && xinput list-props $1 2>/dev/null | grep Device.Enabled | grep -q '1$'
+}
 
-for device in $devices ; do
-  xinput $action $device
+if ! is_active $external
+then action=enable
+else
+  any_enabled=false
+  for device in $internal
+  do is_active $device && any_enabled=true
+  done
+  $any_enabled && action=disable || action=enable
+fi
+
+for device in $internal
+do xinput $action "$(device_id $device)" 2>/dev/null
 done
