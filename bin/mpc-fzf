@@ -1,0 +1,5 @@
+#!/bin/sh
+track="$(mpc playlist | nl | fzf +s -i | awk '{print$1}')"
+if test -n "$track"
+then mpc play $track
+fi
