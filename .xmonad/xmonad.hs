@@ -161,13 +161,11 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((0, xF86XK_Display), spawn "montoggle")
     , ((shiftMask, xF86XK_Display), spawn "mon --cycle")
 
-    ---- xmms2
-    , ((0,                  xF86XK_AudioPlay), spawn "nyxmms2 play")
-    , ((shiftMask,          xF86XK_AudioPlay), spawn "nyxmms2 pause")
-    , ((0,                  xF86XK_AudioStop), spawn "nyxmms2 stop")
-    , ((shiftMask,          xF86XK_AudioStop), spawn "nyxmms2 quit")
-    , ((0,                  xF86XK_AudioNext), spawn "nyxmms2 next")
-    , ((0,                  xF86XK_AudioPrev), spawn "nyxmms2 prev")
+    ---- mpd
+    , ((0, xF86XK_AudioPlay), spawn "mpc toggle")
+    , ((0, xF86XK_AudioStop), spawn "mpd --kill")
+    , ((0, xF86XK_AudioNext), spawn "mpc next")
+    , ((0, xF86XK_AudioPrev), spawn "mpc prev")
     , ((0, xF86XK_AudioMute), spawn "toggle-pulse-mute")
     , ((0, xF86XK_AudioLowerVolume), spawn "pavucontrol")
 
