@@ -1,4 +1,10 @@
 #!/bin/sh
 output=$(xrandr | awk '/ connected/ { print $1 ; exit }')
-input="$(xinput list | awk -F= '/Touchscreen/ { print $2 }' | cut -f1)"
-test -z "$input" || xinput map-to-output $input $output
+
+map() {
+  for input
+  do xinput map-to-output $input $output
+  done
+}
+
+map $(xinput list | awk -F'[\\t=]' '/Touchscreen|PenTablet/ && /pointer/ { print $3 }')
