@@ -3,9 +3,10 @@ use strict;
 use warnings;
 use POSIX 'strftime';
 
-my $uselatest = $0 =~ /cit$/;
+my $author = $0 =~ /cit$/;
+my $commit = 0;
 @ARGV = grep {!(
-  /^--modified/ ? ($uselatest = 1) :
+  /^--both/ ? ($commit = 1) :
 0)} @ARGV;
 
 my @times;
@@ -20,10 +21,11 @@ push @times, map +(stat)[9], grep -f, @files;
 # git commit --all
 push @times, map +(stat)[9], split /\x00/, qx{git ls-files -z -m} unless @times;
 
-if ($uselatest) {
-  my $tz = strftime "%z", localtime;
-  my $latest = (sort { $b <=> $a } @times)[0] || time;
-  $ENV{$_} = "$latest $tz" for qw/GIT_AUTHOR_DATE GIT_COMMITTER_DATE/;
-}
+my $tz = strftime "%z", localtime;
+my $latest = (sort { $b <=> $a } @times)[0] || time;
+
+my %enabled = (GIT_AUTHOR_DATE => $author, GIT_COMMITTER_DATE => $commit);
+$ENV{$_} = "$latest $tz" for grep $enabled{$_}, keys %enabled;
+
 system { 'git' } 'git', 'check-email';
 system { 'git' } 'git', 'commit', @ARGV;
