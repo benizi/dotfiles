@@ -24,3 +24,6 @@ log/newrelic*
 
 # version manager files
 .*-version
+
+# Compiled Python files
+*.pyc
