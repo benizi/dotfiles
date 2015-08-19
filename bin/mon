@@ -122,6 +122,13 @@ if (( $+cycle )) ; then
 	done
 fi
 
+key=${(j:_:)outputs}
+if (( $+parameters[$key] )) && (( ! $+no_ext ))
+then
+	run ${(P)key}
+	exit $?
+fi
+
 (( $+fb )) && cmd[2,1]=( --fb $fb )
 (( $+scale )) && cmd+=( --scale $scale )
 
