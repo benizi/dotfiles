@@ -1,2 +1,2 @@
 #!/bin/sh
-exec java -Xmx1024M -Xms512M -cp $HOME/Downloads/minecraft.jar
+exec java -Xmx1024M -Xms512M -jar $HOME/Downloads/minecraft.jar
