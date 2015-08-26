@@ -3,7 +3,31 @@
 typeset -a info funcs
 
 add-bat() {
-  battery -p
+  local plugged levels sum avg l bg
+  battery -p | read plugged levels
+  sum=0
+  for l in ${=levels}
+  do (( sum += l ))
+  done
+  (( avg = sum / ${#${=levels}} ))
+
+  if $plugged
+  then
+    if (( avg < 40 ))
+    then bg=996633
+    else bg=009900
+    fi
+  else
+    if (( avg < 10 ))
+    then bg=ff3333
+    elif (( avg < 30 ))
+    then bg=ff9933
+    elif (( avg < 60 ))
+    then bg=666633
+    else bg=009900
+    fi
+  fi
+  printf '^fg(#ffffff)^bg(#%s)%s %s^fg()^bg()' $bg $plugged $levels
 }
 funcs+=( add-bat )
 
