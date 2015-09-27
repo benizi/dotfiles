@@ -1,5 +1,6 @@
 (defvar early-packages
   '(
+    anything
     auto-complete
     cider
     clojure-mode
