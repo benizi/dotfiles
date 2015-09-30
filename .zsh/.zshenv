@@ -196,7 +196,7 @@ fi
 if (( $+commands[verman] )) ; then
   fpath=( $commands[verman]:h:h/zsh $fpath )
   verman_eval() { eval "$(VERMAN_EVAL=1 verman "$@")" }
-  _version() {
+  _verman_use() {
     local lang=$1 version=$2
     local var=${lang}_version
     [[ ${(P)var} == $version ]] && return 0
@@ -206,6 +206,15 @@ if (( $+commands[verman] )) ; then
       return 1
     fi
     verman_eval $lang use $version
+  }
+  _version() {
+    local lang=$1 version=$2
+    local home=${lang}_home
+    _verman_use $lang $version
+    [[ -e ${(P)home} ]] && return 0
+    local latest=$(verman $lang installed | sed -n '$p')
+    [[ -z $latest ]] && return 1
+    _verman_use $lang $latest
   }
 
   _version erlang 17.5.1
