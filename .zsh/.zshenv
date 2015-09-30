@@ -214,6 +214,7 @@ if (( $+commands[verman] )) ; then
     [[ -e ${(P)home} ]] && return 0
     local latest=$(verman $lang installed | sed -n '$p')
     [[ -z $latest ]] && return 1
+    [[ -o interactive ]] && [[ -t 1 ]] && warn "$lang $latest (wanted $version)"
     _verman_use $lang $latest
   }
 
