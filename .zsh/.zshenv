@@ -196,14 +196,16 @@ fi
 if (( $+commands[verman] )) ; then
   fpath=( $commands[verman]:h:h/zsh $fpath )
   verman_eval() { eval "$(VERMAN_EVAL=1 verman "$@")" }
+  _interactive_warn() {
+    if [[ -o interactive ]] && [[ -t 1 ]] ; then warn "$@" ; fi
+    return 1
+  }
   _verman_use() {
     local lang=$1 version=$2
     local var=${lang}_version
     [[ ${(P)var} == $version ]] && return 0
     if (( $+parameters[$var] )) && [[ $parameters[$var] = *-export ]]
-    then
-      [[ -o interactive ]] && [[ -t 1 ]] && warn "Not overriding exported $var"
-      return 1
+    then return $(_interactive_warn "Not overriding exported $var")
     fi
     verman_eval $lang use $version
   }
@@ -213,8 +215,10 @@ if (( $+commands[verman] )) ; then
     _verman_use $lang $version
     [[ -e ${(P)home} ]] && return 0
     local latest=$(verman $lang installed | sed -n '$p')
-    [[ -z $latest ]] && return 1
-    [[ -o interactive ]] && [[ -t 1 ]] && warn "$lang $latest (wanted $version)"
+    if [[ -z $latest ]]
+    then return $(_interactive_warn "Not overriding exported $var")
+    else _interactive_warn "$lang $latest (wanted $version)"
+    fi
     _verman_use $lang $latest
   }
 
