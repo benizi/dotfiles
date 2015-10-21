@@ -216,4 +216,14 @@ zle-line-init() {
   unset ZLE_LINE_ABORTED
 }
 
+# Ctrl+N -> launch new chrom(e|ium) if line is blank
+zle-chromium-or-down-line() {
+  if test -z $BUFFER
+  then chromium --new-window &>/dev/null &!
+  else zle down-line-or-history
+  fi
+}
+zle -N zle-chromium-or-down-line
+bindkey '^N' zle-chromium-or-down-line
+
 load-namedirs --quiet
