@@ -211,7 +211,7 @@ bindkey '^[[2;5~' zle-clip-line
 # copy interrupted lines to the yank ring
 zle-line-init() {
   if [[ -n $ZLE_LINE_ABORTED ]]
-  then zle copy-region-as-kill $ZLE_LINE_ABORTED
+  then zle copy-region-as-kill -- $ZLE_LINE_ABORTED
   fi
   unset ZLE_LINE_ABORTED
 }
