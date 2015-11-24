@@ -209,11 +209,30 @@ bindkey '^[[2^' zle-clip-line
 bindkey '^[[2;5~' zle-clip-line
 
 # copy interrupted lines to the yank ring
-zle-line-init() {
+zle-copy-interrupted() {
   if [[ -n $ZLE_LINE_ABORTED ]]
   then zle copy-region-as-kill -- $ZLE_LINE_ABORTED
   fi
   unset ZLE_LINE_ABORTED
+}
+
+# Set up bracketed paste mode in terminals that handle it
+if [[ $TERM == (rxvt-unicode*|xterm*) ]]
+then
+  enable-bracketed-paste() { printf '\e[?2004h' }
+  disable-bracketed-paste() { printf '\e[?2004l' }
+else
+  enable-bracketed-paste() {}
+  disable-bracketed-paste() {}
+fi
+
+zle-line-init() {
+  zle-copy-interrupted
+  enable-bracketed-paste
+}
+
+zle-line-finish() {
+  disable-bracketed-paste
 }
 
 load-namedirs --quiet
