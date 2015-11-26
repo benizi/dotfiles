@@ -1,5 +1,6 @@
 #!/bin/sh
-output=$(xrandr | awk '/ connected/ { print $1 ; exit }')
+: ${output=$1}
+: ${output=$(xrandr | awk '/ connected/ { print $1 ; exit }')}
 
 map() {
   for input
