@@ -2,7 +2,7 @@
 : ${disp:=':17'}
 env -u LD_PRELOAD xinit =minecraft -- Xorg $disp &
 export DISPLAY=$disp
-x-is-active -wait
+x-is-active -maxtry 10
 xclock -name blue -geometry +1920+0 &
 twm &
 display -geometry +1920+300 ~/Downloads/StandardLogicGates.png
