@@ -1,0 +1,5 @@
+rxvt-unicode-24bit|rxvt-unicode terminal with 24-bit colors (X Window System):\
+ :Co#32767:pa#32767:tc=rxvt-unicode:
+
+rxvt-unicode-24bit-super|rxvt-unicode terminal with 24-bit colors as integers (X Window System):\
+ :Co#32767:pa#32767:tc=rxvt-unicode:

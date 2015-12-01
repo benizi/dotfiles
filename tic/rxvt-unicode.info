@@ -1,0 +1,11 @@
+rxvt-unicode-24bit|rxvt-unicode terminal with 24-bit colors (X Window System),
+ colors#32767,
+ pairs#32767,
+ use=rxvt-unicode,
+
+rxvt-unicode-24bit-super|rxvt-unicode terminal with 24-bit colors as integers (X Window System),
+ colors#32767,
+ pairs#32767,
+ setaf=\E[38;8;%p1%dm,
+ setab=\E[48;8;%p1%dm,
+ use=rxvt-unicode,
