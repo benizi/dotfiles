@@ -314,11 +314,11 @@ myLayout = windowNavigation (FS.fullscreenFocus $ (myWmii ||| wmiiLike ||| Grid)
      -- Percent of screen to increment by when resizing panes
      delta   = 3/100
 
-     wmiiLike = avoidStruts $ wmii shrinkText defaultTheme
+     wmiiLike = wmii shrinkText defaultTheme
 
      -- myWmii is basically the same as stock wmii,
      -- but it defaults to tabs first
-     myWmii = avoidStruts $ group innerLayout zoomRowG
+     myWmii = group innerLayout zoomRowG
         where column = named "Column" $ Tall 0 delta ratio
               tabs = named "Tabs" $ Simplest
               innerLayout = renamed [CutWordsLeft 3]
@@ -326,6 +326,8 @@ myLayout = windowNavigation (FS.fullscreenFocus $ (myWmii ||| wmiiLike ||| Grid)
                             $ ignore NextLayout
                             $ ignore (LC.JumpToLayout "") $ unEscape
                                 $ tabs LC.||| column LC.||| Full
+
+myLayoutHook = avoidStruts myLayout
 
 ------------------------------------------------------------------------
 -- Window rules:
@@ -520,7 +522,7 @@ main = do
         mouseBindings      = myMouseBindings,
 
       -- hooks, layouts
-        layoutHook         = myLayout,
+        layoutHook         = myLayoutHook,
         manageHook         = myManageHook,
         handleEventHook    = myEventHook,
         logHook            = myLogHook statusproc,
