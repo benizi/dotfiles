@@ -552,4 +552,6 @@ fun! CleanBlankLinesOrBackspace(...)
 endf
 nn <silent> <expr> <BS> CleanBlankLinesOrBackspace()
 
+nn <silent> <C-n> :sil! !chromium >/dev/null 2>/dev/null &<CR>:redraw!<CR>
+
 run! after/vimrc
