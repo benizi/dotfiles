@@ -366,7 +366,7 @@ myManageHook = FS.fullscreenManageHook <+> manageDocks <+> composeAll
 -- return (All True) if the default handler is to be run afterwards. To
 -- combine event hooks use mappend or mconcat from Data.Monoid.
 --
-myEventHook = FS.fullscreenEventHook
+myEventHook = FS.fullscreenEventHook <+> docksEventHook
 
 ------------------------------------------------------------------------
 -- Status bars and logging
