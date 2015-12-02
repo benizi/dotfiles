@@ -16,6 +16,7 @@
     inf-ruby
     markdown-mode
     mic-paren ;; better paren matching
+    monroe ;; minimalist Clojure nREPL client
     paredit
     projectile
     python
