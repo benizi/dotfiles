@@ -1,0 +1,29 @@
+#!/bin/sh
+
+set -e +x
+
+brname=altdock
+net=10.100.100.1/24
+dns=10.100.100.1
+graph=/opt/altdocker
+pid=/var/run/altdocker.pid
+socket=unix:///var/run/altdocker.sock
+
+# Create alt bridge:
+
+if ! brctl show | grep -q $brname
+then
+  sudo brctl addbr $brname
+  sudo ip addr add $net dev $brname
+  sudo ip link set dev $brname up
+fi
+
+sudo docker daemon \
+  --bridge=$brname \
+  --graph=$graph \
+  --host=$socket \
+  --dns=$dns \
+  --storage-driver=btrfs \
+  --exec-opt native.cgroupdriver=cgroupfs \
+  --debug \
+  "$@"
