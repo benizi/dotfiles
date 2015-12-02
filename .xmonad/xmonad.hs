@@ -293,7 +293,7 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
     , ([mod4Mask], button5, (\w -> moveTo Next NonEmptyWS))
     ]
         where
-            mainmods = [modm, mod4Mask]
+            mainmods = [modm, mod1Mask]
 
 ------------------------------------------------------------------------
 -- Layouts:
