@@ -346,7 +346,6 @@ myLayoutHook = avoidStruts myLayout
 --
 myManageHook = FS.fullscreenManageHook <+> manageDocks <+> composeAll
     [ className =? "MPlayer"        --> doFloat
-    , className =? "Gimp"           --> doFloat
     , resource  =? "desktop_window" --> doIgnore
     , resource  =? "kdesktop"       --> doIgnore
     , className =? "Pinentry" --> doFloat
