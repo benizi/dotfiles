@@ -1,6 +1,7 @@
 #!/bin/sh
 format='[[%artist% - ][%album% - ][%track% - ]%title%]|[%file%]'
-track="$(mpc playlist -f "$format" | nl | fzf +s -i | awk '{print$1}')"
+current="$(mpc current -f '[[%artist% - ][%album% - ][%track% ]|[%file%]]')"
+track="$(mpc playlist -f "$format" | nl | fzf +s -i -q "$current" | awk '{print$1}')"
 if test -n "$track"
 then mpc play $track
 fi
