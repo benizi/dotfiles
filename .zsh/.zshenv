@@ -259,9 +259,10 @@ then
   export MAKEFLAGS=$pmake
 fi
 
-nix() {
-  local nixstartup=~/.nix-profile/etc/profile.d/nix.sh
+() { # set up nix
+  local nixdir=/opt/nix nixstartup=$nixdir/etc/profile.d/nix.sh
   [[ -e $nixstartup ]] && . $nixstartup
+  path=( $nixdir/bin(N) $path )
 }
 
 run_local_versions
