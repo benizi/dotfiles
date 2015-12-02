@@ -27,3 +27,6 @@ log/newrelic*
 
 # Compiled Python files
 *.pyc
+
+# Erlang crash files
+erl_crash.dump
