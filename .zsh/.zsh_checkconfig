@@ -26,7 +26,7 @@ check_config_exists_graphical() {
 }
 
 () {
-  map check_command_installed dt screen
+  map check_command_installed dt
 
   local -a configs
 
