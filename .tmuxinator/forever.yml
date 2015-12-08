@@ -1,0 +1,31 @@
+# ~/.tmuxinator/forever.yml
+name: forever
+root: ~/
+pre_window: ~f
+windows:
+  - nginx: script/nginx-local
+  - solr: 'rake sunspot:solr:run'
+  - www: [~www, rails s]
+#  - wwwz: [~www, with-external-gems zeus be zeus start]
+#  - www:
+#    - ~www
+#    - until {fuser -s .zeus.sock} {sleep 1}
+#    - zrails s
+  - store:
+      layout: main-vertical
+      panes:
+        - zeus: [~store, zeus start]
+        - store:
+          - ~store
+          - until {fuser -s .zeus.sock} {sleep 1}
+          - zrails s
+  - forever:
+      layout: main-vertical
+      panes:
+        - zeus: zeus start
+        - forever:
+          - until {fuser -s .zeus.sock} {sleep 1}
+          - zrails s
+  - sq_critical: [~f, be sidekiq -q critical -c 1]
+  - sq_photos: [~f, be sidekiq -q important -c 4]
+  - sq_rest: [~f, be sidekiq -q default -q sunspot -c 1]

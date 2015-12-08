@@ -1,0 +1,9 @@
+# ~/.tmuxinator/nginx.yml
+name: nginx
+root: ~/forever-inc/forever
+
+# Runs in each window and pane before window/pane specific commands. Useful for setting up interpreter versions.
+pre_window: ~f
+
+windows:
+  - nginx: sudo nginx -c config/nginx-with-registry.conf -p "$(pwd)"/
