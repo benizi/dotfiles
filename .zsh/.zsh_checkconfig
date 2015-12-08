@@ -34,6 +34,7 @@ check_config_exists_graphical() {
     .emacs.d
     .gitconfig
     .tmux.conf
+    .tmuxinator
     .vimrc
     .zshenv
     bin
