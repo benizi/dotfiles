@@ -1,0 +1,6 @@
+name: httproxy
+root: ~/
+windows:
+  - tproxy: 'tproxy -s 8124 -d -r nobody -p 192.168.122.1 8123'
+  - polipo: 'mkdir -p ~/.cache/polipo && polipo proxyAddress=192.168.122.1 diskCacheRoot=~/.cache/polipo idleTime=1'
+#  - dns: [~g/virt-dns, go run virt-dns.go -tld test]
