@@ -37,6 +37,8 @@ SQL
   class Postgresql < Base
     def grant
       <<SHELL
+-- Ensure we can use the dblink extension
+create extension if not exists dblink;
 -- Create User if it doesn't exist
 DO $$ BEGIN
 if not exists (select * from pg_catalog.pg_user where usename = '#{cfg.username}')
