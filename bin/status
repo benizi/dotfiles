@@ -2,6 +2,17 @@
 
 typeset -a info funcs
 
+add-term() {
+  local term
+  for term in term urxvt uxterm xterm
+  do
+    (( $+commands[$term] )) || continue
+    printf '^ca(1,%s)term^ca()' $term
+    break
+  done
+}
+funcs+=( add-term )
+
 add-bat() {
   local plugged levels sum avg l bg
   battery -p | read plugged levels
