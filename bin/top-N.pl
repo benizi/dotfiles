@@ -8,6 +8,7 @@ my $N = 23;
 GetOptions(
 	'N=i' => \$N,
 	'samedev' => \(my $samedev = 0),
+	'verbose+' => \(my $verbose = 0),
 ) or die 'options';
 my @dirs;
 @ARGV = grep { not
@@ -60,7 +61,7 @@ find {
 		}
 		my %a;
 		$a{$_}++ for @r;
-		warn "Skipped $_\n" for grep !$dev{$_}, grep !$a{$_}, keys %b;
+		$verbose and warn "Skipped $_\n" for grep !$dev{$_}, grep !$a{$_}, keys %b;
 		@r;
 	},
 }, @dirs;
