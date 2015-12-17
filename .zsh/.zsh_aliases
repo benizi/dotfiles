@@ -2,6 +2,7 @@
 alias fg=' fancytitle "$(fc -ln -1) (cont.) " ; builtin fg'
 alias bg=' builtin bg'
 alias rehash=' builtin rehash'
+alias shit=' shit'
 
 # keep shell history separate
 () {
