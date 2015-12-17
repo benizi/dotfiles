@@ -1,0 +1,1 @@
+FCEDIT='sed -i -e "s/^/sudo /"' fc
