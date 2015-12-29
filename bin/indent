@@ -1,0 +1,6 @@
+#!/bin/sh
+if expr "$1" : '[1-9][0-9]*$' > /dev/null
+then indent=$1 ; shift
+else indent=4
+fi
+sed -e "s/^/$(printf '%*s' ${indent#-} '')/" -- "$@"
