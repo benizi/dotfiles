@@ -1,0 +1,11 @@
+#!/bin/sh
+case "$(basename "$0")" in
+  -*)
+    ft=$(basename "$0")
+    ft=${ft#-}
+    ;;
+  *)
+    ft=$1
+    ;;
+esac
+vim - "+se ft=$ft"
