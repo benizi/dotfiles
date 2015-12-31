@@ -34,6 +34,8 @@ static outputtype output[] = {
 	{ 'I', "unsigned int",         4, 0, 0, 0, " %11u",  0, NULL, 0 },
 	{ 'l', "long",                 4, 1, 0, 0, " %11d",  0, NULL, 0 },
 	{ 'L', "unsigned long",        4, 0, 0, 0, " %11u",  0, NULL, 0 },
+	{ 'q', "long long",            8, 1, 1, 0, " %23ld", 0, NULL, 0 },
+	{ 'Q', "unsigned long long",   8, 0, 1, 0, " %23lu", 0, NULL, 0 },
 	{ '#', "sort-of-signed int",   4, 1, 0, 0, " %11d",  -50000, " %11u", 1 },
 	{ 0,   NULL,                   0, 0, 0, 0, NULL,     0, NULL, 0 }
 };
