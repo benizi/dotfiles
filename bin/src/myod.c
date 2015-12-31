@@ -39,7 +39,7 @@ static outputtype output[] = {
 };
 typedef struct { char flag; char *longf; char *desc; long *test; } flagtype;
 static long blk = 0, dec = 0, space = 0, nopipe = 0, forcepipe = 0, noenv = 0;
-static long nochars = 0, notrail = 0, verbose = 0;
+static long nochars = 0, notrail = 0, verbose = 0, ascii = 0;
 static long skinny_row = 0;/*, extra_row = 0;*/
 static flagtype flags[] = {
 	{ 'C', NULL, "Don't show the ASCII-ish output", &nochars },
@@ -49,6 +49,7 @@ static flagtype flags[] = {
 	{ 'D', "decimal", "show decimal offsets, too", &dec },
 	{ 'B', "blocks", "show {512,256,128,64,32}-byte block offsets, too", &blk },
 	{ '8', "skinny", "Use rows of 8 bytes, not 16", &skinny_row },
+	{ '7', "ascii", "Only use ASCII (not UTF-8) \"graphics\"", &ascii },
 /*	{ '.', "halfrow", "Output a second row offset by half", &extra_row },*/
 	{ 0, NULL, "General options", NULL },
 	{ 'p', "nopipe", "Don't pipe the result to less", &nopipe },
@@ -88,6 +89,36 @@ void usage (char *com) {
 "Special files\n"
 "  -  read from stdin (default if no files given on command line)\n"
 );
+}
+
+static void decorate(unsigned char c) {
+	if (!ascii) {
+		if (c > 0x7f) printf("%c", 0xc2);
+	} else {
+		switch (c) {
+			case 0xab: c = '<'; break;
+			case 0xbb: c = '>'; break;
+		}
+	}
+	printf("%c", c);
+}
+
+static void printc(unsigned char c) {
+	if (c >= 0x7f) c = '.';
+	if (ascii) {
+		if (c == '\r' || c == '\n') c = '\\';
+		if (c == 0) c = ' ';
+	} else {
+		switch (c) {
+			case '\r': c = 0xbf; break;
+			case '\n': c = 0xac; break;
+			case ' ': c = space ? ' ' : 0xb7; break;
+			case 0: c = ' '; break;
+		}
+	}
+	if (c < 0x20) c = '.';
+	if (c > 0x7f) printf("%c", 0xc2);
+	printf("%c",c);
 }
 
 void my_strcpy(char **dst, char *src) {
@@ -274,22 +305,10 @@ int main (int argc, char **argv, char **inenv) {
 				for (i = 0; i < r; i++) printf(" %02x", buf[i]);
 				for (i = r; i < ROW; i++) if (!notrail) printf(" --");
 				if (!nochars) {
-					printf("  %c%c",0xc2,0xbb);
-					for (i = 0; i < r; i++) {
-						c = buf[i];
-						if (c >= 0x7F) c = '.';
-						switch (c) {
-							case '\r':	c = 0xbf; break;
-							case '\n':	c = 0xac; break;
-							case ' ': c = space ? ' ' : 0xb7; break;
-							case 0: c = ' '; break;
-							default: break;
-						}
-						if (c < 0x20) c = '.';
-						if (c > 0x7f) printf("%c", 0xc2);
-						printf("%c",c);
-					}
-					printf("%c%c",0xc2,0xab);
+					printf("  ");
+					decorate(0xbb);
+					for (i = 0; i < r; i++) printc(buf[i]);
+					decorate(0xab);
 				}
 				printf("\n");
 				if (dec) { printf("%lld\n", off+fakeoff); }
