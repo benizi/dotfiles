@@ -135,12 +135,6 @@ int main (int argc, char **argv, char **inenv) {
 	long long buff;
 	int i, j, k, r, base, found, longf, fd, inbuf=0;
 	int fnum = 0;
-	char *env[] = {
-		"TERM=xterm",
-		"LESS=-R -M --shift 5",
-		"LESSBINFMT=*n%c",
-		NULL
-	};
 	if (!strcmp(argv[0],"myodc") || !strcmp(argv[0],"myodcat")) nopipe = 1;
 	r = argc;
 	for (i = 0; inenv[i]; i++) r++;
