@@ -2,28 +2,42 @@
 
 set -e +x
 
-brname=altdock
-net=10.100.100.1/24
-dns=10.100.100.1
-graph=/opt/altdocker
-pid=/var/run/altdocker.pid
-socket=unix:///var/run/altdocker.sock
+# Alter values to taste. These values are appropriate for running a second
+# Docker daemon (if the first running daemon uses default values).
 
-# Create alt bridge:
+: ${altname=altdocker} # basis for names for the alternate daemon
+: ${bridge=$altname} # network bridge we'll create
+: ${ip=10.100.100.1} # IP address of bridge
+: ${prefix=24} # bits in routing prefix
+: ${addr=$ip/$prefix} # bridge IP in CIDR notation
 
-if ! brctl show | grep -q $brname
-then
-  sudo brctl addbr $brname
-  sudo ip addr add $net dev $brname
-  sudo ip link set dev $brname up
-fi
+: ${base=$HOME/$altname} # base location for filenames
+: ${graph=$base/graph} # base location for daemon's storage, etc.
+: ${pidfile=$base/pidfile} # PID file location
+: ${host=unix://$base/socket} # listening socket (in net.Dial notation)
 
-sudo docker daemon \
-  --bridge=$brname \
-  --graph=$graph \
-  --host=$socket \
-  --dns=$dns \
+## Extra options I need:
+set -- \
+  --dns=$ip \
   --storage-driver=btrfs \
   --exec-opt native.cgroupdriver=cgroupfs \
-  --debug \
+  "$@"
+
+## Set up alternate network bridge
+if ! ip link show $bridge 2> /dev/null | grep -q .
+then
+  sudo brctl addbr $bridge
+  sudo ip addr add $addr dev $bridge
+  sudo ip link set dev $bridge up
+fi
+
+printf 'To use `docker` without having to specify the host, run:\n'
+printf '  export DOCKER_HOST=%s\n' $host
+
+mkdir -p $base
+sudo docker daemon \
+  --pidfile=$pidfile \
+  --bridge=$bridge \
+  --graph=$graph \
+  --host=$host \
   "$@"
