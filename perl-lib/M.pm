@@ -135,7 +135,7 @@ sub OPTION { my_use OPTIONAL => @_; }
 my_use 'Data::Dumper';
 optuse 'URI::Escape', qw/uri_unescape_ uri_escape_/;
 my_use 'Digest::MD5', qw/md5_ md5_hex_ md5_base64_/;
-optuse 'Digest::SHA1', qw/sha1_ sha1_hex_ sha1_base64_/;
+optuse 'Digest::SHA', qw/sha1_ sha1_hex_ sha1_base64_/;
 my_use 'MIME::Base64', qw/decode_base64_/;
 *encode_base64 = sub {
 	local $_ = MIME::Base64::encode_base64(@_?$_[0]:$_);
