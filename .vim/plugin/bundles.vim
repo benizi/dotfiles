@@ -47,6 +47,7 @@ Plugin 'elixir-lang/vim-elixir'
 Plugin 'benizi/vim-txt-256color'
 Plugin 'rust-lang/rust.vim'
 verb call BundleActivateDir($HOME.'/git/forever-inc/forever-tools/vim')
+verb call BundleActivateDir($HOME.'/git/urbit/extras/hoon.vim')
 
 Plugin 'derekwyatt/vim-scala'
 Plugin 'cespare/vim-toml'
