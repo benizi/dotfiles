@@ -235,4 +235,7 @@ zle-line-finish() {
   disable-bracketed-paste
 }
 
+# kill bracketed-paste highlighting
+zle_highlight=(paste:)
+
 load-namedirs --quiet
