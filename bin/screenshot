@@ -4,7 +4,7 @@ s_dir = File.join(home, 'screenshots')
 drop = File.join(home, 'Dropbox', 'screenshots')
 
 cmd = if system('import --version')
-        %w[import]
+        %w[import +repage]
       elsif system('scrot --version')
         %w[scrot -s]
       else
