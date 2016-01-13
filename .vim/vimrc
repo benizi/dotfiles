@@ -1,16 +1,3 @@
-" call if setup fails, then call `finish`
-fun! s:SetupFailed(...)
-	if a:0
-		echom a:1
-	end
-	echom 'Most Vim plugins will not be set up'
-	se noloadplugins vi=
-endf
-
-fun! s:AnyMissingDirs(dirs)
-	return len(filter('!isdirectory(v:val)', a:dirs))
-endf
-
 " Add to runtimepath, without duplicates
 fun! AddToRtp(dir)
 	let added = 0
@@ -23,30 +10,6 @@ endf
 
 fun! BundleActivate(name)
 	return BundleActivateDir(BundleDir(a:name))
-endf
-
-fun! BundleActivateDir(dir)
-	if &verbose
-		echom 'Activating' a:dir
-	end
-	if AddToRtp(a:dir)
-		for file in glob(a:dir.'/plugin/*.vim', 1, 1)
-			if &verbose
-				echom 'sourcing' file
-			end
-			exe 'so! '.file
-		endfor
-	else
-		if &verbose
-			echom a:dir 'was already in &rtp'
-		end
-	end
-endf
-
-fun! BundleActivateDir(dir)
-	if AddToRtp(a:dir)
-		exe 'run! '.a:dir.'/plugin/*.vim'
-	end
 endf
 
 fun! BundleActivateDir(dir)
