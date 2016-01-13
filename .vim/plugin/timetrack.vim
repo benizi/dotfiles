@@ -9,7 +9,7 @@ endfun
 
 fun! s:AsRoot()
 	if !exists('s:as_root')
-		let s:as_root = (expand(g:owner_home) != expand('$HOME'))
+		let s:as_root = (posix#owner('$MYVIMRC') != posix#owner('$HOME'))
 	endif
 	return s:as_root
 endfun
@@ -22,7 +22,7 @@ endfun
 
 fun! DefaultFilename(...)
 	if !exists('s:default_filename') || (a:0 && a:1)
-		let dir = g:vim_local
+		let dir = get(g:, 'vim_local', '~/.vim.local')
 		if isdirectory(expand(dir)) < 1 && exists('*mkdir')
 			call mkdir(expand(dir), 'p', 0700)
 			call s:Chown(dir)
