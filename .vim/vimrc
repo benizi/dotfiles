@@ -16,32 +16,14 @@ fun! BundleActivateDir(dir)
 	call AddToRtp(a:dir)
 endf
 
-" Run a file test portably
-fun! SysTest(op, file)
-	cal system('test '.a:op.' '.shellescape(expand(a:file)))
-	return !v:shell_error
+fun! s:VarOr(var, default)
+	return expand(exists(a:var) ? a:var : a:default)
 endf
 
-" Print a file's owner's username portably
-fun! FileOwner(file)
-	let e = 'chomp($_ = <>); print +(getpwuid((stat)[4]))[0]'
-	return split(system('perl -lwe '.shellescape(e), expand(a:file)), "\n")[0]
-endf
-
-let g:vimrc = expand('<sfile>')
-let g:abs_path = vimrc
-let g:owner_home = '~'
-if !SysTest('-O', vimrc)
-	let g:owner_home .= FileOwner(vimrc)
-end
-if SysTest('-L', vimrc)
-	let link = split(system('readlink '.shellescape(vimrc)), "\n")[0]
-	let g:abs_path = substitute(vimrc, '[^/]\+$', link, '')
-	let g:abs_path = substitute(g:abs_path, '^.\+//', '/', '')
-end
-let g:vim_dir = fnamemodify(abs_path, ':h')
-let g:vim_local = expand(owner_home . '/.vim.local')
-let g:bundle_dir = vim_dir.'/bundle' " needed above
+let g:dotfiles = s:VarOr('$DOTFILES', '~/dotfiles')
+let g:vim_dir = s:VarOr('$VDOTDIR', g:dotfiles.'/.vim')
+let g:bundle_dir = s:VarOr('$VIM_BUNDLES', g:vim_dir.'/bundle')
+cal AddToRtp(expand(g:vim_dir))
 
 " Get directory under the set of 'bundled' files
 fun! BundleDir(...)
@@ -62,8 +44,7 @@ fun! GlobList(expr, nosuf)
 	return globs
 endf
 
-call BundleActivateDir(vim_dir)
-for dir in filter(GlobList(vim_dir.'/bundle/*', 1), 'isdirectory(v:val)')
+for dir in filter(GlobList(g:bundle_dir.'/*', 1), 'isdirectory(v:val)')
 	call BundleActivateDir(dir)
 endfor
 run bundles.vim
@@ -404,10 +385,10 @@ endif
 set backupdir=~/.vim-tmp//,~/.tmp//,~/tmp//,/tmp//
 set directory=~/.vim-tmp//,~/.tmp//,~/tmp//,/tmp//
 "^^ from http://items.sjbach.com/319/configuring-vim-right ***
-for local in [owner_home, fnamemodify(vimrc, ':h'), vim_dir, vim_local]
-	let file = expand(local.'/.vimrc.local')
+for local in ['~/.vimrc.local', '$MYVIMRC.local', '~/.vim.local/.vimrc']
+	let file = expand(local)
 	if filereadable(file)
-		exe 'so '.file
+		exe 'so '.fnameescape(file)
 	end
 endfor
 
