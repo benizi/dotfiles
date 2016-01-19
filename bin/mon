@@ -3,7 +3,7 @@ unset dry
 unset cycle scale no_ext check_connections
 toggle=0
 ext_pos=--right-of
-[[ -f ~/.config/mon ]] && . ~/.config/mon
+unset clamshell
 case $0 in
 	*clone) set -- "$@" --clone ;;
 	*single) set -- "$@" --single ;;
@@ -13,6 +13,7 @@ for arg ; do
 	case "$arg" in
 		--dry*) dry=true ;;
 		--cycle) cycle=true ;;
+		--clam|--only-ext) clamshell=true ;;
 		--clone) ext_pos=--same-as ; cycle=true ;;
 		--single) no_ext=true ;;
 		--toggle) ((toggle++)) ;;
@@ -30,6 +31,7 @@ for arg ; do
 			;;
 	esac
 done
+[[ -f ~/.config/mon ]] && . ~/.config/mon
 
 run() {
 	${dry+echo} "$@"
