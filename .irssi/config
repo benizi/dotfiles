@@ -21,7 +21,6 @@ servers = (
     ssl_cert = "~/.ssh/irssi-benizi.pem";
     ssl_verify = "yes";
     ssl_cafile = "/etc/ssl/certs/spi-cacert-2008.pem";
-    autoconnect = "yes";
   },
   {
     address = "irc.gamesurge.net";
