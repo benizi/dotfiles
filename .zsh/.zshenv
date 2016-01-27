@@ -222,7 +222,7 @@ if (( $+commands[verman] )) ; then
     _verman_use $lang $latest
   }
 
-  _version erlang 17.5.1
+  _version erlang 18.1.5
   _version elixir v1.0.4
   _version node v4.2.1
   _version ruby 2.2.2
