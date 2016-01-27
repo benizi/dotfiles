@@ -38,7 +38,13 @@ servers = (
     use_ssl = "no";
     ssl_verify = "no";
     autoconnect = "yes";
-  }
+  },
+  {
+    address = "codeandsupply.irc.slack.com";
+    chatnet = "codeandsupply-slack";
+    use_ssl = "yes";
+    port = "6697";
+  },
 );
 
 chatnets = {
@@ -109,6 +115,7 @@ chatnets = {
     nick = "benizi";
     autosendcmd = "/msg nickserv identify $FREENODE;wait 2000";
   };
+  "codeandsupply-slack" = { type = "IRC"; };
 };
 
 channels = (
@@ -164,6 +171,7 @@ aliases = {
   ATAG = "WINDOW SERVER";
   UNSET = "set -clear";
   RESET = "set -default";
+  CS = "server +codeandsupply.irc.slack.com 6697 $CODEANDSUPPLY";
 };
 
 statusbar = {
