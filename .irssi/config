@@ -304,3 +304,4 @@ settings = {
   };
 };
 logs = { };
+ignores = ( { level = "MODES"; servertag = "codeandsupply-slack"; } );
