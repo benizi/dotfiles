@@ -223,7 +223,7 @@ if (( $+commands[verman] )) ; then
   }
 
   _version erlang 18.1.5
-  _version elixir v1.0.4
+  _version elixir v1.2.1
   _version node v4.2.1
   _version ruby 2.2.2
   _version rust 1.5.0
