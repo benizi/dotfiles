@@ -1,0 +1,3 @@
+#!/bin/sh
+find /proc/acpi/button/lid -name state |
+xargs grep -q open
