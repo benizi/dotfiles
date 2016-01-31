@@ -3,7 +3,7 @@ unset dry
 unset cycle scale no_ext check_connections
 toggle=0
 ext_pos=--right-of
-unset clamshell
+lid-open && unset clamshell || clamshell=true
 case $0 in
 	*clone) set -- "$@" --clone ;;
 	*single) set -- "$@" --single ;;
