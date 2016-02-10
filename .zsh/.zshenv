@@ -228,7 +228,7 @@ if (( $+commands[verman] )) ; then
   _version ruby 2.2.2
   _version rust 1.6.0
   _version go go1.5.2
-  _version haskell 2014.2.0.0
+  _version stack v1.0.2
   _version ocaml 4.02.0
 fi
 
