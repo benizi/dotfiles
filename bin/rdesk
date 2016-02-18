@@ -25,6 +25,7 @@ GetOptions(
 	'disk' => \(my $add_disk = 0),
 	'sound' => \(my $add_sound = 0),
 	'executable|cmd=s' => \$rdesktop,
+	'newfreerdp!' => \(my $new_style_xfreerdp = 1),
 	'seamless|A' => \(my $seamless),
 ) or die 'options';
 $opt{server} //= basename $0 unless 'rdesk' eq basename $0;
@@ -142,7 +143,11 @@ if ($rdesktop =~ /xfreerdp/) {
 		if ($rcmd[$_] eq '-r') {
 			my $arg = $rcmd[$_+1];
 			if ($arg =~ /^disk:(\w+)=(.+)$/) {
-				splice @rcmd, $_, 2, '--plugin', 'rdpdr', '--data', "drive:$1:$2", '--';
+				if ($new_style_xfreerdp) {
+					splice @rcmd, $_, 2, "/drive:$1,$2";
+				} else {
+					splice @rcmd, $_, 2, '--plugin', 'rdpdr', '--data', "drive:$1:$2", '--';
+				}
 			} else {
 				unshift @invalid_args, splice @rcmd, $_, 2;
 			}
@@ -156,7 +161,29 @@ if ($rdesktop =~ /xfreerdp/) {
 		die "Failed to read password\n" if $?;
 		splice @rcmd, 1, 0, '-p', $pass if length $pass;
 	}
-	splice @rcmd, -1, 0, '--plugin', 'cliprdr';
+	splice @rcmd, -1, 0, $new_style_xfreerdp
+		? qw/+clipboard/
+		: qw/--plugin cliprdr/;
+	if ($new_style_xfreerdp) {
+		my @new_cmd;
+		while (@rcmd) {
+			local $_ = shift @rcmd;
+			if (m{^[/+]}) {
+				push @new_cmd, $_;
+			} elsif (/^-a$/) {
+				push @new_cmd, join ':', '/bpp', shift @rcmd;
+			} elsif (/^-u$/) {
+				push @new_cmd, join ':', '/u', shift @rcmd;
+			} elsif (/^-z$/) {
+				push @new_cmd, '+compression';
+			} elsif (!@rcmd) {
+				push @new_cmd, "/v:$_";
+			} else {
+				use Data::Dumper; die Dumper [\@new_cmd, $_, \@rcmd];
+			}
+		}
+		@rcmd = @new_cmd;
+	}
 }
 if (@invalid_args) {
 	warn "Invalid arguments when using $rdesktop: (@invalid_args)\n";
