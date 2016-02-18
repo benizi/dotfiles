@@ -498,4 +498,7 @@ nn <silent> <expr> <BS> CleanBlankLinesOrBackspace()
 
 nn <silent> <C-n> :sil! !chromium >/dev/null 2>/dev/null &<CR>:redraw!<CR>
 
+" open new-window files in new tab instead
+nn <C-W>f <C-W>gf
+
 run! after/vimrc
