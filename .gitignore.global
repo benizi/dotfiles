@@ -30,3 +30,6 @@ log/newrelic*
 
 # Erlang crash files
 erl_crash.dump
+
+# dotenv
+.env
