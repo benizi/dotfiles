@@ -244,7 +244,7 @@ preso_file=~$owner/presentation
 setup_preso() {
   local size=0 force=${1:-false}
   [[ $TERM = *rxvt* ]] || return
-  [[ -f $preso_file ]] && size=${preso_large:-18}
+  [[ -f $preso_file ]] && size=${preso_large:-40}
   if (( size )) ; then printf '\e]777;font-switch;reset;size=%d\a' $size ; fi
 }
 
