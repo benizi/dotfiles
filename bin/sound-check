@@ -1,0 +1,29 @@
+#!/bin/sh
+
+# Play a known "nice" sound (not jarring)
+for file in /usr/share/sounds/freedesktop/stereo/{bell,phone-incoming-call}.oga
+do
+  if test -e $file
+  then
+    paplay $file
+    exit $?
+  fi
+done
+
+# If available, speak "Sound is working"
+if hash -d text2wave >/dev/null 2>/dev/null
+then
+  set -e
+  cleanup() {
+    test -n "$tmpfile" && rm "$tmpfile"
+  }
+  tmpfile="$(mktemp -t sound-check.XXXXXX.wav)"
+  trap cleanup INT QUIT HUP EXIT
+  echo Sound is working | text2wave > "$tmpfile"
+  paplay "$tmpfile"
+fi
+
+# Play the first sound we can find
+find /usr/share/sounds -type f '(' -name '*.oga' -o -name '*.wav' ')' |
+sed 1q |
+xargs paplay
