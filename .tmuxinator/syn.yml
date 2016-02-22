@@ -1,0 +1,4 @@
+name: syn
+root: ~/
+windows:
+  - synergy: SYNERGY bhaskell-asus
