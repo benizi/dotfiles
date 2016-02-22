@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# run DDC/CI auto-adjust command against misadjusted external monitor
+/opt/ddccontrol/bin/ddccontrol -r 0x1e -w 1 dev:/dev/i2c-9
