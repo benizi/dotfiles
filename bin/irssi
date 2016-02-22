@@ -1,0 +1,24 @@
+#!/bin/sh
+envdir=$HOME/.config/irssi
+cfg=$HOME/.irssi/config
+
+for var in $(perl -lnwe 'print for /\$([A-Z_]{3,})/g' "$cfg" | sort | uniq)
+do
+  file=$envdir/$var
+  test -e "$file" && continue
+  tput setaf 1 2> /dev/null >&2
+  printf '[Missing variable $%s - set it in %s]\n' "$var" "$file"
+  tput sgr0 2> /dev/null >&2
+  exit 1
+done
+
+seen=false
+IFS=:
+for dir in $PATH
+do
+  test -x "$dir/irssi" || continue
+  if $seen
+  then exec envdir "$envdir" "$dir/irssi" "$@"
+  else seen=true
+  fi
+done
