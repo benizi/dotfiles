@@ -1,1 +1,0 @@
-/home/bhaskell/git/SuperTab-continued./plugin/supertab.vim
