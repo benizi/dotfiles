@@ -65,8 +65,9 @@ add-mem() {
   awk '
 function report(t,f,usecolor){
 used = kb(t-f)
-color = (usecolor && used) ? "^fg(#ff9900)^ca(1,sudo swapoff -a && sudo swapon -a)" : ""
-nocolor = color ? "^fg()^ca()" : ""
+colorcode = !usecolor ? "" : (kb(f) < 1000) ? "^bg(#ff0000)" : "^fg(#ff9900)"
+color = colorcode ? colorcode "^ca(1,sudo swapoff -a && sudo swapon -a)" : ""
+nocolor = color ? "^fg()^bg()^ca()" : ""
 return color used "/" kb(t) nocolor
 }
 function kb(b){return int(b/1024)}
