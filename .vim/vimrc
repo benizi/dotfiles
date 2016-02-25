@@ -23,6 +23,7 @@ endf
 let g:dotfiles = s:VarOr('$DOTFILES', '~/dotfiles')
 let g:vim_dir = s:VarOr('$VDOTDIR', g:dotfiles.'/.vim')
 let g:bundle_dir = s:VarOr('$VIM_BUNDLES', '~/.vim.bundles')
+let g:vundle_dir = s:VarOr('$VUNDLE', '~/Vundle.vim')
 cal AddToRtp(expand(g:vim_dir))
 
 " Get directory under the set of 'bundled' files
@@ -44,11 +45,7 @@ fun! GlobList(expr, nosuf)
 	return globs
 endf
 
-for dir in filter(GlobList(g:bundle_dir.'/*', 1), 'isdirectory(v:val)')
-	call BundleActivateDir(dir)
-endfor
-run bundles.vim
-run! plugin/pivotal.vim
+run vundle-compatibility.vim
 
 " absurdly-large tabpagemax (to open all `-p` arguments)
 se tpm=1000

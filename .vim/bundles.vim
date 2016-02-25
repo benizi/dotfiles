@@ -1,18 +1,3 @@
-fun! Plugin(git, ...)
-  let [user, repo] = split(a:git, '/')
-  let dest = a:0 ? a:1 : BundleDir(repo)
-  if a:0
-    echoe 'Second argument to Plugin not currently supported'
-    return
-  end
-  if !isdirectory(dest)
-    echom 'Installing' a:git
-    call system('git clone https://github.com/'.user.'/'.repo.' '.shellescape(dest))
-  end
-endf
-
-com! -nargs=* Plugin :call Plugin(<args>)
-
 Plugin 'Twinside/vim-haskellConceal'
 Plugin 'Lokaltog/vim-powerline'
 Plugin 'altercation/vim-colors-solarized'
@@ -46,8 +31,6 @@ Plugin 'tpope/timl'
 Plugin 'elixir-lang/vim-elixir'
 Plugin 'benizi/vim-txt-256color'
 Plugin 'rust-lang/rust.vim'
-verb call BundleActivateDir($HOME.'/git/forever-inc/forever-tools/vim')
-verb call BundleActivateDir($HOME.'/git/urbit/extras/hoon.vim')
 
 Plugin 'derekwyatt/vim-scala'
 Plugin 'cespare/vim-toml'
@@ -57,7 +40,7 @@ Plugin 'benizi/vim-apl'
 for dep in ['vim-scripts/tlib'] + map(['actions', 'completion',
   \ 'goto-thing-at-cursor', 'errorformats', 'mw-utils'],
   \ '"MarcWeber/vim-addon-" . v:val')
-  exe 'Plugin "'.dep.'"'
+  exe "Plugin '".dep."'"
 endfor
 Plugin 'MarcWeber/vim-addon-nix'
 
