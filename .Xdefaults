@@ -1,8 +1,8 @@
 ! Usually installed, and has the best `l/i/I` `0/O` distinctions, IMO:
 URxvt*font: xft:Bitstream Vera Sans Mono:size=10,xft:APL385 Unicode:size=10
 
-! GAH. PrintScreen? Seriously? - TODO: hard-coded path
-URxvt.print-pipe: cat > /home/bhaskell/tmp/printscreen
+! GAH. PrintScreen? Seriously?
+URxvt.print-pipe: cat > /dev/null
 
 ! Scrollbars how I like them:
 URxvt.scrollBar_right: true
