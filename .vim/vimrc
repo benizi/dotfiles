@@ -45,6 +45,10 @@ fun! GlobList(expr, nosuf)
 	return globs
 endf
 
+for dir in filter(GlobList(g:vim_dir.'.*', 1), 'isdirectory(v:val)')
+	cal AddToRtp(dir)
+endfor
+
 run vundle-compatibility.vim
 
 " absurdly-large tabpagemax (to open all `-p` arguments)
