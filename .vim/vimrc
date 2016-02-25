@@ -497,6 +497,18 @@ fun! CleanBlankLinesOrBackspace(...)
 endf
 nn <silent> <expr> <BS> CleanBlankLinesOrBackspace()
 
+" Free up `,cs`
+let g:NERDCreateDefaultMappings = 0
+
+fun! SetupNERDComment(mapping, style)
+	exe 'nn <silent>' a:mapping ':call NERDComment(0, "'.a:style.'")<CR>'
+	exe 'vn <silent>' a:mapping '<Esc>:call NERDComment(1, "'.a:style.'")<CR>'
+endf
+
+cal SetupNERDComment('<Leader>cc', 'norm')
+cal SetupNERDComment('<Leader>c<Space>', 'toggle')
+cal SetupNERDComment('<Leader>cm', 'minimal')
+
 nn <silent> <C-n> :sil! !chromium >/dev/null 2>/dev/null &<CR>:redraw!<CR>
 
 " open new-window files in new tab instead
