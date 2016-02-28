@@ -132,6 +132,7 @@ pathtest=( ~$owner/git/racket/racket/bin $^pathtest )
 pathtest+=( ~$owner/android-sdks/platform-tools )
 pathtest+=( ~/git/racket/racket/bin )
 pathtest=( /opt/djb/bin $^pathtest )
+pathtest=( /opt/google/cloud-sdk/google-cloud-sdk/bin $pathtest )
 path=( ${^pathtest}(N-/) )
 }
 
