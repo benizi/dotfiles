@@ -2,6 +2,8 @@
 	excludesfile = ~/.gitignore.global
 	attributesfile = ~/.gitattributes.global
 	commentChar = ";"
+[transfer]
+	fsckObjects = true
 [include]
 	path = ~/.gitconfig.local
 [color]
