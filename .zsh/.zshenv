@@ -188,7 +188,7 @@ export BROWSER=sensible-browser
 export PROXY_DNS=1
 export PROXY_LOCALNET=127.0.0.1:5984/255.0.0.0
 
-if_exists PLAN9 /usr/local/plan9
+if_exists PLAN9 /opt/plan9
 [[ -e $PLAN9 ]] && path+=( $PLAN9/bin )
 
 if (( $+XAUTHLOCALHOSTNAME )) && (( ! $+XAUTHORITY )) ; then
