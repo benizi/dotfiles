@@ -1,0 +1,27 @@
+#!/bin/sh
+die() {
+  tput setaf 1 >&2 2>/dev/null
+  printf '%s\n' "$*"
+  tput sgr0 >&2 2>/dev/null
+}
+
+branch="$(git branch | awk '/\*/{print$2}')"
+test -z "$branch" && branch=master
+parent="$(git rev-parse HEAD)"
+
+name="$(git config user.name)"
+email="$(git config user.email)"
+test -n "$name" && test -n "$email" || die "Need to set user.name and .email"
+info="$name <$email> $(date +'%s %z')"
+message="Temp commit $info"
+
+cat <<COMMIT
+commit refs/heads/$branch
+mark :1
+author $info
+committer $info
+data ${#message}
+$message
+from $parent
+
+COMMIT
