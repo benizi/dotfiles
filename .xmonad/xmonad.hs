@@ -350,11 +350,11 @@ myManageHook = FS.fullscreenManageHook <+> manageDocks <+> composeAll
     , resource  =? "kdesktop"       --> doIgnore
     , className =? "Pinentry" --> doFloat
     , className =? "Pavucontrol" --> doFloat
-    , title =? "QEMU" --> doFloat
     , className =? "Vncviewer" --> doFloat
     , className =? "sun-awt-X11-XFramePeer" --> doFloat
     , className =? "java-lang-Thread" --> doFloat
     , className =? "xfreerdp" --> unfloat
+    , title =? "QEMU" --> doFloat
     ]
   where unfloat = ask >>= doF . W.sink
 
