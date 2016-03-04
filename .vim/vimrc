@@ -167,7 +167,7 @@ aug NoMaxSyntaxLength
 		\ let &l:smc = b:maxline > 5000 ? 100 : 0
 aug END
 
-set foldmethod=marker
+set foldmethod=syntax
 aug NoInsertFolding
 	au!
 	au InsertEnter * if !exists('w:oldfdm') | let w:oldfdm = &fdm | setl fdm=manual | endif
