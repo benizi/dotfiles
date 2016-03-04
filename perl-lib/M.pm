@@ -153,7 +153,7 @@ my_use 'File::Find';
 my_use 'Storable', qw/nstore retrieve_/;
 my_use 'List::Util', qw/min max/;
 optuse 'Date::Manip', qr/^Date_/;
-optuse 'XML::Twig';
+OPTION 'XML::Twig';
 OPTION 'MyMatrices';
 OPTION 'Acme::MetaSyntactic', 'batman';
 OPTION 'Statfs';
