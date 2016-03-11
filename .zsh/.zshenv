@@ -262,7 +262,8 @@ then
 fi
 
 () { # set up nix
-  local nixdir=/opt/nix nixstartup=$nixdir/etc/profile.d/nix.sh
+  local nixdir=/opt/nix
+  local nixstartup=$nixdir/etc/profile.d/nix.sh
   [[ -e $nixstartup ]] && . $nixstartup
   path=( $nixdir/bin(N) $path )
 }
