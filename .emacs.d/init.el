@@ -119,6 +119,17 @@
 (custom-set-variables
  '(xterm-extra-capabilities (quote modifyOtherKeys)))
 
+;; clipboard in emacs -nw
+(defun copy-from-clip ()
+  (shell-command-to-string "clip -o"))
+(defun copy-to-clip (text &optional push)
+  (let ((process-connection-type nil))
+    (let ((proc (start-process "clip" "*Messages*" "clip")))
+      (process-send-string proc text)
+      (process-send-eof proc))))
+(setq interprogram-cut-function 'copy-to-clip)
+(setq interprogram-paste-function 'copy-from-clip)
+
 ;; popup menu for autocomplete
 (require 'popup)
 
