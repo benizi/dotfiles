@@ -32,6 +32,7 @@ Plugin 'tpope/timl'
 Plugin 'elixir-lang/vim-elixir'
 Plugin 'benizi/vim-txt-256color'
 Plugin 'rust-lang/rust.vim'
+Plugin 'keith/swift.vim'
 
 Plugin 'derekwyatt/vim-scala'
 Plugin 'cespare/vim-toml'
