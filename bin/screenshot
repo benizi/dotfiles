@@ -3,13 +3,19 @@ home = ENV['HOME'].dup
 s_dir = File.join(home, 'screenshots')
 drop = File.join(home, 'Dropbox', 'screenshots')
 
-cmd = if system('import --version')
-        %w[import +repage]
-      elsif system('scrot --version')
-        %w[scrot -s]
-      else
-        abort "Couldn't find a screenshot program"
-      end
+def executable?(cmd)
+  ENV['PATH'].split(File::PATH_SEPARATOR).any? do |dir|
+    path = File.join(dir, cmd)
+    File.executable?(path) && !File.directory?(path)
+  end
+end
+
+cmd = [
+  %w[maim -s -c 0,0.7,1,0.6],
+  %w[import +repage],
+  %w[scrot -s],
+].find { |cmd| executable?(cmd.first) }
+abort "Couldn't find a screenshot program" unless cmd
 
 if !Dir.exists?(s_dir) and Dir.exists?(drop)
   File.symlink(drop, s_dir)
