@@ -4,6 +4,9 @@
 	commentChar = ";"
 [transfer]
 	fsckObjects = true
+[fetch]
+	# TODO: remove when equivalent of `receive.fsck.skiplist` exists
+	fsckobjects = false
 [include]
 	path = ~/.gitconfig.local
 [color]
