@@ -145,11 +145,11 @@ my $ramp = 0;
 
 die join("\n", "Unknown argument".(@ARGV == 1 ? "" : "s").":", @ARGV, "") if @ARGV;
 
-if ($ramp) {
+if ($ramp or $show_number) {
 	print grid $_ for qw/48;5;16 0;1 48;5;231;7/;
 	for my $fgbg (38, 48) {
 		for my $bits (qw/100 110 010 011 001 101/) {
-			print ramp $fgbg, $bits;
+			print ramp $fgbg, $bits if $ramp;
 		}
 	}
 } else {
