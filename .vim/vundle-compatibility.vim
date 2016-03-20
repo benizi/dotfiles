@@ -38,6 +38,24 @@ if install == 1
   let g:use_vundle = g:use_vundle_p ? g:use_vundle : VundleAvailable()
 end
 
+if install == 1 || install == 2
+  let any_old = 0
+  let test_dirs = []
+  cal add(test_dirs, g:vim_dir.'/bundles')
+  cal add(test_dirs, expand('~/vim-bundles'))
+  cal add(test_dirs, expand('~/vim.bundles'))
+  for dir in test_dirs
+    if isdirectory(dir)
+      let any_old = 1
+      echoe 'Old bundle dir exists:' dir
+    end
+  endfor
+  if any_old
+    echoe 'Quitting installation'
+    qall
+  end
+end
+
 if g:use_vundle && VundleAvailable()
   cal AddToRtp(g:vundle_dir)
   cal vundle#begin(g:bundle_dir)
