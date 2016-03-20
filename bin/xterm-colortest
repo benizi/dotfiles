@@ -145,9 +145,9 @@ my $show_help = 0;
 	(/--help/) ? ($show_help = 1) :
 0)} @ARGV;
 
-if ($show_help) {
+sub usage {
 	(my $name = $0) =~ s{^.*/}{};
-	warn <<HELP and exit;
+	warn <<HELP;
 Usage: $name [options]
 
 Options:
@@ -155,9 +155,12 @@ Options:
   --ramp    Print a 24-bit color ramp
   --help    Show this help
 HELP
+	warn "$_\n" for @_;
+	exit @_ ? 1 : 0;
 }
 
-die join("\n", "Unknown argument".(@ARGV == 1 ? "" : "s").":", @ARGV, "") if @ARGV;
+usage "Unknown argument".(@ARGV == 1 ? "" : "s").":", @ARGV if @ARGV;
+usage if $show_help;
 
 if ($ramp or $show_number) {
 	print grid $_ for qw/48;5;16 0;1 48;5;231;7/;
