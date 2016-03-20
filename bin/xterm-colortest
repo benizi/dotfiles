@@ -137,11 +137,25 @@ sub grid {
 }
 
 my $ramp = 0;
+my $show_help = 0;
 
 @ARGV = grep {!(
 	(/--ramp/) ? ($ramp = 1) :
 	(/--num/) ? ($show_number = 1) :
+	(/--help/) ? ($show_help = 1) :
 0)} @ARGV;
+
+if ($show_help) {
+	(my $name = $0) =~ s{^.*/}{};
+	warn <<HELP and exit;
+Usage: $name [options]
+
+Options:
+  --num     Print numbers inside colors
+  --ramp    Print a 24-bit color ramp
+  --help    Show this help
+HELP
+}
 
 die join("\n", "Unknown argument".(@ARGV == 1 ? "" : "s").":", @ARGV, "") if @ARGV;
 
