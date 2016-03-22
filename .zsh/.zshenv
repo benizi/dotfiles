@@ -183,6 +183,7 @@ if_exists M2_HOME ~$owner/maven
 export RUBY_BUILD_CACHE_PATH=/opt/ruby-build-cache
 export PIP_DOWNLOAD_CACHE=/opt/pip-download-cache
 export BROWSER=sensible-browser
+export INPUTRC=$dotfiles/.inputrc
 
 # settings for ssh-proxy
 export PROXY_DNS=1
