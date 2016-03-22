@@ -1,0 +1,5 @@
+$include /etc/inputrc
+
+# squash bracketed-paste wrappers
+"\e[200~": ""
+"\e[201~": ""
