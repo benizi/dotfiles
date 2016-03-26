@@ -1,0 +1,28 @@
+#!/bin/sh
+
+: ${unstable=false}
+: ${fetch=false}
+: ${storage=$HOME/Downloads}
+: ${dir=/opt/google/chrome/$(date +%Y-%m-%d)}
+
+version=stable
+tardir=chrome
+
+if $unstable
+then
+  version=unstable
+  tardir=chrome-$version
+fi
+
+: ${deb=google-chrome-${version}_current_amd64.deb}
+
+set -e
+
+if $fetch
+then curl -o $storage/$deb https://dl.google.com/linux/direct/$deb
+fi
+
+mkdir -p $dir &&
+deb2targz $storage/$deb | tar -Jxv --strip-components=4 -C $dir ./opt/google/$tardir &&
+sudo chown root:root $dir/chrome-sandbox &&
+sudo chmod 4755 $dir/chrome-sandbox
