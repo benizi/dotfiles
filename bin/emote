@@ -1,0 +1,16 @@
+#!/bin/sh
+hash clip 2>/dev/null && ! test -p /dev/stdout && cmd=clip || cmd=cat
+if test -t 1
+then set -- fzf
+else set -- rofi -dmenu -p 'emoticon: '
+fi
+chosen="$(cat <<EMOJI | "$@"
+(╯°□°)╯︵ ┻━┻ - table flip
+¯\_(ツ)_/¯ - shrug
+(ﾉಥ益ಥ）ﾉ ┻━┻ - table flip - angry
+EMOJI
+)"
+chosen="${chosen%%' - '*}"
+if test -n "$chosen"
+then printf '%s\n' "$chosen" | $cmd
+fi
