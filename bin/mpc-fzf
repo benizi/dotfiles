@@ -1,7 +1,11 @@
 #!/bin/sh
-format='[[%artist% - ][%album% - ][%track% - ]%title%]|[%file%]'
-current="$(mpc current -f '[[%artist% - ][%album% - ][%track% ]|[%file%]]')"
-track="$(mpc playlist -f "$format" | nl | fzf +s -i -q "$current" | awk '{print$1}')"
+. mpc-format-vars
+current="$(mpc current -f "$mpc_current_format")"
+if test $# -gt 0
+then sort=--random-sort
+else sort=-n
+fi
+track="$(mpc-playlist | sort $sort | fzf +s -i -q "$current" | awk '{print$1}')"
 if test -n "$track"
 then mpc play $track
 fi
