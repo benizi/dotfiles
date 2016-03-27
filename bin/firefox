@@ -1,6 +1,5 @@
 #!/bin/zsh
 kill=false
-debugging=false
 unset found_rspec
 pst -P $$ | while read line ; do
   [[ $line = (*rspec*|*cucumber*) ]] || continue
@@ -17,12 +16,13 @@ if (( ! $+SELENIUM_POPUP )) && (( $+found_rspec || $+xvfb )) ; then
   export DISPLAY=:$disp
   x-is-active -maxtry 10 -v || exit 1
 fi
-if $debugging ; then
-  date >> ~/firefox.log
-  for arg ; do
-    printf "%s\n" $arg >> ~/firefox.log
-  done
-  pst $$ >> ~/firefox.log
+if test -n "$browser_debug"
+then
+  {
+    date
+    printf '[%s]\n' "$0" "$@"
+    pst $$ 2>/dev/null
+  } >> ~/browser.log
 fi
 newpath=()
 for p in $path ; do
