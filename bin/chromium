@@ -1,4 +1,12 @@
 #!/bin/zsh
+if test -n "$browser_debug"
+then
+	{
+		date
+		printf '[%s]\n' "$0" "$@"
+		pst $$ 2>/dev/null
+	} >> ~/browser.log
+fi
 case $0 in
 	*-fresh) argv+=( --scratch http://${${0//-fresh/}:t} ) ;;
 	*chromium*|*open|*sensible-browser) ;;
