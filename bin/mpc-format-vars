@@ -1,0 +1,5 @@
+# "Artist - Album - Track - Title" (OR) "filename"
+mpc_format='[[%artist% - ][%album% - ][%track% - ]%title%]|[%file%]'
+# "Artist - Album - Track" (OR) "filename"
+mpc_current_format='[[%artist% - ][%album% - ][%track% ]|[%file%]]'
+# vim:se ft=sh:
