@@ -1,1 +1,3 @@
-perl -lwe 'print map sprintf(" 23456 %2d0", $_), 1..50' | less -SE
+perl -lwe 'print map sprintf(" 23456 %2d0", $_), 1..50' |
+cut -c-$COLUMNS |
+{ tput setab 1 ; cat ; tput sgr0 }
