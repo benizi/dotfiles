@@ -1,0 +1,5 @@
+local fs=${1:-/}
+(( UID )) && btrfs=( sudo btrfs ) || btrfs=( btrfs )
+for op in show df
+do $btrfs filesystem $op $fs
+done
