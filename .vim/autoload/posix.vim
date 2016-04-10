@@ -14,6 +14,9 @@ endf
 " Simulate `mkdir -p` using internal version (if supported) or shell
 fun! posix#mkdirp(path, ...)
   let dir = expand(a:path)
+  if isdirectory(dir) > 0
+    return 1
+  end
   let mode = a:0 ? a:1 : 0700
   if exists('*mkdir')
     return mkdir(dir, 'p', mode)
