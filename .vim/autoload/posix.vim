@@ -10,3 +10,14 @@ fun! posix#owner(file)
   let e = 'chomp($_ = <>); print +(getpwuid((stat)[4]))[0]'
   return split(system('perl -lwe '.shellescape(e), expand(a:file)), "\n")[0]
 endf
+
+" Simulate `mkdir -p` using internal version (if supported) or shell
+fun! posix#mkdirp(path, ...)
+  let dir = expand(a:path)
+  let mode = a:0 ? a:1 : 0700
+  if exists('*mkdir')
+    return mkdir(dir, 'p', mode)
+  end
+  call system('mkdir -m '.mode.' -p '.shellescape(dir))
+  return !v:shell_error
+endf
