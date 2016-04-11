@@ -7,6 +7,66 @@ fun! s:GitGet(git, ...)
   end
 endf
 
+fun! s:VimballUnpack(lines, dest)
+  let lines = copy(a:lines)
+  if lines[0] !~ '^" Vimball' || lines[1:2] != ['UseVimball', 'finish']
+    throw 'Vimball is malformed'
+  end
+  let lines = lines[3:]
+  while len(lines)
+    let filespec = matchlist(lines[0], '^\(\S\+\)\s\+\[\[\[1$')
+    if !len(filespec)
+      throw 'Vimball is malformed'
+    end
+    let lines = lines[1:]
+    let filename = a:dest.'/'.filespec[1]
+
+    let file_nlines = str2nr(lines[0])
+    let lines = lines[1:]
+    if file_nlines == 0 || file_nlines > len(lines)
+      throw 'Vimball is malformed'
+    end
+
+    cal posix#mkdirp(fnamemodify(filename, ':h'))
+    cal writefile(lines[:(file_nlines-1)], filename)
+    let lines = lines[(file_nlines):]
+  endwhile
+endf
+
+fun! s:VimballInstall(lines, dest)
+  if !isdirectory(a:dest)
+    cal s:VimballUnpack(a:lines, a:dest)
+  end
+  return BundleActivateDir(a:dest)
+endf
+
+fun! s:VimballGet(url, ...)
+  if a:0
+    let dest = a:0
+  else
+    let match = matchlist(a:url, '^http.*/\(\w\+\)\.vba\.gz$')
+    if !len(match)
+      throw "Couldn't determine destination for ".a:url
+    end
+    let dest = match[1]
+  end
+  if dest !~ '/'
+    let dest = BundleDir(dest)
+  end
+  let vba = dest.'.vba.gz'
+  if !filereadable(vba)
+    echom 'Downloading' a:url 'to' vba
+    cal system('curl '.shellescape(a:url).' -o '.shellescape(vba))
+  end
+  if !filereadable(vba)
+    throw "Couldn't download ".a:url." to ".vba
+  end
+  return s:VimballInstall(systemlist('gzip -dc < '.shellescape(vba)), dest)
+endf
+
+" Not actually Vundle-compatible (yet?)
+com! -nargs=* PluginVimball :cal s:VimballGet(<args>)
+
 fun! VundleAvailable()
 	return isdirectory(g:vundle_dir)
 endf
