@@ -1,1 +1,1 @@
-let &cc = join([50, &tw], ',')
+let &l:cc = &tw + 1
