@@ -143,8 +143,12 @@ if install == 2 && !isdirectory(g:bundle_dir)
   elseif choice == 3
     qall
   end
+else
+  let failnow = confirm('WTF? Not sure how we got here. Quit?', "&Yes\n&No")
+  if choice != 2
+    qall
+  end
 end
-cal confirm('wtf','a')
 
 com! -nargs=* Plugin :cal s:GitGet(<args>)
 
