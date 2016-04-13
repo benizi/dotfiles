@@ -90,6 +90,8 @@ if !VundleAvailable() && !isdirectory(g:bundle_dir)
   end
 end
 
+com! InstallVundle cal s:GitGet('VundleVim/Vundle.vim', g:vundle_dir)
+
 " Skip plugins altogether
 if install == 3
   com! -nargs=* Plugin :
@@ -98,7 +100,7 @@ end
 
 " Install Vundle
 if install == 1
-  cal s:GitGet('VundleVim/Vundle.vim', g:vundle_dir)
+  InstallVundle
   let g:use_vundle = g:use_vundle_p ? g:use_vundle : VundleAvailable()
 end
 
@@ -138,6 +140,9 @@ end
 
 if !g:use_vundle_p
   echom 'Falling back to vundle compatibility mode'
+  if isdirectory(g:bundle_dir)
+    echom 'InstallVundle to install'
+  end
 end
 
 if install == 2 && !isdirectory(g:bundle_dir)
@@ -147,8 +152,6 @@ if install == 2 && !isdirectory(g:bundle_dir)
   elseif choice == 3
     qall
   end
-elseif confirm('Continue?', "&Yes\n&No") != 1
-  qall
 end
 
 com! -nargs=* Plugin :cal s:GitGet(<args>)
