@@ -61,7 +61,8 @@ fun! s:VimballGet(url, ...)
   if !filereadable(vba)
     throw "Couldn't download ".a:url." to ".vba
   end
-  return s:VimballInstall(systemlist('gzip -dc < '.shellescape(vba)), dest)
+  let cmd = 'gzip -dc < '.shellescape(vba)
+  return s:VimballInstall(vimcompat#systemlist(cmd), dest)
 endf
 
 " Not actually Vundle-compatible (yet?)
