@@ -145,8 +145,8 @@ if install == 2 && !isdirectory(g:bundle_dir)
     qall
   end
 else
-  let failnow = confirm('WTF? Not sure how we got here. Quit?', "&Yes\n&No")
-  if choice != 2
+  let failnow = confirm('Continue?', "&Yes\n&No")
+  if choice != 1
     qall
   end
 end
