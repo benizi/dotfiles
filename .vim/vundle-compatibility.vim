@@ -40,7 +40,7 @@ fun! s:VimballInstall(lines, dest)
   return BundleActivateDir(a:dest)
 endf
 
-fun! s:VimballGet(url, ...)
+fun! s:VimballGetImpl(url, ...)
   if a:0
     let dest = a:1
   else
@@ -66,6 +66,14 @@ fun! s:VimballGet(url, ...)
   end
   let cmd = 'gzip -dc < '.shellescape(vba)
   return s:VimballInstall(vimcompat#systemlist(cmd), dest)
+endf
+
+fun! s:VimballGet(url, ...)
+  try
+    return a:0 ? s:VimballGetImpl(a:url, a:1) : s:VimballGetImpl(a:url)
+  catch
+    echom v:exception
+  endtry
 endf
 
 " Not actually Vundle-compatible (yet?)
