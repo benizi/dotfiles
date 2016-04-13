@@ -42,7 +42,7 @@ endf
 
 fun! s:VimballGet(url, ...)
   if a:0
-    let dest = a:0
+    let dest = a:1
   else
     let match = matchlist(a:url, '^http.*/\(\w\+\)\.vba\.gz$')
     if !len(match)
