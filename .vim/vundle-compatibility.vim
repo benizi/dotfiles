@@ -53,6 +53,9 @@ fun! s:VimballGet(url, ...)
   if dest !~ '/'
     let dest = BundleDir(dest)
   end
+  if !isdirectory(fnamemodify(dest, ':h'))
+    throw "Can't download Vimball to ".dest
+  end
   let vba = dest.'.vba.gz'
   if !filereadable(vba)
     echom 'Downloading' a:url 'to' vba
