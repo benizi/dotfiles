@@ -251,11 +251,6 @@ setup_preso() {
   if (( size )) ; then printf '\e]777;font-switch;reset;size=%d\a' $size ; fi
 }
 
-if (( $+zsh_start_timing )) ; then
-  unsetopt xtrace
-  exec 2>&3 3>&-
-fi
-
 if (( ! $+MAKEFLAGS )) && (( $+commands[nproc] ))
 then
   pmake=-j$(nproc)
@@ -276,4 +271,9 @@ if (( $+TERM && $+SSH_CONNECTION )) &&
   (( ! $+SSH_AUTH_SOCK && ! $+SSH_AGENT_PID )) &&
   [[ ! -o interactive ]]
 then . ${^zsh_dirs}/.zsh_ssh(N) &> /dev/null
+fi
+
+if (( $+zsh_start_timing )) ; then
+  unsetopt xtrace
+  exec 2>&3 3>&-
 fi
