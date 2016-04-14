@@ -1,6 +1,7 @@
 #!/bin/sh
 envdir=$HOME/.config/irssi
-cfg=$HOME/.irssi/config
+home=${DOTFILES:-"$HOME/dotfiles"}/.irssi
+cfg=$home/config
 
 for var in $(perl -lnwe 'print for /\$([A-Z_]{3,})/g' "$cfg" | sort | uniq)
 do
@@ -18,7 +19,7 @@ for dir in $PATH
 do
   test -x "$dir/irssi" || continue
   if $seen
-  then exec envdir "$envdir" "$dir/irssi" "$@"
+  then exec envdir "$envdir" "$dir/irssi" --home="$home" "$@"
   else seen=true
   fi
 done
