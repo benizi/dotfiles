@@ -1,0 +1,29 @@
+#!/bin/sh
+fail() {
+  exit 111
+}
+test $# -ge 2 || fail
+exportvars() {
+  local d=$1
+  local f s t
+  test -d "$d" || fail
+  set -- $d/*
+  # return if no files
+  if test $# -eq 1 -a "$1" = "$d/*" -a ! -f "$1"
+  then return
+  fi
+  for f
+  do
+    t="$(awk 'NR==1 { sub($0, "[ \x09]*$", "") ; print ; exit }' "$f")"
+    s=${f##*/}
+    # fail if name contains '='
+    test "$s" = "${s#*=}" || fail
+    if test -s "$f"
+    then export $s="$t"
+    else unset $s
+    fi
+  done
+}
+exportvars "$1"
+shift
+exec "$@"
