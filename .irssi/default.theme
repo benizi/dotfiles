@@ -34,7 +34,8 @@
 
 # COLORS:
 
-# You can find definitions for the color format codes in docs/formats.txt.
+# You can find definitions for the color format codes at:
+# https://raw.githubusercontent.com/irssi/irssi/master/docs/formats.txt
 
 # There's one difference here though. %n format. Normally it means the
 # default color of the terminal (white mostly), but here it means the
@@ -250,7 +251,7 @@ abstracts = {
 
   # default background for all statusbars. You can also give
   # the default foreground color for statusbar items.
-  sb_background = "%4%w";
+  sb_background = "%7%k"; # black on white
 
   # default backround for "default" statusbar group
   #sb_default_bg = "%4";
@@ -273,20 +274,20 @@ abstracts = {
 
   prompt = "[$*] ";
 
-  sb = " %c[%n$*%c]%n";
-  sbmode = "(%c+%n$*)";
+  sb = " %k%7│%n$*";
+  sbmode = "(+$*)";
   sbaway = " (%GzZzZ%n)";
-  sbservertag = ":$0 (change with ^X)";
+  sbservertag = ":$0[^X]";
   sbnickmode = "$0";
 
   # activity in statusbar
 
   # ',' separator
-  sb_act_sep = "%c$*";
+  sb_act_sep = "%*";
   # normal text
-  sb_act_text = "%c$*";
+  sb_act_text = "%8%B%7 $* %8%n";
   # public message
-  sb_act_msg = "%W$*";
+  sb_act_msg = "%8%W$*";
   # hilight
   sb_act_hilight = "%M$*";
   # hilight with specified color, $0 = color, $1 = text
