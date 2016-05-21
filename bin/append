@@ -4,9 +4,10 @@ BEGIN {
   append = ARGV[1] ~ "append$"
   prepend = !append
   # skip ARGV[1] = passed-in $0
-  for (i=2; i<ARGC; i++) string = string (string ? " " : "") ARGV[i]
+  n = 0
+  for (i=2; i<ARGC; i++) strings[++n] = ARGV[i]
   ARGC = 1
 }
-append { print $0 string }
-prepend { print string $0 }
+append { for (i=1; i<=n; i++) print $0 strings[i] }
+prepend { for (i=1; i<=n; i++) print strings[i] $0 }
 ' "$0" "$@"
