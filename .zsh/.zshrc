@@ -202,6 +202,10 @@ preso() {
 }
 (( ! $+VIM )) && setup_preso
 
+if (( $+SSH_CLIENT )) && (( ${#${(f):-"$(ps --ppid ${PPID:-0})"}} == 2 ))
+then ssh_control_master=true
+fi
+
 # Ctrl+Ins -> send current buffer to clipboard
 zle-clip-line() { printf '%s' $BUFFER | clip &> /dev/null }
 zle -N zle-clip-line

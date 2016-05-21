@@ -192,6 +192,7 @@ __setup_prompt () {
   (( $+deleted )) && add.bottom_row k:196 '!deleted!'
   (( $+fail_couchdb )) && add.bottom_row k:196 '!CouchDB!'
   (( $+incognito_mode )) && add.bottom_row k:208 '!!!'
+  (( $+ssh_control_master )) && add.bottom_row k:88 SSH-MASTER
   add.bottom_row :norm $ps_char
   (( $+curl_api_env )) && add.bottom_row k:167 "curl_api=$curl_api_env"
 
