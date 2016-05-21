@@ -1,0 +1,8 @@
+#!/bin/sh
+awk '
+BEGIN {
+  for (i=1; i<ARGC; i++) string = string (string ? " " : "") ARGV[i]
+  ARGC = 1
+}
+{ print $0 string }
+' "$@"
