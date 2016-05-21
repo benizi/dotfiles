@@ -1,11 +1,5 @@
 #!/bin/sh
-case "$(basename "$0")" in
-  -*)
-    ft=$(basename "$0")
-    ft=${ft#-}
-    ;;
-  *)
-    ft=$1
-    ;;
-esac
-vim - "+se ft=$ft"
+ft=$1
+shift
+test -z "$ft" || set -- +"se ft=$ft" "$@"
+vim - "$@"
