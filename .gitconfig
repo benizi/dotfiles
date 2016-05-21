@@ -122,12 +122,12 @@
 	ap = "!eval `git cd` ; git a -p"
 	au = "!eval `git cd` ; git a -u"
 	cd = config cd.cd
-	d = diff
+	d = diff --relative
 	dif = difftool -y --tool=dif
 	dchanged = "!gd() { namey=() ; args=() ; for arg ; do case \"$arg\" in --name*) namey+=( $arg ) ;; *) args+=( $arg ) ;; esac ; done ; git diff --name-status $args | perl -lnwe 'print if s/^M\\s+//' | xargs git diff $namey $args -- ; } ; gd"
-	dn = diff --name-only
+	dn = diff --name-only --relative
 	dc = diff --cached
-	dcn = diff --cached --name-only
+	dcn = diff --cached --name-only --relative
 	dd = diff dev
 	dt = difftool
 	meld = difftool --tool=meld
