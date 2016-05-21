@@ -1,4 +1,4 @@
 setl spell
-hi SpellBad guibg=None
-hi SpellRare guibg=None
-hi SpellCap guibg=None
+hi SpellBad guibg=NONE
+hi SpellRare guibg=NONE
+hi SpellCap guibg=NONE
