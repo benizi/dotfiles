@@ -1,0 +1,9 @@
+#!/bin/sh
+awk '{$1=$1}1' OFS=\\t |
+jq -cR '
+  split("\t") |
+  (if length == 4 then ["col"] else [] end) as $col |
+  (["filename","lnum"] + $col + ["text"]) as $fields |
+  with_entries(.key|=$fields[.])
+' |
+jq --slurp -c -M .
