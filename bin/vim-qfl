@@ -1,0 +1,8 @@
+#!/bin/sh
+set -- vim -c "$(
+  to-qfl |
+  prepend 'let qfl=' |
+  append '|if len(qfl)|cal setqflist(qfl)|cope' |
+  append '|else|echom "empty"|cal getchar()|x|end'
+)" "$@"
+"$@" < /dev/tty
