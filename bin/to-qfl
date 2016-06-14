@@ -1,6 +1,5 @@
 #!/bin/sh
-awk '{$1=$1}1' OFS=\\t |
-jq -cR '
+jq -c -R '
   split("\t") |
   (if length == 4 then ["col"] else [] end) as $col |
   (["filename","lnum"] + $col + ["text"]) as $fields |
