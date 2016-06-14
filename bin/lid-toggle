@@ -1,0 +1,11 @@
+#!/bin/sh
+if test $(id -u) -eq 0
+then sudo=
+else sudo=sudo
+fi
+$sudo perl -i -lpwe '
+  next unless /HandleLidSwitch/;
+  s/^[\s#]+//;
+  s/ignore/suspend/ || s/=.+/=ignore/
+' /etc/systemd/logind.conf &&
+$sudo killall -HUP systemd-logind
