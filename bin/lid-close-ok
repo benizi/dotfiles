@@ -1,0 +1,6 @@
+#!/bin/sh
+awk -F'=' '
+BEGIN { bad = 1 }
+$1 ~ /HandleLidSwitch/ { bad = $NF ~ /ignore/ ? 0 : 1 }
+END { exit bad }
+' /etc/systemd/logind.conf
