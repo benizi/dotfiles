@@ -1,0 +1,14 @@
+/* XPM */
+static char *kbd[] = {
+"10 8 2 1",
+"l c #ffffff",
+". c None",
+"..........",
+"lllllllll.",
+"l.l.l.l.l.",
+"lllllllll.",
+"l.l.l.l.l.",
+".lllllll..",
+"..........",
+"..........",
+};
