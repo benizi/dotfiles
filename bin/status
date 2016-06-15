@@ -102,6 +102,15 @@ toggle-middle() {
 }
 funcs=( toggle-middle $funcs )
 
+reset-keyboard() {
+  if (( $+commands[x-kbdesc] ))
+  then x-kbdesc +benizi
+  else false
+  fi && return
+  printf '%s' '^ca(1,k)^i('${(%):-%x}'.kbd.xpm)^ca()'
+}
+funcs=( reset-keyboard $funcs )
+
 setup() {
   info=()
   for fn in $funcs
