@@ -5,7 +5,7 @@ else sudo=sudo
 fi
 $sudo perl -i -lpwe '
   next unless /HandleLidSwitch/;
-  s/^[\s#]+//;
-  s/ignore/suspend/ || s/=.+/=ignore/
+  s/^[\s#]+// for ($handle, $now) = split /=/;
+  $_ = join "=", $handle, q<'$1'> || ($now eq "ignore" ? "suspend" : "ignore")
 ' /etc/systemd/logind.conf &&
 $sudo killall -HUP systemd-logind
