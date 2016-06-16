@@ -1,0 +1,14 @@
+/* XPM */
+static char *clam[] = {
+"10 8 2 1",
+"l c #ffffff",
+". c None",
+"..........",
+"..........",
+"..........",
+"..........",
+"lllllllll.",
+"lllllllll.",
+"lllllllll.",
+"..........",
+};
