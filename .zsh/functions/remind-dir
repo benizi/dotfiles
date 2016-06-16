@@ -1,5 +1,6 @@
-local files=( $^zsh_dirs/reminders(N) )
 local file
+local -a files
+files=( $^zsh_dirs/reminders(N) )
 if (( $#files ))
 then file=$files[1]
 else file=${zsh_dirs[-1]}/reminders
