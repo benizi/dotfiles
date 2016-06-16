@@ -111,6 +111,20 @@ reset-keyboard() {
 }
 funcs=( reset-keyboard $funcs )
 
+lid-status() {
+  if (( ! epoch % 10 )) || (( ! $+lidstatus ))
+  then
+    lidstatus='^ca(1,sudo '${commands[lid-toggle]}')^i('${(%):-%x}'.'
+    if lid-close-ok
+    then lidstatus+=clam
+    else lidstatus+=open
+    fi
+    lidstatus+='.xpm)^ca()'
+  fi
+  printf '%s' $lidstatus
+}
+funcs=( lid-status $funcs )
+
 setup() {
   info=()
   for fn in $funcs
