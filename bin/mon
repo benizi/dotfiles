@@ -76,7 +76,32 @@ get_modes
 deactivate=()
 int=$outputs[1]
 int_mode=$vid_modes[$int]
-if (( $#active_output > 1 )) && (( ! $+no_ext )) ; then
+if (( $#outputs > 2 )) && (( ! $+no_ext ))
+then
+	(( $+outputorder )) || outputorder=( $outputs )
+	typeset -A rev_map
+	for ((i=2; i<=$#outputs; i++))
+	do rev_map+=( $i $outputorder[i] )
+	done
+	cmd=( xrandr )
+	if (( $+clamshell ))
+	then cmd+=( --output $int --off )
+	else cmd+=( --output $int --primary --mode $int_mode )
+	fi
+	dirs=( --above --right-of )
+	actual=( $int )
+	for ((i=2; i<=$#outputs; i++))
+	do actual+=( $rev_map[$i] )
+	done
+	for ((i=2; i<=$#actual; i++))
+	do
+		out=$actual[i]
+		prev=$actual[i-1]
+		cmd+=( --output $out $dirs[i-1] $actual[i-1] --mode $vid_modes[$out] )
+	done
+	run $cmd
+	exit $?
+elif (( $#active_output > 1 )) && (( ! $+no_ext )) ; then
 	for ext in ${outputs[2,-1]} ; do
 		(( $+active_output[$ext] )) || continue
 		: ${ext_mode=$vid_modes[$ext]}
