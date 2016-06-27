@@ -8,6 +8,14 @@
 #include <signal.h>
 #define MAX_ROW 16
 
+// ugly hacks for FreeBSD
+#ifndef lseek64
+#define lseek64 lseek
+#endif
+#ifndef O_LARGEFILE
+#define O_LARGEFILE O_RDONLY
+#endif
+
 typedef struct {
 	char flag; char *desc;
 	int len; int sign; int endy; int test;
