@@ -8,12 +8,17 @@
 #include <signal.h>
 #define MAX_ROW 16
 
-// ugly hacks for FreeBSD
-#ifndef lseek64
-#define lseek64 lseek
+/* Set up required stuff for Linux "large file" support. */
+#ifdef O_LARGEFILE
+#define O_PERMISSIONS O_RDONLY|O_LARGEFILE
+#else
+#define O_PERMISSIONS O_RDONLY
 #endif
-#ifndef O_LARGEFILE
-#define O_LARGEFILE O_RDONLY
+
+#ifdef lseek64
+#define lseek_ lseek64
+#else
+#define lseek_ lseek
 #endif
 
 typedef struct {
@@ -269,7 +274,7 @@ int main (int argc, char **argv, char **inenv) {
 				if (!strcmp(files[fnum],"-")) {
 					fd = 0;
 				} else {
-					fd = open(files[fnum],O_RDONLY|O_LARGEFILE);
+					fd = open(files[fnum], O_PERMISSIONS);
 					if (fd == -1) {
 						perror("open");
 						fprintf(stderr,"while trying to open: %s\n", files[fnum]);
@@ -285,7 +290,7 @@ int main (int argc, char **argv, char **inenv) {
 			} else {
 				fd = 0;
 			}
-			if (skip != lseek64(fd, skip, SEEK_SET)) {
+			if (skip != lseek_(fd, skip, SEEK_SET)) {
 				while (off < skip) {
 					r = read(fd,&c,1);
 					if (r == -1) return 1;
