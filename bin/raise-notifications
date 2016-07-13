@@ -1,0 +1,13 @@
+#!/bin/sh
+xwininfo -root -children |
+perl -lanwe '
+s/^\s+//;
+next unless /has no name/ and /^0x/;
+my ($w,$h,$x,$y,$xx,$yy) = split /[x+]/, $F[-2].$F[-1];
+next if $x<0 || $y<0;
+next if ($w+$x) % 1920 != (-10 % 1920);
+print $F[0]' |
+xargs -iZ --verbose xdotool \
+  windowmove Z \
+  $(eval $(xdotool getmouselocation --shell) ; printf '%s %s' $X $Y) \
+  windowraise Z
