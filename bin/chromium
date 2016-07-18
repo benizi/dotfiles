@@ -47,8 +47,9 @@ else
 fi
 
 find_exe () {
-  unset exe
-  if [[ -f $_official ]] ; then
+  if (( $+exe )) && [[ -f $exe ]]
+  then return
+  elif [[ -f $_official ]] ; then
     exe=$_official
   else
     path=( ${${path:#$HOME/bin*}/${${(%):-"%x"}:h}} )
@@ -103,6 +104,7 @@ while [ $# -gt 0 ] ; do
     (--touch) _args+=( --touch-events=enabled ) ;;
     (//*) _url=https:$arg ;;
     (http:*|https:*|ftp:*|file:*|/*) _url=$arg ;;
+    (--exe=*) exe=${arg#*=} ;;
     (*) _args+=( $arg ) ;;
   esac
 done
