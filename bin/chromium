@@ -28,6 +28,7 @@ _javascript=true
 unset _asyncdns
 unset _flash
 _args=()
+_taskset=()
 _flags=( plugins logging user-scripts ipv6 async-dns flash )
 _pseudo_flags=( flash )
 
@@ -105,6 +106,7 @@ while [ $# -gt 0 ] ; do
     (//*) _url=https:$arg ;;
     (http:*|https:*|ftp:*|file:*|/*) _url=$arg ;;
     (--exe=*) exe=${arg#*=} ;;
+    (--cpus=*) _taskset+=( -c ${arg#*=} ) ;;
     (*) _args+=( $arg ) ;;
   esac
 done
@@ -170,6 +172,7 @@ _echo=()
 $_dry && _echo=(echo)
 _exec=()
 (( $+_scratch )) || _exec=(exec)
+(( ! $#_taskset )) || _exec+=( taskset $_taskset )
 if [[ -n "$_url" ]] ; then
   if $_remote ; then
     (( $+commands[dwm-activate] )) && dwm-activate browser &
