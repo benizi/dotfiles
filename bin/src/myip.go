@@ -76,7 +76,7 @@ func (v ByAttributes) Less(i, j int) bool {
   a := v.addrs[i]
   b := v.addrs[j]
   if xor(a.v6, b.v6) {
-    return !xor(a.v6, v.prefer6)
+    return a.v6 == v.prefer6
   }
   if xor(a.preferred, b.preferred) {
     return a.preferred
