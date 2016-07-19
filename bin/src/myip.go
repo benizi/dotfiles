@@ -131,14 +131,12 @@ func main() {
   excludeDocker := true
   docker := "172.17.0.0/16"
   printAll := false
-  sorted := false
 
   flag.BoolVar(&only6, "6", only6, "Limit to IPv6")
   flag.BoolVar(&external, "x", external, "Fetch external address")
   flag.BoolVar(&excludeDocker, "nodocker", excludeDocker, "Exclude Docker interface")
   flag.StringVar(&docker, "dockernet", docker, "Docker network to exclude")
   flag.BoolVar(&printAll, "all", printAll, "Print all addresses")
-  flag.BoolVar(&sorted, "sort", sorted, "Sort addresses (only applicable with --all)")
   flag.Parse()
 
   var acceptable []net.IPNet
@@ -204,9 +202,7 @@ func main() {
     os.Exit(1)
   }
 
-  if sorted || !printAll {
-    sort.Sort(ByAttributes{found, only6})
-  }
+  sort.Sort(ByAttributes{found, only6})
 
   for _, addr := range found {
     fmt.Println(addr.ip.String())
