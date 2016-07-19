@@ -57,6 +57,7 @@ type foundAddr struct {
   preferred bool
   rejected bool
   loopback bool
+  isRfc1918 bool
   v6 bool
 }
 
@@ -85,6 +86,9 @@ func (v ByAttributes) Less(i, j int) bool {
   }
   if xor(a.loopback, b.loopback) {
     return !a.loopback
+  }
+  if xor(a.isRfc1918, b.isRfc1918) {
+    return !a.isRfc1918
   }
   return a.ip.String() < b.ip.String()
 }
@@ -139,6 +143,15 @@ func main() {
 
   var acceptable []net.IPNet
   var rejectable []net.IPNet
+  rfc1918 := []net.IPNet{}
+
+  for _, cidr := range []string{"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"} {
+    _, parsed, err := net.ParseCIDR(cidr)
+    if err != nil {
+      log.Fatalln("Failed to parse RFC 1918 network", cidr)
+    }
+    rfc1918 = append(rfc1918, *parsed)
+  }
 
   if excludeDocker {
     _, dockerNet, err := net.ParseCIDR(docker)
@@ -181,6 +194,7 @@ func main() {
       ip: network.IP,
       preferred: anyContains(acceptable, network.IP),
       rejected: anyContains(rejectable, network.IP),
+      isRfc1918: anyContains(rfc1918, network.IP),
       loopback: network.IP.IsLoopback(),
       v6: network.IP.To4() == nil,
     })
