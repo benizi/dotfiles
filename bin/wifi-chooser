@@ -1,20 +1,114 @@
 #!/bin/sh
-net=${1:-"$(if hash nmcli 2>&- ; then
-  nmcli -f SSID dev wifi list \
-  | sed '1d;s/^.//;s/[[:space:]]*$//;s/.$//'
-elif hash wicd-cli 2>&- ; then
-  echo '<cli>'
-  echo '<rescan>'
-  wicd-cli --wireless -l | sed 1d | awk -F$'\t' '{ if (!seen[$NF]++) print $NF ":" $1}'
-fi \
-| sort \
-| uniq \
-| dmenu -l 40)"}
-if test -n "$net" ; then
-  case "$net" in
-    '<cli>') term -e sudo su - -s $(which wicd-curses) ;;
-    '<rescan>') wicd-cli -y -S ;;
-    *:*) wicd-cli -y -c -n ${net##*:} ;;
-    *) wifi "$net" ;;
-  esac
-fi
+
+set -e
+
+has() {
+  hash $1 2>&-
+}
+
+warn() {
+  {
+    tput setaf 1 || true
+    printf '%s\n' "$*"
+    tput sgr0 || true
+  } >&2 2>/dev/null
+}
+
+die() {
+  warn "$@"
+  false
+}
+
+list_networks() {
+  if has nmcli
+  then nmcli -f SSID dev wifi list
+  elif has wicd-cli
+  then
+    wicd-cli -y -l |
+    awk -F\\t 'NR > 1 && !seen[$NF]++ { print $NF ":" $1 }'
+  else die no way to list networks
+  fi
+}
+
+other_options() {
+  if has wicd-curses
+  then printf 'cli\n'
+  fi
+  if has wicd-cli
+  then printf 'rescan\n'
+  fi
+}
+
+choose_network() {
+  {
+    other_options |
+    while read opt
+    do printf '<%s>\n' "$opt"
+    done
+    list_networks
+  } |
+  sort |
+  uniq |
+  dmenu -l 40
+}
+
+connect_to() {
+  if has wicd-cli
+  then connect_with_wicd "$@"
+  else die no way to connect
+  fi
+}
+
+wicd_check_n() {
+  wicd-cli -y -n $1 -d |
+  grep -qxF "Essid: $2" || die "$1 != Essid: $2"
+}
+
+wicd_needs_enc() {
+  test "$(wicd-cli -y -n $1 -p Encryption)" = 1
+}
+
+wicd_has_enc() {
+  test "$(wicd-cli -y -n $1 -p enctype)" != None
+}
+
+wicd_set_enc() {
+  wicd-cli -y -n $1 -p enctype -s wpa
+  wicd-cli -y -n $1 -p key -s "$pw"
+}
+
+connect_with_wicd() {
+  n=${1##*:}
+  name=${1%:*}
+  wicd_check_n $n "$name"
+  if wicd_needs_enc $n && ! wicd_has_enc $n
+  then
+    pw="$(dmenu --secret -p 'Password' < /dev/null)"
+    wicd_set_enc $n "$pw"
+  fi
+  wicd_up $n
+}
+
+rescan() {
+  if has wicd-cli
+  then wicd-cli -y -S
+  else die no way to rescan
+  fi
+}
+
+cli() {
+  if has wicd-curses
+  then term -e sudo su - -s $(which wicd-curses)
+  else die no way to run a cli network thingy
+  fi
+}
+
+net=${1:-"$(choose_network)"}
+case "$net" in
+  ('') ;;
+  ('<'*'>')
+    action="${net#'<'}"
+    action="${action%'>'}"
+    ;;
+  (*) connect_to "$net" ;;
+esac
