@@ -51,6 +51,9 @@ endfor
 
 run vundle-compatibility.vim
 
+" Setup 'Glaive':
+sil! cal glaive#Install()
+
 " absurdly-large tabpagemax (to open all `-p` arguments)
 se tpm=1000
 

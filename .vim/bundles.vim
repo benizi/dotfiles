@@ -47,6 +47,11 @@ for dep in ['vim-scripts/tlib'] + map(['actions', 'completion',
 endfor
 Plugin 'MarcWeber/vim-addon-nix'
 
+" Maktaba requirements...
+Plugin 'google/vim-maktaba'
+Plugin 'google/vim-codefmt'
+Plugin 'google/vim-glaive'
+
 finish " God DAMMIT Tim Pope...
 " Clojure
 Plugin 'guns/vim-clojure-static'
