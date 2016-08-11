@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -e
+
+host=$1
+test -n "$host"
+
+if test $# -gt 1
+then thishost=$2
+elif hash myip 2>/dev/null
+then thishost=$(myip)
+else thishost=$(hostname -f)
+fi
+
+cookie=$(hex < ~/.config/pulse/cookie)
+test -n "$cookie"
+
+ssh $host \
+  'export DISPLAY=:0 ;'\
+  'export DISPLAY=:0 ;'\
+  'xprop -root -f PULSE_SERVER 8s -set PULSE_SERVER '$thishost' ;'\
+  'xprop -root -f PULSE_COOKIE 8s -set PULSE_COOKIE '$cookie
