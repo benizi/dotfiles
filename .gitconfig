@@ -28,6 +28,7 @@
 	reset = true
 [pack]
 	windowMemory = 1g
+	threads = 4
 [merge "railsschema"]
 	name = newer Rails schema version
 	driver = "ruby -e '\n\
