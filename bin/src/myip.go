@@ -59,6 +59,7 @@ type foundAddr struct {
   loopback bool
   isRfc1918 bool
   v6 bool
+  original int
 }
 
 func xor(a, b bool) bool {
@@ -89,6 +90,9 @@ func (v ByAttributes) Less(i, j int) bool {
   }
   if xor(a.isRfc1918, b.isRfc1918) {
     return !a.isRfc1918
+  }
+  if a.original != b.original {
+    return a.original < b.original
   }
   return a.ip.String() < b.ip.String()
 }
@@ -195,6 +199,7 @@ func main() {
       isRfc1918: anyContains(rfc1918, network.IP),
       loopback: network.IP.IsLoopback(),
       v6: network.IP.To4() == nil,
+      original: len(found),
     })
   }
 
