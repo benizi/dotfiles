@@ -1,11 +1,36 @@
 #!/bin/sh
-: ${output=$1}
-: ${output=$(xrandr | awk '/ connected/ { print $1 ; exit }')}
 
-map() {
-  for input
-  do xinput map-to-output $input $output
+# Find primary output, if it's connected
+find_primary() {
+  xrandr |
+  awk '/ connected/ && !seen++ { if ($3 == "primary") print $1 }'
+}
+
+# Find Xinput IDs for touchscreens and pen tablets
+find_graphics_tablets() {
+  xinput list |
+  awk -F'[\\t=]' '/Touchscreen|PenTablet/ && /pointer/ { print $3 }'
+)
+
+map_to_primary() {
+  for tablet
+  do xinput map-to-output $tablet $primary
   done
 }
 
-map $(xinput list | awk -F'[\\t=]' '/Touchscreen|PenTablet/ && /pointer/ { print $3 }')
+# Allow user to specify primary output as argument
+parseargs() {
+  if test $# -gt 0
+  then : ${primary:=$1}
+  else : ${primary:=$(find_primary)}
+  fi
+}
+
+main() {
+  # Allow user to specify primary output as environment variable
+  test -n "$primary" || parseargs "$@"
+  # Either primary is zero, or all graphics tablets should be mapped to it.
+  test -z "$primary" || map_to_primary $(find_graphics_tablets)
+}
+
+main "$@"
