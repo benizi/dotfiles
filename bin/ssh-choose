@@ -10,8 +10,17 @@ GetOptions(
 	'v' => \(my $verbose),
 	'dry-run' => \(my $dry),
 	'ssh-script!' => \(my $ssh_script = 1),
-	't|term=s' => \(my $term),
+	't|term=s@' => \my @term,
+	'e=s@' => \my @env,
+	'env!' => \(my $env = 1),
+	'ssh-cmd=s@' => \my @ssh,
 );
+
+die "--no-env and -e both specified\n" if @env and not $env;
+
+@term = qw/term -e/ unless @term;
+@env = $env ? (@env ? (env => @env) : qw/env TERM=xterm-256color/) : ();
+@ssh = qw/ssh/ unless @ssh;
 
 sub ssh_script {
 	my $script = "$ENV{HOME}/ssh-script";
@@ -65,7 +74,7 @@ if ($just_one) {
 }
 chomp $out;
 exit 1 unless length $out;
-my @cmd = ($term // 'term', '-e', 'env', 'TERM=xterm-256color', 'ssh', split ' ', $out);
+my @cmd = (@term, @env, @ssh, split ' ', $out);
 print "@cmd\n" if $verbose;
 exit if $dry;
 open STDERR, '>', '/dev/null';
