@@ -1,0 +1,18 @@
+#!/bin/sh
+
+findkeys() {
+  awk '
+  /#define/ && $2 ~ /_.*_/ && $2 ~ /_(L|R|Level.*)$/ {
+    print substr($2,4)
+  }' /usr/include/X11/keysymdef.h
+}
+
+run() {
+  xargs printf 'xdotool keyup %s\n' |
+  if test $# -gt 0
+  then ssh $1 'DISPLAY=:0 sh -e -x'
+  else cat
+  fi
+}
+
+findkeys | run "$@"
