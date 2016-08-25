@@ -77,6 +77,10 @@ wicd_set_enc() {
   wicd-cli -y -n $1 -p key -s "$pw"
 }
 
+wicd_up() {
+  wicd-cli -y -n $1 -c
+}
+
 connect_with_wicd() {
   n=${1##*:}
   name=${1%:*}
