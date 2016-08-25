@@ -43,7 +43,7 @@ choose_network() {
   {
     other_options |
     while read opt
-    do printf '<%s>\n' "$opt"
+    do printf '~%s\n' "$opt"
     done
     list_networks
   } |
@@ -107,12 +107,14 @@ cli() {
   fi
 }
 
-net=${1:-"$(choose_network)"}
-case "$net" in
-  ('') ;;
-  ('<'*'>')
-    action="${net#'<'}"
-    action="${action%'>'}"
-    ;;
-  (*) connect_to "$net" ;;
-esac
+choose_and_act() {
+  choice="$(choose_network)"
+  case "$choice" in
+    ('') : canceled ;;
+    ('~'*) "${choice#'~'}" ;;
+    (*) connect_to "$choice" ;;
+  esac
+}
+
+test $# -gt 0 || set -- choose_and_act
+"$@"
