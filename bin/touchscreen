@@ -10,7 +10,7 @@ find_primary() {
 find_graphics_tablets() {
   xinput list |
   awk -F'[\\t=]' '/Touchscreen|PenTablet/ && /pointer/ { print $3 }'
-)
+}
 
 map_to_primary() {
   for tablet
