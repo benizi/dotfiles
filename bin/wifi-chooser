@@ -19,6 +19,14 @@ die() {
   false
 }
 
+set_net_vars() {
+  n=${1##*:}
+  name=${1%:*}
+  shift
+  wicd_check_n $n "$name"
+  test $# -eq 0 || "$@"
+}
+
 list_networks() {
   if has nmcli
   then nmcli -f SSID dev wifi list
@@ -52,7 +60,7 @@ choose_network() {
   dmenu -l 40
 }
 
-connect_to() {
+connect() {
   if has wicd-cli
   then connect_with_wicd "$@"
   else die no way to connect
@@ -82,9 +90,7 @@ wicd_up() {
 }
 
 connect_with_wicd() {
-  n=${1##*:}
-  name=${1%:*}
-  wicd_check_n $n "$name"
+  set_net_vars "$1"
   if wicd_needs_enc $n && ! wicd_has_enc $n
   then
     pw="$(dmenu --secret -p 'Password' < /dev/null)"
@@ -107,14 +113,16 @@ cli() {
   fi
 }
 
-choose_and_act() {
+with_choice() {
+  command=$1
+  shift
   choice="$(choose_network)"
   case "$choice" in
     ('') : canceled ;;
     ('~'*) "${choice#'~'}" ;;
-    (*) connect_to "$choice" ;;
+    (*) $command "$choice" "$@" ;;
   esac
 }
 
-test $# -gt 0 || set -- choose_and_act
+test $# -gt 0 || set -- with_choice connect
 "$@"
