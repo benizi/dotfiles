@@ -39,12 +39,10 @@ list_networks() {
 }
 
 other_options() {
-  if has wicd-curses
-  then printf 'cli\n'
-  fi
-  if has wicd-cli
-  then printf 'rescan\n'
-  fi
+  set -- printf '%s\n'
+  "$@" auth_reset
+  ! has wicd-curses || "$@" cli
+  ! has wicd-cli || "$@" rescan
 }
 
 choose_network() {
@@ -65,6 +63,15 @@ connect() {
   then connect_with_wicd "$@"
   else die no way to connect
   fi
+}
+
+pw_prompt_and_set() {
+  pw="$(dmenu --secret -p 'Password' < /dev/null)"
+  wicd_set_enc $n "$pw"
+}
+
+auth_reset() {
+  with_choice set_net_vars pw_prompt_and_set
 }
 
 wicd_check_n() {
@@ -92,9 +99,7 @@ wicd_up() {
 connect_with_wicd() {
   set_net_vars "$1"
   if wicd_needs_enc $n && ! wicd_has_enc $n
-  then
-    pw="$(dmenu --secret -p 'Password' < /dev/null)"
-    wicd_set_enc $n "$pw"
+  then pw_prompt_and_set
   fi
   wicd_up $n
 }
