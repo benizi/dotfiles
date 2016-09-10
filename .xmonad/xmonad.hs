@@ -306,7 +306,9 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 -- The available layouts.  Note that each layout is separated by |||,
 -- which denotes layout choice.
 --
-myLayout = windowNavigation (FS.fullscreenFocus $ (myWmii ||| wmiiLike ||| Grid))
+myLayoutHook = windowNavigation $
+               FS.fullscreenFocus $
+               myWmii ||| wmiiLike ||| Grid
   where
      -- Default proportion of screen occupied by master pane
      ratio   = 1/2
@@ -319,15 +321,13 @@ myLayout = windowNavigation (FS.fullscreenFocus $ (myWmii ||| wmiiLike ||| Grid)
      -- myWmii is basically the same as stock wmii,
      -- but it defaults to tabs first
      myWmii = group innerLayout zoomRowG
-        where column = named "Column" $ Tall 0 delta ratio
-              tabs = named "Tabs" $ Simplest
+        where column = named "Column" $ avoidStruts $ Tall 0 delta ratio
+              tabs = named "Tabs" $ avoidStruts $ Simplest
               innerLayout = renamed [CutWordsLeft 3]
                             $ addTabs shrinkText defaultTheme
                             $ ignore NextLayout
                             $ ignore (LC.JumpToLayout "") $ unEscape
                                 $ tabs LC.||| column LC.||| Full
-
-myLayoutHook = avoidStruts myLayout
 
 ------------------------------------------------------------------------
 -- Window rules:
