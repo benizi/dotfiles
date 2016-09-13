@@ -1,0 +1,190 @@
+#!/bin/sh
+
+usedocker() {
+  set -e
+  local tag=tmuxinator:latest
+  local dockerfile=${dotfiles:-"$HOME/dotfiles"}/docker/tmuxinator.docker
+  if docker images -q $tag | awk 'END { exit NR > 0 ? 1 : 0 }'
+  then docker build -t $tag - < $dockerfile || false
+  fi
+  exec docker run -it --rm \
+    -v "$HOME/.tmuxinator:/root/.tmuxinator:ro" \
+    -v /tmp/tmux-$(id -u)/default:/root/tmux-0/default \
+    $tag tmuxinator "$@"
+  exit 1
+}
+
+if hash docker 2>/dev/null && false
+then usedocker "$@"
+fi
+
+warnf() {
+  printf "$@" >&2
+}
+
+die() {
+  warnf '%s\n' "$*"
+  exit 1
+}
+
+usage() {
+  warnf 'Usage: mux [start template-name] | [completions start]\n'
+  test $# -eq 0 || exit $1
+}
+
+mux_completions_start() {
+  find ~/.tmuxinator/ -maxdepth 1 -name '*.yml' |
+  awk -F/ '{ print $NF }' |
+  awk -F. '{ NF-- } 1' |
+  sort
+}
+
+linematch() {
+  expr "$line" : "$1" >/dev/null 2>/dev/null
+}
+
+mux_start() {
+  local sess=$1
+  local file=$HOME/.tmuxinator/${sess}.yml
+  local line indent=0 section=top expectindent=0
+  local root pre_window layout windowname window=-1 pane=-1
+  test -e $file || die "No such file [$file] for session [$sess]"
+
+  awk '$1 ~ /^#/ { next } { print index($0, $1) - 1 " " $0 }' $file |
+  while read indent line
+  do
+    if test $indent -eq 0 && test -z "$line"
+    then continue
+    fi
+
+    printf '[%d][%s] {%s @ %d}\n' $indent "${line}" $section $expectindent
+    if test $indent -lt $expectindent
+    then
+      case $section in
+        (*) die "$section ended" ;;
+      esac
+    fi
+
+    ### Parse simple kv-pairs:
+    ## a single kv-pair hash in an array:
+    # - {{key}}: {{simple}}
+    # key matches even if it's not a simple kv-pair
+    local key="$(expr "$line" : '- \([a-z][a-z0-9_]\{0,\}\):')"
+    local simple="$(expr "$line" : '- [a-z][a-z0-9 ]\{0,\}: \(.*\)$')"
+    ## a single kv-pair in a hash
+    # {{var}}: {{val}}
+    local var="$(expr "$line" : '\([a-z]\{1,\}\):')"
+    local val="$(expr "$line" : '[a-z]\{1,\}: \(.*\)$')"
+
+    if test -n "$val"
+    then
+      local var="${line%%:*}"
+      handled=true
+      case "$var" in
+        (name) : ignored ;;
+        (root) root=$val ;;
+        (pre_window) pre_window=$val ;;
+        (layout) layout=$val ;;
+        (*) handled=false ;;
+      esac
+      $handled || printf 'Unknown var: [%s]=[%s]\n' "$var" "$val"
+      continue
+    fi
+
+    case $section in
+      (top)
+        if test -n "$val"
+        then
+          case $var in
+            (name) : ignored ;;
+            (root) root=$val ; printf 'root=%s\n' "$root" ;;
+          esac
+        else
+          case "$line" in
+            (windows:) section=windows expectindent=$((indent+2)) ;;
+          esac
+        fi
+        ;;
+      (windows)
+        local simple=false
+        if linematch '- [a-z]\{1,\}:$'
+        then
+          section=window
+          expectindent=$((indent+4))
+          windowname="$key"
+          layout=
+          ((++window)) || true
+          printf 'WINDOW=[%d][%s]\n' "$window" "$windowname"
+        elif linematch '- '$key': '
+        then
+          ## simple window
+          simple=true
+          printf 'SIMPLE WINDOW[%s][%s]\n' "$key" "$val"
+        else
+          warnf 'BAD LINE %s\n' "$line"
+        fi
+        ;;
+      (window)
+        case "$line" in
+          (panes:)
+            section=panes
+            expectindent=$((indent+2))
+            pane=-1
+            ;;
+        esac
+        ;;
+      (panes)
+        case "$line" in
+          ## simple pane
+          (-\ ${key}:\ *)
+            val="${line#*': '}"
+            printf 'SIMPLE PANE[%s][%s]\n' "$key" "$val"
+            ;;
+        esac
+        ;;
+    esac
+  done
+}
+
+tmux_send_keys() {
+  local target=$1
+  shift
+  local char nxt cmd="$*"
+  set -- tmux send-keys -t "$target"
+  while test -n "$cmd"
+  do
+    nxt="${cmd#?}"
+    char="${cmd%"$nxt"}"
+    set -- "$@" "$char"
+    cmd="${cmd#?}"
+  done
+  "$@"
+}
+
+tmux_run_command() {
+  local target=$1
+  shift
+  tmux_send_keys "$target" "$*"
+  tmux send-keys -t "$target" C-m
+}
+
+set -e
+
+case "$*" in
+  ('completions start')
+    mux_completions_start
+    exit
+    ;;
+esac
+
+case "$1" in
+  (start)
+    shift
+    test $# -eq 1 || usage 1
+    sess=$1
+    if tmux has -t "$sess" 2>/dev/null
+    then tmux attach -t "$sess"
+    else mux_start "$sess"
+    fi
+    ;;
+esac
