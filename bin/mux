@@ -1,23 +1,5 @@
 #!/bin/sh
 
-usedocker() {
-  set -e
-  local tag=tmuxinator:latest
-  local dockerfile=${dotfiles:-"$HOME/dotfiles"}/docker/tmuxinator.docker
-  if docker images -q $tag | awk 'END { exit NR > 0 ? 1 : 0 }'
-  then docker build -t $tag - < $dockerfile || false
-  fi
-  exec docker run -it --rm \
-    -v "$HOME/.tmuxinator:/root/.tmuxinator:ro" \
-    -v /tmp/tmux-$(id -u)/default:/root/tmux-0/default \
-    $tag tmuxinator "$@"
-  exit 1
-}
-
-if hash docker 2>/dev/null && false
-then usedocker "$@"
-fi
-
 warnf() {
   printf "$@" >&2
 }
@@ -39,108 +21,72 @@ mux_completions_start() {
   sort
 }
 
-linematch() {
-  expr "$line" : "$1" >/dev/null 2>/dev/null
+mux_parse() {
+  ruby -ryaml -- - "$@" <<'RUBY'
+def out(*args); puts args.join("\t"); end
+@pre = nil
+def runall(id, cmds)
+  [@pre, cmds].flatten.compact.each { |cmd| out :run, id, cmd }
+end
+YAML::load(ARGF.read).tap do |file|
+  root, @pre, windows = %w(root pre_window windows).map { |k| file.delete(k) }
+  file.delete("name")
+  out :root, 0, root if root
+  abort "Unhandled file keys: #{file.inspect}" unless file.empty?
+  windows.each_with_index do |whash, wi|
+    wname, window = whash.to_a.first
+    out :window, wi, wname
+    case window
+    when Hash # panes
+      panes, layout = %w(panes layout).map { |k| window.delete(k) }
+      abort "Unhandled keys: #{window.inspect}" unless window.empty?
+      abort "Unknown panes type: #{panes.inspect}" unless Array === panes
+      panes.each_with_index do |phash, pi|
+        pid = [wi, pi].join('.')
+        case phash
+        when String ; runall pid, phash
+        when Hash
+          pname, pane = phash.to_a.first
+          runall pid, pane
+          out :pane, pid, pname
+        end
+      end
+      out :layout, wi, layout if layout
+    when Array, String # list, single
+      runall wi, window
+    else abort "Unknown window type: #{window.inspect}"
+    end
+  end
+end
+RUBY
 }
 
 mux_start() {
-  local sess=$1
-  local file=$HOME/.tmuxinator/${sess}.yml
-  local line indent=0 section=top expectindent=0
-  local root pre_window layout windowname window=-1 pane=-1
-  test -e $file || die "No such file [$file] for session [$sess]"
-
-  awk '$1 ~ /^#/ { next } { print index($0, $1) - 1 " " $0 }' $file |
-  while read indent line
+  set -e
+  local sess=$1 action target command
+  tmux new-session -d -s $sess
+  mux_parse $HOME/.tmuxinator/${sess}.yml |
+  while read action target command
   do
-    if test $indent -eq 0 && test -z "$line"
-    then continue
-    fi
-
-    printf '[%d][%s] {%s @ %d}\n' $indent "${line}" $section $expectindent
-    if test $indent -lt $expectindent
-    then
-      case $section in
-        (*) die "$section ended" ;;
-      esac
-    fi
-
-    ### Parse simple kv-pairs:
-    ## a single kv-pair hash in an array:
-    # - {{key}}: {{simple}}
-    # key matches even if it's not a simple kv-pair
-    local key="$(expr "$line" : '- \([a-z][a-z0-9_]\{0,\}\):')"
-    local simple="$(expr "$line" : '- [a-z][a-z0-9 ]\{0,\}: \(.*\)$')"
-    ## a single kv-pair in a hash
-    # {{var}}: {{val}}
-    local var="$(expr "$line" : '\([a-z]\{1,\}\):')"
-    local val="$(expr "$line" : '[a-z]\{1,\}: \(.*\)$')"
-
-    if test -n "$val"
-    then
-      local var="${line%%:*}"
-      handled=true
-      case "$var" in
-        (name) : ignored ;;
-        (root) root=$val ;;
-        (pre_window) pre_window=$val ;;
-        (layout) layout=$val ;;
-        (*) handled=false ;;
-      esac
-      $handled || printf 'Unknown var: [%s]=[%s]\n' "$var" "$val"
-      continue
-    fi
-
-    case $section in
-      (top)
-        if test -n "$val"
-        then
-          case $var in
-            (name) : ignored ;;
-            (root) root=$val ; printf 'root=%s\n' "$root" ;;
-          esac
-        else
-          case "$line" in
-            (windows:) section=windows expectindent=$((indent+2)) ;;
-          esac
-        fi
-        ;;
-      (windows)
-        local simple=false
-        if linematch '- [a-z]\{1,\}:$'
-        then
-          section=window
-          expectindent=$((indent+4))
-          windowname="$key"
-          layout=
-          ((++window)) || true
-          printf 'WINDOW=[%d][%s]\n' "$window" "$windowname"
-        elif linematch '- '$key': '
-        then
-          ## simple window
-          simple=true
-          printf 'SIMPLE WINDOW[%s][%s]\n' "$key" "$val"
-        else
-          warnf 'BAD LINE %s\n' "$line"
-        fi
-        ;;
+    case $action in
+      (root) cd $command ;;
       (window)
-        case "$line" in
-          (panes:)
-            section=panes
-            expectindent=$((indent+2))
-            pane=-1
-            ;;
-        esac
+        test $target -eq 0 || tmux new-window -t $sess
+        tmux rename-window -t $sess:$target "$command"
         ;;
-      (panes)
-        case "$line" in
-          ## simple pane
-          (-\ ${key}:\ *)
-            val="${line#*': '}"
-            printf 'SIMPLE PANE[%s][%s]\n' "$key" "$val"
-            ;;
-        esac
+      (run)
+        win=${target%.*}
+        pane=${target#*.}
+        test $pane -eq 0 || tmux split-window -t $sess:$win
+        tmux_run_command $sess:$target "$command"
+        ;;
+      (layout)
+        tmux select-layout -t $sess:$target $command
+        ;;
+      (*)
+        printf 'action[%s] target[%s] command[%s]\n' "$action" "$target" "$command"
+        warnf 'UNKNOWN: [%s]\n' $action
+        continue
         ;;
     esac
   done
