@@ -22,7 +22,9 @@ mux_completions_start() {
 }
 
 mux_parse() {
-  ruby -ryaml -- - "$@" <<'RUBY'
+  local sess=$1
+  local file=$HOME/.tmuxinator/${sess}.yml
+  ruby -ryaml -- - "$file" <<'RUBY'
 def out(*args); puts args.join("\t"); end
 @pre = nil
 def runall(id, cmds)
@@ -63,21 +65,24 @@ RUBY
 
 mux_start() {
   set -e
-  local sess=$1 action target command
-  tmux new-session -d -s $sess
-  mux_parse $HOME/.tmuxinator/${sess}.yml |
+  local sess=$1 action target command root
+  mux_parse $sess |
   while read action target command
   do
     case $action in
       (root) cd $command ;;
       (window)
-        test $target -eq 0 || tmux new-window -t $sess
-        tmux rename-window -t $sess:$target "$command"
+        if test $target -eq 0
+        then tmux new-session -d -s $sess -n "$command"
+        else tmux new-window -t $sess -n "$command"
+        fi
         ;;
       (run)
         win=${target%.*}
         pane=${target#*.}
-        test $pane -eq 0 || tmux split-window -t $sess:$win
+        if test $pane -gt 0
+        then tmux split-window ${root+"-c"} ${root+"$root"} -t $sess:$win
+        fi
         tmux_run_command $sess:$target "$command"
         ;;
       (layout)
@@ -124,6 +129,11 @@ case "$*" in
 esac
 
 case "$1" in
+  (parse)
+    shift
+    test $# -eq 1 || usage 1
+    mux_parse $1
+    ;;
   (start)
     shift
     test $# -eq 1 || usage 1
