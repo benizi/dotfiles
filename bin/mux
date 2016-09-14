@@ -95,6 +95,7 @@ mux_start() {
         ;;
     esac
   done
+  tmux attach -t $sess
 }
 
 tmux_send_keys() {
