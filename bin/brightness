@@ -16,7 +16,14 @@ hash xbacklight 2>/dev/null || xbacklight() {
     cur="$(cat $bl/brightness)"
     delta=$(( pct * max / 100 ))
 
-    [ "$op" = "=" ] && val=$delta || val=$(( cur $op delta ))
+    case "$op" in
+      (-get)
+        printf '6 k %s 100 * %s / p\n' $cur $max | dc
+        exit
+        ;;
+      ('=') val=$delta ;;
+      (*) val=$(( cur $op delta )) ;;
+    esac
     if [ -z "$val" ] || [ $val -lt 1 ] ; then
       die Not setting zero brightness
     fi
@@ -24,12 +31,11 @@ hash xbacklight 2>/dev/null || xbacklight() {
   fi
 }
 
-[ $# -eq 0 ] && die "Usage: $0 up | down | min | max | op pct"
-
 case "$1" in
-  up) xbacklight + 10 ;;
-  down) xbacklight - 10 ;;
-  min) xbacklight '=' 10 ;;
-  max) xbacklight '=' 100 ;;
-  *) xbacklight "$@" ;;
+  (up) xbacklight + 10 ;;
+  (down) xbacklight - 10 ;;
+  (min) xbacklight '=' 10 ;;
+  (max) xbacklight '=' 100 ;;
+  (''|-get) xbacklight -get ;;
+  (*) die "Usage: $0 up | down | min | max | op pct" ;;
 esac
