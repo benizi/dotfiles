@@ -1,0 +1,33 @@
+#!/bin/sh
+
+remotes_from_config() {
+  git config --get-all f.default
+}
+
+remotes_from_filtering() {
+  git remote |
+  while read remote
+  do
+    allowed="$(git config remote.$remote.default)"
+    ${allowed:-true} || continue
+    printf '%s\n' $remote
+  done
+}
+
+remotes=
+any=false
+for arg
+do
+  $any || set --
+  any=true
+  if test -n "$(git config remote.$arg.url)"
+  then remotes="$remotes${remotes+' '}$arg"
+  else set -- "$@" "$arg"
+  fi
+done
+test -n "$remotes" || remotes="$(remotes_from_config)"
+test -n "$remotes" || remotes="$(remotes_from_filtering)"
+
+for remote in $remotes
+do git fetch "$@" $remote
+done
