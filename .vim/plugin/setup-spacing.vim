@@ -5,7 +5,15 @@ fun! SetupTabstop(width, expand, ...)
 	let &l:sw = a:width
 	let &l:ts = a:0 ? a:1 : a:width
 	let &l:et = a:expand ? 1 : 0
-	let &l:listchars = 'tab:'.(a:expand ? '» ' : '  ').',trail:·'
+	let lsc = {}
+	let lsc.tab = a:expand ? '» ' : '  '
+	let lsc.trail = '·'
+	let lsc.precedes = '┋'
+	let lsc.extends = '┋'
+	let lsc.nbsp = '•'
+	let &l:listchars = join(map(items(lsc), 'join(v:val,":")'), ',')
+	let &l:list = 1
+	let &l:sbr = '» '
 endf
 
 fun! HighlightSpacingErrors()
