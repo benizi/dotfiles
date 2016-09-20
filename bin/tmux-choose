@@ -1,10 +1,15 @@
 #!/bin/sh
-session="$(
-  (tmux ls -F '#{session_name}' 2>/dev/null ;
+{
+  tmux ls -F '#S' 2>/dev/null || true
   hash mux 2>/dev/null && mux completions start | sed 's!$!:mux!'
-  ) | dmenu)"
-test -n "$session" || exit
-case "$session" in
-  *:mux) in-term mux start "${session%:mux}" ;;
-  *) in-term tmux-attach-or-new "$session"
-esac
+} |
+awk -F: '!seen[$1]++ || $NF != "mux"' |
+dmenu |
+while read session
+do
+  case "$session" in
+    ('') true ;;
+    (*:mux) ensure-in-term mux start "${session%:mux}" ;;
+    (*) ensure-in-term tm "$session"
+  esac
+done
