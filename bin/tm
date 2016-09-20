@@ -1,0 +1,30 @@
+#!/bin/sh
+
+usage() {
+  cmd="${0##*/}"
+  cat <<USAGE
+Usage: ${cmd} [ name | cmd [args] | -[nst] name cmd [args] ]
+  ${cmd} | create a new session
+  ${cmd} name | attach/create session w/ given name
+  ${cmd} cmd [args] | create session named after cmd
+  ${cmd} -n/-s/-t name cmd [args] | create session w/ given name and cmd
+USAGE
+}
+
+case "$1" in
+  (-h|--help) usage ; exit 0 ;;
+  (-n|-s|-t) name=$2 ; shift 2 ;;
+  (*) name=$1 ;;
+  ('') name= ;;
+esac
+
+case "$name" in
+  ('') tmux new ;;
+  (ls) tmux ls -F '#S' 2>/dev/null || true ;;
+  (*)
+    if tmux has-session -t "$name" 2>/dev/null
+    then tmux attach -t "$name"
+    else tmux new -s "$@"
+    fi
+    ;;
+esac
