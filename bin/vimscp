@@ -19,7 +19,7 @@ optparse.parse!(ARGV)
 opts[:file] ||= ARGV.shift
 optparse.abort('Need a file') unless opts[:file]
 opts[:host] ||= ARGV.shift
-opts[:host] ||= ENV['DEFAULT_SSH']
+opts[:host] ||= '_'
 optparse.abort('Need a host') unless opts[:host]
 opts[:cmd] ||= [ 'vimdiff' ]
 
@@ -58,7 +58,7 @@ function vimscp () {
 	(( $#argv )) || { echo need a path ; return 1 }
 	local host infile=$1
 	shift
-	if (( $#argv )) ; then host=$1 ; shift ; else host=$DEFAULT_SSH ; fi
+	if (( $#argv )) ; then host=$1 ; shift ; else host=_ ; fi
 	(( $#host )) || { echo need a host ; return 1 }
 	local actualfile
 	actualfile=( $infile(N+A) )

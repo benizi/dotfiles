@@ -55,13 +55,7 @@ if (@ARGV) {
 		keys %hosts;
 }
 if ($just_one or not @hosts) {
-	if (open my $default, '<', "$ENV{HOME}/.default.ssh") {
-		chomp(@hosts = <$default>);
-	} else {
-		@hosts = $ENV{DEFAULT_SSH}
-		// $default_other{hostname()}
-		// 'localhost'
-	}
+	@hosts = $default_other{hostname()} // '_'
 }
 $hosts = join "", map "$_\n", sort @hosts;
 print $hosts and exit unless $do_exec;

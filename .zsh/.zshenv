@@ -62,9 +62,6 @@ setup_autoloads() {
 }
 setup_autoloads
 
-defaultssh=~$owner/.default.ssh
-[[ -f $defaultssh ]] && export DEFAULT_SSH="$(<$defaultssh)"
-
 # run versions of the current file that aren't the file itself
 function run_local_versions () {
   local file thisfile=${1:-${(%):-"%x"}}
