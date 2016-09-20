@@ -1,7 +1,0 @@
-#!/usr/bin/env boot
-(set-env! :dependencies '[[org.clojure/tools.nrepl "0.2.11"]])
-(require '[clojure.tools.nrepl.server :refer (start-server stop-server)])
-(defonce server (start-server :bind "localhost"))
-(defn -main []
-  (println (:port server))
-  (boot (repl)))
