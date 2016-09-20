@@ -1,0 +1,9 @@
+#compdef tm
+
+_tm_ls() {
+  local -a _sess
+  _sess=( $(_call_program tm tm ls) )
+  _describe -t sessions 'tmux sessions' _sess
+}
+
+_arguments '(-):tmux-sessions: _tm_ls'
