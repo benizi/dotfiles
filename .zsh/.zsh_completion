@@ -78,3 +78,22 @@ _push-upstream() {
 compdef {_,}push-upstream
 (( $+functions[verman_eval] )) && compdef verman_eval=verman
 [[ -e $OPAMROOT ]] && . $OPAMROOT/opam-init/complete.zsh
+
+if (( $+commands[tmux-attach-or-new] ))
+then
+  _tmux-attach-or-new() { false }
+  _tmuxattachornew() {
+    if [[ $functions[_tmux] == (builtin autoload*) ]]
+    then
+      autoload +X _tmux
+      () {
+        local -a words
+        words=( tmux attach-or-new )
+        _tmux attach-or-new &> /dev/null || true
+        unfunction _tmux
+      }
+    fi
+    _wanted sessions expl sessions __tmux-sessions
+  }
+  compdef _tmuxattachornew tmux-attach-or-new
+fi
