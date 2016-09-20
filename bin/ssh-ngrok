@@ -1,0 +1,28 @@
+#!/bin/sh
+set -e
+dial=${1?}
+realhost=${2?}
+shift 2
+ngrok=${dial#*//}
+ngrok=${ngrok%:*}
+port=${dial##*:}
+known_hosts=$HOME/.ssh/known_hosts
+temp_kh=$(mktemp)
+trap '[[ -n "$temp_kh" ]] && rm "$temp_kh"' INT QUIT EXIT HUP
+key_line=$(
+  ssh-keygen -l -f ~/.ssh/known_hosts -F "$realhost" |
+  awk '$(NF-1) == "line" { print $NF ; exit }'
+)
+test -n "$key_line"
+hosts=$(
+  printf '[%s]:'$port'\n' $ngrok $(dig +short $ngrok) |
+  awk -v RS=@ -v IFS=\\n -v OFS=, '{$1=$1}1'
+)
+sed -n -e ${key_line}p $known_hosts |
+awk -v h="$hosts" '{$1 = h} 1' > $temp_kh
+ssh \
+  -o HostName=$ngrok \
+  -o Port=$port \
+  -o UserKnownHostsFile=$temp_kh \
+  $realhost \
+  "$@"
