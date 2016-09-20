@@ -107,6 +107,7 @@ tmux_send_keys() {
   do
     nxt="${cmd#?}"
     char="${cmd%"$nxt"}"
+    char="${char/;/\\;}"
     set -- "$@" "$char"
     cmd="${cmd#?}"
   done
