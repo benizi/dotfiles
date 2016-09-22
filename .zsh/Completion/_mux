@@ -1,0 +1,37 @@
+#compdef mux
+
+__mux_sessions() {
+  local ret=0
+  local -a configs running
+  running=( $(_call_program tm tm ls) )
+  configs=( $(_call_program mux mux completions start) )
+  running=( ${running:*configs} )
+  configs=( ${configs:|running} )
+  _describe -t mux-configs 'mux configs' configs
+  (( ret += $? )) || :
+  _describe -t mux-running 'running mux sessions' running
+  return $((ret + $?))
+}
+
+__mux_commands() {
+  local -a cmds
+  cmds=( 'start:Start a mux session' )
+  _describe -t mux-commands 'mux commands' cmds
+}
+
+_mux() {
+  local state ret=1
+  _arguments -C \
+    '(-):command:->command' \
+    '(-)*:options:->options'
+  ret=$?
+
+  case $state in
+    (command) __mux_commands ; : ((ret+=$?)) ;;
+    (options) __mux_sessions ; : ((ret+=$?)) ;;
+  esac
+
+  return $ret
+}
+
+_mux "$@"
