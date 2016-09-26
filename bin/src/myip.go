@@ -68,7 +68,6 @@ func xor(a, b bool) bool {
 
 type ByAttributes struct {
   addrs []foundAddr
-  prefer6 bool
 }
 
 func (v ByAttributes) Len() int { return len(v.addrs) }
@@ -77,7 +76,7 @@ func (v ByAttributes) Less(i, j int) bool {
   a := v.addrs[i]
   b := v.addrs[j]
   if xor(a.v6, b.v6) {
-    return a.v6 == v.prefer6
+    return !a.v6
   }
   if xor(a.preferred, b.preferred) {
     return a.preferred
@@ -130,13 +129,15 @@ func parseNetwork(cidr string) (*net.IPNet, error) {
 }
 
 func main() {
-  only6 := false
+  print4 := false
+  print6 := false
   external := false
   excludeDocker := true
   docker := "172.17.0.0/16"
   printAll := false
 
-  flag.BoolVar(&only6, "6", only6, "Limit to IPv6")
+  flag.BoolVar(&print4, "4", print4, "Print IPv4")
+  flag.BoolVar(&print6, "6", print6, "Print IPv6")
   flag.BoolVar(&external, "x", external, "Fetch external address")
   flag.BoolVar(&excludeDocker, "nodocker", excludeDocker, "Exclude Docker interface")
   flag.StringVar(&docker, "dockernet", docker, "Docker network to exclude")
@@ -192,13 +193,17 @@ func main() {
       continue
     }
 
+    v6 := network.IP.To4() == nil
+    if xor(print4, print6) && xor(print6, v6) {
+      continue
+    }
     found = append(found, foundAddr{
       ip: network.IP,
       preferred: anyContains(acceptable, network.IP),
       rejected: anyContains(rejectable, network.IP),
       isRfc1918: anyContains(rfc1918, network.IP),
       loopback: network.IP.IsLoopback(),
-      v6: network.IP.To4() == nil,
+      v6: v6,
       original: len(found),
     })
   }
@@ -207,7 +212,7 @@ func main() {
     os.Exit(1)
   }
 
-  sort.Sort(ByAttributes{found, only6})
+  sort.Sort(ByAttributes{found})
 
   for _, addr := range found {
     fmt.Println(addr.ip.String())
