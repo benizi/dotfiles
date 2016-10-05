@@ -31,6 +31,7 @@ _args=()
 _taskset=()
 _flags=( plugins logging user-scripts ipv6 async-dns flash )
 _pseudo_flags=( flash )
+_overscroll=0
 
 if [[ -d /Applications ]] ; then
   _official="/Applications/Chrome.app/Contents/MacOS/Google Chrome"
@@ -103,6 +104,7 @@ while [ $# -gt 0 ] ; do
     (-dry|--dry) _dry=true ;;
     (--nojs) unset _javascript ;;
     (--touch) _args+=( --touch-events=enabled ) ;;
+    (--overscroll*) _overscroll=${arg#*=} ;;
     (//*) _url=https:$arg ;;
     (http:*|https:*|ftp:*|file:*|/*) _url=$arg ;;
     (--exe=*) exe=${arg#*=} ;;
@@ -144,6 +146,7 @@ done
 for flag in $_pseudo_flags ; do
   _args=( ${_args#--*able-$flag} )
 done
+_args+=( ${_overscroll:+"--overscroll-history-navigation=$_overscroll"} )
 
 pepper_flash_source=$HOME/PepperFlash
 
