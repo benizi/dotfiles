@@ -1,8 +1,1 @@
-local file
-local -a files
-files=( $^zsh_dirs/reminders(N) )
-if (( $#files ))
-then file=$files[1]
-else file=${zsh_dirs[-1]}/reminders
-fi
-printf '%s\n' ${(%):-'%~'} >> $file
+reminder ${(%):-'%~'}

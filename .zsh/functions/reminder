@@ -1,2 +1,10 @@
-can-mail || return 1
-echo Mailed Reminder | mail -s "$*" $EMAIL
+# finds the first existent (or last potential) reminder file and adds a message
+local file
+local -a files existing
+files=( ${(0):-"$(reminder-files)"} )
+existing=( $^files(N) )
+if (( $#existing ))
+then file=$existing[1]
+else file=${files[-1]}
+fi
+printf '%s\n' "$*" >> $file

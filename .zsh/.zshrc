@@ -49,11 +49,9 @@ for dir in $zsh_dirs ; do
 done
 
 () {
-  local file
-  for file in ${^zsh_dirs}/{.zsh,}reminder{,s}(N) ; do
-    printf '==> %s <==\n' ${file/$HOME/'~'}
-    cat $file 2>/dev/null
-  done
+  local -a files
+  files=( ${(0)^:-"$(reminder-files)"}(N) )
+  (( ! $#files )) || headline $files
 }
 
 run_local_versions ${(%):-"%x"}
