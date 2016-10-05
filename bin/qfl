@@ -1,0 +1,8 @@
+#!/bin/sh
+ack --column "$@" |
+awk -v OFS=\\t -F: '{
+  for (i=5; i<=NF; i++) $4 = $4 FS $i
+  NF = 4
+  gsub(/\t/, "    ", $4)
+} 1' |
+vim-qfl
