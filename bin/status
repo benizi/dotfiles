@@ -61,21 +61,7 @@ add-essid() {
 funcs+=( add-essid )
 
 add-mem() {
-  awk '
-function report(t,f,usecolor){
-used = kb(t-f)
-colorcode = !usecolor ? "" : (kb(f) < 1000) ? "^bg(#ff0000)" : "^fg(#ff9900)"
-color = colorcode ? colorcode "^ca(1,sudo swapoff -a && sudo swapon -a)" : ""
-nocolor = color ? "^fg()^bg()^ca()" : ""
-return color used "/" kb(t) nocolor
-}
-function kb(b){return int(b/1024)}
-{ stats[$1] = $2 }
-END {
-printf("mem:%s", report(stats["MemTotal:"], stats["MemFree:"] + stats["Cached:"]))
-if (stats["SwapTotal:"]) printf(" swp:%s", report(stats["SwapTotal:"], stats["SwapFree:"], 1))
-}
-' /proc/meminfo
+  mem dzen
 }
 funcs+=( add-mem )
 
