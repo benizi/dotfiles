@@ -1,0 +1,5 @@
+# prints possible reminder files (no existence filtering, NUL-separated)
+local -a files
+files=( ${^zsh_dirs}/{.zsh,}reminder{,s}(N) )
+(( $#files )) || files=( ${zsh_dirs[-1]}/reminders )
+printf '%s' "${(pj:\0:)files}"
