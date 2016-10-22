@@ -78,3 +78,11 @@ _push-upstream() {
 compdef {_,}push-upstream
 (( $+functions[verman_eval] )) && compdef verman_eval=verman
 [[ -e $OPAMROOT ]] && . $OPAMROOT/opam-init/complete.zsh
+
+() {
+  local docker_zsh=~/git/docker/contrib/completion/zsh/_docker
+  [[ -e $docker_zsh ]] || return 0
+  fpath+=( ${docker_zsh:h} )
+  autoload -Uz _docker
+  compdef _docker docker
+}
