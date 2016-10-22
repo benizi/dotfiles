@@ -58,7 +58,7 @@ sil! cal glaive#Install()
 se tpm=1000
 
 fun! InGUI()
-	return has('gui') && has('gui_running')
+	return has('gui_running') || (has('termguicolors') && &termguicolors)
 endf
 
 let s:limited_terminal = $TERM =~ 'linux'
@@ -66,6 +66,10 @@ let s:limited_terminal = $TERM =~ 'linux'
 " st and konsole support 24-bit color
 if $TERM =~ 'st-256color' || exists('$KONSOLE_DBUS_SERVICE')
 	se t_Co=1000
+end
+
+if has('termguicolors') && &t_Co > 256
+	se termguicolors
 end
 
 if $TERM =~ '^st'
