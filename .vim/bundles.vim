@@ -34,6 +34,7 @@ Plugin 'benizi/vim-txt-256color'
 Plugin 'rust-lang/rust.vim'
 Plugin 'keith/swift.vim'
 " PluginVimball 'http://www.drchip.org/astronaut/vim/vbafiles/hilinks.vba.gz'
+PluginLocalMaybe '~/git/lilypond', {'rtp': 'vim/'}
 
 Plugin 'derekwyatt/vim-scala'
 Plugin 'cespare/vim-toml'
