@@ -7,6 +7,17 @@ fun! s:GitGet(git, ...)
   end
 endf
 
+fun! s:PluginLocalMaybe(...)
+  let dir = a:1
+  if strpart(dir, 0, 1) == '~'
+    let dir = expand(dir)
+  end
+  if !isdirectory(dir)
+    return
+  end
+  exe 'Plugin '.(string(['file://'.dir] + a:000[1:])[1:-2])
+endf
+
 fun! s:VimballUnpack(lines, dest)
   let lines = copy(a:lines)
   if lines[0] !~ '^" Vimball' || lines[1:2] != ['UseVimball', 'finish']
@@ -99,6 +110,8 @@ if !VundleAvailable() && !isdirectory(g:bundle_dir)
 end
 
 com! InstallVundle cal s:GitGet('VundleVim/Vundle.vim', g:vundle_dir)
+
+com! -nargs=+ PluginLocalMaybe cal s:PluginLocalMaybe(<args>)
 
 " Skip plugins altogether
 if install == 3
