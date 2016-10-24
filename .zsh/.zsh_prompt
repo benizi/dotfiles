@@ -87,7 +87,7 @@ __prompt_setup() {
 
   (( $+__prompt_color )) || __prompt_color=( f:231 k:124 b: )
   local ps_char='$'
-  (( $+termcap[Co] )) && (( $termcap[Co] > 8 )) || __prompt_color=()
+  hi_color || __prompt_color=()
   if __i_am_admin ; then
     __prompt_color+=( s: )
     ps_char='#'
@@ -197,7 +197,8 @@ __prompt_setup() {
   (( $+curl_api_env )) && add.bottom_row k:167 "curl_api=$curl_api_env"
 
   local -a lines
-  if (( $+hi_color )) ; then
+  if hi_color
+  then
     lines=(
       ''
       '╭─╴'${(j:╶╴:)top_row}' ╼'

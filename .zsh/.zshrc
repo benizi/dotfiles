@@ -52,10 +52,8 @@ setup_term () {
 }
 [[ $TERM = 9term ]] || setup_term
 
-if zmodload -F -e zsh/terminfo +p:terminfo && (( $terminfo[colors] > 8 ))
-then hi_color=true
-else unset hi_color
-fi
+zmodload -F -e zsh/terminfo +p:terminfo
+hi_color() { (( $terminfo[colors] > 8 )) }
 
 export LESS="-R -i -M --shift 5 -F -X -j4"
 (( $+commands[lesspipe.sh] )) && export LESSOPEN="|lesspipe.sh %s"
