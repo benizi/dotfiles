@@ -188,6 +188,9 @@ __prompt_setup() {
     __prompt_return=0
   fi
 
+  local mem="$(mem plain)"
+  [[ $mem = (*\!*) ]] && add.middle_row k:1 $mem
+
   (( $+DATABASE_URL )) && add.bottom_row k:167 "DB ${testdb:-$DATABASE_URL}"
   (( $+deleted )) && add.bottom_row k:196 '!deleted!'
   (( $+fail_couchdb )) && add.bottom_row k:196 '!CouchDB!'
