@@ -50,10 +50,10 @@ setup_term () {
   fi
   term_color_test || TERM=xterm
 }
-[[ $TERM = 9term ]] || setup_term
+[[ $TERM = (9term|tmux-256color) ]] || setup_term
 
 zmodload -F -e zsh/terminfo +p:terminfo
-hi_color() { (( $terminfo[colors] > 8 )) }
+hi_color() { (( $terminfo[colors] > 8 )) || [[ $TERM = tmux-256color ]] }
 
 export LESS="-R -i -M --shift 5 -F -X -j4"
 (( $+commands[lesspipe.sh] )) && export LESSOPEN="|lesspipe.sh %s"
