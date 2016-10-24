@@ -102,7 +102,7 @@ com! InstallVundle cal s:GitGet('VundleVim/Vundle.vim', g:vundle_dir)
 
 " Skip plugins altogether
 if install == 3
-  com! -nargs=* Plugin :
+  com! -nargs=+ Plugin :
   finish
 end
 
@@ -160,7 +160,7 @@ if install == 2 && !isdirectory(g:bundle_dir)
   end
 end
 
-com! -nargs=* Plugin :cal s:GitGet(<args>)
+com! -nargs=+ Plugin :cal s:GitGet(<args>)
 
 for dir in filter(GlobList(g:bundle_dir.'/*', 1), 'isdirectory(v:val)')
   call BundleActivateDir(dir)
