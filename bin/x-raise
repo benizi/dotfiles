@@ -1,0 +1,3 @@
+#!/bin/sh
+test $# -gt 0 || set -- selectwindow windowraise
+xdotool "$@"
