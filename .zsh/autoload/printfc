@@ -1,6 +1,6 @@
 printfc() {
-  tput setaf $1
+  tput setaf $1 2> /dev/null || :
   shift
   printf "$@"
-  tput sgr0
+  tput sgr0 2> /dev/null || :
 }
