@@ -64,7 +64,7 @@ endf
 let s:limited_terminal = $TERM =~ 'linux'
 
 " st and konsole support 24-bit color
-if $TERM =~ 'st-256color' || exists('$KONSOLE_DBUS_SERVICE')
+if $TERM =~ '\(st\|tmux\)-256color' || exists('$KONSOLE_DBUS_SERVICE')
 	se t_Co=1000
 end
 
