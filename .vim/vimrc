@@ -78,6 +78,12 @@ if $TERM =~ '^st'
 	let &t_EI="\e[2 q"
 end
 
+" set up 24-bit color sequences
+if exists('&tgc') && &tgc && !strlen(&t_8f)
+	let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
+	let &t_8b="\<Esc>[48;2;%lu;%lu;%lum"
+end
+
 " fix BCE bug in `st` and in rxvt-unicode-24bit
 if $TERM =~ '^st' || $TERM =~ 'rxvt.*24bit'
 	se t_ut=
