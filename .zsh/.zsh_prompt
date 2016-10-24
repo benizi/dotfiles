@@ -2,7 +2,7 @@ local simple_prompt
 unset simple_prompt
 
 case $TERM in
-  9term) simple_prompt=true ;;
+  (9term) simple_prompt=true ;;
 esac
 
 if (( $+simple_prompt )) ; then
