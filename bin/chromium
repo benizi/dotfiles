@@ -27,9 +27,10 @@ _ipv6=true
 _javascript=true
 unset _asyncdns
 unset _flash
+_quic=true
 _args=()
 _taskset=()
-_flags=( plugins logging user-scripts ipv6 async-dns flash )
+_flags=( plugins logging user-scripts ipv6 async-dns flash quic )
 _pseudo_flags=( flash )
 _overscroll=0
 
