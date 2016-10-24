@@ -82,7 +82,7 @@ __prompt_vcs () {
 }
 
 typeset -A __prompt_once
-__setup_prompt () {
+__prompt_setup() {
   setopt promptsubst
 
   (( $+__prompt_color )) || __prompt_color=( f:231 k:124 b: )
@@ -256,7 +256,7 @@ preexec () {
 
 precmd () {
   __prompt_return=${__prompt_return-$?}
-  __setup_prompt
+  __prompt_setup
   fancytitle ""
 }
 
