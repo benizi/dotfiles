@@ -71,35 +71,6 @@ function run_local_versions () {
   done
 }
 
-setup_term () {
-  local dir
-  local -a terminfo_dirs
-  if (( ! $+commands[infocmp] )) ; then
-    return 0
-  fi
-  term_color_test () { infocmp &> /dev/null }
-  if ! term_color_test ; then
-    for dir in ${^zsh_dirs}{,(:h)} ~$owner ; do
-      terminfo_dirs+=( $dir/{.,}terminfo(N-/) )
-    done
-    (( $#terminfo_dirs )) && export TERMINFO=$terminfo_dirs[1] 2>/dev/null
-  fi
-  if ! term_color_test ; then
-    ORIGINAL_TERM=$TERM
-    for try_term in rxvt-unicode256 xterm-256color xterm ; do
-      TERM=$try_term 2>/dev/null
-      term_color_test && break
-    done
-  fi
-  term_color_test || TERM=xterm
-}
-[[ $TERM = 9term ]] || setup_term
-
-if zmodload -F -e zsh/terminfo +p:terminfo && (( $terminfo[colors] > 8 ))
-then hi_color=true
-else unset hi_color
-fi
-
 typeset -U path
 function () {
 local pathtest user
