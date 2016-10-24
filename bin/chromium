@@ -54,11 +54,15 @@ find_exe () {
   elif [[ -f $_official ]] ; then
     exe=$_official
   else
-    path=( ${${path:#$HOME/bin*}/${${(%):-"%x"}:h}} )
-    for command in google-chrome{-unstable,} chromium chromium-bin chrome ; do
-      (( $+commands[$command] )) || continue
-      exe=${commands[$command]}
-      break
+    local dir
+    for dir in /usr/lib/chromium ${${path:#$HOME/bin*}/${${(%):-"%x"}:h}}
+    do
+      for command in google-chrome{-unstable,} chromium{,-bin} chrome
+      do
+        [[ -x $dir/$command ]] || continue
+        exe=$dir/$command
+        break 2
+      done
     done
   fi
   (( $+exe )) || { echo "Couldn't find chromium/chrome" >&2 ; exit 1 }
