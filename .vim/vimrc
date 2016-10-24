@@ -515,6 +515,9 @@ cal SetupNERDComment('<Leader>cc', 'norm')
 cal SetupNERDComment('<Leader>c<Space>', 'toggle')
 cal SetupNERDComment('<Leader>cm', 'minimal')
 
+" Mappings for codefmt
+vm <Leader>f :FormatLines<CR>
+
 nn <silent> <C-n> :sil! !chromium >/dev/null 2>/dev/null &<CR>:redraw!<CR>
 
 " open new-window files in new tab instead
