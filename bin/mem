@@ -30,6 +30,7 @@ END {
   colorfn = (warn ? colorizer : "plain")
   color = "colo" colorfn
   nocolor = "reset" colorfn
-  printf("%smem:%s/%s/%s%s", @color(warn), avail, used, tot, @nocolor())
+  mark = warn ? "!!! " : ""
+  print @color(warn) mark "mem:" avail "/" used "/" tot @nocolor()
 }
 ' /proc/meminfo
