@@ -16,13 +16,6 @@ function resetshell() { return tput("sgr0") }
 function colodzen(warn) { return warn ? "^bg(#ff0000)" : "" }
 function resetdzen() { return "^fg()^bg()^ca()" }
 
-function report(n, warn, colorfn, color, nocolor) {
-  colorfn = (warn ? colorizer : "plain")
-  color = "colo" colorfn
-  nocolor = "reset" colorfn
-  return @color(warn) n @nocolor()
-}
-
 { stats[substr($1,1,length($1)-1)] = int($2/1024) }
 
 END {
@@ -32,10 +25,11 @@ END {
   free = ram_free + stats["SwapFree"]
   used = tot - free
   avail = stats["MemAvailable"]
-  if (avail < 1000) {
-    printf("AVAIL:%s!!! ", report(avail, 1))
-  }
   low = (ram_tot > 20000) ? (ram_free < 4000) : (free < 2000)
-  printf("%s", report(sprintf("mem:%s/%s", used, tot), low))
+  warn = (low && avail < 1000)
+  colorfn = (warn ? colorizer : "plain")
+  color = "colo" colorfn
+  nocolor = "reset" colorfn
+  printf("%smem:%s/%s/%s%s", @color(warn), avail, used, tot, @nocolor())
 }
 ' /proc/meminfo
