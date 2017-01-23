@@ -96,13 +96,14 @@ myNormalBorderColor  = "#285577"
 myFocusedBorderColor = "#ff9900"
 myUrgentColor = "orange"
 
-myPrompt = defaultXPConfig { bgColor = statusColorBG
-                           , fgColor = statusColorNormalFG
-                           , bgHLight = statusColorNormalFG
-                           , fgHLight = statusColorBG
-                           , borderColor = myNormalBorderColor
-                           , position = Top
-                           }
+myPrompt = def
+    { bgColor = statusColorBG
+    , fgColor = statusColorNormalFG
+    , bgHLight = statusColorNormalFG
+    , fgHLight = statusColorBG
+    , borderColor = myNormalBorderColor
+    , position = Top
+    }
 
 ------------------------------------------------------------------------
 -- Key bindings. Add, modify or remove key bindings here.
@@ -268,7 +269,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     ++
 
     -- Grid Select
-    [ ((mod4Mask, xK_g), goToSelected defaultGSConfig) ]
+    [ ((mod4Mask, xK_g), goToSelected def) ]
 
 
 ------------------------------------------------------------------------
@@ -319,7 +320,7 @@ myLayoutHook = windowNavigation $
      -- Percent of screen to increment by when resizing panes
      delta   = 3/100
 
-     wmiiLike = wmii shrinkText defaultTheme
+     wmiiLike = wmii shrinkText def
 
      -- myWmii is basically the same as stock wmii,
      -- but it defaults to tabs first
@@ -327,7 +328,7 @@ myLayoutHook = windowNavigation $
         where column = named "Column" $ avoidStruts $ Tall 0 delta ratio
               tabs = named "Tabs" $ avoidStruts $ Simplest
               innerLayout = renamed [CutWordsLeft 3]
-                            $ addTabs shrinkText defaultTheme
+                            $ addTabs shrinkText def
                             $ ignore NextLayout
                             $ ignore (LC.JumpToLayout "") $ unEscape
                                 $ tabs LC.||| column LC.||| Full
@@ -469,7 +470,7 @@ withLogHandlePPX xpp proc = do
     pp <- xpp
     return (withLogHandlePP pp proc)
 
-myLogPP = defaultPP
+myLogPP = def
   { ppCurrent = statusBarColor myNormalBorderColor statusColorNormalFG
   , ppHidden = statusNormalColor
   , ppHiddenNoWindows = const ""
@@ -541,7 +542,7 @@ main = do
     barPid <- spawnPID externalStatusCmd
     E.handle myShutdownHook $ xmonad $ ewmh
            $ withUrgencyHook NoUrgencyHook
-           $ defaultConfig {
+           $ def {
       -- simple stuff
         terminal           = myTerminal,
         focusFollowsMouse  = myFocusFollowsMouse,
