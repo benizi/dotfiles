@@ -487,6 +487,29 @@ dropcolon s = if takeWhile (/= ':') s == s
 myLogHook :: Handle -> X ()
 myLogHook statusproc = dynamicLogWithPP (withLogHandlePP myLogPP statusproc) >> takeTopFocus
 
+wrapIn :: String -> String -> String
+wrapIn q string = q ++ string ++ q
+
+quote :: String -> String
+quote = wrapIn "'"
+
+arg :: String -> String -> [String]
+arg flag value = [("-" ++ flag), quote value]
+
+externalStatusCmd :: String
+externalStatusCmd = let
+    fg = statusColorNormalFG
+    bg = statusColorBG
+    joinArgs = concat . intersperse " "
+    cmd arg0 args = joinArgs $ [arg0] ++ args
+    status = cmd "status" $ quote <$> [fg, bg]
+    dzenOptions = ["-ta", "r", "-w", "900", "-x", "-964"]
+    fontName = "DejaVu Sans Mono"
+    flags = [("fn", fontName), ("fg", fg), ("bg", bg)]
+    displayOptions = (joinArgs . uncurry arg) <$> flags
+    dzen2 = cmd "dzen2" $ dzenOptions ++ displayOptions
+        in status ++ " | " ++ dzen2
+
 ------------------------------------------------------------------------
 -- Startup hook
 
@@ -505,9 +528,7 @@ myStartupHook = ewmhDesktopsStartup
 main = do
     homeDir <- getHomeDirectory
     statusproc <- spawnPipe $ statusBarProc (homeDir ++ "/.xmonad")
-    barPid <- spawnPID $ "status '" ++ statusColorNormalFG ++ "' '" ++ statusColorBG ++ "'"
-                   ++ " | dzen2 -ta r -w 900 -x -964 -fn 'DejaVu Sans Mono'"
-                   ++ " -fg '" ++ statusColorNormalFG ++ "' -bg '" ++ statusColorBG ++ "'"
+    barPid <- spawnPID externalStatusCmd
     xmonad $ ewmh
            $ withUrgencyHook NoUrgencyHook
            $ defaultConfig {
