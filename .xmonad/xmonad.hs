@@ -55,6 +55,7 @@ import XMonad.Util.NamedWindows
 import XMonad.Util.WorkspaceCompare (getWsCompareByTag, WorkspaceSort)
 
 import Control.Applicative (liftA)
+import qualified Control.Exception as E
 
 import Data.Set (toList, fromList)
 
@@ -521,6 +522,15 @@ externalStatusCmd = let
 myStartupHook = ewmhDesktopsStartup
 
 ------------------------------------------------------------------------
+-- Shutdown hook
+
+-- Perform an arbitrary action each time xmonad exits.
+--
+-- By default, rethrow the ExitSuccess thrown on `mod-q`.
+myShutdownHook :: E.SomeException -> IO ()
+myShutdownHook = E.throw
+
+------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
 
 -- Run xmonad with the settings you specify. No need to modify this.
@@ -529,7 +539,7 @@ main = do
     homeDir <- getHomeDirectory
     statusproc <- spawnPipe $ statusBarProc (homeDir ++ "/.xmonad")
     barPid <- spawnPID externalStatusCmd
-    xmonad $ ewmh
+    E.handle myShutdownHook $ xmonad $ ewmh
            $ withUrgencyHook NoUrgencyHook
            $ defaultConfig {
       -- simple stuff
