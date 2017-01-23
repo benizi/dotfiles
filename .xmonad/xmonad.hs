@@ -16,7 +16,6 @@ import XMonad.Actions.GridSelect
 import XMonad.Actions.SwapWorkspaces
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.EwmhDesktops
-import XMonad.Hooks.ICCCMFocus
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.UrgencyHook
 import XMonad.Layout.Grid
@@ -487,7 +486,7 @@ dropcolon s = if takeWhile (/= ':') s == s
               else drop 1 $ dropWhile (/= ':') s
 
 myLogHook :: Handle -> X ()
-myLogHook statusproc = dynamicLogWithPP (withLogHandlePP myLogPP statusproc) >> takeTopFocus
+myLogHook statusproc = dynamicLogWithPP (withLogHandlePP myLogPP statusproc)
 
 wrapIn :: String -> String -> String
 wrapIn q string = q ++ string ++ q
