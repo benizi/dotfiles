@@ -249,23 +249,22 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     ++
 
     --
-    -- mod-[1..9], Switch to workspace N
-    -- mod-shift-[1..9], Move client to workspace N
+    -- mod-[1..9,0,i], Switch to workspace N
+    -- mod-shift-[1..9,0,i], Move client to workspace N
+    -- "0" maps to N=10
+    -- "i" for "IM" maps to N=7 (force of habit)
     --
-    [((m .|. modm, k), windows $ f i)
-        | (i, k) <- zip (XMonad.workspaces conf) ([xK_1 .. xK_9] ++ [xK_0])
-        , (f, m) <- [(W.greedyView, 0), (W.shift, shiftMask)]
-        {- , (m == 0 || (not $ k `elem` [xK_9, xK_0]) ) -} ] -- exclude M-S-(, M-S-)
+    let workspaces = show <$> [1 .. 9] ++ [10, 7]
+        keys = [xK_1 .. xK_9] ++ [xK_0, xK_i]
+    in [ ((modm .|. mask, key), action workspace)
+       | (workspace, key) <- zip workspaces keys
+       , (mask, action) <- [ (0, windows . W.greedyView)
+                           , (shiftMask, windows . W.shift)]
+       ]
     ++
 
     -- Grid Select
     [ ((mod4Mask, xK_g), goToSelected defaultGSConfig) ]
-    ++
-
-    -- add alt-i = workspace 7 (= "IM")
-    [ ((modm, xK_i), windows $ W.greedyView "7")
-    , ((modm .|. shiftMask, xK_i), windows $ W.shift "7")
-    ]
 
 
 ------------------------------------------------------------------------
