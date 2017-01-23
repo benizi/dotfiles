@@ -117,6 +117,9 @@ windowUp = do
     sendMessage $ Go U
     focusUp
 
+warpView :: WorkspaceId -> X ()
+warpView = windows . W.greedyView
+
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- launch a terminal
@@ -258,7 +261,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
         keys = [xK_1 .. xK_9] ++ [xK_0, xK_i]
     in [ ((modm .|. mask, key), action workspace)
        | (workspace, key) <- zip workspaces keys
-       , (mask, action) <- [ (0, windows . W.greedyView)
+       , (mask, action) <- [ (0, warpView)
                            , (shiftMask, windows . W.shift)]
        ]
     ++
