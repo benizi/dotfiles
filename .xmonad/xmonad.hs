@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 --
 -- xmonad example config file.
 --
@@ -23,6 +24,7 @@ import XMonad.Layout.Grid
 import qualified XMonad.Layout.Fullscreen as FS
 import XMonad.Layout.WindowNavigation
 import XMonad.Util.Run
+import qualified XMonad.Util.ExtensibleState as XS
 import Data.Monoid
 import System.Exit
 
@@ -120,13 +122,27 @@ windowUp = do
     sendMessage $ Go U
     focusUp
 
+data WarpViewStyle = Warp | Greedy deriving (Typeable, Show, Read)
+instance ExtensionClass WarpViewStyle where
+    initialValue = Warp
+
+warpViewCycle :: WarpViewStyle -> WarpViewStyle
+warpViewCycle Warp = Greedy
+warpViewCycle _ = Warp
+
 -- |
 -- Change to the specified workspace. If the newly-selected workspace was
 -- visible, but not primary, before the change, warp the mouse pointer to it.
 warpView :: WorkspaceId -> X ()
 warpView tag = do
     XState { windowset = old } <- get
-    windows $ W.view tag
+    style <- XS.get :: X WarpViewStyle
+    case style of
+      Greedy -> windows $ W.greedyView tag
+      Warp -> (windows $ W.view tag) >> warpIfVisible tag old
+
+warpIfVisible :: String -> WindowSet -> X ()
+warpIfVisible tag old = do
     let byTag = ((tag ==) . W.tag . W.workspace)
     case List.find byTag (W.visible old) of
       Just s -> warpToScreen (W.screen s) 0.4 0.5
@@ -271,13 +287,14 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     --
     let workspaces = show <$> [1 .. 9] ++ [10, 7]
         keys = [xK_1 .. xK_9] ++ [xK_0, xK_i]
-        ctrlShift = controlMask .|. shiftMask
     in [ ((modm .|. mask, key), action workspace)
        | (workspace, key) <- zip workspaces keys
        , (mask, action) <- [ (0, warpView)
-                           , (shiftMask, windows . W.shift)
-                           , (ctrlShift, windows . W.greedyView)]
+                           , (shiftMask, windows . W.shift)]
        ]
+    ++
+    -- Toggle the state for warpView actions
+    [ ((mod4Mask .|. shiftMask, xK_1), XS.modify warpViewCycle) ]
     ++
 
     -- Grid Select
