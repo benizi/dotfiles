@@ -14,6 +14,7 @@ import XMonad.Actions.CycleWS
 import XMonad.Actions.DynamicWorkspaces
 import XMonad.Actions.GridSelect
 import XMonad.Actions.SwapWorkspaces
+import XMonad.Actions.Warp (warpToScreen)
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageDocks
@@ -56,6 +57,7 @@ import XMonad.Util.WorkspaceCompare (getWsCompareByTag, WorkspaceSort)
 import Control.Applicative (liftA)
 import qualified Control.Exception as E
 
+import qualified Data.List as List
 import Data.Set (toList, fromList)
 
 -- The preferred terminal program, which is used in a binding below and by
@@ -118,8 +120,17 @@ windowUp = do
     sendMessage $ Go U
     focusUp
 
+-- |
+-- Change to the specified workspace. If the newly-selected workspace was
+-- visible, but not primary, before the change, warp the mouse pointer to it.
 warpView :: WorkspaceId -> X ()
-warpView = windows . W.greedyView
+warpView tag = do
+    XState { windowset = old } <- get
+    windows $ W.view tag
+    let byTag = ((tag ==) . W.tag . W.workspace)
+    case List.find byTag (W.visible old) of
+      Just s -> warpToScreen (W.screen s) 0.4 0.5
+      _ -> return ()
 
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
