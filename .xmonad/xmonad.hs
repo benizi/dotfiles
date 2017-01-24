@@ -439,7 +439,7 @@ sepBy sep = concat . intersperse sep . filter (not . null)
 -- | Format the current status using the supplied pretty-printing format,
 --   and write it to stdout.
 myDynamicLogWithPP :: PP -> X ()
-myDynamicLogWithPP pp = myDynamicLogString pp >>= XMonad.io . ppOutput pp
+myDynamicLogWithPP pp = myDynamicLogString pp >>= io . ppOutput pp
 
 -- | Format the workspace information, given a workspace sorting function,
 --   a list of urgent windows, a pretty-printer format, and the current
@@ -467,12 +467,13 @@ myDynamicLogString pp = do
   winset <- gets windowset
   urgents <- readUrgents
   sort' <- ppSort pp
+  style <- XS.get :: X WarpViewStyle
 
   -- layout description
   let ld = description . W.layout . W.workspace . W.current $ winset
 
   -- workspace list
-  let ws = myPprWindowSet sort' urgents pp winset
+  let ws = pprWindowSet sort' urgents pp winset
   -- let ws = show ((ppSort pp) $ map W.tag $ W.hidden $ winset)
   -- let ws = show (W.allWindows winset)
   -- let ws = show $ map length $ map W.tag $ W.hidden $ winset
@@ -484,8 +485,12 @@ myDynamicLogString pp = do
   -- run extra loggers, ignoring any that generate errors.
   extras <- mapM (flip catchX (return Nothing)) $ ppExtras pp
 
+  -- Description of current `warpView` style
+  let warpStyle = statusNormalColor $ show style
+
   return $ encodeString . sepBy (ppSep pp) . ppOrder pp $
          [ ws
+         , warpStyle
          , ppLayout pp ld
          , ppTitle  pp wt
          ]
@@ -516,7 +521,7 @@ dropcolon s = if takeWhile (/= ':') s == s
               else drop 1 $ dropWhile (/= ':') s
 
 myLogHook :: Handle -> X ()
-myLogHook statusproc = dynamicLogWithPP (withLogHandlePP myLogPP statusproc)
+myLogHook statusproc = myDynamicLogWithPP (withLogHandlePP myLogPP statusproc)
 
 wrapIn :: String -> String -> String
 wrapIn q string = q ++ string ++ q
