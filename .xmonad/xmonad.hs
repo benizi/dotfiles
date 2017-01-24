@@ -271,10 +271,12 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     --
     let workspaces = show <$> [1 .. 9] ++ [10, 7]
         keys = [xK_1 .. xK_9] ++ [xK_0, xK_i]
+        ctrlShift = controlMask .|. shiftMask
     in [ ((modm .|. mask, key), action workspace)
        | (workspace, key) <- zip workspaces keys
        , (mask, action) <- [ (0, warpView)
-                           , (shiftMask, windows . W.shift)]
+                           , (shiftMask, windows . W.shift)
+                           , (ctrlShift, windows . W.greedyView)]
        ]
     ++
 
