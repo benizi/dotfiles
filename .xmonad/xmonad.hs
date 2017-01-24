@@ -531,13 +531,12 @@ externalStatusCmd :: String
 externalStatusCmd = let
     fg = statusColorNormalFG
     bg = statusColorBG
-    joinArgs = concat . intersperse " "
-    cmd arg0 args = joinArgs $ [arg0] ++ args
+    cmd arg0 args = unwords $ [arg0] ++ args
     status = cmd "status" $ quote <$> [fg, bg]
     dzenOptions = ["-ta", "r", "-w", "900", "-x", "-964"]
     fontName = "DejaVu Sans Mono"
     flags = [("fn", fontName), ("fg", fg), ("bg", bg)]
-    displayOptions = (joinArgs . uncurry arg) <$> flags
+    displayOptions = (unwords . uncurry arg) <$> flags
     dzen2 = cmd "dzen2" $ dzenOptions ++ displayOptions
         in status ++ " | " ++ dzen2
 
