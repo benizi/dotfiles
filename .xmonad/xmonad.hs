@@ -294,7 +294,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
        ]
     ++
     -- Toggle the state for warpView actions
-    [ ((mod4Mask .|. shiftMask, xK_1), XS.modify warpViewCycle) ]
+    [ ((mod4Mask .|. shiftMask, xK_1), XS.modify warpViewCycle >> refresh) ]
     ++
 
     -- Grid Select
