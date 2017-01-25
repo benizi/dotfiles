@@ -1,166 +1,209 @@
 #!/bin/zsh
-unset dry
-unset cycle scale no_ext check_connections
-toggle=0
-ext_pos=--right-of
-lid-open && unset clamshell || clamshell=true
-case $0 in
-	*clone) set -- "$@" --clone ;;
-	*single) set -- "$@" --single ;;
-	*toggle) set -- "$@" --toggle ;;
-esac
+dry=0
+debug=0
+single=0
+virtuals=0
+lid-open && defclam=0 || defclam=1
 for arg ; do
-	case "$arg" in
-		--dry*) dry=true ;;
-		--cycle) cycle=true ;;
-		--clam|--only-ext) clamshell=true ;;
-		--clone) ext_pos=--same-as ; cycle=true ;;
-		--single) no_ext=true ;;
-		--toggle) ((toggle++)) ;;
-		--no-toggle) ((toggle--)) ;;
-		-l|--left) ext_pos=--left-of ;;
-		-r|--right) ext_pos=--right-of ;;
-		-a|--above) ext_pos=--above ;;
-		-b|--below) ext_pos=--below ;;
-		--check) check_connections=true ;;
-		*)
-			tput setaf 1 >&2
-			printf 'Unknown option: %s\n' "$arg"
-			tput sgr0 >&2
-			exit 1
-			;;
-	esac
+  case "$arg" in
+    (--dry*) ((++dry)) ;;
+    (--debug) ((++debug)) ;;
+    (--clam|--only-ext) clam=1 ;;
+    (--noclam|--all) clam=0 ;;
+    (--single) single=1 ;;
+    (--virt) virtuals=1 ;;
+    (*)
+      tput setaf 1 >&2
+      printf 'Unknown option: %s\n' "$arg"
+      tput sgr0 >&2
+      exit 1
+      ;;
+  esac
 done
 [[ -f ~/.config/mon ]] && . ~/.config/mon
 
-run() {
-	${dry+echo} "$@"
-}
-
-if (( $toggle )) ; then
-	if xrandr | awk '/[*]/ { total++ } END { exit total == 1 ? 0 : 1 }'
-	then exec $0 --no-toggle
-	else exec $0 --no-toggle --single
-	fi
+if (( dry > 1 ))
+then cmd=( xargs -0 printf '%s\n' xrandr )
+elif (( dry ))
+then cmd=( cat )
+else cmd=( xargs xrandr )
 fi
 
-typeset -a outputs
-typeset -A active_output vid_modes
-
-get_modes () {
-	outputs=()
-	active_output=()
-	vid_modes=()
-	eval "$(xrandr | perl -lanwe '
-if (/^[A-Za-z]+\d+ (dis|)connected/) {
-	$last_output = $F[0];
-	push @outputs, $last_output;
-	print qq/active_output+=( $last_output 1 )/ if /^\S+ connected/;
-	$last_ok = 1
+xrandr --query --verbose |
+awk \
+  -v single=${single:-0} \
+  -v clam=${clam:-$defclam} \
+  -v dry=$dry \
+  -v orderpref=$orderpref \
+  -v virtuals=$virtuals \
+  -v debug=$debug \
+'BEGIN {
+  nout = split("", outs)
+  nmodes = split("", modes)
+  out = ""
+  norder = split(orderpref, order)
+  split("", inpref)
+  for (i=1; i<=norder; i++) {
+    inpref[order[i]]++
+  }
 }
-elsif (/^ *[0-9]+x[0-9]+/) {
-	print qq/outputs+=( $last_output )/ unless $modes{$last_output};
-	$modes{$last_output} //= $F[0];
-	$last_ok = 1
+{ mode = "" ; heading = 0 }
+!/^Screen/ && !/^[[:space:]]/ { heading = 1 }
+/^  [^[:space:]]/ { mode = $1 }
+heading {
+  out = $1
+  outs[++nout] = out
 }
-else { $last_ok = 0 }
+mode {
+  nmodes++
+  modeid[nmodes] = mode
+  hasmode[out]++
+}
+mode && !first[out] { first[out] = nmodes }
+mode && /[+]preferred/ && !preferred[out] { preferred[out] = nmodes }
+mode && /[*]current/ && !current[out] { current[out] = nmodes }
+nmodes && $1 == "h:" { modew[nmodes] = $3 }
+nmodes && $1 == "v:" { modeh[nmodes] = $3 }
+function warnf(fmt,x) { printf(fmt,x) | "cat >&2" }
+function warnraw(x) { warnf("%s", x) }
+function warn(x) { warnf("%s\n", x) }
+function debugarray(nm,arr,k,n,i,stringy,keys) {
+  n = 0
+  stringy = 0
+  for (k in arr) {
+    keys[++n] = k
+    if (k ~ /[^0-9]/) {
+      stringy = 1
+    }
+  }
+  if (!stringy) {
+    for (i=1; i<=n; i++) {
+      if (!(i in arr)) {
+        stringy = 1
+        last
+      }
+    }
+  }
+  if (!stringy) {
+    for (i=1; i<=n; i++) {
+      keys[i] = i
+    }
+  }
+  split(stringy ? "{}" : "[]", delims, //)
+  warnf("%s[", nm)
+  warnf(n "]=%s", delims[1])
+  for (i=1; i<=n; i++) {
+    k = keys[i]
+    if (i > 1) {
+      warnraw(" ")
+    }
+    if (stringy) {
+      warnf(":%s ", k)
+    }
+    warnf("\"%s\"", arr[k])
+  }
+  warn(delims[2])
+}
 END {
-	for my $output (grep $modes{$_}, @outputs) {
-		print qq/vid_modes+=( $output "$modes{$output}" )/;
-	}
-}')"
-}
-
-get_modes
-
-deactivate=()
-int=$outputs[1]
-int_mode=$vid_modes[$int]
-if (( $#outputs > 2 )) && (( ! $+no_ext ))
-then
-	(( $+outputorder )) || outputorder=( $outputs )
-	typeset -A rev_map
-	for ((i=2; i<=$#outputs; i++))
-	do rev_map+=( $i $outputorder[i] )
-	done
-	cmd=( xrandr )
-	if (( $+clamshell ))
-	then cmd+=( --output $int --off )
-	else cmd+=( --output $int --primary --mode $int_mode )
-	fi
-	dirs=( --above --right-of )
-	actual=( $int )
-	for ((i=2; i<=$#outputs; i++))
-	do actual+=( $rev_map[$i] )
-	done
-	for ((i=2; i<=$#actual; i++))
-	do
-		out=$actual[i]
-		prev=$actual[i-1]
-		cmd+=( --output $out $dirs[i-1] $actual[i-1] --mode $vid_modes[$out] )
-	done
-	run $cmd
-	exit $?
-elif (( $#active_output > 1 )) && (( ! $+no_ext )) ; then
-	for ext in ${outputs[2,-1]} ; do
-		(( $+active_output[$ext] )) || continue
-		: ${ext_mode=$vid_modes[$ext]}
-		break
-	done
-else
-	for mon in $outputs ; do
-		[[ $mon == $int ]] || deactivate+=( $mon )
-	done
-fi
-
-if (( $+check_connections )) ; then
-	xrandr | awk '
-/^[^[:space:]]+ / { last_con = $2 }
-/^ +[0-9]/ {
-	if (last_con == "disconnected")
-		exit 1
-}'
-	exit $?
-fi
-
-scale=1x1
-unset fb
-
-cmd=( xrandr --output $int --primary --mode $int_mode )
-(( $+int_dpi )) && cmd+=( --dpi $int_dpi )
-if [[ -n $ext ]] ; then
-	if [[ $int_mode == $ext_mode ]] || [[ $ext_pos != --same-as ]] ; then
-		cmd+=( --output $ext $ext_pos $int --mode $ext_mode )
-	else
-		case $int_mode/$ext_mode in
-			1920x1080/1920x1200) scale=1x.9 ; fb=$int_mode ;;
-			*) scale=$(( ${int_mode%x*}.0 / ${ext_mode%x*} ))x$(( ${int_mode#*x}.0 / ${ext_mode#*x} )) ; fb=$int_mode ;;
-		esac
-		cmd+=( --output $ext $ext_pos $int --mode $ext_mode )
-	fi
-	(( $+ext_dpi )) && cmd+=( --dpi $ext_dpi )
-else
-	fb=$int_mode
-fi
-
-if (( $+cycle )) ; then
-	for output in $outputs ; do
-		run xrandr --output $output --off
-	done
-fi
-
-key=${(j:_:)outputs}
-if (( $+parameters[$key] )) && (( ! $+no_ext ))
-then
-	run ${(P)key}
-	exit $?
-fi
-
-(( $+fb )) && cmd[2,1]=( --fb $fb )
-(( $+scale )) && cmd+=( --scale $scale )
-
-for mon in $deactivate ; do
-	cmd+=( --output $mon --off )
-done
-run $cmd
-run xinput map-to-output 'ELAN Touchscreen' $int 2>/dev/null || true
+  # Find outputs that should be skipped (no mode) or turned off:
+  # 1. --single, and the single monitor was already found
+  # 2. !virtuals, and the output is virtual
+  # 3. --clam, and nothing has been skipped
+  for (i=1; i<=nout; i++) {
+    out = outs[i]
+    if (!hasmode[out]) {
+      continue
+    }
+    turnoff = 0
+    if (single) {
+      if (nused) {
+        turnoff = 1
+      }
+    } else if (out ~ /^VIRTUAL/ && !virtuals) {
+      turnoff = 1
+    } else if (onlypref && !inpref[out]) {
+      turnoff = 1
+    } else if (nout > 1 && clam && !skippedclam++) {
+      turnoff = 1
+    }
+    if (turnoff) {
+      off[++noff] = out
+    } else {
+      used[++nused] = out
+      mode = (out in preferred) ? preferred[out] : first[out]
+      usedmode[out] = mode
+      isused[out]++
+      w[out] = modew[mode]
+      h[out] = modeh[mode]
+    }
+  }
+  # Set actual to the set of used outputs in orderpref order
+  for (i=1; i<=norder; i++) {
+    out = order[i]
+    if (!hasmode[out] || !isused[out]) {
+      continue
+    }
+    actual[++nactual] = out
+    usedactual[out] = 1
+  }
+  # Also set up outputs unspecified by orderpref
+  for (i=1; i<=nused; i++) {
+    out = used[i]
+    if (usedactual[out]) {
+      continue
+    }
+    actual[++nactual] = out
+    usedactual[out] = 1
+  }
+  if (debug) {
+    debugarray("order", order)
+    debugarray("modeid", modeid)
+    debugarray("modew", modew)
+    debugarray("modeh", modeh)
+    debugarray("preferred", preferred)
+    debugarray("current", current)
+    debugarray("hasmode", hasmode)
+    debugarray("actual", actual)
+    debugarray("used", used)
+    debugarray("usedmode", usedmode)
+    debugarray("usedactual", usedactual)
+    debugarray("off", off)
+    exit 0
+  }
+  ORS = (dry > 1) ? "\000" : "\n"
+  if (dry) {
+    print "--dryrun"
+  }
+  for (i=1; i<=noff; i++) {
+    print "--output", off[i], "--off"
+  }
+  posx = 0
+  posy = 0
+  maxy = 0
+  nwide = 2
+  noutodd = (nactual % 2) ? 1 : 0
+  if (nactual > 3) {
+    nwide = int(nactual / 2) + noutodd
+  }
+  for (i=1; i<=nactual; i++) {
+    out = actual[i]
+    if (1 == i % nwide) {
+      posx = 0
+      posy += maxy
+      maxy = 0
+    } else {
+      prev = actual[i-1]
+      posx += w[prev]
+    }
+    if (h[out] > maxy) {
+      maxy = h[out]
+    }
+    if (i == nwide + 1 && noutodd) {
+      posx += int(w[out] / 2)
+    }
+    modeflag = ((i == 1) ? "--primary " : "") "--mode"
+    mode = modeid[usedmode[out]]
+    pos = posx "x" posy
+    print "--output", out, modeflag, mode, "--pos", pos
+  }
+}' | $cmd
