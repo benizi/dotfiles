@@ -1,4 +1,3 @@
--- -*- mode: Haskell; -*- vim:se ft=haskell:
 :set -ilib
 :set -package xmonad
 :load xmonad.hs
