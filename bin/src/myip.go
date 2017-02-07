@@ -142,6 +142,7 @@ func main() {
   flag.BoolVar(&excludeDocker, "nodocker", excludeDocker, "Exclude Docker interface")
   flag.StringVar(&docker, "dockernet", docker, "Docker network to exclude")
   flag.BoolVar(&printAll, "all", printAll, "Print all addresses")
+  flag.BoolVar(&printAll, "a", printAll, "Print all addresses (alias)")
   flag.Parse()
 
   var acceptable []net.IPNet
