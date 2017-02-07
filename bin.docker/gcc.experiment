@@ -1,0 +1,13 @@
+#!/bin/sh
+: ${gccversion=5.4}
+: ${workdir="$(pwd)"}
+: ${rootdir="$(pwd)"}
+set -- \
+  docker run \
+  ${prefix:+'-v'} ${prefix:+"${prefix}:${prefix}"} \
+  -v "$rootdir":"$rootdir" \
+  -w "$workdir" \
+  -it \
+  gcc:$gccversion \
+  ${exe:-gcc} "$@"
+"$@"
