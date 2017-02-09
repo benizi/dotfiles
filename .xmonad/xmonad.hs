@@ -189,7 +189,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((mod4Mask, xK_Multi_key), spawn "screenshot")
 
     ---- monitor toggle
-    , ((0, xF86XK_Display), spawn "montoggle")
+    , ((0, xF86XK_Display), spawn "mon --toggle")
     , ((shiftMask, xF86XK_Display), spawn "mon --cycle")
 
     ---- mpd
