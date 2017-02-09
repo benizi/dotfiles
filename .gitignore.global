@@ -33,3 +33,6 @@ erl_crash.dump
 
 # dotenv
 .env
+
+# Haskell Stack working directories
+.stack-work
