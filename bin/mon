@@ -1,6 +1,7 @@
 #!/bin/zsh
 dry=0
 debug=0
+printstate=0
 single=0
 virtuals=0
 lid-open && defclam=0 || defclam=1
@@ -8,6 +9,7 @@ for arg ; do
   case "$arg" in
     (--dry*) ((++dry)) ;;
     (--debug) ((++debug)) ;;
+    (--status) ((++printstate)) ;;
     (--clam|--only-ext) clam=1 ;;
     (--noclam|--all) clam=0 ;;
     (--single) single=1 ;;
@@ -24,7 +26,7 @@ done
 
 if (( dry > 1 ))
 then cmd=( xargs -0 printf '%s\n' xrandr )
-elif (( dry ))
+elif (( dry || printstate ))
 then cmd=( cat )
 else cmd=( xargs xrandr )
 fi
@@ -37,6 +39,7 @@ awk \
   -v orderpref=$orderpref \
   -v virtuals=$virtuals \
   -v debug=$debug \
+  -v status=$printstate \
 'BEGIN {
   nout = split("", outs)
   nmodes = split("", modes)
@@ -154,6 +157,17 @@ END {
     }
     actual[++nactual] = out
     usedactual[out] = 1
+  }
+  if (status) {
+    outputs = ""
+    for (i=1; i<=nout; i++) {
+      out = outs[i]
+      if (current[out]) {
+        outputs = outputs (outputs ? " " : "") out
+      }
+    }
+    print outputs
+    exit 0
   }
   if (debug) {
     debugarray("order", order)
