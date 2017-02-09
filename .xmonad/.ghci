@@ -1,6 +1,3 @@
-:set -ilib
-:set -package xmonad
-:load xmonad.hs
 import qualified Control.Applicative as CA
 import qualified Control.Exception as E
 import qualified Control.Monad as CM
