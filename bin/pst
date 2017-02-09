@@ -177,6 +177,7 @@ $$_{marked} = 1 for @p, @k;
 
 my ($dash, $pipe, $haskid, $ismid, $islast) = map chr 0x2500+$_, 0, 2, 0x2c, 0x1c, 0x14;
 my @roots = grep !$$_{parent}{marked}, grep $$_{marked}, @procs;
+$_ = ($_ // "") . " -S" for $ENV{LESS};
 open STDOUT, "| ".($ENV{PAGER}//"less");
 for my $r (@roots) {
 	my @toprint;
