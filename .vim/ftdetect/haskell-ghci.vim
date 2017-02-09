@@ -1,1 +1,1 @@
-au BufRead,BufNewFile ghci.conf,.ghci setf haskell
+au BufRead,BufNewFile ghci.conf,.ghci* setf haskell
