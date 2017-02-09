@@ -3,6 +3,7 @@ dry=0
 debug=0
 printstate=0
 single=0
+toggle=0
 virtuals=0
 lid-open && defclam=0 || defclam=1
 for arg ; do
@@ -10,6 +11,7 @@ for arg ; do
     (--dry*) ((++dry)) ;;
     (--debug) ((++debug)) ;;
     (--status) ((++printstate)) ;;
+    (--toggle) ((++toggle)) ;;
     (--clam|--only-ext) clam=1 ;;
     (--noclam|--all) clam=0 ;;
     (--single) single=1 ;;
@@ -23,6 +25,14 @@ for arg ; do
   esac
 done
 [[ -f ~/.config/mon ]] && . ~/.config/mon
+
+if (( toggle ))
+then
+  if [[ "$($0 --status)" = (*' '*) ]]
+  then single=1
+  else single=0
+  fi
+fi
 
 if (( dry > 1 ))
 then cmd=( xargs -0 printf '%s\n' xrandr )
