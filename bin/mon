@@ -16,6 +16,7 @@ for arg ; do
     (--noclam|--all) clam=0 ;;
     (--single) single=1 ;;
     (--virt) virtuals=1 ;;
+    (--no=*|--off=*|--skip=*) skip+=( ${arg#*=} ) ;;
     (*)
       tput setaf 1 >&2
       printf 'Unknown option: %s\n' "$arg"
@@ -47,6 +48,7 @@ awk \
   -v clam=${clam:-$defclam} \
   -v dry=$dry \
   -v orderpref=$orderpref \
+  -v skippref="$skip" \
   -v virtuals=$virtuals \
   -v debug=$debug \
   -v status=$printstate \
@@ -54,6 +56,11 @@ awk \
   nout = split("", outs)
   nmodes = split("", modes)
   out = ""
+  nskip = split(skippref, skipouts)
+  split("", skip)
+  for (i=1; i<=nskip; i++) {
+    skip[skipouts[i]]++
+  }
   norder = split(orderpref, order)
   split("", inpref)
   for (i=1; i<=norder; i++) {
@@ -128,7 +135,9 @@ END {
       continue
     }
     turnoff = 0
-    if (single) {
+    if (skip[out]) {
+      turnoff = 1
+    } else if (single) {
       if (nused) {
         turnoff = 1
       }
