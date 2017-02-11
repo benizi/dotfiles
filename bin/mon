@@ -124,6 +124,20 @@ function debugarray(nm,arr,k,n,i,stringy,keys) {
   }
   warn(delims[2])
 }
+function dumpall() {
+  debugarray("order", order)
+  debugarray("modeid", modeid)
+  debugarray("modew", modew)
+  debugarray("modeh", modeh)
+  debugarray("preferred", preferred)
+  debugarray("current", current)
+  debugarray("hasmode", hasmode)
+  debugarray("actual", actual)
+  debugarray("used", used)
+  debugarray("usedmode", usedmode)
+  debugarray("usedactual", usedactual)
+  debugarray("off", off)
+}
 END {
   # Find outputs that should be skipped (no mode) or turned off:
   # 1. --single, and the single monitor was already found
@@ -189,19 +203,8 @@ END {
     exit 0
   }
   if (debug) {
-    debugarray("order", order)
-    debugarray("modeid", modeid)
-    debugarray("modew", modew)
-    debugarray("modeh", modeh)
-    debugarray("preferred", preferred)
-    debugarray("current", current)
-    debugarray("hasmode", hasmode)
-    debugarray("actual", actual)
-    debugarray("used", used)
-    debugarray("usedmode", usedmode)
-    debugarray("usedactual", usedactual)
-    debugarray("off", off)
-    exit 0
+    dumpall()
+    exit
   }
   ORS = (dry > 1) ? "\000" : "\n"
   if (dry) {
