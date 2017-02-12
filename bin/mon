@@ -208,10 +208,6 @@ END {
     print outputs
     exit 0
   }
-  if (debug > 1) {
-    dumpall()
-    exit
-  }
   ++cmdgroup
   cmdarg("xrandr")
   if (dry) {
@@ -259,6 +255,7 @@ END {
 END {
   if (ncmd) {
     if (debug) {
+      if (debug > 1) dumpall()
       for (i=1; i<=ncmd; i++) {
         arg = cmd[i]
         g = cmdg[i]
