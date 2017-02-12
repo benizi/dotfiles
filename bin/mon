@@ -8,8 +8,8 @@ virtuals=0
 lid-open && defclam=0 || defclam=1
 for arg ; do
   case "$arg" in
-    (--dry*) ((++dry)) ;;
-    (--debug) ((++debug)) ;;
+    (-n|--dry*) ((++dry)) ;;
+    (-d|--debug) ((++debug)) ;;
     (--status) ((++printstate)) ;;
     (--toggle) ((++toggle)) ;;
     (--clam|--only-ext) clam=1 ;;
