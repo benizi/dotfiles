@@ -35,13 +35,6 @@ then
   fi
 fi
 
-if (( dry > 1 ))
-then cmd=( xargs -0 printf '%s\n' xrandr )
-elif (( dry || printstate ))
-then cmd=( cat )
-else cmd=( xargs xrandr )
-fi
-
 xrandr --query --verbose |
 awk \
   -v single=${single:-0} \
@@ -137,6 +130,19 @@ function dumpall() {
   debugarray("usedmode", usedmode)
   debugarray("usedactual", usedactual)
   debugarray("off", off)
+  debugarray("cmd", cmd)
+  debugarray("cmdg", cmdg)
+}
+function pushcmd(arg) {
+  if (!length(arg)) {
+    return
+  }
+  cmd[++ncmd] = arg
+  cmdg[ncmd] = cmdgroup
+}
+function cmdarg(a,b) {
+  pushcmd(a)
+  pushcmd(b)
 }
 END {
   # Find outputs that should be skipped (no mode) or turned off:
@@ -202,16 +208,20 @@ END {
     print outputs
     exit 0
   }
-  if (debug) {
+  if (debug > 1) {
     dumpall()
     exit
   }
-  ORS = (dry > 1) ? "\000" : "\n"
+  ++cmdgroup
+  cmdarg("xrandr")
   if (dry) {
-    print "--dryrun"
+    ++cmdgroup
+    cmdarg("--dryrun")
   }
   for (i=1; i<=noff; i++) {
-    print "--output", off[i], "--off"
+    ++cmdgroup
+    cmdarg("--output", off[i])
+    cmdarg("--off")
   }
   posx = 0
   posy = 0
@@ -237,9 +247,32 @@ END {
     if (i == nwide + 1 && noutodd) {
       posx += int(w[out] / 2)
     }
-    modeflag = ((i == 1) ? "--primary " : "") "--mode"
     mode = modeid[usedmode[out]]
     pos = posx "x" posy
-    print "--output", out, modeflag, mode, "--pos", pos
+    ++cmdgroup
+    cmdarg("--output", out)
+    if (i == 1) cmdarg("--primary")
+    cmdarg("--mode", mode)
+    cmdarg("--pos", pos)
   }
-}' | $cmd
+}
+END {
+  if (ncmd) {
+    if (debug) {
+      for (i=1; i<=ncmd; i++) {
+        arg = cmd[i]
+        g = cmdg[i]
+        while (i < ncmd && cmdg[i+1] == g) {
+          arg = arg " " cmd[++i]
+        }
+        print arg
+      }
+    } else {
+      nulcmd = ""
+      for (i=1; i<=ncmd; i++) {
+        nulcmd = nulcmd cmd[i] "\000"
+      }
+      print nulcmd | "xargs -0 printf \047%s\n\047"
+    }
+  }
+}'
