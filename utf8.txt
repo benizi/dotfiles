@@ -210,3 +210,36 @@ Box drawing alignment tests:                                          █
   ║└─╥─┘║  │╚═╤═╝│  │╘═╪═╛│  │╙─╀─╜│  ┃└─╂─┘┃  ░░▒▒▓▓██ ┊  ┆ ╎ ╏  ┇ ┋ ▏
   ╚══╩══╝  └──┴──┘  ╰──┴──╯  ╰──┴──╯  ┗━━┻━━┛  ▗▄▖▛▀▜   └╌╌┘ ╎ ┗╍╍┛ ┋  ▁▂▃▄▅▆▇█
                                                ▝▀▘▙▄▟
+
+More examples from:
+http://manishearth.github.io/blog/2017/01/14/stop-ascribing-meaning-to-unicode-code-points/
+
+Single character:
+ᄀᄀᄀ각ᆨᆨ
+
+Author's last name:
+मनीष
+
+Grapheme clusters:
+각 1 or 3?
+नी”
+நி”
+
+Emoji examples:
+👨‍❤️‍👨
+👨‍👨‍👧‍👧
+
+And:
+http://manishearth.github.io/blog/2017/01/15/breaking-our-latin-1-assumptions/
+
+Basamala:
+﷽
+
+Old Korean single grapheme:
+ᄀᄀᄀ각ᆨᆨ
+
+Family emoji:
+👩‍👩‍👧‍👦
+
+Spanish flag: (regional indicator characters for "E" and "S"):
+🇪🇸
