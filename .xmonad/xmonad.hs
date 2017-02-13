@@ -194,6 +194,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     ---- mpd
     , ((0, xF86XK_AudioPlay), spawn "mpc toggle")
+    , ((0, xF86XK_AudioPause), spawn "mpc toggle") {- headset sends "Pause" -}
     , ((0, xF86XK_AudioStop), spawn "mpd --kill")
     , ((0, xF86XK_AudioNext), spawn "mpc next")
     , ((0, xF86XK_AudioPrev), spawn "mpc prev")
