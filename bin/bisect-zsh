@@ -1,0 +1,91 @@
+#!/bin/zsh
+
+set -e
+
+dash=${@[(ie)--]}
+if (( dash > $# ))
+then makeargs=() ; runcmd=( $@ )
+else makeargs=( ${@:1:$dash-1} ) ; runcmd=( ${@:1+dash} )
+fi
+
+TIMEOUT=109
+SEGFAULT=139
+
+tp() { tput "$@" 2>/dev/null || : }
+color_notice="$(tp setaf 32)"
+color_warn="$(tp setaf 31)"
+color_off="$(tp sgr0)"
+colorize() {
+  awk -v color="$1" -v nocolor="$color_off" '{ print color $0 nocolor }'
+}
+printfc() { local c=$1 ; shift ; printf $@ | colorize $c }
+notice() { printfc $color_notice '%s' "$*" >&2 }
+warn() { printfc $color_warn '%s' "$*" >&2 }
+cleanbuild() { (( $+build && ! $+keep )) && [[ -d $build ]] && rm -rf $build }
+trap cleanbuild INT HUP QUIT EXIT
+skip() { (( ! $# )) || warn $@ ; exit 125 }
+good() { (( ! $# )) || notice $@ ; exit 0 }
+bad() { (( ! $# )) || warn $@ ; exit 1 }
+with_notice() { (( ! $# )) || notice $@ ; $@ >& /dev/null }
+
+: ${version=$(git rev-parse HEAD)}
+: ${prefix=/tmp/zsh-$version}
+: ${makejobs:=$(( 1 + $(cpus) ))}
+
+confargs=( --prefix=$prefix )
+(( $makejobs )) && makeargs+=( -j$makejobs )
+makeargs+=( install.{bin,modules,fns} )
+(( $#runcmd )) && [[ ${runcmd[1]} = zsh ]] && runcmd[1]=$prefix/bin/zsh
+
+: ${build=$(mktemp -d -t build-zsh.XXXXXX)}
+notice building in $build
+mkdir -p $build
+[[ -d $build ]]
+git archive HEAD | (cd $build ; tar -xf -)
+pushd $build
+
+docker_gcc() {
+  (( $+keep )) && rm_flag= || rm_flag=--rm
+  docker run \
+    $rm_flag \
+    -e prefix=$prefix \
+    -e build=$build \
+    -v $prefix:$prefix \
+    -v $build:/src \
+    -v /usr/include:/usr/include:ro \
+    -w /src \
+    -it gcc:5.4 \
+    "$@"
+}
+docker_gcc bash ; exit $?
+
+## HACKS
+grep -qFx 'AC_PROG_LN' aclocal.m4 || cat >> aclocal.m4 <<'MISSING_OLD_MACRO'
+AC_DEFUN(AC_PROG_LN,[LN="ln";AC_SUBST(LN)])
+MISSING_OLD_MACRO
+confargs+=( --disable-ansi2knr )
+missing_fn='as_fn_set_status() { return $1 ; }'
+wtfautoconf=( perl -i -lpwe 'print q<'$missing_fn'> if 2..2' configure )
+
+if (( $+docker ))
+then
+  docker_gcc sh -e -x -c '
+  trap "echo exiting... ; read somevar" INT HUP QUIT EXIT ;
+  [[ ! -f .preconfig ]] || ./.preconfig ;
+  '${(j: :)${(q)wtfautoconf}}' ;
+  ./configure '"$confargs"' ;
+  make '"$makeargs" && r=0 || r=$?
+else
+  [[ ! -f .preconfig ]] || with_notice ./.preconfig
+  with_notice $wtfautoconf
+  with_notice ./configure $confargs
+  with_notice make $makeargs
+  with_notice $runcmd && r=0 || r=$?
+fi
+
+case $r in
+  (0) good ;;
+  (1|$SEGFAULT|$TIMEOUT) bad ;;
+  ($SKIP) skip ;;
+  (*) bad "Unknown exit code [$r]" ;;
+esac
