@@ -8,6 +8,7 @@
 -- Normally, you'd only override those defaults you care about.
 --
 
+import CompatibilityShims
 import Superscripts
 
 import XMonad
