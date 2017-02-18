@@ -254,6 +254,8 @@ END {
     if (out == primaryout) cmdarg("--primary")
     cmdarg("--mode", mode)
     cmdarg("--pos", pos)
+    # TODO(bhaskell): why does explicit CRTC specification seem to be needed?
+    cmdarg("--crtc", ncrtc++)
   }
 }
 END {
