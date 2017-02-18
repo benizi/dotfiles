@@ -269,11 +269,12 @@ END {
         print arg
       }
     } else {
+      interpreter = cmd[1]
       nulcmd = ""
-      for (i=1; i<=ncmd; i++) {
-        nulcmd = nulcmd cmd[i] "\000"
+      for (i=2; i<=ncmd; i++) {
+        nulcmd = nulcmd (nulcmd ? "\000" : "") cmd[i]
       }
-      print nulcmd | "xargs -0 printf \047%s\n\047"
+      print nulcmd | ("xargs -0 " interpreter)
     }
   }
 }'
