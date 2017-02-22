@@ -291,6 +291,11 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     [ ((mod4Mask .|. shiftMask, xK_1), XS.modify warpViewCycle >> refresh) ]
     ++
 
+    -- Ctrl+Win+[q,w,e,r,t,...] = warp to screen 0,1,2,...
+    [ ((mod4Mask .|. controlMask, key), warpToScreen screen 0.5 0.5)
+      | (key, screen) <- zip [xK_q, xK_w, xK_e, xK_r, xK_t, xK_y] [0..]]
+    ++
+
     -- Grid Select
     [ ((mod4Mask, xK_g), goToSelected def) ]
 
