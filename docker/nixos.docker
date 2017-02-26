@@ -1,0 +1,4 @@
+FROM alpine:latest
+RUN apk add --update curl bash && rm -rf /var/cache/apk
+ADD https://nixos.org/nix/install /src/installer
+RUN /bin/sh /src/installer
