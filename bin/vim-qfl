@@ -1,8 +1,11 @@
 #!/bin/sh
-set -- vim -c "$(
-  to-qfl |
-  prepend 'let qfl=' |
-  append '|if len(qfl)|cal setqflist(qfl)|cope' |
-  append '|else|echom "empty"|cal getchar()|x|end'
-)" "$@"
+set -e
+cleanup() {
+  true || test -z "$tmpqfl" || rm "$tmpqfl"
+}
+trap cleanup INT QUIT HUP EXIT
+tmpqfl="$(mktemp -t vim-qfl.XXXXXX.qfl)"
+test -n "$tmpqfl"
+cat > "$tmpqfl"
+set -- vim --cmd 'let &efm = "%f\<Tab>%l\<Tab>%c\<Tab>%m"' -q "$tmpqfl" "$@"
 "$@" < /dev/tty
