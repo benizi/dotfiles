@@ -189,6 +189,19 @@ aug NoEditUnsaveable
 	au BufWinEnter * if !exists('b:swapname') | let &modifiable = !&readonly | endif
 aug END
 
+" Open all folds the first time a file is opened
+fun! AutoUnfold()
+	if &fdm == 'syntax' && !exists('w:auto_unfold')
+		norm zR
+		let w:auto_unfold = 1
+	end
+endf
+aug AutoUnfold
+	au!
+	au BufRead,BufNew * norm zR
+	au BufWinEnter,WinEnter * cal AutoUnfold()
+aug END
+
 " Default foldtext to include byte length
 fun! FoldTextWithOffsets()
 	let txt = foldtext()
