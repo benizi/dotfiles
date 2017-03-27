@@ -44,7 +44,6 @@ funcs+=( add-bat )
 
 add-date() {
   date="$(date +'%s %Y-%m-%d %H:%M:%S')"
-  epoch=${date%% *}
   date=${date#* }
   printf '%s' $date
   [[ -f ~/tz ]] || return 0
@@ -53,7 +52,7 @@ add-date() {
 funcs+=( add-date )
 
 add-essid() {
-  if (( ! ( epoch % 10 ) )) || (( ! $+essid ))
+  if (( ! ( EPOCHSECONDS % 10 ) )) || (( ! $+essid ))
   then essid="$(essid)"
   fi
   printf '%s' $essid
@@ -88,7 +87,7 @@ detect-scrolling() {
 }
 
 toggle-middle() {
-  if (( ! epoch % 10 )) || (( ! $+togglemiddle ))
+  if (( ! ( EPOCHSECONDS % 10 ) )) || (( ! $+togglemiddle ))
   then
     local trackpoints="$(find-trackpoints)"
     local id toggle
@@ -118,7 +117,7 @@ reset-keyboard() {
 funcs=( reset-keyboard $funcs )
 
 lid-status() {
-  if (( ! epoch % 10 )) || (( ! $+lidstatus ))
+  if (( ! ( EPOCHSECONDS % 10 ) )) || (( ! $+lidstatus ))
   then
     lidstatus='^ca(1,sudo '${commands[lid-toggle]}')^i('${(%):-%x}'.'
     if lid-close-ok
@@ -139,7 +138,7 @@ bt-is-powered() {
 add-bluetooth() {
   local toggle
   (( $+commands[btmgmt] )) || return
-  if (( ! epoch % 15 )) || (( ! $+btstatus ))
+  if (( ! ( EPOCHSECONDS % 15 ) )) || (( ! $+btstatus ))
   then
     if bt-is-powered
     then toggle=off btstatus='++'
