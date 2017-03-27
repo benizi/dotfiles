@@ -131,6 +131,27 @@ lid-status() {
 }
 funcs=( lid-status $funcs )
 
+bt-is-powered() {
+  btmgmt -i 0 info |
+  awk -v x=1 '/current settings:/ && /powered/ { x = 0 } END { exit x }'
+}
+
+add-bluetooth() {
+  local toggle
+  (( $+commands[btmgmt] )) || return
+  if (( ! epoch % 15 )) || (( ! $+btstatus ))
+  then
+    if bt-is-powered
+    then toggle=off btstatus='++'
+    else toggle=on btstatus='--'
+    fi
+    btstatus='^ca(1,sudo btmgmt -i 0 power '"$toggle"')'"$btstatus"'^ca()'
+    btstatus+='^ca(1,in-term bluetoothctl)bt^ca()'
+  fi
+  printf '%s' $btstatus
+}
+funcs=( add-bluetooth $funcs )
+
 minimal-date() {
   print -P '%D{%Y-%m-%d %H:%M:%S}'
 }
