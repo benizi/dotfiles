@@ -43,9 +43,7 @@ add-bat() {
 funcs+=( add-bat )
 
 add-date() {
-  date="$(date +'%s %Y-%m-%d %H:%M:%S')"
-  date=${date#* }
-  printf '%s' $date
+  print -nP '%D{%F %T}'
   [[ -f ~/tz ]] || return 0
   printf '%s' "$(TZ=$(<~/tz) date +'(%H %Z)')"
 }
@@ -152,7 +150,7 @@ add-bluetooth() {
 funcs=( add-bluetooth $funcs )
 
 minimal-date() {
-  print -P '%D{%Y-%m-%d %H:%M:%S}'
+  print -nP '%D{%Y-%m-%d %H:%M:%S}'
 }
 
 setup() {
