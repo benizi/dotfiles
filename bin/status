@@ -65,20 +65,41 @@ add-mem() {
 }
 funcs+=( add-mem )
 
+find-trackpoints() {
+  xinput list --short |
+  awk '/Lite-On/&&/TrackPoint/&&/pointer/' |
+  sed -e 's/^.*=//' -e 's/[[:space:]].*$//' |
+  tac |
+  sed -n -e 1p
+}
+
+detect-scrolling() {
+  xinput list-props $1 |
+  awk -v toggle= -v property= '
+  {
+    thisprop = ""
+    for (i=1; i<=NF && $i !~ /[0-9]/; i++) thisprop = thisprop (i>1?" ":"") $i
+    found = 0
+  }
+  thisprop == "Evdev Wheel Emulation" { found = 1 ; tog = 1 - $NF }
+  thisprop == "libinput Scroll Method Enabled" { found = 1 ; tog = "0 0 " (1-$NF) }
+  !found { next }
+  { print tog ; print thisprop ; exit }'
+}
+
 toggle-middle() {
   if (( ! epoch % 10 )) || (( ! $+togglemiddle ))
   then
-    local trackpoints="$(xinput list --short | awk '/Lite-On/&&/TrackPoint/&&/pointer/' | sed -e 's/^.*=//' -e 's/[[:space:]].*$//' | tac | sed 1q)"
+    local trackpoints="$(find-trackpoints)"
     local id toggle
     togglemiddle=
     for id in ${=trackpoints}
     do
-      if [[ "$(xinput list-props $id | awk '/Evdev Wheel Emulation/ { print $NF }' | sed 1q)" = 1 ]]
-      then toggle=0
-      else togglemiddle+='^fg(#ff9900)^bg(#ff9900)' toggle=1
-      fi
-      togglemiddle+='^ca(1,xinput set-prop '$id' "Evdev Wheel Emulation" '$toggle')'
-      (( toggle )) && togglemiddle+='^r(7x8)^p(-7)'
+      detect-scrolling $id |
+      { read toggle ; read property }
+      [[ $toggle = (*0) ]] || togglemiddle+='^fg(#ff9900)^bg(#ff9900)'
+      togglemiddle+='^ca(1,xinput set-prop '$id' "'$property'" '$toggle')'
+      [[ $toggle = (*1) ]] && togglemiddle+='^r(7x8)^p(-7)'
       togglemiddle+='^i('${(%):-%x}'.middle.xpm)'
       togglemiddle+='^fg()^bg()^ca()'
     done
