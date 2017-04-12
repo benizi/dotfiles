@@ -1,0 +1,18 @@
+#!/bin/sh
+vim -r 2>&1 |
+tr -d '\r' |
+awk '
+/file name:/ { fn = $0 ; sub(/^[^:]*: */, "", fn) }
+/process ID:/ && /still running/ { print $3 "\t" fn }
+' |
+awk -F\\t -v user=${USER:-"$(id -nu)"} '
+{ pid = $1 ; file = $2 }
+1 == index(file, "~" user "/") { file = "~" substr(file, 2 + length(user)) }
+{ print file, pid }
+' |
+fzf -x |
+awk -v OFS=\\n '{$1=$1}1' |
+sed -n -e '$p' |
+while read pick
+do x-activate $pick
+done
