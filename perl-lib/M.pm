@@ -245,7 +245,7 @@ sub import {
 	for my $p (sort keys %help) {
 		print "$p\n";
 		my @f = sort { $$a[0] cmp $$b[0] } @{$help{$p}};
-		print "$$_[0]", (@$_ > 1) ? " [also as: @$_[1..$#$_]]" : "", "\n" for @f;
+		print "  $$_[0]", (@$_ > 1) ? " [also as: @$_[1..$#$_]]" : "", "\n" for @f;
 	}
 	exit if $help > 1;
 }
