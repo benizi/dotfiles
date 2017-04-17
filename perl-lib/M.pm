@@ -216,6 +216,10 @@ sub import {
 	my $st = symtab __PACKAGE__;
 	my $new;
 	$$new{$_}=$$st{$_} for grep !/$_not_re/&&!$not{$_}&&!$before{$_}, keys %$st;
+	while (my ($fn, $als) = each %alias) {
+		local $_;
+		$$new{$_} = $$st{$fn} for @$als;
+	}
 	for my $u (grep /_/, keys %$new) {
 		(my $n = $u) =~ tr/_//d;
 		$$new{$n} = $$new{$u};
