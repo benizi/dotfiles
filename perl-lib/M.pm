@@ -224,9 +224,11 @@ sub import {
 	shift;
 	my $verbose = 0;
 	my $help = 0;
+	my $execute = 0;
 	@_ = grep { not
 		/^v(?:erb(?:ose)?)?$/ ? (++$verbose) :
 		/^h(?:elp?)?((?:die)?)$/ || /^ind(?:ex)?$/ ? ($help=$1?2:1) :
+		/^x|main$/ ? (++$execute) :
 	0 } @_;
 	my $st = symtab __PACKAGE__;
 	my $new;
@@ -267,5 +269,15 @@ sub import {
 		print "  $$_[0]", (@$_ > 1) ? " [also as: @$_[1..$#$_]]" : "", "\n" for @f;
 	}
 	exit if $help > 1;
+	if ($execute) {
+		while (<>) {
+			chomp;
+			for my $fn (@x) {
+				$_ = $$new{$fn}->($_);
+			}
+			print $_.$/;
+		}
+		exit;
+	}
 }
 1;
