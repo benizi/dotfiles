@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+test -n "$1"
+awk -v RS=\\000 -F= '$1 == "WINDOWID" { print $2 }' < /proc/$1/environ
