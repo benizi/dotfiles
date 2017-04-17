@@ -83,7 +83,7 @@ mux_start() {
         if test $pane -gt 0
         then tmux split-window ${root+"-c"} ${root+"$root"} -t $sess:$win
         fi
-        tmux_run_command $sess:$target "$command"
+        tmux_send_keys $sess:$target "$command" C-m
         ;;
       (layout)
         tmux select-layout -t $sess:$target $command
@@ -101,24 +101,23 @@ mux_start() {
 tmux_send_keys() {
   local target=$1
   shift
-  local char nxt cmd="$*"
-  set -- tmux send-keys -t "$target"
-  while test -n "$cmd"
+  local keys first=true
+  for keys
   do
-    nxt="${cmd#?}"
-    char="${cmd%"$nxt"}"
-    char="${char/;/\\;}"
-    set -- "$@" "$char"
-    cmd="${cmd#?}"
+    if $first
+    then
+      first=false
+      set -- tmux send-keys -t "$target"
+      if test -n "$dry"
+      then set -- printf '%s\n' "$@"
+      fi
+    fi
+    case "$keys" in
+      (*';') keys="${keys%';'}"'\;' ;;
+    esac
+    set -- "$@" "$keys"
   done
   "$@"
-}
-
-tmux_run_command() {
-  local target=$1
-  shift
-  tmux_send_keys "$target" "$*"
-  tmux send-keys -t "$target" C-m
 }
 
 set -e
