@@ -4,6 +4,14 @@ use warnings;
 sub symtab ($) { my $t = \%::; $t = $$t{$_."::"} for split /::/, shift; $t }
 my %before; BEGIN { %before = %{symtab __PACKAGE__}; delete $before{symtab}; }
 my %not;
+sub _destructive {
+	my $sub = shift;
+	return sub {
+		return &$sub if @_;
+		unshift @_, $_;
+		$_ = &$sub;
+	};
+}
 sub _underscored {
 	my $sub = shift;
 	return sub {
@@ -96,8 +104,9 @@ sub _xml_file { XML::Twig->new->parsefile(shift) }
 my %in_module;
 sub my_use {
 	my ($mod, @args) = @_;
-	my (@exc, @underscore);
+	my (@exc, @underscore, @destructive);
 	s/_$// and push @underscore, $_ for @args;
+	s/!$// and push @destructive, $_ for @args;
 	@args = grep { not
 		ref() ? (push @exc, $_) :
 	0 } @args;
@@ -116,13 +125,19 @@ sub my_use {
 		for my $no (@exc) {
 			$not{$_}++ for grep /$no/, keys %new;
 		}
-		for my $und (@underscore) {
-			my $old = "__".$und;
-			no strict 'refs';
-			no warnings 'redefine';
-			no warnings 'prototype';
-			*$old = \&$und;
-			*$und = _underscored(\&$old);
+		for (
+			[\&_underscored, @underscore],
+			[\&_destructive, @destructive],
+		) {
+			my $mod = shift @$_;
+			for my $fn (@$_) {
+				my $old = "__".$fn;
+				no strict 'refs';
+				no warnings 'redefine';
+				no warnings 'prototype';
+				*$old = \&$fn;
+				*$fn = $mod->(\&$old);
+			}
 		}
 		$in_module{$_} = $mod for grep !$not{$_}, keys %new;
 	} else {
@@ -133,7 +148,7 @@ sub my_use {
 sub optuse { my_use optional => @_; }
 sub OPTION { my_use OPTIONAL => @_; }
 my_use 'Data::Dumper';
-optuse 'URI::Escape', qw/uri_unescape_ uri_escape_/;
+optuse 'URI::Escape', qw/uri_unescape! uri_escape!/;
 my_use 'Digest::MD5', qw/md5_ md5_hex_ md5_base64_/;
 optuse 'Digest::SHA', qw/sha1_ sha1_hex_ sha1_base64_/;
 my_use 'MIME::Base64', qw/decode_base64_/;
