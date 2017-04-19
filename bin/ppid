@@ -1,0 +1,21 @@
+#!/bin/sh
+recurse=false
+if test $# -gt 0
+then recurse=true
+fi
+pid=$$
+first=true
+while :
+do
+  ppid="$(</proc/$pid/stat)"
+  ppid="${ppid##*) }"
+  ppid="${ppid#* }"
+  ppid="${ppid%% *}"
+  pid=$ppid
+  ((pid)) || break
+  if $first
+  then first=false ; continue
+  else printf '%s\n' $ppid
+  fi
+  $recurse || break
+done
