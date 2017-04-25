@@ -225,6 +225,13 @@ if test -e /tmp/status.minimal
 then funcs=( add-term minimal-date )
 fi
 
+if test $# -gt 0
+then
+  setup
+  "$@"
+  exit $?
+fi
+
 while sleep 1
 do
   setup
