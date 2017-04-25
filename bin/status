@@ -133,17 +133,70 @@ bt-is-powered() {
   awk -v x=1 '/current settings:/ && /powered/ { x = 0 } END { exit x }'
 }
 
+bluez-dbus() {
+  dbus-send \
+    --system --type=method_call --dest=org.bluez --print-reply=literal \
+    /org/bluez/$1 ${@:2}
+}
+
+bt-headphones() {
+  local nodeattr dev devprops line connected icon profiles btaddr toggle state
+  for nodeattr in $(
+    bluez-dbus hci0 org.freedesktop.DBus.Introspectable.Introspect |
+    xmllint --xpath '/node/node/@name' -)
+  do
+    dev="${${nodeattr#*\"}%\"}"
+    devprops="$(bluez-dbus hci0/$dev \
+      org.freedesktop.DBus.Properties.GetAll \
+      string:org.bluez.Device1)"
+    for line in ${(f)devprops}
+    do
+      case $line in
+        ('         Address '*')') btaddr=${${=line}[-2]} ;;
+        ('         Connected '*) connected=${line##* } ;;
+        ('         Icon '*')') icon=${${=line}[-2]} ;;
+        (*-0000-*) profiles=$line ;;
+      esac
+    done
+    # Filter for "Audio Sink" BT Profile
+    (( ${profiles[(I)0000110b-0000-1000-8000-00805f9b34fb]} )) || continue
+    # And something audio-related (filter phones and computers)
+    [[ $icon = (*audio*) ]] || continue
+    if $connected
+    then state='++' toggle=disconnect
+    else state='--' toggle=connect
+    fi
+    printf '^ca(1,echo %s %s | bluetoothctl)%s^ca()' $toggle $btaddr $state
+    if $connected
+    then printf '^ca(1,sound-check)??^ca()'
+    fi
+  done
+}
+
 add-bluetooth() {
-  local toggle
+  local powered toggle
   (( $+commands[btmgmt] )) || return
   if (( ! ( EPOCHSECONDS % 15 ) )) || (( ! $+btstatus ))
   then
-    if bt-is-powered
+    if bt-is-powered ; then : ; fi
+    powered=$(( ! $? ))
+    if (( powered ))
     then toggle=off btstatus='++'
     else toggle=on btstatus='--'
     fi
     btstatus='^ca(1,sudo btmgmt -i 0 power '"$toggle"')'"$btstatus"'^ca()'
     btstatus+='^ca(1,in-term bluetoothctl)bt^ca()'
+    if (( powered ))
+    then
+      (( $+btconncheck )) || btconncheck=0
+      if (( ! btconncheck ))
+      then
+        btconnstatus="$(bt-headphones)"
+        btconncheck=4
+      else (( btconncheck-- )) || :
+      fi
+    fi
+    btstatus+=$btconnstatus
   fi
   printf '%s' $btstatus
 }
