@@ -1,0 +1,48 @@
+#!/bin/zsh
+
+escape() {
+  local n=$1 item=$2
+  (( n > 0 )) && item=${(q)item}
+  (( --n ))
+  (( n > 0 )) && item=${(q)item}
+  item=${item//:/'\:'}
+  printf '%s' "$item"
+}
+
+socat=( socat )
+while (( $# ))
+do
+  arg=$1
+  shift
+  case $arg in
+    (shell:) transport=system: ; printf 'socat shell: -> system:\n' >&2 ;;
+    (system:|exec:) transport=$arg ;;
+    (*) socat+=( $arg ) ; continue ;;
+  esac
+  sub=( "$@" )
+  set --
+  rest=()
+  part=()
+  while (( $#sub ))
+  do
+    item=${sub[1]}
+    shift sub
+    case $item in
+      (\;|\||\>|\<) rest+=( "$part" "$(escape 1 $item)" ) ; part=() ;;
+      (*) part+=( "$(escape 2 $item)" ) ;;
+    esac
+  done
+  if (( $#part ))
+  then rest+=( "$part" )
+  fi
+  socat+=( "$transport$rest" )
+done
+
+unset dry
+unset debug
+#dry=1
+#debug=1
+set -- $socat
+(( ! $+dry )) || set -- printf '%s\n' "$@"
+(( ! $+debug )) || set -- strace -s 100000 -f -e trace=execve "$@"
+exec "$@"
