@@ -27,10 +27,11 @@ func main() {
 	flag.Parse()
 
 	// Set up variables
-	urls := append([]string{url}, flag.Args()...)
+	urls := []string{}
 	if url != "" {
 		urls = append(urls, url)
 	}
+	urls = append(urls, flag.Args()...)
 	instancePort := fmt.Sprintf("%d", port)
 
 	// Connect to debugger
@@ -40,12 +41,12 @@ func main() {
 
 	// Open tabs for each URL (if any)
 	for _, url := range urls {
-		if url == "" {
-			continue
-		}
 		target, err := dbg.NewTab()
 		if err != nil {
 			log.Fatalln(err.Error())
+		}
+		if url == "" {
+			continue
 		}
 		target.Page.Enable()
 		target.Page.Navigate(url, refer)
