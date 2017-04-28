@@ -205,6 +205,9 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     ---- choose wifi
     , ((mod4Mask, xK_w), spawn "wifi-chooser")
 
+    ---- select from files open in Vim instances
+    , ((mod4Mask, xK_v), spawn "vim-pick")
+
     -- launch gmrun
     , ((modm .|. shiftMask, xK_p     ), spawn "gmrun")
 
