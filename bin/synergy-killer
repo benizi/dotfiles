@@ -36,13 +36,14 @@ my %ppids;
 }
 
 if ($just_kill) {
-	chomp(my @procs = readpipe "sudo lsof -i :$port -Fp");
-	s/^p// for @procs = grep /^p/, @procs;
-	@procs = grep !$ppids{$_}, @procs;
+	my @lsof = qw/sudo lsof -Fp/;
+	push @lsof, -i => ":$port";
+	push @lsof, -c => $_ for qw/synergys synergyc/;
+	chomp(my @lines = readpipe join ' ', @lsof);
+	my @procs = grep !$ppids{$_}, map { /^p/ ? (substr $_, 1) : () } @lines;
 	my_kill for @procs;
 	my $es = @procs == 1 ? "" : "es";
 	print "Killed ", 0 + @procs, " old Synergy process$es: @procs\n";
-	system { 'killall' } qw/killall synergyc/;
 	exit;
 }
 
