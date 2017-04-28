@@ -4,6 +4,7 @@ chosen="$(cat <<EMOJI | picker -p 'emoticon: '
 (╯°□°)╯︵ ┻━┻ - table flip
 ¯\_(ツ)_/¯ - shrug
 (ﾉಥ益ಥ）ﾉ ┻━┻ - table flip - angry
+™ - trademark
 EMOJI
 )"
 chosen="${chosen%%' - '*}"
