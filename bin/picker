@@ -1,0 +1,52 @@
+#!/bin/sh
+#
+## Pick from a dynamically filterable set of choices using whatever installed
+## option will work best.
+
+# - Prefer `rofi` always
+# - In terminal: prefer `fzf` over `dmenu`
+# - Otherwise: prefer `dmenu` over `fzf`
+if test -t 1
+then : ${choices='rofi fzf dmenu'}
+else : ${choices='rofi dmenu fzf'}
+fi
+
+for cmd in $choices :fail
+do hash "$cmd" 2>/dev/null && break
+done
+
+if test "$cmd" = :fail
+then
+  printf 'Failed to locate any of the following:\n'
+  printf '  ] %s\n' $choices
+  exit 1
+fi >&2
+
+case "$cmd" in
+  (rofi) set -- -dmenu -width 90 -lines 40 "$@" ;;
+  (fzf) set -- -x "$@" ;;
+esac
+
+sep="$(printf '\001x')"
+sep=${sep%?}
+OLDIFS=$IFS
+IFS="$sep"
+set -- $(while test $# -gt 0
+do
+  arg=$1
+  handled=false
+  toshift=1
+  case "$cmd:$arg" in
+    (fzf:-p) ((toshift++)) ; handled=true ;;
+    (*:-p) ((toshift++)) ;;
+    (*) ;;
+  esac
+  while test $toshift -gt 0
+  do
+    $handled || printf '%s' "$1" "$sep"
+    shift
+    ((toshift--))
+  done
+done)
+IFS=$OLDIFS
+"$cmd" "$@"
