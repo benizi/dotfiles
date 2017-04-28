@@ -1,10 +1,4 @@
 #!/bin/sh
-set -e
-if ! tty -s
-then
-  test -z "$_vim_pick_loop_detect_"
-  _vim_pick_loop_detect_=1 exec ensure-in-term "$0" "$@"
-fi
 vim -r 2>&1 |
 tr -d '\r' |
 awk -v OFS=\\t -v user=${USER:-"$(id -nu)"} '
@@ -14,7 +8,7 @@ awk -v OFS=\\t -v user=${USER:-"$(id -nu)"} '
   sub("^~" user "/", "~/", file)
 }
 /process ID:/ && /still running/ { print file, $3 }' |
-fzf -x |
+picker -p 'vim:' |
 awk '{ print $NF }' |
 while read pick
 do x-activate $pick
