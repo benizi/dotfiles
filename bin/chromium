@@ -1,12 +1,39 @@
 #!/bin/zsh
-if test -n "$browser_debug"
+: ${browser_debug=3}
+scriptlog=~/browser.log
+if (( browser_debug ))
 then
   {
     date
     printf '[%s]\n' "$0" "$@"
     pst $$ 2>/dev/null
-  } >> ~/browser.log
+  } >> $scriptlog
 fi
+dbg-exec() {
+  local run=true
+  local -a heading
+  if (( browser_debug >= 3 ))
+  then
+    xmessage -default run -buttons run,exit,no,fail $'Run:\n' "  $^@"$'\n'
+    case $? in
+      (1|103|104) exit 1 ;;
+      (101) ;;
+      (102) exit 0 ;;
+    esac
+  elif (( browser_debug == 2 ))
+  then runit=false
+  fi
+  heading=( "run=$run" )
+  if $_dry
+  then run=false heading+=( "--dry" )
+  fi
+  if (( browser_debug ))
+  then printf ']] %s\n' "$heading" $1 "  ${^@:2}" | tee -a $scriptlog
+  fi
+  $run || set -- : "$@"
+  "$@"
+  exit $?
+}
 case $0 in
   (*-fresh) argv+=( --scratch http://${${0//-fresh/}:t} ) ;;
   (*chromium*|*open|*sensible-browser) ;;
@@ -79,7 +106,7 @@ done
 
 if (( $+noparse )) ; then
   find_exe
-  exec $exe $@
+  dbg-exec $exe $@
 fi
 
 while [ $# -gt 0 ] ; do
@@ -179,21 +206,22 @@ then
   fi
 fi
 
-_echo=()
-$_dry && _echo=(echo)
-_exec=()
-(( $+_scratch )) || _exec=(exec)
+_exec=(dbg-exec)
 (( ! $#_taskset )) || _exec+=( taskset $_taskset )
 if [[ -n "$_url" ]] ; then
   if $_remote ; then
     (( $+commands[dwm-activate] )) && dwm-activate browser &
     _args+=( --remote "$_url" )
   else
-    exec $_echo open $_url
+    xargs -0 xmessage -default okay <<MESSAGE
+Tried to open:
+  $_url
+MESSAGE
+    exit 1
   fi
 fi
 find_exe
-_cmd=( $_echo $_exec $exe $_args )
+_cmd=( $_exec $exe $_args )
 if $_logging ; then
   _logfile=~/logs/errors-chromium-${_logext}-$(date +%Y-%m-%d-%H%M%S)
   if $_dry ; then
