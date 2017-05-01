@@ -141,7 +141,12 @@ while [ $# -gt 0 ] ; do
     (http:*|https:*|ftp:*|file:*|/*) _url=$arg ;;
     (--exe=*) exe=${arg#*=} ;;
     (--cpus=*) _taskset+=( -c ${arg#*=} ) ;;
-    (*) _args+=( $arg ) ;;
+    (*)
+      if (( $+_url ))
+      then _args+=( $arg )
+      else _url=$arg
+      fi
+      ;;
   esac
 done
 
