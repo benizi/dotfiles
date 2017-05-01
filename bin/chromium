@@ -4,6 +4,7 @@ scriptlog=~/browser.log
 if (( browser_debug ))
 then
   {
+    echo
     date
     printf '[%s]\n' "$0" "$@"
     pst $$ 2>/dev/null
@@ -162,6 +163,7 @@ if (( $+_scratch )) ; then
   _profile=SCRATCH
   _profdir=$(mktemp -t -d chromium-scratch.XXXXXXXX)
   (( $+_profdir )) || die "Couldn't create tmp dir?"
+  printf '_profdir="%s"\n' $_profdir
   trap cleanup_tmp EXIT INT TERM
   chromium-theme $_profdir $+_javascript
 fi
