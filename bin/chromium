@@ -15,7 +15,7 @@ dbg-exec() {
   local -a heading
   if (( browser_debug >= 3 ))
   then
-    xmessage -default run -buttons run,exit,no,fail $'Run:\n' "  $^@"$'\n'
+    xmessage -default run -buttons run,exit,no,fail $'Run:\n' "  ${(q)^@}"$'\n'
     case $? in
       (1|103|104) exit 1 ;;
       (101) ;;
@@ -231,6 +231,11 @@ _exec=(dbg-exec)
 if [[ -n "$_url" ]] ; then
   if $_remote ; then
     (( $+commands[dwm-activate] )) && dwm-activate browser &
+    if (( $+commands[chromium-remote] ))
+    then
+      dbg-exec chromium-remote $_url
+      exit $?
+    fi
     _args+=( --remote "$_url" )
   else
     xargs -0 xmessage -default okay <<MESSAGE
@@ -239,6 +244,9 @@ Tried to open:
 MESSAGE
     exit 1
   fi
+fi
+if lsof -Pni :${_debug_port:-$_default_debug_port} 2&>/dev/null
+then dbg-exec chromium-remote ''
 fi
 find_exe
 _cmd=( $_exec $exe $_args )
