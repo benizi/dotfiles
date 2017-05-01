@@ -55,6 +55,9 @@ _javascript=true
 unset _asyncdns
 unset _flash
 _quic=true
+_remote_debug=true
+unset _debug_port
+_default_debug_port=9222
 _args=()
 _taskset=()
 _flags=( plugins logging user-scripts ipv6 async-dns flash quic )
@@ -141,6 +144,9 @@ while [ $# -gt 0 ] ; do
     (http:*|https:*|ftp:*|file:*|/*) _url=$arg ;;
     (--exe=*) exe=${arg#*=} ;;
     (--cpus=*) _taskset+=( -c ${arg#*=} ) ;;
+    (--rdp=*|--remote-debugging-port=*) _remote_debug=true ; _debug_port=${arg#*=} ;;
+    (--rdp|--remote-debug*) _remote_debug=true ;;
+    (--no-rdp|--no-remote-debugging-port) _remote_debug=false ;;
     (*)
       if (( $+_url ))
       then _args+=( $arg )
@@ -209,6 +215,13 @@ then
   if [[ -e $json ]]
   then _args+=( --ppapi-flash-version="$(jq -r .version $json)" )
   fi
+fi
+
+if $_remote_debug
+then
+  (( _default_debug_port += $+_scratch ))
+  : ${_debug_port=$_default_debug_port}
+  _args+=( --remote-debugging-port=$_debug_port )
 fi
 
 _exec=(dbg-exec)
