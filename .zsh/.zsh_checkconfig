@@ -33,6 +33,8 @@ check_config_exists_graphical() {
   configs=(
     .emacs.d
     .gitconfig
+    .ghc/ghci.conf
+    .haskeline
     .tmux.conf
     .tmuxinator
     .vimrc
