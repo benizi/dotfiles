@@ -119,13 +119,17 @@ windowUp = do
     sendMessage $ Go U
     focusUp
 
-data WarpViewStyle = Warp | Greedy deriving (Typeable, Show, Read)
+data WarpViewStyle = Warp
+                   | Greedy
+    deriving (Typeable, Show, Read, Eq, Enum, Bounded)
+
 instance ExtensionClass WarpViewStyle where
     initialValue = Warp
 
 warpViewCycle :: WarpViewStyle -> WarpViewStyle
-warpViewCycle Warp = Greedy
-warpViewCycle _ = Warp
+warpViewCycle x
+  | x == maxBound = minBound
+  | otherwise = succ x
 
 -- |
 -- Change to the specified workspace. If the newly-selected workspace was
