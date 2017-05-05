@@ -32,6 +32,7 @@ import XMonad.Layout.Simplest
 import XMonad.Layout.Tabbed (addTabs)
 
 import System.Directory (getHomeDirectory)
+import GHC.IO.Handle (hClose, hFlush)
 import GHC.IO.Handle.Types (Handle)
 
 import qualified XMonad.StackSet as W
@@ -46,6 +47,9 @@ import Graphics.X11.ExtraTypes.XF86
 import Codec.Binary.UTF8.String (encodeString)
 import Data.List (intersperse, sortBy)
 import Data.Maybe (isJust, catMaybes)
+import System.Posix (getProcessGroupIDOf)
+import System.Posix.Signals (signalProcessGroup, sigTERM)
+import System.Posix.Types (ProcessGroupID, ProcessID)
 import XMonad.Util.NamedWindows
 import XMonad.Util.WorkspaceCompare (getWsCompareByTag, WorkspaceSort)
 
@@ -563,10 +567,52 @@ myStartupHook = ewmhDesktopsStartup
 -- Shutdown hook
 
 -- Perform an arbitrary action each time xmonad exits.
---
--- By default, rethrow the ExitSuccess thrown on `mod-q`.
-myShutdownHook :: E.SomeException -> IO ()
-myShutdownHook = E.throw
+-- Normal shutdown occurs by not catching an ExitSuccess exception.
+-- For the hook, first run the action, then rethrow the error.
+myShutdownHook :: IO () -> E.SomeException -> IO ()
+myShutdownHook pre e = pre >> E.throw e
+
+-- |Kill the statusbar handlers by closing one's pipe and killing the other.
+killStatusProcs :: Handle -> ProcessID -> IO ()
+killStatusProcs h pid = do
+    E.handle printException $ hFlush h
+    E.handle printException $ hClose h
+    pgid <- getPGID pid
+    E.handle printException $ either E.throw (signalProcessGroup sigTERM) pgid
+        where
+            getPGID :: ProcessID -> IO (Either E.SomeException ProcessGroupID)
+            getPGID = E.try . getProcessGroupIDOf
+            printException :: E.SomeException -> IO ()
+            printException = putStrLn . show
+
+-- |The result of the handleRestartEvent hook.
+data HookResult = Consumed   -- ^ Event was processed, no need to pass along.
+                | Unhandled  -- ^ Event was not handled, proceed with chain.
+
+-- |Modifies an XConfig to install a handler for XMONAD_RESTART events.
+withRestartHook :: IO () -> XConfig l -> XConfig l
+withRestartHook handler conf@XConfig { handleEventHook = orig } = conf {
+    handleEventHook = \e -> do
+        result <- handleRestartEvent handler e
+        case result of
+          Consumed -> return (All False)
+          Unhandled -> orig e
+}
+
+-- |Run a hook when the restart message is received.
+handleRestartEvent :: IO () -> Event -> X HookResult
+
+-- Process ClientMessageEvent to check its type.
+handleRestartEvent onrestart e@ClientMessageEvent {ev_message_type = msgT} = do
+    restartAtom <- getAtom "XMONAD_RESTART"
+    if (msgT == restartAtom)
+       then do
+           io onrestart
+           return Consumed
+       else return Unhandled
+
+-- Ignore everything else.
+handleRestartEvent _ _ = return Unhandled
 
 ------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
@@ -577,7 +623,9 @@ main = do
     homeDir <- getHomeDirectory
     statusproc <- spawnPipe $ statusBarProc (homeDir ++ "/.xmonad")
     barPid <- spawnPID externalStatusCmd
-    E.handle myShutdownHook $ xmonad $ ewmh
+    let statusKiller = killStatusProcs statusproc barPid
+    E.handle (myShutdownHook statusKiller) $ xmonad $ ewmh
+           $ withRestartHook statusKiller
            $ withUrgencyHook NoUrgencyHook
            $ def {
       -- simple stuff
