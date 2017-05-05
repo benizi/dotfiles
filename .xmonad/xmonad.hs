@@ -150,9 +150,11 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((mod4Mask, xK_t), spawn "tmux-choose")
 
     -- launch dmenu
-    , ((mod4Mask,           xK_r     ), spawn "dmenu_run")
     , ((modm,               xK_space ), spawn "dmenu_run")
     , ((mod1Mask,           xK_space ), spawn "dmenu_run")
+
+    -- launch rofi
+    , ((mod4Mask, xK_r), spawn "rofi -show run")
 
     -- other launchers
     ---- process monitoring
