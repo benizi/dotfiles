@@ -23,7 +23,7 @@ then
 fi >&2
 
 case "$cmd" in
-  (rofi) set -- -dmenu -width 90 -lines 40 "$@" ;;
+  (rofi) set -- -width 90 -lines 40 -matching fuzzy "$@" ;;
   (fzf) set -- -x "$@" ;;
 esac
 
@@ -34,19 +34,52 @@ IFS="$sep"
 set -- $(while test $# -gt 0
 do
   arg=$1
-  handled=false
-  toshift=1
+  # Map arguments to their equivalents in the current picker.
+  # Choose initial input: `rofi -select` = `fzf -q`.
   case "$cmd:$arg" in
-    (fzf:-p) ((toshift++)) ; handled=true ;;
-    (*:-p) ((toshift++)) ;;
-    (*) ;;
+    (fzf:-select) arg=-q ;;
+    (rofi:-q) arg=-select ;;
   esac
-  while test $toshift -gt 0
-  do
-    $handled || printf '%s' "$1" "$sep"
-    shift
-    ((toshift--))
+
+  forcmd=
+  argc=1
+  discard=true
+
+  # Mark extra arguments and what commands can handle certain flags.
+  case "$arg" in
+    (-modi|-show|-run-command|-select*) forcmd=rofi ; argc=2 ;;
+    (-p) forcmd=not-fzf ; argc=2 ;;
+    (+s) forcmd=fzf ;;
+    (-q) forcmd=fzf ; argc=2 ;;
+    (*) discard=false ;;
+  esac
+
+  # If `forcmd` is set, keep or discard based on actual picker being used.
+  case "$forcmd" in
+    (not-$cmd) discard=true ;;
+    ($cmd|not-*) discard=false ;;
+  esac
+
+  # Replace $1 with (possibly-modified) $arg
+  shift
+  set -- "$arg" "$@"
+
+  # Process and shift $argc arguments.
+  while test $((argc=argc-1)) -ge 0
+  do $discard || printf '%s' "$1" "$sep" ; shift
   done
 done)
 IFS=$OLDIFS
+# Add `-dmenu` to `rofi` unless something else looks like a "mode" setting.
+if test $cmd = rofi
+then
+  hasmode=false
+  for arg
+  do
+    case "$arg" in
+      (-modi|-show|-run-command|-dmenu) hasmode=true ; break ;;
+    esac
+  done
+  $hasmode || set -- "$@" -dmenu
+fi
 "$cmd" "$@"
