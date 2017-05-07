@@ -11,15 +11,23 @@ then
   } >> $scriptlog
 fi
 dbg-exec() {
-  local run=true
-  local -a heading
+  local run=true ret=1 option=1
+  local -a message options heading
   if (( browser_debug >= 3 ))
   then
-    xmessage -default run -buttons run,exit,no,fail $'Run:\n' "  ${(q)^@}"$'\n'
-    case $? in
-      (1|103|104) exit 1 ;;
-      (101) ;;
-      (102) exit 0 ;;
+    options+=( run exit no fail )
+    message=( 'Run:' "  ${(q)^@}" )
+    xmessage -default ${options[1]} -buttons ${(j:,:)options} ${(F)message}
+    ret=$?
+    if (( ret > 100 ))
+    then option=${options[ret-100]}
+    else option=$ret
+    fi
+    case $option in
+      (no|fail) exit 1 ;;
+      (run) ;;
+      (exit) exit 0 ;;
+      (*) printf 'Unknown choice: [%s]\n' $option >&2 ; exit $option ;;
     esac
   elif (( browser_debug == 2 ))
   then runit=false
