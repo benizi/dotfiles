@@ -1,11 +1,58 @@
 #!/bin/sh
 . mpc-format-vars
-current="$(mpc current -f "$mpc_current_format")"
-if test $# -gt 0
-then sort=--random-sort
-else sort=-n
-fi
-track="$(mpc-playlist | sort $sort | fzf +s -i -q "$current" | awk '{print$1}')"
-if test -n "$track"
-then mpc play $track
-fi
+
+list() {
+  mpc-playlist
+}
+
+choose() {
+  mpc play $1
+}
+
+picker() {
+  command picker +s -i -p 'mpc: ' "$@"
+}
+
+current() {
+  mpc current -f %position%
+}
+
+randomize() {
+  sort --random-sort
+}
+
+# "rotate" the list so the current song is first, and anything before the
+# current song is tacked onto the end.
+rotate() {
+  awk -v c=$(current) '
+  NR < c { after[++nafter] = $0 }
+  NR >= c
+  END { for (i=1;i<=nafter;i++) print after[i] }
+  '
+}
+
+rofi_style() {
+  # No args: launch `rofi` w/ correct args.
+  # Args = `--rofi`: print playlist in random order.
+  # Args = `--rofi "position etc."`: split off `position` and choose it.
+  test $# -gt 0 ||
+    exec env choices=rofi picker -modi 'mpc:mpc-fzf --rofi' -show mpc
+  if test "$1" != --rofi
+  then printf 'Invalid args for rofi_style: %s\n' "$@" >&2 ; exit 1
+  elif test $# -eq 1
+  then list | randomize
+  else set -- $2 ; choose $1 >/dev/null
+  fi
+}
+
+fzf_style() {
+  list |
+  rotate |
+  choices=fzf picker |
+  awk '{print$1}' |
+  while read option
+  do choose $option ; exit
+  done
+}
+
+${style:-fzf}_style "$@"
