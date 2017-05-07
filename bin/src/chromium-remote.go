@@ -45,10 +45,10 @@ func main() {
 		if err != nil {
 			log.Fatalln(err.Error())
 		}
-		if url == "" {
-			continue
+		if url != "" {
+			target.Page.Enable()
+			target.Page.Navigate(url, refer)
 		}
-		target.Page.Enable()
-		target.Page.Navigate(url, refer)
+		dbg.ActivateTab(target)
 	}
 }
