@@ -1,0 +1,18 @@
+#!/bin/sh
+# Wrapper to smooth over `ack` vs `ack-grep` differences
+
+if hash ack-grep 2>/dev/null
+then exec ack-grep "$@"
+fi
+
+skipped_self=false
+IFS=:
+for dir in $PATH
+do
+  ack="$dir/ack"
+  test -x "$ack" || continue
+  if $skipped_self
+  then exec "$ack" "$@"
+  else skipped_self=true
+  fi
+done
