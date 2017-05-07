@@ -15,7 +15,8 @@ dbg-exec() {
   local -a message options runinfo
   if (( browser_debug >= 3 ))
   then
-    options+=( run exit no fail )
+    (( ! $+_url )) || options=( 'copy URL' )
+    options+=( run exit no fail 'copy cmd' )
     message=( 'Run:' "  ${(q)^@}" )
     xmessage -default ${options[1]} -buttons ${(j:,:)options} ${(F)message}
     ret=$?
@@ -25,6 +26,8 @@ dbg-exec() {
     fi
     case $option in
       (no|fail) exit 1 ;;
+      ('copy URL') clip <<<$_url ; exit $? ;;
+      ('copy cmd') printf '%s' "${(j: :)${(q)@}}" | clip ; exit $? ;;
       (run) ;;
       (exit) exit 0 ;;
       (*) printf 'Unknown choice: [%s]\n' $option >&2 ; exit $option ;;
