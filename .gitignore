@@ -1,0 +1,9 @@
+# Ignore history files
+# TODO: set up each of these to write to better locations
+.emacs.d/ac-comphist.dat
+.emacs.d/ido.last
+.emacs.d/smex-items
+.python/history
+.xmonad/history
+.xmonad/prompt-history
+.xmonad/xmonad.state
