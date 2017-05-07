@@ -1,0 +1,17 @@
+#!/bin/sh
+. mpc-format-vars
+
+if test $# -eq 0
+then sort=-n
+else sort=--random-sort
+fi
+
+{
+  mpc current -f "%position% $mpc_current_format"
+  mpc-playlist | sort $sort
+} |
+picker +s -i -p 'mpc: ' "$@" |
+awk '{ print $1 }' |
+while read option
+do mpc play $option ; exit $?
+done
