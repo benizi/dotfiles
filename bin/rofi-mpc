@@ -1,0 +1,4 @@
+#!/bin/sh
+test $# -gt 0 || exec mpc-playlist
+set -- $1
+mpc play $1 >/dev/null
