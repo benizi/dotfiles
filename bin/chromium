@@ -12,7 +12,7 @@ then
 fi
 dbg-exec() {
   local run=true ret=1 option=1
-  local -a message options heading
+  local -a message options runinfo
   if (( browser_debug >= 3 ))
   then
     options+=( run exit no fail )
@@ -32,12 +32,12 @@ dbg-exec() {
   elif (( browser_debug == 2 ))
   then runit=false
   fi
-  heading=( "run=$run" )
+  runinfo=( "run=$run" )
   if $_dry
-  then run=false heading+=( "--dry" )
+  then run=false runinfo+=( "--dry" )
   fi
   if (( browser_debug ))
-  then printf ']] %s\n' "$heading" $1 "  ${^@:2}" | tee -a $scriptlog
+  then printf ']] %s\n' "$runinfo" $1 "  ${^@:2}" | tee -a $scriptlog
   fi
   $run || set -- : "$@"
   "$@"
