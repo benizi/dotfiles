@@ -1,3 +1,0 @@
-#!/bin/sh
-. mpc-format-vars
-mpc playlist -f "$mpc_format" | awk '{print NR "\t" $0}'

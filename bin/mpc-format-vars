@@ -1,5 +1,4 @@
-# "Artist - Album - Track - Title" (OR) "filename"
-mpc_format='[[%artist% - ][%album% - ][%track% - ]%title%]|[%file%]'
-# "Artist - Album - Track" (OR) "filename"
-mpc_current_format='[[%artist% - ][%album% - ][%track% ]|[%file%]]'
+# Set format: Position <Tab> ("Artist - Album - Track - Title" (OR) "filename")
+metadata='[%artist% - ][%album% - ][%track% - ]%title%'
+export MPC_FORMAT='%position%\t[['"$metadata"']|[%file%]]'
 # vim:se ft=sh:
