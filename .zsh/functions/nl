@@ -1,1 +1,0 @@
-command nl -ha -ba -fa -nln "$@"
