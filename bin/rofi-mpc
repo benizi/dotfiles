@@ -1,10 +1,27 @@
 #!/bin/sh
-if test $# -eq 0
-then
+
+# "rotate" the list so the current song is first, and anything before the
+# current song is tacked onto the end.
+rotate() {
+  awk -v c=${1:-1} '
+  NR < c { after[++nafter] = $0 }
+  NR >= c
+  END { for (i=1;i<=nafter;i++) print after[i] }
+  '
+}
+
+playlist() {
+  test $# -gt 0 || set -- cat
   . mpc-format-vars
-  mpc current
-  mpc playlist
-else
-  set -- $1
-  mpc play $1 >/dev/null
-fi
+  mpc current | sed -e 's/^/jump /'
+  printf 'random order\n'
+  mpc playlist | "$@"
+}
+
+test $# -eq 0 || set -- $1
+case "$1" in
+  ('') playlist ;;
+  (jump) playlist rotate $2 ;;
+  (random) playlist sort --random-sort ;;
+  (*) mpc play $1 >/dev/null ;;
+esac
