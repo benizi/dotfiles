@@ -19,12 +19,9 @@ const (
   fallbackService = "http://benizi.com/ip?raw=1"
 )
 
-func getAddresses() []net.Addr {
-  addrs, err := net.InterfaceAddrs()
-  if err != nil {
-    os.Exit(1)
-  }
-  return addrs
+type namedAddr struct {
+  name string
+  ip   net.IP
 }
 
 func getExternal() []net.Addr {
@@ -47,6 +44,47 @@ func getExternal() []net.Addr {
   return []net.Addr{network}
 }
 
+func findIPs(addrs []net.Addr) []net.IP {
+  ips := []net.IP{}
+  for _, addr := range addrs {
+    if network, ok := addr.(*net.IPNet); ok {
+      ips = append(ips, network.IP)
+    }
+  }
+  return ips
+}
+
+func namedIPs(name string, addrs []net.Addr) []namedAddr {
+  named := []namedAddr{}
+  for _, ip := range findIPs(addrs) {
+    named = append(named, namedAddr{name: name, ip: ip})
+  }
+  return named
+}
+
+func getExternalNamedAddrs() []namedAddr {
+  return namedIPs("external", getExternal())
+}
+
+func getInterfaceNamedAddrs() []namedAddr {
+  namedAddrs := []namedAddr{}
+  ifis, err := net.Interfaces()
+  if err != nil {
+    if true {
+      return []namedAddr{{ip: net.IP{}, name: err.Error()}}
+    }
+    return namedAddrs
+  }
+  for _, ifi := range ifis {
+    addrs, err := ifi.Addrs()
+    if err != nil {
+      continue
+    }
+    namedAddrs = append(namedAddrs, namedIPs(ifi.Name, addrs)...)
+  }
+  return namedAddrs
+}
+
 type foundAddr struct {
   ip net.IP
   preferred bool
@@ -55,6 +93,7 @@ type foundAddr struct {
   isRfc1918 bool
   v6 bool
   original int
+  name string
 }
 
 func xor(a, b bool) bool {
@@ -129,6 +168,7 @@ func main() {
   external := false
   excludeDocker := true
   docker := "172.17.0.0/16"
+  printName := false
   printAll := false
 
   flag.BoolVar(&print4, "4", print4, "Print IPv4")
@@ -136,6 +176,8 @@ func main() {
   flag.BoolVar(&external, "x", external, "Fetch external address")
   flag.BoolVar(&excludeDocker, "nodocker", excludeDocker, "Exclude Docker interface")
   flag.StringVar(&docker, "dockernet", docker, "Docker network to exclude")
+  flag.BoolVar(&printName, "name", printName, "Print interface name")
+  flag.BoolVar(&printName, "n", printName, "Print interface name (alias)")
   flag.BoolVar(&printAll, "all", printAll, "Print all addresses")
   flag.BoolVar(&printAll, "a", printAll, "Print all addresses (alias)")
   flag.Parse()
@@ -182,31 +224,28 @@ func main() {
 
   found := make([]foundAddr, 0)
 
-  var addrs []net.Addr
+  var namedAddrs []namedAddr
   if external {
-    addrs = getExternal()
+    namedAddrs = getExternalNamedAddrs()
   } else {
-    addrs = getAddresses()
+    namedAddrs = getInterfaceNamedAddrs()
   }
 
-  for _, addr := range addrs {
-    network, ok := addr.(*net.IPNet)
-    if !ok {
-      continue
-    }
-
-    v6 := network.IP.To4() == nil
+  for _, addr := range namedAddrs {
+    ip := addr.ip
+    v6 := ip.To4() == nil
     if xor(print4, print6) && xor(print6, v6) {
       continue
     }
     found = append(found, foundAddr{
-      ip: network.IP,
-      preferred: anyContains(acceptable, network.IP),
-      rejected: anyContains(rejectable, network.IP),
-      isRfc1918: anyContains(rfc1918, network.IP),
-      loopback: network.IP.IsLoopback(),
+      ip: ip,
+      preferred: anyContains(acceptable, ip),
+      rejected: anyContains(rejectable, ip),
+      isRfc1918: anyContains(rfc1918, ip),
+      loopback: ip.IsLoopback(),
       v6: v6,
       original: len(found),
+      name: addr.name,
     })
   }
 
@@ -217,6 +256,9 @@ func main() {
   sort.Sort(ByAttributes{found})
 
   for _, addr := range found {
+    if printName {
+      fmt.Printf("%s\t", addr.name)
+    }
     fmt.Println(addr.ip.String())
     if !printAll {
       break
