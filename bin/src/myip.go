@@ -19,17 +19,12 @@ const (
   fallbackService = "http://benizi.com/ip?raw=1"
 )
 
-func getAddresses(external bool) (addrs []net.Addr) {
-  if external {
-    addrs = getExternal()
-  } else {
-    got, err := net.InterfaceAddrs()
-    if err != nil {
-      os.Exit(1)
-    }
-    addrs = got
+func getAddresses() []net.Addr {
+  addrs, err := net.InterfaceAddrs()
+  if err != nil {
+    os.Exit(1)
   }
-  return
+  return addrs
 }
 
 func getExternal() []net.Addr {
@@ -187,7 +182,13 @@ func main() {
 
   found := make([]foundAddr, 0)
 
-  addrs := getAddresses(external)
+  var addrs []net.Addr
+  if external {
+    addrs = getExternal()
+  } else {
+    addrs = getAddresses()
+  }
+
   for _, addr := range addrs {
     network, ok := addr.(*net.IPNet)
     if !ok {
