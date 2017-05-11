@@ -94,6 +94,24 @@ type foundAddr struct {
   v6 bool
   original int
   name string
+  wireless bool
+}
+
+var wirelessCache = make(map[string]bool)
+
+func isWirelessInterface(dev string) bool {
+  isWireless, cached := wirelessCache[dev]
+  if !cached {
+    isWireless = isWirelessInterfaceImpl(dev)
+    wirelessCache[dev] = isWireless
+  }
+  return isWireless
+}
+
+// Dumb, Linux-specific detection of whether a network interface is wireless
+func isWirelessInterfaceImpl(dev string) bool {
+  stat, err := os.Stat(fmt.Sprintf("/sys/class/net/%s/wireless", dev))
+  return err == nil && stat.Mode().IsDir()
 }
 
 func xor(a, b bool) bool {
@@ -109,6 +127,9 @@ func (v ByAttributes) Swap(i, j int) { v.addrs[i], v.addrs[j] = v.addrs[j], v.ad
 func (v ByAttributes) Less(i, j int) bool {
   a := v.addrs[i]
   b := v.addrs[j]
+  if xor(a.wireless, b.wireless) {
+    return a.wireless
+  }
   if xor(a.v6, b.v6) {
     return !a.v6
   }
@@ -253,6 +274,7 @@ func main() {
       v6: v6,
       original: len(found),
       name: addr.name,
+      wireless: isWirelessInterface(addr.name),
     })
   }
 
