@@ -166,6 +166,7 @@ func main() {
   print4 := false
   print6 := false
   external := false
+  iface := false
   excludeDocker := true
   docker := "172.17.0.0/16"
   printName := false
@@ -174,6 +175,7 @@ func main() {
   flag.BoolVar(&print4, "4", print4, "Print IPv4")
   flag.BoolVar(&print6, "6", print6, "Print IPv6")
   flag.BoolVar(&external, "x", external, "Fetch external address")
+  flag.BoolVar(&iface, "i", iface, "Fetch addresses per interface")
   flag.BoolVar(&excludeDocker, "nodocker", excludeDocker, "Exclude Docker interface")
   flag.StringVar(&docker, "dockernet", docker, "Docker network to exclude")
   flag.BoolVar(&printName, "name", printName, "Print interface name")
@@ -181,6 +183,10 @@ func main() {
   flag.BoolVar(&printAll, "all", printAll, "Print all addresses")
   flag.BoolVar(&printAll, "a", printAll, "Print all addresses (alias)")
   flag.Parse()
+
+  if !external && !iface {
+    iface = true
+  }
 
   var acceptable []net.IPNet
   var rejectable []net.IPNet
@@ -227,8 +233,9 @@ func main() {
   var namedAddrs []namedAddr
   if external {
     namedAddrs = getExternalNamedAddrs()
-  } else {
-    namedAddrs = getInterfaceNamedAddrs()
+  }
+  if iface {
+    namedAddrs = append(namedAddrs, getInterfaceNamedAddrs()...)
   }
 
   for _, addr := range namedAddrs {
