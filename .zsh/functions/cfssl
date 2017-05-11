@@ -1,0 +1,7 @@
+case "$*" in
+  (*pkcs11*)
+    local var=${${:-"$(jq -r .pinfile <<<$cfssl_pkcs11_config)"}#env:}
+    [[ -n "${(P)var}" ]] || { read -s "$var"'?YubiKey PIN: ' ; echo }
+    ;;
+esac
+env $var=${(P)var} cfssl "$@"
