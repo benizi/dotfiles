@@ -589,34 +589,24 @@ killStatusProcs h pid = do
             printException :: E.SomeException -> IO ()
             printException = putStrLn . show
 
--- |The result of the handleRestartEvent hook.
-data HookResult = Consumed   -- ^ Event was processed, no need to pass along.
-                | Unhandled  -- ^ Event was not handled, proceed with chain.
-
 -- |Modifies an XConfig to install a handler for XMONAD_RESTART events.
 withRestartHook :: IO () -> XConfig l -> XConfig l
 withRestartHook handler conf@XConfig { handleEventHook = orig } = conf {
-    handleEventHook = \e -> do
-        result <- handleRestartEvent handler e
-        case result of
-          Consumed -> return (All False)
-          Unhandled -> orig e
+    handleEventHook = handleRestartEvent handler >> orig
 }
 
 -- |Run a hook when the restart message is received.
-handleRestartEvent :: IO () -> Event -> X HookResult
+handleRestartEvent :: IO () -> Event -> X ()
 
 -- Process ClientMessageEvent to check its type.
 handleRestartEvent onrestart e@ClientMessageEvent {ev_message_type = msgT} = do
     restartAtom <- getAtom "XMONAD_RESTART"
     if (msgT == restartAtom)
-       then do
-           io onrestart
-           return Consumed
-       else return Unhandled
+       then io onrestart
+       else return ()
 
 -- Ignore everything else.
-handleRestartEvent _ _ = return Unhandled
+handleRestartEvent _ _ = return ()
 
 ------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
