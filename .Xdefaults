@@ -58,3 +58,8 @@ URxvt*cursorColor: gray70
 
 ! standard blue looks awful on black background
 *color4: #9999ff
+
+rofi.modi: window,run,ssh,mpc:rofi-mpc
+rofi.width: 90
+rofi.lines: 40
+rofi.terminal: term
