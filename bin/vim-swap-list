@@ -1,0 +1,52 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use open qw[:std :utf8];
+use POSIX qw[getpwuid getcwd];
+use JSON qw[encode_json];
+use Getopt::Long;
+
+GetOptions(
+  'd|debug' => \(my $debug = 0),
+  'f|format' => \my $format,
+  'user=s' => \my $user,
+) or die 'options';
+($user) = getpwuid $> unless $user;
+
+my @infolines;
+{
+  local %ENV = %ENV;
+  $ENV{LC_ALL} = 'POSIX';
+  chomp(@infolines = readpipe 'vim -r 2>&1');
+}
+
+my %info;
+my $dir = '';
+my @out;
+for (@infolines) {
+  y/\r//d;
+  if (s/^\s+In directory // || s/^\s+In current directory//) {
+    s/:$//;
+    $dir = length ? $_ : getcwd;
+    next;
+  }
+  push @{$info{lines}}, $_ if $debug;
+  if (/^(\d+)\.\s+(.+?)$/) {
+    %info = (swapdir => $dir);
+    @info{qw/n swapfile/} = (0 + $1, $2);
+  } elsif (/^\s+owned by:\s(.+?)\s+dated:\s+(.+?)$/) {
+    @info{qw/owner date/} = ($1, $2);
+  } elsif (/^\s+dated:\s+(.+?)$/) {
+    $info{date} = $1;
+  } elsif (/file name:/) {
+    s/^[^:]*:\s*//;
+    s!(?<=^~)$user(?=/)!!;
+    $info{file} = $_;
+  } elsif (/process ID:\s+(\d+)/) {
+    $info{pid} = 0 + $1;
+    $info{running} = 1 if /still running/;
+    push @out, {%info};
+  }
+}
+$$_{display} = join "\t", @$_{qw/file pid/} for @out;
+print encode_json($_), "\n" for @out;
