@@ -1,13 +1,6 @@
 #!/bin/sh
-vim -r 2>&1 |
-tr -d '\r' |
-awk -v OFS=\\t -v user=${USER:-"$(id -nu)"} '
-/file name:/ {
-  file = $0
-  sub(/^[^:]*: */, "", file)
-  sub("^~" user "/", "~/", file)
-}
-/process ID:/ && /still running/ { print file, $3 }' |
+vim-swap-list |
+jq -r 'select(.running)|.display' |
 picker -p 'vim:' |
 awk '{ print $NF }' |
 while read pick
