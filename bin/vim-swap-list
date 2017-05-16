@@ -1,52 +1,45 @@
-#!/usr/bin/env perl
-use strict;
-use warnings;
-use open qw[:std :utf8];
-use POSIX qw[getpwuid getcwd];
-use JSON qw[encode_json];
-use Getopt::Long;
+#!/usr/bin/env ruby
+require 'etc'
+require 'json'
 
-GetOptions(
-  'd|debug' => \(my $debug = 0),
-  'f|format' => \my $format,
-  'user=s' => \my $user,
-) or die 'options';
-($user) = getpwuid $> unless $user;
-
-my @infolines;
-{
-  local %ENV = %ENV;
-  $ENV{LC_ALL} = 'POSIX';
-  chomp(@infolines = readpipe 'vim -r 2>&1');
-}
-
-my %info;
-my $dir = '';
-my @out;
-for (@infolines) {
-  y/\r//d;
-  if (s/^\s+In directory // || s/^\s+In current directory//) {
-    s/:$//;
-    $dir = length ? $_ : getcwd;
-    next;
-  }
-  push @{$info{lines}}, $_ if $debug;
-  if (/^(\d+)\.\s+(.+?)$/) {
-    %info = (swapdir => $dir);
-    @info{qw/n swapfile/} = (0 + $1, $2);
-  } elsif (/^\s+owned by:\s(.+?)\s+dated:\s+(.+?)$/) {
-    @info{qw/owner date/} = ($1, $2);
-  } elsif (/^\s+dated:\s+(.+?)$/) {
-    $info{date} = $1;
-  } elsif (/file name:/) {
-    s/^[^:]*:\s*//;
-    s!(?<=^~)$user(?=/)!!;
-    $info{file} = $_;
-  } elsif (/process ID:\s+(\d+)/) {
-    $info{pid} = 0 + $1;
-    $info{running} = 1 if /still running/;
-    push @out, {%info};
-  }
-}
-$$_{display} = join "\t", @$_{qw/file pid/} for @out;
-print encode_json($_), "\n" for @out;
+user_dir = "~#{Etc.getlogin}/"
+io = IO.popen({'LC_ALL'=>'POSIX'}, %w[vim -r], err: [:child, :out])
+io.readlines.map(&:rstrip).reject(&:empty?).slice_when do |a,b|
+  b =~ /^\s+In (?:current )?directory/
+end.each do |set|
+  next if set.empty? or set.first !~ /^\s+In/
+  next if set.last =~ /-- none --$/
+  dir_line = set.shift.strip
+  dir =
+    case dir_line
+    when 'In current directory:' ; then '.'
+    else dir_line.sub(/^In directory /, '').sub(/:$/, '')
+    end
+  set.slice_when { |_,line| line =~ /^\d+\./ }.each do |f|
+    f.map do |line|
+      case line.strip
+      when /^(\d+)\.\s+(.+?)$/
+        {n: $1.to_i, swapfile: $2}
+      when /^owned by:\s(.+?)\s+dated:\s+(.+?)$/
+        {owner: $1, date: $2}
+      when /^dated:\s+(.+?)$/
+        {date: $1}
+      when /^file name:\s+(.+?)$/
+        {file: $1.sub(user_dir, '~/')}
+      when /^user name:\s+(.+?)\s+host name:\s+(.+?)$/
+        {user: $1, host: $2}
+      when /^modified:/
+        {modified: !!line[/YES/]}
+      when /^process ID:\s+(\d+)/
+        {pid: $1.to_i, running: !!line[/still running/]}
+      else
+        $stderr.puts "NO INFO ON:\n  #{line}"
+        {}
+      end
+    end.tap do |rows|
+      info = rows.reduce({dir: dir}, :merge)
+      info.merge!(display: [info[:file], info[:pid]].join("\t"))
+      puts info.to_json
+    end
+  end
+end
