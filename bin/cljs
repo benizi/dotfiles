@@ -121,7 +121,7 @@ cache_path() {
 }
 
 # Compile the ClojureScript to JS and run it with Node
-main() {
+run_cljs() {
   local src=$1 out
   shift
   () {
@@ -137,4 +137,16 @@ main() {
   } =(:)
 }
 
-main "$@"
+# Run (and cache compilation of) the ClojureScript with Lumo
+run_lumo() {
+  lumo "$@"
+}
+
+if (( ! $+cljsrunner ))
+then
+  if (( $+commands[lumo] ))
+  then cljsrunner=lumo
+  else cljsrunner=cljs
+  fi
+fi
+run_$cljsrunner "$@"
