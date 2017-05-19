@@ -74,19 +74,19 @@ mux_start() {
       (window)
         if test $target -eq 0
         then tmux new-session -d -s $sess -n "$command"
-        else tmux new-window -t $sess -n "$command"
+        else tmux new-window -t "=$sess" -n "$command"
         fi
         ;;
       (run)
         win=${target%.*}
         pane=${target#*.}
         if test $pane -gt 0
-        then tmux split-window ${root+"-c"} ${root+"$root"} -t $sess:$win
+        then tmux split-window ${root+"-c"} ${root+"$root"} -t "=$sess:$win"
         fi
         tmux_send_keys $sess:$target "$command" C-m
         ;;
       (layout)
-        tmux select-layout -t $sess:$target $command
+        tmux select-layout -t "=$sess:$target" $command
         ;;
       (*)
         printf 'action[%s] target[%s] command[%s]\n' "$action" "$target" "$command"
@@ -95,7 +95,7 @@ mux_start() {
         ;;
     esac
   done
-  tmux attach -t $sess
+  tmux attach -t "=$sess"
 }
 
 tmux_send_keys() {
@@ -107,7 +107,7 @@ tmux_send_keys() {
     if $first
     then
       first=false
-      set -- tmux send-keys -t "$target"
+      set -- tmux send-keys -t "=$target"
       if test -n "$dry"
       then set -- printf '%s\n' "$@"
       fi
@@ -139,8 +139,8 @@ case "$1" in
     shift
     test $# -eq 1 || usage 1
     sess=$1
-    if tmux has -t "$sess" 2>/dev/null
-    then tmux attach -t "$sess"
+    if tmux has -t "=$sess" 2>/dev/null
+    then tmux attach -t "=$sess"
     else mux_start "$sess"
     fi
     ;;
