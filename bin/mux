@@ -21,10 +21,16 @@ mux_completions_start() {
   sort
 }
 
+mux_file() {
+  printf '%s\n' $HOME/.tmuxinator/$1.yml
+}
+
+mux_exists() {
+  test -e "$1" || die "No such session file: $1"
+}
+
 mux_parse() {
-  local sess=$1
-  local file=$HOME/.tmuxinator/${sess}.yml
-  ruby -ryaml -- - "$file" <<'RUBY'
+  ruby -ryaml -- - "$1" <<'RUBY'
 def out(*args); puts args.join("\t"); end
 @pre = nil
 def runall(id, cmds)
@@ -66,7 +72,9 @@ RUBY
 mux_start() {
   set -e
   local sess=$1 action target command root
-  mux_parse $sess |
+  local file="$(mux_file $sess)"
+  mux_exists "$file"
+  mux_parse "$file" |
   while read action target command
   do
     case $action in
@@ -133,7 +141,9 @@ case "$1" in
   (parse)
     shift
     test $# -eq 1 || usage 1
-    mux_parse $1
+    file="$(mux_file $1)"
+    mux_exists "$file"
+    mux_parse $file
     ;;
   (start)
     shift
