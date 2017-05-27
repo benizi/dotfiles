@@ -1,6 +1,6 @@
 #!/bin/zsh
 if (( $+commands[nmcli] )) ; then
-  nmcli -t -f type,name con show |
+  nmcli -g type,name con show --active |
   awk -F: -v x=0 '$1 ~ /wireless/ { print $2 ; x = 1 } END { exit x }' || exit
 elif (( $+commands[wicd-cli] )) ; then
   invalid='Invalid wireless network identifier.'
