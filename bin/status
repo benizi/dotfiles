@@ -5,10 +5,7 @@ typeset -a info funcs
 add-desktop() {
   local prop=_NET_CURRENT_DESKTOP
   xprop -root -notype -f $prop 32c '\n$0\n' $prop |
-  awk 'NR==2 { print $0 + 1 }' |
-  while read desktop
-  do printf '<%s>' $desktop
-  done
+  awk 'NR==2 { print "<" ($0+1)%10 ">" }'
 }
 funcs+=( add-desktop )
 
