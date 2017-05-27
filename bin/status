@@ -225,8 +225,9 @@ if test -e /tmp/status.minimal
 then funcs=( add-term minimal-date )
 fi
 
-if test $# -gt 0
+if test $1 = --debug
 then
+  shift
   setup
   "$@"
   exit $?
