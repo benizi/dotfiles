@@ -1,8 +1,8 @@
 #!/bin/zsh
 : ${sbt_version=0.13.5}
 url=http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/$sbt_version/sbt-launch.jar
-dest_dir=$HOME/bin.local
-dest=$dest_dir/$url:t
+dest_dir=$HOME/.cache/sbt-launch
+dest=$dest_dir/sbt-launch-$sbt_version.jar
 
 [[ -d $dest_dir ]] || mkdir $dest_dir
 [[ -f $dest ]] || curl -Lo $dest $url
