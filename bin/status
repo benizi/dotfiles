@@ -45,7 +45,7 @@ funcs+=( add-bat )
 add-date() {
   print -nP '%D{%F %T}'
   [[ -f ~/tz ]] || return 0
-  printf '%s' "$(TZ=$(<~/tz) date +'(%H %Z)')"
+  (export TZ=$(<~/tz) ; print -nP '(%D{%H:%M %Z})')
 }
 funcs+=( add-date )
 
