@@ -13,6 +13,7 @@ import (
   "os"
   "sort"
   "strings"
+  "text/template"
 )
 
 const (
@@ -86,15 +87,15 @@ func getInterfaceNamedAddrs() []namedAddr {
 }
 
 type foundAddr struct {
-  ip net.IP
+  IP net.IP
   preferred bool
   rejected bool
-  loopback bool
+  Loopback bool
   isRfc1918 bool
-  v6 bool
+  V6 bool
   original int
-  name string
-  wireless bool
+  Name string
+  Wireless bool
 }
 
 var wirelessCache = make(map[string]bool)
@@ -127,11 +128,11 @@ func (v ByAttributes) Swap(i, j int) { v.addrs[i], v.addrs[j] = v.addrs[j], v.ad
 func (v ByAttributes) Less(i, j int) bool {
   a := v.addrs[i]
   b := v.addrs[j]
-  if xor(a.wireless, b.wireless) {
-    return a.wireless
+  if xor(a.Wireless, b.Wireless) {
+    return a.Wireless
   }
-  if xor(a.v6, b.v6) {
-    return !a.v6
+  if xor(a.V6, b.V6) {
+    return !a.V6
   }
   if xor(a.preferred, b.preferred) {
     return a.preferred
@@ -139,8 +140,8 @@ func (v ByAttributes) Less(i, j int) bool {
   if xor(a.rejected, b.rejected) {
     return !a.rejected
   }
-  if xor(a.loopback, b.loopback) {
-    return !a.loopback
+  if xor(a.Loopback, b.Loopback) {
+    return !a.Loopback
   }
   if xor(a.isRfc1918, b.isRfc1918) {
     return !a.isRfc1918
@@ -148,7 +149,7 @@ func (v ByAttributes) Less(i, j int) bool {
   if a.original != b.original {
     return a.original < b.original
   }
-  return a.ip.String() < b.ip.String()
+  return a.IP.String() < b.IP.String()
 }
 
 func anyContains(networks []net.IPNet, ip net.IP) bool {
@@ -192,6 +193,8 @@ func main() {
   docker := "172.17.0.0/16"
   printName := false
   printAll := false
+  format := ""
+  raw := false
 
   flag.BoolVar(&print4, "4", print4, "Print IPv4")
   flag.BoolVar(&print6, "6", print6, "Print IPv6")
@@ -203,6 +206,8 @@ func main() {
   flag.BoolVar(&printName, "n", printName, "Print interface name (alias)")
   flag.BoolVar(&printAll, "all", printAll, "Print all addresses")
   flag.BoolVar(&printAll, "a", printAll, "Print all addresses (alias)")
+  flag.StringVar(&format, "fmt", format, "Output format")
+  flag.BoolVar(&raw, "raw", raw, "Accept format string as-is (no newline)")
   flag.Parse()
 
   if !external && !iface {
@@ -266,15 +271,15 @@ func main() {
       continue
     }
     found = append(found, foundAddr{
-      ip: ip,
+      IP: ip,
       preferred: anyContains(acceptable, ip),
       rejected: anyContains(rejectable, ip),
       isRfc1918: anyContains(rfc1918, ip),
-      loopback: ip.IsLoopback(),
-      v6: v6,
+      Loopback: ip.IsLoopback(),
+      V6: v6,
       original: len(found),
-      name: addr.name,
-      wireless: isWirelessInterface(addr.name),
+      Name: addr.name,
+      Wireless: isWirelessInterface(addr.name),
     })
   }
 
@@ -284,11 +289,22 @@ func main() {
 
   sort.Sort(ByAttributes{found})
 
-  for _, addr := range found {
+  if format == "" {
     if printName {
-      fmt.Printf("%s\t", addr.name)
+      format = "{{.Name}}\t"
     }
-    fmt.Println(addr.ip.String())
+    format += "{{.IP}}"
+  }
+  if !raw {
+    format += "\n"
+  }
+
+  tmpl := template.Must(template.New("line").Parse(format))
+  for _, addr := range found {
+    err := tmpl.Execute(os.Stdout, addr)
+    if err != nil {
+      log.Fatal(err)
+    }
     if !printAll {
       break
     }
