@@ -185,8 +185,7 @@ add-bluetooth() {
   (( $+commands[btmgmt] )) || return
   if (( ! ( EPOCHSECONDS % 15 ) )) || (( ! $+btstatus ))
   then
-    if bt-is-powered ; then : ; fi
-    powered=$(( ! $? ))
+    bt-is-powered && powered=1 || powered=0
     if (( powered ))
     then toggle=off btstatus='++'
     else toggle=on btstatus='--'
