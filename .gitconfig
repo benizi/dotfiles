@@ -2,6 +2,7 @@
 	excludesfile = ~/.gitignore.global
 	attributesfile = ~/.gitattributes.global
 	commentChar = ";"
+	quotepath = false
 [transfer]
 	fsckObjects = true
 [fetch]
