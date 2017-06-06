@@ -1,0 +1,11 @@
+#!/bin/zsh
+env \
+  - \
+  SHELL=/bin/zsh \
+  LANG=en_US.UTF-8 \
+  LC_COLLATE=POSIX \
+  /bin/zsh -lc \
+  'term -e /bin/zsh' \
+  </dev/null \
+  &>/dev/null \
+  &!
