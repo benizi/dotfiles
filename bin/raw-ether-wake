@@ -5,14 +5,52 @@
 # Original code from: http://www.cnpbagwell.com/mac-os-x/bonjour-sleep-proxy
 # Copyright (c) 2013 Chris Bagwell
 
+from os import environ
 from socket import socket, AF_PACKET, SOCK_RAW
-s = socket(AF_PACKET, SOCK_RAW)
-s.bind(("wlan0", 0))
+from sys import argv, stdout
 
-# Set this to your local MAC
-src_addr = "\x66\x55\x44\x33\x22\x11"
-# Set this to what you want to wake up
-dst_addr = "\x11\x22\x33\x44\x55\x66"
-ethertype = "\x08\x42"
-payload = ("\xff"*6)+(dst_addr*16)
-s.send(dst_addr+src_addr+ethertype+payload)
+class Waker(object):
+    ether_type = bytearray.fromhex('0842')
+    magic_addr = bytearray.fromhex('ff' * 6)
+
+    def __init__(self, args, env):
+        self.args = args[1:] # discard argv[0]
+        self.env = env
+        self.dst_addr = self.get_hex('dst')
+        self.src_addr = self.get_hex('src', default=self.magic_addr.hex())
+        self.if_name = self.get_arg('if') or self.get_arg('interface')
+
+    def get_arg(self, name):
+        if name in self.env:
+            return self.env[name]
+        search = name + '='
+        for arg in self.args:
+            if arg.startswith(search):
+                val = arg[len(search):]
+                self.args.remove(arg)
+                return val
+        return None
+
+    def get_hex(self, name, default=None):
+        addr = self.get_arg(name) or default
+        addr = ''.join([c for c in addr if c in '0123456789abcdef'])
+        return bytearray.fromhex(addr)
+
+    def get_sock(self):
+        s = socket(AF_PACKET, SOCK_RAW)
+        s.bind((self.if_name, 0))
+        return s
+
+    def frame(self):
+        payload = self.magic_addr + (self.dst_addr * 16)
+        return self.dst_addr + self.src_addr + self.ether_type + payload
+
+    def send(self):
+        self.get_sock().send(self.frame())
+
+if __name__ == '__main__':
+    waker = Waker(argv, environ)
+    if '-d' in argv or '--debug' in argv:
+        stdout.buffer.write(waker.frame())
+    else:
+        waker.send()
