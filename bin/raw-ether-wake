@@ -5,34 +5,20 @@
 # Original code from: http://www.cnpbagwell.com/mac-os-x/bonjour-sleep-proxy
 # Copyright (c) 2013 Chris Bagwell
 
-from os import environ
+import argparse
 from socket import socket, AF_PACKET, SOCK_RAW
-from sys import argv, stdout
+import sys
 
 class Waker(object):
     ether_type = bytearray.fromhex('0842')
     magic_addr = bytearray.fromhex('ff' * 6)
 
-    def __init__(self, args, env):
-        self.args = args[1:] # discard argv[0]
-        self.env = env
-        self.dst_addr = self.get_hex('dst')
-        self.src_addr = self.get_hex('src', default=self.magic_addr.hex())
-        self.if_name = self.get_arg('if') or self.get_arg('interface')
+    def __init__(self, opts):
+        self.dst_addr = self.get_hex(opts.dst)
+        self.src_addr = self.get_hex(opts.src or self.magic_addr.hex())
+        self.if_name = opts.interface
 
-    def get_arg(self, name):
-        if name in self.env:
-            return self.env[name]
-        search = name + '='
-        for arg in self.args:
-            if arg.startswith(search):
-                val = arg[len(search):]
-                self.args.remove(arg)
-                return val
-        return None
-
-    def get_hex(self, name, default=None):
-        addr = self.get_arg(name) or default
+    def get_hex(self, addr):
         addr = ''.join([c for c in addr if c in '0123456789abcdef'])
         return bytearray.fromhex(addr)
 
@@ -48,9 +34,21 @@ class Waker(object):
     def send(self):
         self.get_sock().send(self.frame())
 
-if __name__ == '__main__':
-    waker = Waker(argv, environ)
-    if '-d' in argv or '--debug' in argv:
-        stdout.buffer.write(waker.frame())
+def parse_args(argv):
+    parser = argparse.ArgumentParser(description='Send a Wake-On-LAN packet')
+    parser.add_argument('--dst', '--target', '-t')
+    parser.add_argument('--src', '-s')
+    parser.add_argument('--interface', '--if')
+    parser.add_argument('--debug', '-d', action='store_true')
+    return parser.parse_args(argv)
+
+def main(argv):
+    opts = parse_args(argv)
+    waker = Waker(opts)
+    if opts.debug:
+        sys.stdout.buffer.write(waker.frame())
     else:
         waker.send()
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
