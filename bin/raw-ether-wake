@@ -38,7 +38,7 @@ def parse_args(argv):
     parser = argparse.ArgumentParser(description='Send a Wake-On-LAN packet')
     parser.add_argument('--dst', '--target', '-t')
     parser.add_argument('--src', '-s')
-    parser.add_argument('--interface', '--if')
+    parser.add_argument('--interface', '--if', default='')
     parser.add_argument('--debug', '-d', action='store_true')
     return parser.parse_args(argv)
 
