@@ -1,0 +1,15 @@
+#!/bin/sh
+net='cap_net_raw,cap_net_admin'
+#caps=$net'+eip cap_setpcap,cap_setuid,cap_setgid+ep'
+caps=$net'+eip cap_setuid,cap_setgid+ep'
+user="$(id -nu)"
+#printf ']] %s\n' \
+set -- \
+  capsh \
+  --caps="$caps" \
+  --keep=1 \
+  --user="bhaskell" \
+  "$@"
+set -- strace -f -e trace=execve -e signal=none "$@"
+printf ']] %s\n' "$@" >&2
+"$@"
