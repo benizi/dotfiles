@@ -1,4 +1,5 @@
 #!/bin/sh
+test -e /proc/meminfo || exit 0
 awk -v colorizer=${1:-shell} '
 function coloplain(c) { return "" }
 function resetplain() { return "" }
