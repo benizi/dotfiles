@@ -38,6 +38,7 @@ Plugin 'keith/swift.vim'
 Plugin 'scrooloose/syntastic'
 PluginLocalMaybe '~/git/lilypond', {'rtp': 'vim/'}
 Plugin 'mileszs/ack.vim'
+Plugin 'benizi/dbext.vim'
 
 Plugin 'derekwyatt/vim-scala'
 Plugin 'cespare/vim-toml'
