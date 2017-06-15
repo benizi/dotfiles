@@ -43,13 +43,7 @@ Plugin 'derekwyatt/vim-scala'
 Plugin 'cespare/vim-toml'
 Plugin 'benizi/vim-apl'
 
-" Blech. addon-info.json is a PITA without vim-addon itself...
-for dep in ['vim-scripts/tlib'] + map(['actions', 'completion',
-  \ 'goto-thing-at-cursor', 'errorformats', 'mw-utils'],
-  \ '"MarcWeber/vim-addon-" . v:val')
-  exe "Plugin '".dep."'"
-endfor
-Plugin 'MarcWeber/vim-addon-nix'
+Plugin 'LnL7/vim-nix'
 
 " Maktaba requirements...
 Plugin 'google/vim-maktaba'
