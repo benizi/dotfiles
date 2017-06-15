@@ -37,6 +37,7 @@ Plugin 'keith/swift.vim'
 " PluginVimball 'http://www.drchip.org/astronaut/vim/vbafiles/hilinks.vba.gz'
 Plugin 'scrooloose/syntastic'
 PluginLocalMaybe '~/git/lilypond', {'rtp': 'vim/'}
+Plugin 'mileszs/ack.vim'
 
 Plugin 'derekwyatt/vim-scala'
 Plugin 'cespare/vim-toml'
