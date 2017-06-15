@@ -1,0 +1,19 @@
+#!/usr/bin/env perl
+use utf8;
+use open qw(:std :utf8);
+
+# Find options ('-d' = delete, '-c' = complement, ...) in args
+my @opts;
+push @opts, shift while @ARGV and $ARGV[0] =~ s/^-//;
+
+# Construct the transliteration operation
+my @tr = qw(y);
+push @tr, @ARGV ? shift : '' for 1..2;
+push @tr, join '', @opts;
+my $tr = join "\x00", @tr;
+
+# Read input, run the operation, and output
+undef $/;
+$_ = <>;
+eval $tr;
+print
