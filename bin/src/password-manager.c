@@ -152,31 +152,29 @@ key_listing(int verbose, int secret)
       GnomeKeyringItemInfo *info;
       GnomeKeyringResult result =
         gnome_keyring_item_get_info_full_sync(keyring, GPOINTER_TO_INT(cid->data), GNOME_KEYRING_ITEM_INFO_SECRET, &info);
-      if (result == GNOME_KEYRING_RESULT_OK) {
-        short_key_listing(keyring, GPOINTER_TO_INT(cid->data));
-        if (verbose)
-          detailed_key_listing(keyring, GPOINTER_TO_INT(cid->data));
-        if (secret) {
-          if (verbose) printf(" ");
-          print_secret(info);
-        }
-        printf("\n");
+      switch (result) {
+        case GNOME_KEYRING_RESULT_OK:
+          short_key_listing(keyring, GPOINTER_TO_INT(cid->data));
+          if (verbose)
+            detailed_key_listing(keyring, GPOINTER_TO_INT(cid->data));
+          if (secret) {
+            if (verbose) printf(" ");
+            print_secret(info);
+          }
+          printf("\n");
 
-        gnome_keyring_item_info_free(info);
-      } else {
+          gnome_keyring_item_info_free(info);
+          break;
 #define CHECKIT(X) case GNOME_KEYRING_RESULT_ ## X: printf(#X "\n"); break
-        switch (result) {
-          CHECKIT(OK); // warning if not included
-          CHECKIT(DENIED);
-          CHECKIT(NO_KEYRING_DAEMON);
-          CHECKIT(ALREADY_UNLOCKED);
-          CHECKIT(NO_SUCH_KEYRING);
-          CHECKIT(BAD_ARGUMENTS);
-          CHECKIT(IO_ERROR);
-          CHECKIT(CANCELLED);
-          CHECKIT(KEYRING_ALREADY_EXISTS);
-          CHECKIT(NO_MATCH);
-        }
+        CHECKIT(DENIED);
+        CHECKIT(NO_KEYRING_DAEMON);
+        CHECKIT(ALREADY_UNLOCKED);
+        CHECKIT(NO_SUCH_KEYRING);
+        CHECKIT(BAD_ARGUMENTS);
+        CHECKIT(IO_ERROR);
+        CHECKIT(CANCELLED);
+        CHECKIT(KEYRING_ALREADY_EXISTS);
+        CHECKIT(NO_MATCH);
       }
     }
   }
