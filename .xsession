@@ -10,9 +10,19 @@ keyboard
 
 xrdb ~/.Xdefaults
 
-if (( $+commands[dbus-launch] )) ; then
-  if ! (( $+DBUS_SESSION_BUS_PID )) || ! kill -0 $DBUS_SESSION_BUS_PID ; then
-    eval "$(dbus-launch --sh-syntax --exit-with-session)"
+# If no DBus session is present
+if (( ! $+DBUS_SESSION_BUS_ADDRESS ))
+then
+  # Check for a systemd-style socket
+  sock=/run/user/$UID/bus
+  if [[ -e ${sock:h} ]]
+  then export DBUS_SESSION_BUS_ADDRESS=unix:path=$sock
+  elif (( $+commands[dbus-launch] ))
+  then
+    # or launch a session manually if it's not present or if it's dead
+    if (( ! $+DBUS_SESSION_BUS_PID )) || ! kill -0 $DBUS_SESSION_BUS_PID
+    then eval "$(dbus-launch --sh-syntax --exit-with-session)"
+    fi
   fi
 fi
 
