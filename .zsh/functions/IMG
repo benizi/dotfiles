@@ -1,0 +1,4 @@
+case "$(file --brief --mime-type $REPLY)" in
+  (image/*) reply=( $REPLY ) ;;
+  (*) reply=() ;;
+esac
