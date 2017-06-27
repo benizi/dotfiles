@@ -1,0 +1,5 @@
+#!/bin/sh
+test $# -gt 0 || set -- -t 36000
+set -- caffeinate -u -s "$@"
+set -x
+"$@"
