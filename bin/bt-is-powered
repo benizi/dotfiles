@@ -1,0 +1,3 @@
+#!/bin/sh
+hash btmgmt 2>/dev/null || exit 2
+btmgmt -i 0 info | grep -q 'current settings:.*powered'

@@ -135,11 +135,6 @@ lid-status() {
 }
 funcs=( lid-status $funcs )
 
-bt-is-powered() {
-  btmgmt -i 0 info |
-  awk -v x=1 '/current settings:/ && /powered/ { x = 0 } END { exit x }'
-}
-
 bluez-dbus() {
   dbus-send \
     --system --type=method_call --dest=org.bluez --print-reply=literal \
