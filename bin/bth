@@ -1,0 +1,14 @@
+#!/bin/sh
+# Toggle status on first found Bluetooth headphones
+
+bt-headphone-status |
+while read btaddr connected
+do
+  if $connected
+  then toggle=disconnect
+  else toggle=connect
+  fi
+  printf '%s %s\n' $toggle $btaddr |
+  bluetoothctl
+  exit $?
+done
