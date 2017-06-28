@@ -170,16 +170,17 @@ bt-headphones() {
 }
 
 add-bluetooth() {
-  local powered toggle
+  local powered toggle powerstate
   (( $+commands[btmgmt] )) || return
   if (( ! ( EPOCHSECONDS % 15 ) )) || (( ! $+btstatus ))
   then
     bt-is-powered && powered=1 || powered=0
+    # Add clickable toggle indicating current "powered" state
     if (( powered ))
-    then toggle=off btstatus='++'
-    else toggle=on btstatus='--'
+    then toggle=off powerstate='++'
+    else toggle=on powerstate='--'
     fi
-    btstatus='^ca(1,sudo btmgmt -i 0 power '"$toggle"')'"$btstatus"'^ca()'
+    btstatus='^ca(1,sudo btmgmt -i 0 power '"$toggle"')'"$powerstate"'^ca()'
     btstatus+='^ca(1,in-term bluetoothctl)bt^ca()'
     if (( powered ))
     then
