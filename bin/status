@@ -135,12 +135,6 @@ lid-status() {
 }
 funcs=( lid-status $funcs )
 
-bluez-dbus() {
-  dbus-send \
-    --system --type=method_call --dest=org.bluez --print-reply=literal \
-    /org/bluez/$1 ${@:2}
-}
-
 bt-headphones() {
   local nodeattr dev devprops line connected icon profiles btaddr toggle state
   for nodeattr in $(

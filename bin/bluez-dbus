@@ -1,0 +1,5 @@
+#!/bin/sh
+dbus_path=/org/bluez/$1
+shift
+dbus-send --system --type=method_call --dest=org.bluez --print-reply=literal \
+  "$dbus_path" "$@"
