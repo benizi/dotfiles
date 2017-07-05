@@ -37,15 +37,35 @@ fun! s:prettier.AppliesToBuffer()
   return &ft == 'javascript'
 endf
 
-fun! s:prettier.Format() abort
+fun! s:prettier.FormatRange(startline, endline) abort
+  cal maktaba#ensure#IsNumber(a:startline)
+  cal maktaba#ensure#IsNumber(a:endline)
+
   let cmd = [s:prettier.GetExe(), '--stdin']
-  let input = join(getline(1,'$'), "\n")
+
+  " `prettier` ranges are expressed in characters (not lines, which are very
+  " easy to find, or bytes, which are easy to find via `line2byte()`), so we
+  " calculate line lengths by appending EOL chars to line contents.
+  let eol = (&ff != 'unix' ? "\<CR>" : "") . (&ff != 'mac' ? "\<NL>" : "")
+  " prepend 0 for empty case and the fact that line numbers are 1-indexed:
+  let linechars = extend([0],map(getline(1,a:endline),'strchars(v:val . eol)'))
+
+  " range-start is everything preceding the start line:
+  let preceding = copy(linechars[0:(a:startline-1)])
+  cal add(cmd, '--range-start='.eval(join(preceding,'+')))
+
+  " range-end includes all lines up through the end line:
+  let included = copy(linechars[0:(a:endline)])
+  " + 1, since it's exclusive:
+  cal add(cmd, '--range-end='.(eval(join(included,'+')) + 1))
+
+  let input = join(getline(1,'$'), eol)
   let ret = maktaba#syscall#Create(cmd).WithStdin(input).Call(0)
   if !empty(ret.stderr)
     echoerr ret.stderr
     return
   end
-  cal maktaba#buffer#Overwrite(1, line('$'), split(ret.stdout, "\n"))
+  cal maktaba#buffer#Overwrite(1, line('$'), split(ret.stdout, eol))
 endf
 
 cal s:registry.AddExtension(s:prettier)
