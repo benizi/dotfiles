@@ -3,21 +3,24 @@ let s:registry = maktaba#extension#GetInternalRegistry('codefmt')
 call s:registry.SetValidator('codefmt#EnsureFormatter')
 
 " Skip `js-beautify`:
-" call s:registry.AddExtension(codefmt#GetJsBeautifyFormatter())
+" call s:registry.AddExtension(codefmt#jsbeautify#GetFormatter())
 
 " Modify `clang-format` so it isn't used for JS or Java files:
-" call s:registry.AddExtension(codefmt#GetClangFormatFormatter())
-let s:clang = codefmt#GetClangFormatFormatter()
+" call s:registry.AddExtension(codefmt#clangformat#GetFormatter())
+let s:clang = codefmt#clangformat#GetFormatter()
 fun! s:clang.AppliesToBuffer() abort
   return index(['c','cpp','proto'], &ft) >= 0
 endf
 call s:registry.AddExtension(s:clang)
 
 " Other formatters are added as-is:
-call s:registry.AddExtension(codefmt#GetGofmtFormatter())
-call s:registry.AddExtension(codefmt#GetYAPFFormatter())
-call s:registry.AddExtension(codefmt#GetAutopep8Formatter())
-call s:registry.AddExtension(codefmt#GetGnFormatter())
+call s:registry.AddExtension(codefmt#gofmt#GetFormatter())
+call s:registry.AddExtension(codefmt#dartfmt#GetFormatter())
+call s:registry.AddExtension(codefmt#yapf#GetFormatter())
+call s:registry.AddExtension(codefmt#autopep8#GetFormatter())
+call s:registry.AddExtension(codefmt#gn#GetFormatter())
+call s:registry.AddExtension(codefmt#buildifier#GetFormatter())
+call s:registry.AddExtension(codefmt#googlejava#GetFormatter())
 
 " And we add `prettier`:
 let s:plugin = maktaba#plugin#Get('codefmt')
