@@ -17,7 +17,7 @@ dbg-exec() {
   then
     (( ! $+_url )) || options=( 'copy URL' )
     options+=( run exit no fail 'copy cmd' )
-    message=( 'Run:' "  ${(q)^@}" )
+    message=( $functrace 'Run:' "  ${(q)^@}" )
     xmessage -default ${options[1]} -buttons ${(j:,:)options} ${(F)message}
     ret=$?
     if (( ret > 100 ))
