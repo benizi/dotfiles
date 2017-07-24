@@ -25,7 +25,8 @@ dbg-exec() {
     else option=$ret
     fi
     case $option in
-      (no|fail) exit 1 ;;
+      (no) return 0 ;;
+      (fail) exit 1 ;;
       ('copy URL') clip <<<$_url ; exit $? ;;
       ('copy cmd') printf '%s' "${(j: :)${(q)@}}" | clip ; exit $? ;;
       (run) ;;
