@@ -18,11 +18,12 @@ dbg-exec() {
     (( ! $+_url )) || options=( 'copy URL' )
     options+=( run exit no fail 'copy cmd' )
     message=( $functrace 'Run:' "  ${(q)^@}" )
-    xmessage -default ${options[1]} -buttons ${(j:,:)options} ${(F)message}
+    option="$(printf '%s\n' $options ${(F)message} | picker)"
     ret=$?
-    if (( ret > 100 ))
-    then option=${options[ret-100]}
-    else option=$ret
+    if (( ret ))
+    then
+      printf 'picker exited with status: %s\n' $ret | tee -a $scriptlog
+      exit $ret
     fi
     case $option in
       (no) return 0 ;;
