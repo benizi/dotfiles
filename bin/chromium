@@ -233,8 +233,7 @@ fi
 
 if $_remote_debug
 then
-  (( _default_debug_port += $+_scratch ))
-  : ${_debug_port=$_default_debug_port}
+  : ${_debug_port=$(( _default_debug_port + $+_scratch))}
   _args+=( --remote-debugging-port=$_debug_port )
 fi
 
@@ -257,8 +256,10 @@ MESSAGE
     exit 1
   fi
 fi
-if lsof -Pni :${_debug_port:-$_default_debug_port} 2&>/dev/null
-then dbg-exec chromium-remote ''
+if $_remote_debug && lsof -Pni :$_debug_port 2&>/dev/null
+then
+  [[ $_debug_port = 9222 ]] && instance= || instance=-port=$_debug_port
+  dbg-exec chromium-remote $instance ''
 fi
 find_exe
 _cmd=( $_exec $exe $_args )
