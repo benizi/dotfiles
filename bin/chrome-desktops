@@ -1,0 +1,78 @@
+#!/bin/zsh
+
+typeset -a names
+typeset -A kind short
+prop() {
+  names+=( $1 )
+  kind+=( $1 $2 )
+  short+=( $1 $3 )
+}
+prop _NET_WM_DESKTOP 32c DESK
+prop _NET_WM_NAME 8s NAME
+
+window_ids() {
+  xwininfo -tree -root |
+  awk '/chromium-browser/ { print $1 }'
+}
+
+allprops() {
+  window_ids |
+  while read win
+  do findprops $win "$@"
+  done
+}
+
+findprops() {
+  local id=$1 name
+  local -a formats
+  shift
+  for name
+  do formats+=( -f $name $kind[$name] '\031$0\030' )
+  done
+  printf 'ID\031%s\030' $id
+  xprop -id $id -notype $formats "$@"
+}
+
+awksep() {
+  # like `awk`, but uses Unicode "separators":
+  # \u001f \031 US - Unit (field) Separator
+  # \u001e \030 RS - Record Separator
+  local ofs ors
+  case $1/$2 in
+    (0??/0??) ofs=\\$1 ors=\\$2 ; shift 2 ;;
+    (*) ofs=\\031 ors=\\030 ;;
+  esac
+  awk -F\\031 -v RS=\\030 -v OFS=$ofs -v ORS=$ors "$@"
+}
+
+awkseptsv() {
+  awksep 011 012 "$@"
+}
+
+dump() {
+  allprops $names |
+  awksep '
+    $1 == "ID" { id = $2 }
+    $1 == "_NET_WM_DESKTOP" { d = $2 }
+    $1 == "_NET_WM_NAME" { print id, d, $2 }
+  ' |
+  awkseptsv '{$1=$1}1' ; exit
+}
+
+load() {
+  local file=$1
+  shift
+  allprops _NET_WM_NAME |
+  awkseptsv '{$1=$1}1' ; exit
+  awksep '
+  /^_/ { next } { nm = substr($0,2+length($1)) }
+  $1 ~ /x/ && desk[nm] { print ": Moving: " nm ; print "xdotool set_desktop_for_window", $1, desk[nm] }
+  $1 ~ /x/ && !desk[nm] { print ": No desk for " nm }
+  $1 !~ /x/ { desk[nm] = $1 }
+  ' $file - "$@" |
+  cat ; exit
+  sh -x
+}
+
+(( $# )) && fn=load || fn=dump
+$fn "$@"
