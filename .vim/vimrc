@@ -534,8 +534,6 @@ vm <Leader>f :FormatLines<CR>
 " Disable default formatters. See: .vim/after/plugin/codefmt.vim
 Glaive codefmt plugin[register]=0
 
-nn <silent> <C-n> :sil! !chromium >/dev/null 2>/dev/null &<CR>:redraw!<CR>
-
 " open new-window files in new tab instead
 nn <C-W>f <C-W>gf
 
