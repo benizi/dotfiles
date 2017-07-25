@@ -530,6 +530,7 @@ cal SetupNERDComment('<Leader>cm', 'minimal')
 
 " Mappings for codefmt
 vm <Leader>f :FormatLines<CR>
+nn <Leader>f :FormatCode<CR>
 
 " Disable default formatters. See: .vim/after/plugin/codefmt.vim
 Glaive codefmt plugin[register]=0
