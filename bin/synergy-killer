@@ -1,11 +1,12 @@
 #!/usr/bin/perl
-use strict;
+use 5.016;
 use warnings;
 use IPC::Run 'run';
 use Getopt::Long;
 GetOptions(
 	'kill|k' => \(my $just_kill = 1),
 	'port=i' => \(my $port = 24800),
+	'dry-run' => \(my $dry = 0),
 ) or die 'options';
 
 sub lines {
@@ -16,7 +17,10 @@ sub lines {
 }
 
 sub my_kill {
-	run qw/sudo kill -9/, @_ if @_;
+	return unless @_;
+	my @cmd = (qw/sudo kill -9/, @_);
+	unshift @cmd, 'echo' if $dry;
+	say for lines @cmd;
 }
 
 my %ppids;
@@ -41,6 +45,8 @@ if ($just_kill) {
 	push @lsof, -c => $_ for qw/synergys synergyc/;
 	my @procs = grep !$ppids{$_}, map s/^p// ? $_ : (), lines @lsof;
 	my_kill @procs;
+	my $tag = $dry ? '[DRY RUN] ' : '';
 	my $es = @procs == 1 ? "" : "es";
-	print "Killed ", 0 + @procs, " old Synergy process$es: @procs\n";
+	my $list = @procs ? ": @procs" : "";
+	say $tag, "Killed ", 0 + @procs, " old Synergy process", $es, $list;
 }
