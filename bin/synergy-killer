@@ -11,7 +11,7 @@ GetOptions(
 
 sub lines {
 	my $out;
-	run \@_, '>', \$out, '2<&-';
+	run @_, '>', \$out, '2<&-';
 	chomp(my @lines = split $/, $out);
 	@lines
 }
@@ -20,12 +20,12 @@ sub my_kill {
 	return unless @_;
 	my @cmd = (qw/sudo kill -9/, @_);
 	unshift @cmd, 'echo' if $dry;
-	say for lines @cmd;
+	say for lines \@cmd;
 }
 
 my %ppids;
 {
-	my @pstree = reverse lines qw/pstree -aclpu/;
+	my @pstree = reverse lines [qw/pstree -aclpu/];
 	my $max;
 	my $seen = 0;
 	for (@pstree) {
@@ -43,7 +43,7 @@ if ($just_kill) {
 	my @lsof = qw/sudo lsof -Fp/;
 	push @lsof, -i => ":$port";
 	push @lsof, -c => $_ for qw/synergys synergyc/;
-	my @procs = grep !$ppids{$_}, map s/^p// ? $_ : (), lines @lsof;
+	my @procs = grep !$ppids{$_}, map s/^p// ? $_ : (), lines [@lsof];
 	my_kill @procs;
 	my $tag = $dry ? '[DRY RUN] ' : '';
 	my $es = @procs == 1 ? "" : "es";
