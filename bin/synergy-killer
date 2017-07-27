@@ -4,7 +4,7 @@ use warnings;
 use IPC::Run 'run';
 use Getopt::Long;
 GetOptions(
-	'kill|k' => \(my $just_kill = 1),
+	'kill|k' => sub { warn "The -k/--kill flag is deprecated\n" },
 	'port=i' => \(my $port = 24800),
 	'dry-run' => \(my $dry = 0),
 ) or die 'options';
@@ -23,8 +23,8 @@ sub my_kill {
 	say for lines \@cmd;
 }
 
-my %ppids;
-{
+sub kill_synergy {
+	my %ppids;
 	my @pstree = reverse lines [qw/pstree -aclpu/];
 	my $max;
 	my $seen = 0;
@@ -37,9 +37,7 @@ my %ppids;
 		$ppids{$pid}++;
 		$max = length $pref;
 	}
-}
 
-if ($just_kill) {
 	my @lsof = qw/sudo lsof -Fp/;
 	push @lsof, -i => ":$port";
 	push @lsof, -c => $_ for qw/synergys synergyc/;
@@ -50,3 +48,5 @@ if ($just_kill) {
 	my $list = @procs ? ": @procs" : "";
 	say $tag, "Killed ", 0 + @procs, " old Synergy process", $es, $list;
 }
+
+kill_synergy;
