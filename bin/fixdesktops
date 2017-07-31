@@ -1,0 +1,60 @@
+#!/bin/zsh
+
+{
+  cat <<'START'
+setdesk() {
+  local xid=$1 expect=$2 id now
+  orig="setdesk $*"
+  eval "id=$(printf '%d\n' $xid)"
+  now="$(xdotool get_desktop_for_window $id 2>/dev/null)"
+
+  set -- $(xdotool getwindowgeometry --shell $id)
+  local cmd=$*
+  eval local $@
+
+  if test $WIDTH -lt 600 || test $HEIGHT -lt 600
+  then return
+  fi
+
+  printf '==\n'
+  printf ' %s\n' "$orig" "$cmd"
+  printf ' %s->%s\n' "$now" "$expect"
+
+  test "x$now" != "x$expect" || return
+
+  set -- xdotool set_desktop_for_window $xid $expect
+  "$@"
+  printf ' => %s = %s\n' "$*" $?
+
+  xwininfo -id $xid
+}
+START
+  mywin=$(printf '0x%x' $WINDOWID)
+  xwininfo -root -tree |
+  sort |
+  awk '
+  BEGIN {
+    me = '$mywin'
+    per = 20
+    maxd = 10
+    split("",skip)
+    nskips=split("2 3 5", skips)
+    for(i=1;i<=nskips;i++) skip[skips[i]*per]=per
+  }
+  $1!~/^0x/ || /[h]as no name/ { next }
+  { id = $1 ; d = 0 ; autod = 0 ; r = "default" }
+  !d && /[X]message/ { d = -1 ; r = "PLACEHOLDER" }
+  !d && id == me { d = 2 ; r = "SELF" }
+  !d && /VIM/ { d = 3 ; r = "Vim" }
+  !d {
+    n++
+    while (n in skip) n += skip[n]
+    autod = (n - (n % per)) / per
+  }
+  !d && autod<maxd { d = autod ; r = "auto" }
+  !d && autod>=maxd { r = "autod too high - " autod }
+  { c = "# " }
+  (d || r == "auto") && d < maxd { c = "" }
+  { print c "setdesk", id, d, ":", r }
+  '
+}
