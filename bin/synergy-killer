@@ -7,7 +7,7 @@ use Getopt::Long;
 GetOptions(
 	'kill|k' => sub { warn "The -k/--kill flag is deprecated\n" },
 	'port=i' => \(my $port = 24800),
-	'dry-run' => \(my $dry = 0),
+	'dry-run+' => \(my $dry = 0),
 ) or die 'options';
 
 my $running_remotely = $0 eq '-';
@@ -63,9 +63,9 @@ my $this_script = do {
 
 sub kill_remote {
 	my $host = shift // $_;
-	my @cmd = (ssh => $host, qw/perl - --port/, $port, grep $dry, '--dry');
+	my @cmd = (ssh => $host, qw/perl - --port/, $port, ('--dry') x $dry);
 	say "  => @cmd";
-	return if $dry;
+	return if $dry > 1;
 	say for lines \@cmd, '<', \$this_script;
 }
 
