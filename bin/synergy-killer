@@ -2,12 +2,17 @@
 use 5.016;
 use warnings;
 use IPC::Run 'run';
+use Sys::Hostname;
 use Getopt::Long;
 GetOptions(
 	'kill|k' => sub { warn "The -k/--kill flag is deprecated\n" },
 	'port=i' => \(my $port = 24800),
 	'dry-run' => \(my $dry = 0),
 ) or die 'options';
+
+my $running_remotely = $0 eq '-';
+die "Don't specify hosts if running remotely\n" if @ARGV and $running_remotely;
+my @hosts = (@ARGV or $running_remotely) ? (splice @ARGV) : ('_');
 
 sub lines {
 	my $out;
@@ -23,7 +28,7 @@ sub my_kill {
 	say for lines \@cmd;
 }
 
-sub kill_synergy {
+sub kill_local {
 	my %ppids;
 	my @pstree = reverse lines [qw/pstree -aclpu/];
 	my $max;
@@ -38,6 +43,7 @@ sub kill_synergy {
 		$max = length $pref;
 	}
 
+	printf "\n== %s ==\n", hostname;
 	my @lsof = qw/sudo lsof -Fp/;
 	push @lsof, -i => ":$port";
 	push @lsof, -c => $_ for qw/synergys synergyc/;
@@ -49,4 +55,26 @@ sub kill_synergy {
 	say $tag, "Killed ", 0 + @procs, " old Synergy process", $es, $list;
 }
 
-kill_synergy;
+my $this_script = do {
+	undef local $/;
+	seek DATA, 0, 0;
+	<DATA>
+};
+
+sub kill_remote {
+	my $host = shift // $_;
+	my @cmd = (ssh => $host, qw/perl - --port/, $port, grep $dry, '--dry');
+	say "  => @cmd";
+	return if $dry;
+	say for lines \@cmd, '<', \$this_script;
+}
+
+sub main {
+	kill_local;
+	kill_remote for @hosts;
+}
+
+main();
+
+# __DATA__ needed to send script text to remote hosts
+__DATA__
