@@ -1,0 +1,18 @@
+#!/bin/sh
+tmpdir=$(mktemp -d -t in-tmp.XXXXXXXX) || exit 1
+cd "$tmpdir" || exit 2
+cleanup () {
+  ret=${1:-$?}
+  rm -rf "$tmpdir"
+  trap '' EXIT INT TERM
+  exit $ret
+}
+gotsig () {
+  ret=$?
+  trap '' EXIT
+  cleanup $ret
+}
+trap cleanup EXIT
+trap gotsig INT QUIT TERM
+test $# -gt 0 || set -- "${SHELL:-sh}"
+"$@"
