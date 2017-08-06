@@ -1,0 +1,22 @@
+#!/bin/zsh
+
+tmpfiles=()
+cleanup() {
+  if (( $#tmpfiles ))
+  then rm -f $tmpfiles
+  fi
+}
+trap cleanup INT QUIT EXIT
+
+() {
+  setopt local_options err_return
+  tmpbase=$1
+  main=$2
+  for src in $main*
+  do
+    tmp=$tmpbase${src#$main}
+    cat $src > $tmp
+    [[ $src == $main ]] || tmpfiles+=( $tmp )
+  done
+  sqlite3 $tmpbase "${@:3}"
+} =(:) "$@"
