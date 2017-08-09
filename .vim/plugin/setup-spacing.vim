@@ -180,9 +180,10 @@ fun! SetupSpacingAutocmd()
 endfun
 
 fun! ConditionallyHighlightSpacingErrors()
-	if !get(get(g:, 'setup_spacing_ignore_whitespace', {}), &ft, 0)
-		cal HighlightSpacingErrors()
+	if get(get(g:, 'setup_spacing_ignore_whitespace', {}), &ft, 0)
+		return
 	end
+	ToggleSpacingErrors
 endf
 
 fun! SetupSpacing(...)
