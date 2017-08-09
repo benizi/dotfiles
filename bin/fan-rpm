@@ -1,0 +1,2 @@
+#!/bin/sh
+sensors -u | awk '/ fan/{print int($NF)}'
