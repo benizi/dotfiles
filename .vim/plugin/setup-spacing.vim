@@ -21,17 +21,24 @@ fun! HighlightSpacingErrors()
 		let w:spacing_match_groups = []
 	end
 
+	let pats = []
+
 	" if not mixed tabs+spaces, hilight as errors
 	if (! &l:sts) || (&l:sts == &l:ts)
-		call add(w:spacing_match_groups, matchadd('Error', '^\t\+\ '))
-		call add(w:spacing_match_groups, matchadd('Error', '^\ \+\t'))
+		cal extend(pats, ['^\t\+\ ', '^\ \+\t'])
 	endif
+
 	if &l:ft != 'mail'
 		" trailing whitespace, except for the current cursor position
-		call add(w:spacing_match_groups, matchadd('Error', '\S\zs[\t ]\+\%#\@!$'))
+		cal add(pats, '\S\zs[\t ]\+\%#\@!$')
 		" tabs anywhere but leading
-		call add(w:spacing_match_groups, matchadd('Error', '\%(^\|\t\)\@<!\t'))
+		cal add(pats, '\%(^\|\t\)\@<!\t')
 	end
+
+	for p in pats
+		cal add(w:spacing_match_groups, matchadd('Error', p))
+	endfor
+
 	hi Error cterm=reverse
 endfun
 
