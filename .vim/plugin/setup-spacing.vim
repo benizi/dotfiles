@@ -191,7 +191,7 @@ fun! SetupSpacingAutocmd()
 	aug SetupSpacing
 		au!
 		au BufWinEnter * call SetupSpacing()
-		au Filetype * call ConditionallyHighlightSpacingErrors()
+		au BufReadPost,Filetype * call ConditionallyHighlightSpacingErrors()
 	aug END
 endfun
 
