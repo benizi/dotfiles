@@ -17,10 +17,6 @@ fun! SetupTabstop(width, expand, ...)
 endf
 
 fun! HighlightSpacingErrors()
-	if !exists('w:spacing_match_groups')
-		let w:spacing_match_groups = []
-	end
-
 	let pats = []
 
 	" if not mixed tabs+spaces, hilight as errors
@@ -36,32 +32,27 @@ fun! HighlightSpacingErrors()
 	end
 
 	for p in pats
-		cal add(w:spacing_match_groups, matchadd('Error', p))
+		cal matchadd('Error', p)
 	endfor
 
 	hi Error cterm=reverse
 endfun
 
 fun! ResetSpacingErrors(...)
-	let todelete = []
-	if exists('w:spacing_match_groups')
-		call extend(todelete, w:spacing_match_groups)
-	end
-	if a:0 " 'force' mode
-		call extend(todelete, map(filter(getmatches(), 'v:val.group == "Error"'), 'v:val.id'))
-	end
-	for group in todelete
-		call matchdelete(group)
+	for m in getmatches()
+		if m.group == 'Error'
+			cal matchdelete(m.id)
+		end
 	endfor
-	let w:spacing_match_groups = []
 endf
 
 fun! ToggleSpacingErrors()
-	if exists('w:spacing_match_groups') && len(w:spacing_match_groups)
-		cal ResetSpacingErrors()
-	else
-		cal HighlightSpacingErrors()
-	end
+	let lastvar = 'last_spacing_function'
+	let fns = ['ResetSpacingErrors', 'HighlightSpacingErrors']
+	let lastfn = get(w:, lastvar, fns[0])
+	let fn = fns[1-index(fns, lastfn)]
+	let w:{lastvar} = fn
+	cal {fn}()
 endf
 com! ToggleSpacingErrors cal ToggleSpacingErrors()
 
