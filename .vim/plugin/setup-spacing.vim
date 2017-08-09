@@ -16,6 +16,18 @@ fun! SetupTabstop(width, expand, ...)
 	let &l:sbr = '» '
 endf
 
+fun! SpacingErrorLink(active, ...)
+	let linkvar = 'highlight_error_groups'
+	let links = a:0 ? a:1 : get(w:, linkvar, [])
+	let target = a:active ? 'Error' : 'None'
+	for group in links
+		exe 'hi link' group target
+	endfor
+	if a:0
+		let w:{linkvar} = a:1
+	end
+endfun
+
 fun! HighlightSpacingErrors()
 	let pats = []
 
@@ -36,6 +48,8 @@ fun! HighlightSpacingErrors()
 	endfor
 
 	hi Error cterm=reverse
+
+	cal SpacingErrorLink(1)
 endfun
 
 fun! ResetSpacingErrors(...)
@@ -44,6 +58,17 @@ fun! ResetSpacingErrors(...)
 			cal matchdelete(m.id)
 		end
 	endfor
+
+	" Find all highlighting groups linked to Error, then unlink them
+	let groups = []
+	for group in getcompletion('', 'highlight')
+		redir => hl | exe 'sil! hi' group | redir END
+		if hl =~ "\<NL>" . group . " *xxx links to Error"
+			cal add(groups, group)
+		end
+	endfor
+
+	cal SpacingErrorLink(0, groups)
 endf
 
 fun! ToggleSpacingErrors()
