@@ -1,22 +1,14 @@
-#!/bin/zsh
+#!/bin/sh
+# no args? -> just run sqlite3 (no need to copy DB)
+test $# -gt 0 || exec sqlite3
 
-tmpfiles=()
-cleanup() {
-  if (( $#tmpfiles ))
-  then rm -f $tmpfiles
-  fi
-}
-trap cleanup INT QUIT EXIT
+# find full path (copy occurs after cd'ing into the temp dir)
+db=$(realpath -s "$1")
+shift
 
-() {
-  setopt local_options err_return
-  tmpbase=$1
-  main=$2
-  for src in $main*
-  do
-    tmp=$tmpbase${src#$main}
-    cat $src > $tmp
-    [[ $src == $main ]] || tmpfiles+=( $tmp )
-  done
-  sqlite3 $tmpbase "${@:3}"
-} =(:) "$@"
+# Copy the files into a temp dir, then run sqlite3 against the copy
+in-tmp sh -c '
+cp --target=. "$1"*
+shift
+sqlite3 "$@"
+' -- "$db" "$(basename "$db")" "$@"
