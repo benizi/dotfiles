@@ -1,0 +1,7 @@
+#!/bin/sh
+pulseaudio-ports |
+awk '$NF ~ /speaker/ { print $1 }' |
+sed '1!d' |
+while read sink
+do pactl set-sink-mute $sink toggle
+done
