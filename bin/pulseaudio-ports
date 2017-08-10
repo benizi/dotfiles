@@ -1,0 +1,5 @@
+#!/bin/sh
+pactl list sinks |
+awk -v OFS=\\t '
+/^Sink/ { sink = substr($2, 2) }
+$1=="Active" { print sink, $NF }'
