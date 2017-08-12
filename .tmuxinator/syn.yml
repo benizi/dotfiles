@@ -1,4 +1,4 @@
 name: syn
 root: ~/
 windows:
-  - sshynergy: sshynergy
+  - sshynergy: sshynergy | multilog t ./sshynergy.log
