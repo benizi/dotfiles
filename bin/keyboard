@@ -57,16 +57,18 @@ push @extra, @ARGV if @ARGV;
 warn "Extra options: (@extra)\n" if @extra;
 $opt{$_} //= $defaults{$_} for keys %defaults;
 
-sub setxkbmap {
-	my @inc = map "-I$_", @includes;
+sub includes {
+	map "-I$_", @includes;
+}
 
-	my @cmd = ('setxkbmap', @inc);
+sub setxkbmap {
+	my @cmd = ('setxkbmap', includes);
 	push @cmd, map {; "-$_" => $opt{$_} } grep length($opt{$_}), @xkbopts;
 	push @cmd, -option => $_ for @options;
 	push @cmd, @extra;
 	push @cmd, '-print';
 
-	my @xkbcomp = (qw/xkbcomp -w 3/, @inc, '-', $ENV{DISPLAY});
+	my @xkbcomp = (qw/xkbcomp -w 3/, includes, '-', $ENV{DISPLAY});
 
 	@cmd = ([@cmd]);
 	push @cmd, '|', [@xkbcomp] unless $just_print;
