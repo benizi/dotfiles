@@ -38,10 +38,34 @@ GetOptions(
 @includes = grep -d, $xkb_dir unless @includes;
 @modmaps = grep -f, "$xkb_dir/.xmodmap" unless @modmaps;
 
+{
+	my $tty;
+	sub tty {
+		return $tty if $tty;
+		open $tty, '>', '/dev/tty' or $tty = \do { my $stringio = '' };
+		$tty;
+	}
+}
+
+sub terminal_out {
+	scalar grep -t, *STDOUT, *STDERR;
+}
+
+sub all_piped {
+	scalar !grep !-p, *STDOUT, *STDERR;
+}
+
+sub want_errors {
+	terminal_out and not all_piped;
+}
+
 sub run_it {
 	my @flat = map ref() ? @$_ : $_, grep { (!ref) or ('ARRAY' eq ref) } @_;
 	$_ = (length) ? $_ : "''" for @flat;
-	print "@flat\n";
+	my $fh = $dry_run ? *STDOUT : *STDERR;
+	stat $fh;
+	$fh = tty if $dry_run and not (-f _ or -p _);
+	say $fh "@flat" if $dry_run or want_errors;
 	$dry_run and return;
 	@_ = [@_] unless grep ref, @_;
 	&IPC::Run::run;
@@ -71,7 +95,8 @@ sub includes {
 
 sub xkbcomp {
 	my @dest = $just_print ? qw/-xkb -o -/ : $ENV{DISPLAY};
-	qw/xkbcomp -w 3/, includes, @{$args{xkbcomp}}, '-', @dest;
+	my @pipe = grep !want_errors, '2>', sub {};
+	[qw/xkbcomp -w 3/, includes, @{$args{xkbcomp}}, '-', @dest], @pipe;
 }
 
 sub setxkbmap {
@@ -81,7 +106,7 @@ sub setxkbmap {
 	push @cmd, @{$args{setxkbmap}};
 	push @cmd, '-print' if $just_print or $run_xkbcomp;
 
-	@cmd = ([@cmd], '|', [xkbcomp]) if $run_xkbcomp;
+	@cmd = ([@cmd], '|', xkbcomp) if $run_xkbcomp;
 
 	run_it @cmd;
 }
