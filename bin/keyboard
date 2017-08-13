@@ -9,21 +9,13 @@ my %opt;
 my @xkbopts = qw/rules model layout variant keycodes/;
 my @includes;
 
-my $is_macbook = do {
-	my $mac = 0;
-	my $id = "/sys/devices/virtual/dmi/id/board_version";
-	if (-e $id) {
-		my $name = do { undef local $/; open my $f, '<', $id; <$f> };
-		$mac = $name =~ /MacBook/;
-	}
-	$mac
-};
-
-{
-	my $id_file = '/sys/devices/virtual/dmi/id/product_version';
-	my $product = eval { undef local $/; local @ARGV = ($id_file); <> };
-	push @{$opt{options}}, 'benizi:x240' if !$@ and $product =~ /X240/;
+sub version {
+	local @ARGV = grep -f, map "/sys/devices/virtual/dmi/id/${_}_version", @_;
+	do { undef local $/; (@ARGV ? <> : "") }
 }
+
+my $is_macbook = (version 'board') =~ /MacBook/;
+push @{$opt{options}}, 'benizi:x240' if (version 'product') =~ /X240/;
 
 my $xkb_dir = "$Bin/../xkb";
 
