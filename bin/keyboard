@@ -56,7 +56,7 @@ push @extra, @ARGV if @ARGV;
 warn "Extra options: (@extra)\n" if @extra;
 $opt{$_} //= $defaults{$_} for keys %defaults;
 
-if (!$just_modmap) {
+sub setxkbmap {
 	my @inc = map "-I$_", @includes;
 
 	my @cmd = ('setxkbmap', @inc);
@@ -78,7 +78,7 @@ sub swap_mods {
 	run_it xmodmap => -e => "add $new = $key";
 }
 
-if ($mod3 or $just_modmap or $is_macbook or -f $modmap) {
+sub xmodmap_fixes {
 	run_it xmodmap => $modmap if -f $modmap;
 	if ($is_macbook) {
 		my ($b2, $b3) = (64, 108);
@@ -91,7 +91,8 @@ if ($mod3 or $just_modmap or $is_macbook or -f $modmap) {
 	}
 	swap_mods 'Alt_R', 'mod1', 'mod3';
 }
-if ($clear_mods) {
+
+sub clear_mods {
 	run_it xdotool => keyup => $_
 		for qw/
 		Hyper_L Hyper_R
@@ -101,6 +102,15 @@ if ($clear_mods) {
 		Shift_L Shift_R
 		/;
 }
+
+sub main {
+	setxkbmap unless $just_modmap;
+	xmodmap_fixes if $mod3 or $just_modmap or $is_macbook or -f $modmap;
+	clear_mods if $clear_mods;
+}
+
+main
+
 __END__
 setxkbmap
 -model pc104
