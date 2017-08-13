@@ -31,7 +31,6 @@ GetOptions(
 	(map {; "$_=s" => \$opt{$_} } @xkbopts),
 	'reset=s' => \$opt{reset},
 	'o|option=s@' => \$opt{options},
-	'O|old-options' => \(my $old_options = 0),
 	'menu' => \(my $menu = 0),
 	'dry' => \(my $dry_run = 0),
 	'extra=s@' => \my @extra,
@@ -54,7 +53,6 @@ sub run_it {
 	&IPC::Run::run;
 }
 my $default_options = [
-	grep($old_options, qw/lv3:ralt_switch altwin:super_win/),
 	qw/terminate:ctrl_alt_bksp/
 ];
 my %defaults = (
