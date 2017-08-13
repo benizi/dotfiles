@@ -29,7 +29,6 @@ my $xkb_dir = "$Bin/../xkb";
 
 GetOptions(
 	(map {; "$_=s" => \$opt{$_} } @xkbopts),
-	'reset=s' => \$opt{reset},
 	'o|option=s@' => \$opt{options},
 	'dry' => \(my $dry_run = 0),
 	'extra=s@' => \my @extra,
@@ -61,7 +60,6 @@ my %defaults = (
 		layout => 'benizi',
 		variant => 'intl',
 		keycodes => 'evdev',
-		reset => 1,
 		options => $default_options,
 	},
 );
@@ -87,7 +85,6 @@ if (!$just_modmap) {
 	my @cmd = ('setxkbmap');
 	push @cmd, map "-I$_", @includes;
 	push @cmd, map {; "-$_" => $opt{$_} } grep length($opt{$_}), @xkbopts;
-	push @cmd, -option => '' if $opt{reset};
 	push @cmd, -option => $_ for @{$opt{options}};
 	push @cmd, @extra;
 	@cmd = (
