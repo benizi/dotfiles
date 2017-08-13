@@ -31,7 +31,6 @@ GetOptions(
 	(map {; "$_=s" => \$opt{$_} } @xkbopts),
 	'reset=s' => \$opt{reset},
 	'o|option=s@' => \$opt{options},
-	'menu' => \(my $menu = 0),
 	'dry' => \(my $dry_run = 0),
 	'extra=s@' => \my @extra,
 	'ion!' => \(my $ion = `pgrep ion3`),
@@ -84,12 +83,6 @@ do {
 		}
 	}
 } while $path =~ s/^((?:(?!\Q$sep\E).)+)(?=\Q$sep\E|$)//;
-if ($menu) {
-	for ($opt{options}) {
-		@$_ = grep !/^compose:menu/, grep !/^altwin/, @$_;
-		push @$_, 'altwin:menu';
-	}
-}
 if (!$just_modmap) {
 	my @cmd = ('setxkbmap');
 	push @cmd, map "-I$_", @includes;
