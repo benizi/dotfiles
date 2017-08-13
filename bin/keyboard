@@ -73,10 +73,14 @@ sub setxkbmap {
 	run_it @cmd;
 }
 
+sub xmodmap_e {
+	run_it xmodmap => -e => "@_";
+}
+
 sub swap_mods {
 	my ($key, $old, $new) = @_;
-	run_it xmodmap => -e => "remove $old = $key";
-	run_it xmodmap => -e => "add $new = $key";
+	xmodmap_e "remove $old = $key";
+	xmodmap_e "add $new = $key";
 }
 
 sub xmodmap_files {
@@ -85,8 +89,8 @@ sub xmodmap_files {
 
 sub macbook_mousekeys {
 	my ($b2, $b3) = (64, 108);
-	run_it xmodmap => -e => "keycode $b2 = Pointer_Button2";
-	run_it xmodmap => -e => "keycode $b3 = Pointer_Button3";
+	xmodmap_e "keycode $b2 = Pointer_Button2";
+	xmodmap_e "keycode $b3 = Pointer_Button3";
 	run_it xkbset => 'm';
 }
 
