@@ -24,8 +24,7 @@ GetOptions(
 	'o|option=s@' => \my @options,
 	'dry' => \(my $dry_run = 0),
 	'extra=s@' => \my @extra,
-	'ion!' => \(my $ion = `pgrep ion3`),
-	'mod3' => \(my $mod3),
+	'winkey=s' => \(my $win = 'mod4'),
 	'modmap=s@' => \my @modmaps,
 	'M|justmod' => \(my $just_modmap = 0),
 	'clear' => \(my $clear_mods),
@@ -92,7 +91,7 @@ sub macbook_mousekeys {
 }
 
 sub windows_key {
-	swap_mods 'Super_L', ($ion or $mod3) ? qw/mod4 mod3/ : qw/mod3 mod4/;
+	swap_mods 'Super_L', sort { ($a eq $win) <=> ($b eq $win) } qw/mod3 mod4/;
 }
 
 sub system_key {
