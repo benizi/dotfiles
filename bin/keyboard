@@ -26,14 +26,16 @@ GetOptions(
 	'extra=s@' => \my @extra,
 	'ion!' => \(my $ion = `pgrep ion3`),
 	'mod3' => \(my $mod3),
-	'modmap=s' => \(my $modmap = "$xkb_dir/.xmodmap"),
+	'modmap=s@' => \my @modmaps,
 	'M|justmod' => \(my $just_modmap = 0),
 	'clear' => \(my $clear_mods),
 	'I=s@' => \my @includes,
 	'macbook' => \$is_macbook,
 	'print' => \(my $just_print),
 ) or die 'options';
+
 @includes = grep -d, $xkb_dir unless @includes;
+@modmaps = grep -f, "$xkb_dir/.xmodmap" unless @modmaps;
 
 sub run_it {
 	my @flat = map ref() ? @$_ : $_, grep { (!ref) or ('ARRAY' eq ref) } @_;
@@ -78,17 +80,26 @@ sub swap_mods {
 	run_it xmodmap => -e => "add $new = $key";
 }
 
-sub xmodmap_fixes {
-	run_it xmodmap => $modmap if -f $modmap;
-	if ($is_macbook) {
-		my ($b2, $b3) = (64, 108);
-		run_it xmodmap => -e => "keycode $b2 = Pointer_Button2";
-		run_it xmodmap => -e => "keycode $b3 = Pointer_Button3";
-		run_it xkbset => 'm';
-	} else {
-		my ($old, $new) = map "mod$_", ($ion or $mod3) ? (4, 3) : (3, 4);
-		swap_mods 'Super_L', $old, $new;
-	}
+sub xmodmap_files {
+	run_it xmodmap => $_ for @modmaps;
+}
+
+sub macbook_mousekeys {
+	my ($b2, $b3) = (64, 108);
+	run_it xmodmap => -e => "keycode $b2 = Pointer_Button2";
+	run_it xmodmap => -e => "keycode $b3 = Pointer_Button3";
+	run_it xkbset => 'm';
+}
+
+sub windows_key {
+	swap_mods 'Super_L', ($ion or $mod3) ? qw/mod4 mod3/ : qw/mod3 mod4/;
+}
+
+sub system_key {
+	$is_macbook ? macbook_mousekeys : windows_key;
+}
+
+sub alt_is_meta {
 	swap_mods 'Alt_R', 'mod1', 'mod3';
 }
 
@@ -105,7 +116,10 @@ sub clear_mods {
 
 sub main {
 	setxkbmap unless $just_modmap;
-	xmodmap_fixes if $mod3 or $just_modmap or $is_macbook or -f $modmap;
+	return if $just_print;
+	xmodmap_files;
+	system_key;
+	alt_is_meta;
 	clear_mods if $clear_mods;
 }
 
