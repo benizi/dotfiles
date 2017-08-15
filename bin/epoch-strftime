@@ -4,10 +4,11 @@ use warnings;
 use POSIX 'strftime';
 use Getopt::Long qw/:config pass_through/;
 GetOptions(
-  'f|format=s' => \(my $format = '%F@%T'),
+  'f|format=s' => \my $format,
   'ignore|non|skip!' => \(my $ignore_leading_non = 1),
   'UTC|GMT|Z|zulu' => \(my $utc = 0),
 ) or die 'options';
+$format //= '%F@%T'.($utc ? 'Z' : '%z');
 
 my $non_digits = $ignore_leading_non ? '\D*' : '';
 my $finder = qr/^($non_digits)(\d+)\b/;
