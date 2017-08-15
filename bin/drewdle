@@ -9,11 +9,11 @@
 # - run `cat`, so he can type away (typing `exit` anywhere on a line will exit)
 # - reset the keyboard
 
-# Modify the external keyboard's multiple X11 inputs to do the following:
+# List the external keyboard's multiple X11 inputs and how to modify them:
 # - disable the TrackPoint entirely
 # - disable "spcial" keys: volume controls, ThinkVantage (power) button
 # - modify the layout so the only modifier key is "Shift" (no Ctrl, Alt, etc.)
-modify_inputs() {
+identify_inputs() {
   xinput --list --long |
   awk '
   function disable(id) { print "disable", id }
@@ -40,8 +40,20 @@ modify_inputs() {
   }'
 }
 
+bugfix() {
+  # workaround for https://bugs.freedesktop.org/show_bug.cgi?id=91571
+  # hit a key on a device other than the one just mapped to trigger the mapping
+  xdotool key Ctrl
+}
+
+modify_inputs() {
+  identify_inputs
+  echo bugfix
+}
+
 reset_inputs() {
-  modify_inputs | awk '{$1="enable"} 1'
+  identify_inputs | awk '{$1="enable"} 1'
+  echo bugfix
   echo keyboard
 }
 
