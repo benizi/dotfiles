@@ -5,8 +5,10 @@
 #
 # `drewdle` does the following:
 # - set up the keyboard
+# - bump the font size up
 # - clear the screen
 # - run `cat`, so he can type away (typing `exit` anywhere on a line will exit)
+# - reset the font size
 # - reset the keyboard
 
 # List the external keyboard's multiple X11 inputs and how to modify them:
@@ -65,6 +67,17 @@ disable() {
   xinput disable "$@"
 }
 
+# send rxvt-unicode extension code to set the font size to be huge
+font() {
+  case $1 in
+    (big) set -- size=28 ;;
+    (*) set -- ;;
+  esac
+  printf '\e]777'
+  printf ';%s' font-switch reset "$@"
+  printf '\a'
+}
+
 generate_layout() {
   keyboard --print |
   awk '
@@ -107,8 +120,10 @@ cat_exit() {
 
 pad() {
   modify_inputs
+  echo font big
   echo clear
   echo cat_exit
+  echo font reset
   reset_inputs
 }
 
