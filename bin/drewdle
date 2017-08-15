@@ -80,29 +80,7 @@ font() {
 
 generate_layout() {
   keyboard --print |
-  awk '
-  # Capture "interpret" groups, ending with "};"
-  $1 == "interpret" { ingroup = 1 }
-  { lines[++n] = $0 }
-  { isgroup = ingroup }
-  NF == 1 && $1 == "};" { ingroup = 0 }
-  ingroup { next }
-
-  { skip = "" }
-  isgroup && lines[1] ~ /interpret.*_[LR][+]/ {
-    skip = "interpret non-shift"
-  }
-  $1 == "modifier_map" && $2 != "Shift" {
-    skip = "non-shift modifier_map"
-  }
-  { # lines are ready for printing
-    if (skip) print "// START SKIP " skip
-    for (i=1; i<=n; i++) {
-      print (skip ? "//" : "") lines[i]
-    }
-    if (skip) print "// END SKIP"
-    n = 0
-  }'
+  awk '$1 != "modifier_map" || $2 == "Shift"'
 }
 
 nomods() {
