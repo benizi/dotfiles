@@ -145,9 +145,6 @@ bt-headphones() {
     else state='--' toggle=connect
     fi
     printf '^ca(1,echo %s %s | bluetoothctl)%s^ca()' $toggle $btaddr $state
-    if $connected
-    then printf '^ca(1,sound-check)??^ca()'
-    fi
   done
 }
 
@@ -178,7 +175,13 @@ add-bluetooth() {
   fi
   printf '%s' $btstatus
 }
-funcs=( add-bluetooth $funcs )
+
+add-soundcheck() {
+  # TODO: better text/icon than two question marks (made sense w/ bluetooth)
+  printf '^ca(1,sound-check)??^ca()'
+}
+
+funcs=( add-bluetooth add-soundcheck $funcs )
 
 minimal-date() {
   print -nP '%D{%Y-%m-%d %H:%M:%S}'
