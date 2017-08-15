@@ -81,6 +81,7 @@ nomods() {
 }
 
 run_actions() {
+  tee /dev/tty |
   while read action id
   do $action $id
   done
@@ -94,8 +95,8 @@ do
   arg=$1
   shift
   case $arg in
-    (stdin) generator=cat ;;
-    (stdout) runner=cat ;;
+    (i|stdin|-) generator=cat ;;
+    (o|stdout|-) runner=cat ;;
     (reset|enable) generator=reset_inputs ;;
     (*) generator=$arg ; break ;;
   esac
