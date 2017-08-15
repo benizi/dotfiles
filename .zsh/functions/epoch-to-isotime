@@ -1,1 +1,0 @@
-perl -MPOSIX=strftime -lpwe 's.^(\d+)(?=\s|$).strftime "%Y-%m-%d\@%H:%M:%S%z", localtime $1.e'
