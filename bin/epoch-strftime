@@ -1,0 +1,19 @@
+#!/usr/bin/env perl
+use 5.016;
+use warnings;
+use POSIX 'strftime';
+use Getopt::Long qw/:config pass_through/;
+GetOptions(
+  'f|format=s' => \(my $format = '%F@%T'),
+  'ignore|non|skip!' => \(my $ignore_leading_non = 1),
+  'UTC|GMT|Z|zulu' => \(my $utc = 0),
+) or die 'options';
+
+my $non_digits = $ignore_leading_non ? '\D*' : '';
+my $finder = qr/^($non_digits)(\d+)\b/;
+my $time = $utc ? \&CORE::gmtime : \&CORE::localtime;
+
+while (<>) {
+  s/$finder/$1.strftime $format, $time->($2)/e;
+  print;
+}
