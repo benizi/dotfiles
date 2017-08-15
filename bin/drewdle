@@ -76,8 +76,11 @@ generate_layout() {
 }
 
 nomods() {
-  generate_layout |
-  xkbcomp -i $1 -w 0 - "${destination:-"$DISPLAY"}"
+  local dev=$1
+  set -- xkbcomp
+  ${all:-false} || set -- "$@" -i "$dev"
+  set -- "$@" -w 0 - "${destination:-"$DISPLAY"}"
+  generate_layout | "$@"
 }
 
 run_actions() {
