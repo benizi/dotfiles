@@ -1,0 +1,104 @@
+#!/bin/sh
+#
+# Simple program to set up my USB keyboard so my son can play with my computer
+# without being able to cause any trouble.
+#
+# `drewdle` does the following to my ThinkPad USB keyboard:
+# - disable the TrackPoint entirely
+# - disable "spcial" keys: volume controls, ThinkVantage (power) button
+# - modify the layout so the only modifier key is "Shift" (no Ctrl, Alt, etc.)
+
+modify_inputs() {
+  xinput --list --long |
+  awk '
+  function disable(id) { print "disable", id }
+  function nomods(id) { print "nomods", id }
+  /id=/ {
+    id = $(NF-3)
+    sub(/^id=/,"",id)
+    kind[id] = $(NF-1)
+    if (/ThinkPad USB/) thinkpad[id] = 1
+  }
+  END {
+    for (id in thinkpad) {
+      if (kind[id] == "pointer") {
+        disable(id)
+        continue
+      }
+      cmd = "xinput list-props " id
+      specialbuttons = 0
+      while (cmd | getline p) {
+        if (p ~ /Button/) specialbuttons = 1
+      }
+      if (specialbuttons) disable(id); else nomods(id)
+    }
+  }'
+}
+
+reset_inputs() {
+  modify_inputs | awk '{$1="enable"} 1'
+  echo keyboard
+}
+
+enable() {
+  xinput enable "$@"
+}
+
+disable() {
+  xinput disable "$@"
+}
+
+generate_layout() {
+  keyboard --print |
+  awk '
+  # Capture "interpret" groups, ending with "};"
+  $1 == "interpret" { ingroup = 1 }
+  { lines[++n] = $0 }
+  { isgroup = ingroup }
+  NF == 1 && $1 == "};" { ingroup = 0 }
+  ingroup { next }
+
+  { skip = "" }
+  isgroup && lines[1] ~ /interpret.*_[LR][+]/ {
+    skip = "interpret non-shift"
+  }
+  $1 == "modifier_map" && $2 != "Shift" {
+    skip = "non-shift modifier_map"
+  }
+  { # lines are ready for printing
+    if (skip) print "// START SKIP " skip
+    for (i=1; i<=n; i++) {
+      print (skip ? "//" : "") lines[i]
+    }
+    if (skip) print "// END SKIP"
+    n = 0
+  }'
+}
+
+nomods() {
+  generate_layout |
+  xkbcomp -i $1 -w 0 - "${destination:-"$DISPLAY"}"
+}
+
+run_actions() {
+  while read action id
+  do $action $id
+  done
+}
+
+generator=modify_inputs
+runner=run_actions
+
+while test $# -gt 0
+do
+  arg=$1
+  shift
+  case $arg in
+    (stdin) generator=cat ;;
+    (stdout) runner=cat ;;
+    (reset|enable) generator=reset_inputs ;;
+    (*) generator=$arg ; break ;;
+  esac
+done
+
+$generator "$@" | $runner
