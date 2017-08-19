@@ -27,7 +27,10 @@ key_line=$(
 )
 test -n "$key_line"
 hosts=$(
-  printf '[%s]:'$port'\n' $ngrok $(dig +short $ngrok) |
+  if test $port -ne 22
+  then printf '[%s]:'$port'\n' $ngrok $(dig +short $ngrok)
+  else printf '%s\n' $ngrok $(dig +short $ngrok)
+  fi |
   awk -v RS=@ -v IFS=\\n -v OFS=, '{$1=$1}1'
 )
 sed -n -e ${key_line}p $known_hosts |
