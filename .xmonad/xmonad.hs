@@ -203,6 +203,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((0, xF86XK_AudioPrev), spawn "mpc prev")
     , ((0, xF86XK_AudioMute), spawn "toggle-pulse-mute")
     , ((0, xF86XK_AudioLowerVolume), spawn "pavucontrol")
+    , ((mod4Mask, xK_m), spawn "rofi -show mpc")
 
     ---- brightness
     , ((modm, xK_F5), spawn "brightness min")
