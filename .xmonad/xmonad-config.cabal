@@ -18,9 +18,9 @@ executable xmonad-config
                      , CompatibilityShims
   -- other-extensions:
   build-depends:       containers >=0.5 && <0.6
-                     , xmonad ==0.12
-                     , xmonad-contrib ==0.12
-                     , X11 >=1.6 && <1.7
+                     , xmonad == 0.13
+                     , xmonad-contrib == 0.13
+                     , X11 == 1.8.*
                      , directory
                      , utf8-string
                      , unix

@@ -1,7 +1,9 @@
 resolver: lts-5.5
 packages: [.]
 extra-deps:
-- xmonad-0.12
-- xmonad-contrib-0.12
+- xmonad-0.13
+- xmonad-contrib-0.13
 - X11-xft-0.3.1
 - setlocale-1.0.0.4
+- X11-1.8
+- directory-1.2.7.1
