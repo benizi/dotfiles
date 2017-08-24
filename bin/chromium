@@ -162,6 +162,7 @@ while [ $# -gt 0 ] ; do
     (--rdp|--remote-debug*) _remote_debug=true ;;
     (--no-rdp|--no-remote-debugging-port) _remote_debug=false ;;
     (--incognito) _incognito=true ; _args+=( $arg ) ;;
+    (-*) _args+=( $arg ) ;;
     (*)
       if (( $+_url ))
       then _args+=( $arg )
@@ -249,7 +250,7 @@ if [[ -n "$_url" ]] ; then
       dbg-exec chromium-remote $_url
       exit $?
     fi
-    _args+=( --remote "$_url" )
+    _args+=( "$_url" )
   else
     xargs -0 xmessage -default okay <<MESSAGE
 Tried to open:
