@@ -69,7 +69,7 @@ _javascript=true
 unset _asyncdns
 unset _flash
 _quic=true
-_remote_debug=true
+unset _remote_debug
 unset _debug_port
 _default_debug_port=9222
 _args=()
@@ -231,6 +231,21 @@ then
   json=$pepper_flash_dir/manifest.json
   if [[ -e $json ]]
   then _args+=( --ppapi-flash-version="$(jq -r .version $json)" )
+  fi
+fi
+
+# If `remote-debug` exists in the profile directory, turn on remote debugging
+# If it's of non-zero size, use its contents as the default port number
+if (( ! $+_remote_debug ))
+then
+  _dbg_file=$_profdir/remote-debug
+  if [[ -f $_dbg_file ]]
+  then
+    _remote_debug=true
+    if [[ -s $_dbg_file ]]
+    then _default_debug_port=$(<$_dbg_file)
+    fi
+  else _remote_debug=false
   fi
 fi
 
