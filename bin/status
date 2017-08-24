@@ -177,8 +177,7 @@ add-bluetooth() {
 }
 
 add-soundcheck() {
-  # TODO: better text/icon than two question marks (made sense w/ bluetooth)
-  printf '^ca(1,sound-check)??^ca()'
+  printf '^ca(1,sound-check)^i('${(%):-%x}'.sound.xpm)^ca()'
 }
 
 funcs=( add-bluetooth add-soundcheck $funcs )
