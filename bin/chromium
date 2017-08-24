@@ -261,6 +261,7 @@ MESSAGE
 fi
 if $_remote_debug &&
   lsof -Pni :$_debug_port 2&>/dev/null &&
+  (( $+commands[chromium-remote] )) &&
   (( ! $+_incognito ))
 then
   [[ $_debug_port = 9222 ]] && instance= || instance=-port=$_debug_port
