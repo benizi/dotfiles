@@ -11,7 +11,7 @@ import XMonad.Actions.SwapWorkspaces
 import XMonad.Actions.Warp (warpToScreen)
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.EwmhDesktops
-import XMonad.Hooks.ManageDocks
+import XMonad.Hooks.ManageDocks (avoidStruts, docks)
 import XMonad.Hooks.UrgencyHook
 import XMonad.Layout.Grid
 import qualified XMonad.Layout.Fullscreen as FS
@@ -390,7 +390,7 @@ myLayoutHook = windowNavigation $
 -- To match on the WM_NAME, you can use 'title' in the same way that
 -- 'className' and 'resource' are used below.
 --
-myManageHook = FS.fullscreenManageHook <+> manageDocks <+> composeAll
+myManageHook = FS.fullscreenManageHook <+> composeAll
     [ className =? "MPlayer"        --> doFloat
     , resource  =? "desktop_window" --> doIgnore
     , resource  =? "kdesktop"       --> doIgnore
@@ -413,7 +413,7 @@ myManageHook = FS.fullscreenManageHook <+> manageDocks <+> composeAll
 -- return (All True) if the default handler is to be run afterwards. To
 -- combine event hooks use mappend or mconcat from Data.Monoid.
 --
-myEventHook = FS.fullscreenEventHook <+> docksEventHook
+myEventHook = FS.fullscreenEventHook
 
 ------------------------------------------------------------------------
 -- Status bars and logging
@@ -619,7 +619,9 @@ main = do
     statusproc <- spawnPipe $ statusBarProc (homeDir ++ "/.xmonad")
     barPid <- spawnPID externalStatusCmd
     let statusKiller = killStatusProcs statusproc barPid
-    E.handle (myShutdownHook statusKiller) $ xmonad $ ewmh
+    E.handle (myShutdownHook statusKiller) $ xmonad
+           $ docks
+           $ ewmh
            $ withRestartHook statusKiller
            $ withUrgencyHook NoUrgencyHook
            $ def {
