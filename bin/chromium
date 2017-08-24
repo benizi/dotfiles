@@ -61,7 +61,7 @@ function warn () { echo "\e[31m$*\e[0m" >&2 }
 function die () { warn $* ; exit 1 }
 _dry=false
 _plugins=true
-unset _url _ua _scratch
+unset _url _ua _scratch _incognito
 _logging=false
 _userscripts=true
 _ipv6=true
@@ -161,6 +161,7 @@ while [ $# -gt 0 ] ; do
     (--rdp=*|--remote-debugging-port=*) _remote_debug=true ; _debug_port=${arg#*=} ;;
     (--rdp|--remote-debug*) _remote_debug=true ;;
     (--no-rdp|--no-remote-debugging-port) _remote_debug=false ;;
+    (--incognito) _incognito=true ; _args+=( $arg ) ;;
     (*)
       if (( $+_url ))
       then _args+=( $arg )
@@ -257,7 +258,9 @@ MESSAGE
     exit 1
   fi
 fi
-if $_remote_debug && lsof -Pni :$_debug_port 2&>/dev/null
+if $_remote_debug &&
+  lsof -Pni :$_debug_port 2&>/dev/null &&
+  (( ! $+_incognito ))
 then
   [[ $_debug_port = 9222 ]] && instance= || instance=-port=$_debug_port
   dbg-exec chromium-remote $instance ''
