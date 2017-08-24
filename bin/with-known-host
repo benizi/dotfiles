@@ -1,0 +1,46 @@
+#!/bin/sh
+set -e
+test "$_UNSHARED" = 1 ||
+  exec sudo unshare -m su --session-command 'env _UNSHARED=1 "'"$0"'" "$@"' - $USER -- -- "$(pwd)" "$@"
+
+test "$_UNSHARED" = 1
+cd "$1"
+shift
+
+bound=/mnt/over
+tgt=$HOME/.ssh
+over=$HOME/overlay/$$
+lowerdir=$bound$tgt
+
+sudo mount --bind / "$bound"
+mkdir -p "$over"/{u,w}
+sudo mount -t overlay overlay \
+  -o "lowerdir=$lowerdir,upperdir=$over/u,workdir=$over/w" "$tgt"
+cat ~/.ssh/known_hosts > ~/.ssh/known_hosts.$$.orig
+
+while test $# -gt 0
+do
+  case "$1" in
+    (*=*)
+      new=${1%%=*}
+      orig=${1#*=}
+      host=${new%:*}
+      port=${new#*:}
+      ip=$(dig +short $host)
+
+      if test "$port" = 22
+      then linehost="$host,$ip"
+      else linehost="[$host]:$port,[$ip]:$port"
+      fi
+      ssh-keygen -F "$orig" |
+      awk -v host="$linehost" '/^#/ { next } { $1 = host } 1' |
+      tee -a ~/.ssh/known_hosts
+      ;;
+    (*) break ;;
+  esac
+  shift
+done
+
+test $# -gt 0 || set -- ${SHELL:-/bin/sh}
+stty sane
+"$@"
