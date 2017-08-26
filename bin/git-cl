@@ -18,13 +18,15 @@ die "Usage: git $0 repo [dest]\n" unless @ARGV;
 my ($repo, $dest) = @ARGV;
 my $repochar = qr/[\w-]/;
 my $userchar = qr/(?:[.]|$repochar)/;
+my $upstream = '';
 if ($repo =~ /\A(?:[a-z]+:)?($repochar+\/$userchar+)\Z/i
     or $repo =~ m{^[a-z]+://}i
-    or $repo =~ m{\Agh:($repochar+)\Z}i) {
+    or $repo =~ m{\Agh:($repochar+)\Z}i
+    or $repo =~ m{^gist:\w+$}) {
   $repo =~ s/^(?![a-z]+:)/gh:/;
   $repo =~ s{^(gh:)($repochar+)$}{$1$2/$2};
-  my $upstream = $repo =~ /^gh:([^\/]+)/ ? $1 : '';
-  clone grep($upstream, -o => $upstream), $repo, grep($_, $dest);
+  $upstream = $1 if $repo =~ /^gh:([^\/]+)/;
 } else {
   die "Couldn't parse short repo name\n";
 }
+clone grep($upstream, -o => $upstream), $repo, grep($_, $dest);
