@@ -4,10 +4,15 @@ zmodload -F zsh/datetime +p:EPOCHSECONDS
 
 typeset -a info funcs
 
+replyf() {
+  printf -v reply "$@"
+}
+
 add-desktop() {
   local prop=_NET_CURRENT_DESKTOP
   xprop -root -notype -f $prop 32c '\n$0\n' $prop |
-  awk 'NR==2 { print "<" ($0+1)%10 ">" }'
+  awk 'NR==2 { print "<" ($0+1)%10 ">" }' |
+  read -r -A
 }
 funcs+=( add-desktop )
 
@@ -16,7 +21,7 @@ add-term() {
   for term in term urxvt uxterm xterm
   do
     (( $+commands[$term] )) || continue
-    printf '^ca(1,%s)term^ca()' $term
+    replyf '^ca(1,%s)term^ca()' $term
     break
   done
 }
@@ -47,14 +52,14 @@ add-bat() {
     else bg=009900
     fi
   fi
-  printf '^fg(#ffffff)^bg(#%s)%s %s^fg()^bg()' $bg $plugged $levels
+  replyf '^fg(#ffffff)^bg(#%s)%s %s^fg()^bg()' $bg $plugged $levels
 }
 funcs+=( add-bat )
 
 add-date() {
-  print -nP '%D{%F %T}'
+  print -v reply -nP '%D{%F %T}'
   [[ -f ~/tz ]] || return 0
-  (export TZ=$(<~/tz) ; print -nP '(%D{%H:%M %Z})')
+  reply+="$(export TZ=$(<~/tz) ; print -nP '(%D{%H:%M %Z})')"
 }
 funcs+=( add-date )
 
@@ -62,12 +67,13 @@ add-essid() {
   if (( ! ( EPOCHSECONDS % 10 ) )) || (( ! $+essid ))
   then essid="$(essid)"
   fi
-  printf '%s' $essid
+  reply=( $essid )
 }
 funcs+=( add-essid )
 
 add-mem() {
-  mem dzen
+  mem dzen |
+  read -r -A
 }
 funcs+=( add-mem )
 
@@ -110,7 +116,7 @@ toggle-middle() {
       togglemiddle+='^fg()^bg()^ca()'
     done
   fi
-  printf '%s' $togglemiddle
+  reply=( $togglemiddle )
 }
 funcs=( toggle-middle $funcs )
 
@@ -119,7 +125,7 @@ reset-keyboard() {
   then x-kbdesc +benizi
   else false
   fi && return
-  printf '%s' '^ca(1,k)^i('${(%):-%x}'.kbd.xpm)^ca()'
+  reply=( '^ca(1,k)^i('${(%):-%x}'.kbd.xpm)^ca()' )
 }
 funcs=( reset-keyboard $funcs )
 
@@ -133,7 +139,7 @@ lid-status() {
     fi
     lidstatus+='.xpm)^ca()'
   fi
-  printf '%s' $lidstatus
+  reply=( $lidstatus )
 }
 funcs=( lid-status $funcs )
 
@@ -146,7 +152,7 @@ bt-headphones() {
     then state='++' toggle=disconnect
     else state='--' toggle=connect
     fi
-    printf '^ca(1,echo %s %s | bluetoothctl)%s^ca()' $toggle $btaddr $state
+    replyf '^ca(1,echo %s %s | bluetoothctl)%s^ca()' $toggle $btaddr $state
   done
 }
 
@@ -175,11 +181,11 @@ add-bluetooth() {
     fi
     btstatus+=$btconnstatus
   fi
-  printf '%s' $btstatus
+  reply=( $btstatus )
 }
 
 add-soundcheck() {
-  printf '^ca(1,sound-check)^i('${(%):-%x}'.sound.xpm)^ca()'
+  reply=( '^ca(1,sound-check)^i('${(%):-%x}'.sound.xpm)^ca()' )
 }
 
 funcs=( add-bluetooth add-soundcheck $funcs )
@@ -192,7 +198,9 @@ setup() {
   info=()
   for fn in $funcs
   do
-    info+=( "$($fn)" )
+    reply=()
+    $fn
+    (( $#reply )) && info+=( "${reply[@]}" )
   done
 }
 
