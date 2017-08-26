@@ -1,0 +1,48 @@
+#!/usr/bin/env ruby
+#
+# Parse a URL for the following:
+# 1. Git config `url.{{substitution}}.insteadOf` options
+# 2. SSH config alias/expansion
+
+def insteadofs
+  git = %w[git config -z --get-regexp ^url\..*\.insteadof$]
+  IO.popen(git, 'rb').read.split("\0").map do |e|
+    e.split("\n", 2)
+  end.map do |(replacement,prefix)|
+    [prefix, replacement.sub(/\Aurl\./,'').sub(/\.insteadof\Z/,'')]
+  end.sort_by { |(prefix,_)| -prefix.size }
+end
+
+def subinsteadofs(url)
+  sub = insteadofs.find { |(pre,_)| url.start_with?(pre) } || ['', '']
+  prefix, rep = *sub
+  rep + url[prefix.size..-1]
+end
+
+def sshparams(host)
+  ssh = %W[ssh -T -G #{host}]
+  params = {hostname: nil, user: nil, port: nil}
+  IO.popen(ssh).readlines.map do |line|
+    k, v = line.chomp.split(/\s/, 2)
+    s = k.to_sym
+    next unless params.has_key?(s)
+    params[s] = v
+  end
+  params
+end
+
+def fixupssh(url)
+  return url unless m = url.match(%r(^(\w+(?:\.\w+)?):(?!/)))
+  _, host, *_ = *m
+  params = sshparams(host)
+  return url if params[:hostname] == host
+  ssh = %Q[ssh://#{params[:user]}@#{params[:hostname]}/]
+  port = params[:port] == '22' ? '' : "?port=#{params[:port]}"
+  ssh + url[host.size+1..-1] + port
+end
+
+def input
+  ARGV.empty? ? STDIN.readlines : ARGV
+end
+
+puts input.map { |url| fixupssh(subinsteadofs(url)) }
