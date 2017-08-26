@@ -152,7 +152,7 @@ bt-headphones() {
     then state='++' toggle=disconnect
     else state='--' toggle=connect
     fi
-    replyf '^ca(1,echo %s %s | bluetoothctl)%s^ca()' $toggle $btaddr $state
+    printf '^ca(1,echo %s %s | bluetoothctl)%s^ca()' $toggle $btaddr $state
   done
 }
 
@@ -170,16 +170,8 @@ add-bluetooth() {
     btstatus='^ca(1,sudo btmgmt -i 0 power '"$toggle"')'"$powerstate"'^ca()'
     btstatus+='^ca(1,in-term bluetoothctl)bt^ca()'
     if (( powered ))
-    then
-      (( $+btconncheck )) || btconncheck=0
-      if (( ! btconncheck ))
-      then
-        btconnstatus="$(bt-headphones)"
-        btconncheck=4
-      else (( btconncheck-- )) || :
-      fi
+    then btstatus+="$(bt-headphones)"
     fi
-    btstatus+=$btconnstatus
   fi
   reply=( $btstatus )
 }
