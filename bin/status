@@ -1,5 +1,7 @@
 #!/bin/zsh
 
+zmodload -F zsh/datetime +p:EPOCHSECONDS
+
 typeset -a info funcs
 
 add-desktop() {
