@@ -1,32 +1,50 @@
 #!/usr/bin/env perl
+use 5.016;
+use warnings;
+use URI;
+use Getopt::Long;
 
-my $dry = 0;
+sub usage {
+  die <<USAGE;
+Usage: git $0 [options] repo [-- other args to git-clone]
 
-sub cmd { $dry || exec { $_[0] } @_; print "@_\n"; exit }
-sub clone { cmd git => clone => @_ }
-
-sub is_rev {
-  system { 'git' } git => 'rev-list' => '--no-walk'
+Options:
+  --dry   Dry run
+USAGE
 }
 
-@ARGV = grep { !(
-  /--dry/ ? ($dry = 1) :
-0) } @ARGV;
+GetOptions(
+  'dry' => \(my $dry = 0),
+) or usage;
 
-die "Usage: git $0 repo [dest]\n" unless @ARGV;
+my ($repo) = @ARGV;
+chomp(my $resolved = qx/git parse-url $repo/);
 
-my ($repo, $dest) = @ARGV;
-my $repochar = qr/[\w-]/;
-my $userchar = qr/(?:[.]|$repochar)/;
-my $upstream = '';
-if ($repo =~ /\A(?:[a-z]+:)?($repochar+\/$userchar+)\Z/i
-    or $repo =~ m{^[a-z]+://}i
-    or $repo =~ m{\Agh:($repochar+)\Z}i
-    or $repo =~ m{^gist:\w+$}) {
-  $repo =~ s/^(?![a-z]+:)/gh:/;
-  $repo =~ s{^(gh:)($repochar+)$}{$1$2/$2};
-  $upstream = $1 if $repo =~ /^gh:([^\/]+)/;
-} else {
-  die "Couldn't parse short repo name\n";
+# Repo must resolve to a recognizable URL
+my $uri = URI->new($resolved);
+unless ($uri->has_recognized_scheme) {
+  my %seen;
+  my $msg = join '->', map "{$_}", grep !$seen{$_}++, $repo, $uri;
+  die "Couldn't resolve $msg.\n";
 }
-clone grep($upstream, -o => $upstream), $repo, grep($_, $dest);
+(my $path = $uri->path) =~ s{^/}{};
+
+# Upstream must be identifier-like
+my $valid_upstream = qr/^[A-Za-z][\w\-]*$/;
+
+# Use the first path component (without `.git`) if there are multiple segments
+my $upstream = $path =~ m{^([^/]+)/} ? $1 : '';
+$upstream =~ s/\.git$//;
+
+# Otherwise, use the "scheme-like" portion of the short repo name
+unless ($upstream =~ $valid_upstream) {
+  $upstream = URI->new($repo)->scheme if $repo ne $uri;
+}
+
+# Add upstream arg if one was found
+unshift @ARGV, -o => $upstream if $upstream;
+
+# Construct the `git-clone` command, print it, and run it (unless `--dry`)
+my @clone = (git => clone => @ARGV);
+say "@clone";
+exec { $clone[0] } @clone unless $dry;
