@@ -9,6 +9,7 @@ import (
   "net"
   "net/http"
   "os"
+  "reflect"
   "regexp"
   "sort"
   "strings"
@@ -95,6 +96,21 @@ type foundAddr struct {
   original int
   Name string
   Wireless bool
+}
+
+func (addr foundAddr) MarshalJSON() ([]byte, error) {
+  ret := map[string]interface{}{}
+  val := reflect.ValueOf(addr)
+  t := val.Type()
+  for i := 0; i < t.NumField(); i++ {
+    field := t.Field(i)
+    if field.PkgPath != "" {
+      continue
+    }
+    key := strings.ToLower(field.Name)
+    ret[key] = val.Field(i).Interface()
+  }
+  return json.Marshal(ret)
 }
 
 var wirelessCache = make(map[string]bool)
