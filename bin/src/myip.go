@@ -4,6 +4,7 @@
 package main
 
 import (
+  "encoding/json"
   "flag"
   "fmt"
   "io/ioutil"
@@ -299,7 +300,21 @@ func main() {
     format += "\n"
   }
 
-  tmpl := template.Must(template.New("line").Parse(format))
+  toJson := func(v interface{}) string {
+    b, e := json.Marshal(v)
+    if e != nil {
+      return e.Error()
+    }
+    return string(b)
+  }
+
+  tmpl, err := template.New("line").Funcs(template.FuncMap{
+    "json": toJson,
+  }).Parse(format)
+  if err != nil {
+    log.Fatal("Error in template: ", err)
+  }
+
   for _, addr := range found {
     err := tmpl.Execute(os.Stdout, addr)
     if err != nil {
