@@ -191,7 +191,7 @@ func main() {
   external := false
   iface := false
   excludeDocker := true
-  docker := "172.17.0.0/16"
+  docker := "172.16.0.0/12"
   printName := false
   printAll := false
   format := ""
