@@ -1,6 +1,3 @@
-// Find local, non-loopback IP address
-//
-// Skips docker bridge address and IPv6 addresses, unless it can't find another
 package main
 
 import (
@@ -225,6 +222,10 @@ func main() {
   findAll := false
   printName := false
   skipDocker := false
+  skipPrivate := false
+  keepLoop := false
+  keepRejected := false
+  keepAll := false
   format := ""
   raw := false
   asJson := false
@@ -239,6 +240,13 @@ func main() {
   flag.BoolVar(&printName, "n", printName, "Print interface name (alias)")
   flag.BoolVar(&findAll, "all", findAll, "Keep going after first match")
   flag.BoolVar(&findAll, "a", findAll, "Keep going after first match (alias)")
+  flag.BoolVar(&skipPrivate, "nopriv", skipPrivate, "Omit RFC1918 addresses")
+  flag.BoolVar(&keepLoop, "l", keepLoop,
+    "Print loopback addresses (don't omit, just penalize)")
+  flag.BoolVar(&keepRejected, "rejected", keepRejected,
+    "Print rejected addresses (don't omit, just penalize)")
+  flag.BoolVar(&keepAll, "d", keepAll,
+    "Print all addresses (overrides all but -4/-6; uses others to sort)")
   flag.StringVar(&format, "fmt", format, "Output format")
   flag.BoolVar(&raw, "raw", raw, "Accept format string as-is (no newline)")
   flag.BoolVar(&asJson, "json", asJson,
@@ -303,15 +311,35 @@ func main() {
   for _, addr := range namedAddrs {
     ip := addr.ip
     v6 := ip.To4() == nil
+    isPreferred := preferNets.contains(ip)
+    isDocker := dockerNets.contains(ip)
+    isPrivate := rfc1918.contains(ip)
+    isRejected := rejectNets.contains(ip)
+    isLoop := ip.IsLoopback()
+
     if xor(print4, print6) && xor(print6, v6) {
       continue
     }
+    if !keepAll {
+      if isPrivate && skipPrivate {
+        continue
+      }
+      if isDocker && skipDocker {
+        continue
+      }
+      if isRejected && !keepRejected {
+        continue
+      }
+      if isLoop && !keepLoop {
+        continue
+      }
+    }
     found = append(found, foundAddr{
       IP: ip,
-      preferred: preferNets.contains(ip),
-      rejected: rejectNets.contains(ip),
-      isRfc1918: rfc1918.contains(ip),
-      Loopback: ip.IsLoopback(),
+      preferred: isPreferred,
+      rejected: isRejected,
+      isRfc1918: isPrivate,
+      Loopback: isLoop,
       V6: v6,
       original: len(found),
       Name: addr.name,
