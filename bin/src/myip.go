@@ -192,8 +192,8 @@ func main() {
   iface := false
   excludeDocker := true
   docker := "172.16.0.0/12"
+  findAll := false
   printName := false
-  printAll := false
   format := ""
   raw := false
   asJson := false
@@ -206,8 +206,8 @@ func main() {
   flag.StringVar(&docker, "dockernet", docker, "Docker network to exclude")
   flag.BoolVar(&printName, "name", printName, "Print interface name")
   flag.BoolVar(&printName, "n", printName, "Print interface name (alias)")
-  flag.BoolVar(&printAll, "all", printAll, "Print all addresses")
-  flag.BoolVar(&printAll, "a", printAll, "Print all addresses (alias)")
+  flag.BoolVar(&findAll, "all", findAll, "Keep going after first match")
+  flag.BoolVar(&findAll, "a", findAll, "Keep going after first match (alias)")
   flag.StringVar(&format, "fmt", format, "Output format")
   flag.BoolVar(&raw, "raw", raw, "Accept format string as-is (no newline)")
   flag.BoolVar(&asJson, "json", asJson,
@@ -327,7 +327,7 @@ func main() {
     if err != nil {
       log.Fatal(err)
     }
-    if !printAll {
+    if !findAll {
       break
     }
   }
