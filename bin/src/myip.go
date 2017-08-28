@@ -129,23 +129,23 @@ func (v ByAttributes) Swap(i, j int) { v.addrs[i], v.addrs[j] = v.addrs[j], v.ad
 func (v ByAttributes) Less(i, j int) bool {
   a := v.addrs[i]
   b := v.addrs[j]
-  if xor(a.Wireless, b.Wireless) {
-    return a.Wireless
-  }
-  if xor(a.V6, b.V6) {
-    return !a.V6
-  }
-  if xor(a.preferred, b.preferred) {
-    return a.preferred
-  }
-  if xor(a.rejected, b.rejected) {
+  if a.rejected != b.rejected {
     return !a.rejected
   }
-  if xor(a.Loopback, b.Loopback) {
+  if a.preferred != b.preferred {
+    return a.preferred
+  }
+  if a.Loopback != b.Loopback {
     return !a.Loopback
   }
-  if xor(a.isRfc1918, b.isRfc1918) {
+  if a.V6 != b.V6 {
+    return !a.V6
+  }
+  if a.isRfc1918 != b.isRfc1918 {
     return !a.isRfc1918
+  }
+  if a.Wireless != b.Wireless {
+    return a.Wireless
   }
   if a.original != b.original {
     return a.original < b.original
