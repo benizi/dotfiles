@@ -288,8 +288,8 @@ func main() {
     "Print rejected addresses (don't omit, just penalize)")
   flag.BoolVar(&keepAll, "d", keepAll,
     "Print all addresses (overrides all but -4/-6; uses others to sort)")
-  flag.StringVar(&format, "fmt", format, "Output format")
-  flag.BoolVar(&raw, "raw", raw, "Accept format string as-is (no newline)")
+  flag.StringVar(&format, "fmt", format, "Output template")
+  flag.BoolVar(&raw, "raw", raw, "Accept template string as-is (no newline)")
   flag.BoolVar(&asJson, "json", asJson,
     "Output as JSON objects (same as -fmt='{{json .}}')")
   flag.BoolVar(&asJson, "j", asJson, "Output as JSON objects (alias)")
