@@ -103,6 +103,8 @@ type foundAddr struct {
   Wireless bool
 }
 
+var verbose = false
+
 func (addr foundAddr) MarshalJSON() ([]byte, error) {
   ret := map[string]interface{}{}
   // TODO: workaround for unexported fields
@@ -110,6 +112,9 @@ func (addr foundAddr) MarshalJSON() ([]byte, error) {
   t := reflect.TypeOf(addr)
   for i := 0; i < val.NumField(); i++ {
     field := t.Field(i)
+    if field.PkgPath != "" && !verbose {
+      continue
+    }
     // TODO: workaround for unexported fields
     fval := val.Field(i)
     ftype := fval.Type()
@@ -293,6 +298,8 @@ func main() {
   flag.BoolVar(&asJson, "json", asJson,
     "Output as JSON objects (same as -fmt='{{json .}}')")
   flag.BoolVar(&asJson, "j", asJson, "Output as JSON objects (alias)")
+  flag.BoolVar(&verbose, "v", verbose,
+    "Verbose output (currently: output all fields in JSON)")
   flag.Parse()
 
   if !external && !iface {
