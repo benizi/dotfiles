@@ -12,6 +12,7 @@ import (
   "net"
   "net/http"
   "os"
+  "regexp"
   "sort"
   "strings"
   "text/template"
@@ -153,8 +154,26 @@ func (v ByAttributes) Less(i, j int) bool {
   return a.IP.String() < b.IP.String()
 }
 
-func anyContains(networks []net.IPNet, ip net.IP) bool {
-  for _, network := range networks {
+type netfilter struct {
+  label    string
+  networks []net.IPNet
+}
+
+func newNetfilter(label string) *netfilter {
+  return &netfilter{label, nil}
+}
+
+func (f *netfilter) addCIDR(cidr string) error {
+  _, network, err := net.ParseCIDR(expandCIDR(cidr))
+  if err != nil {
+    return fmt.Errorf("Failed to parse %s network: %s", f.label, cidr)
+  }
+  f.networks = append(f.networks, *network)
+  return nil
+}
+
+func (f *netfilter) contains(ip net.IP) bool {
+  for _, network := range f.networks {
     if network.Contains(ip) {
       return true
     }
@@ -162,27 +181,39 @@ func anyContains(networks []net.IPNet, ip net.IP) bool {
   return false
 }
 
-func parseNetwork(cidr string) (*net.IPNet, error) {
-  _, network, err := net.ParseCIDR(cidr)
-  if err == nil {
-    return network, nil
-  }
+var (
+  partialCIDR = regexp.MustCompile(`^(\d+(?:\.\d+){0,2})(?:/(\d+))?$`)
+)
 
-  // Try parsing it as an octet or octets
-  // e.g. "10" => "10.0.0.0/8", "192.168" => "192.168.0.0/16"
-  dots := strings.Count(cidr, ".")
-  needed := 3 - dots
-  if needed < 0 {
-    return nil, err
+// expandCIDR takes a partial CIDR string and expands it to the correct IPv4
+// length.
+//
+// Examples:
+//   expandCIDR("10") == "10.0.0.0/8"
+//   expandCIDR("192.168") == "192.168.0.0/16"
+//   expandCIDR("172.16/12") == "172.16.0.0/12"
+//
+func expandCIDR(cidr string) string {
+  parts := partialCIDR.FindStringSubmatch(cidr)
+  if len(parts) == 0 {
+    return cidr
   }
-  cidr = fmt.Sprintf("%s%s/%d", cidr, strings.Repeat(".0", needed), 32 - 8 * needed)
-  _, network, e := net.ParseCIDR(cidr)
-  if e == nil {
-    return network, nil
+  octets := strings.Split(parts[1], ".")
+  for len(octets) < 4 {
+    octets = append(octets, "0")
   }
-
-  // return the original error
-  return nil, err
+  class := parts[2]
+  if class == "" {
+    n := 32
+    for i := 3; i >= 0; i-- {
+      if octets[i] != "0" {
+        break
+      }
+      n -= 8
+    }
+    class = fmt.Sprintf("%d", n)
+  }
+  return fmt.Sprintf("%s/%s", strings.Join(octets, "."), class)
 }
 
 func main() {
@@ -219,44 +250,44 @@ func main() {
     iface = true
   }
 
-  var acceptable []net.IPNet
-  var rejectable []net.IPNet
-  rfc1918 := []net.IPNet{}
+  preferNets := newNetfilter("preferred")
+  rfc1918 := newNetfilter("RFC 1918")
+  dockerNets := newNetfilter("Docker")
+  rejectNets := newNetfilter("rejected")
+
+  var parseErrors []error
+
+  addNet := func(filter *netfilter, cidr string) {
+    err := filter.addCIDR(cidr)
+    if err != nil {
+      parseErrors = append(parseErrors, err)
+    }
+  }
 
   for _, cidr := range []string{"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"} {
-    _, parsed, err := net.ParseCIDR(cidr)
-    if err != nil {
-      log.Fatalln("Failed to parse RFC 1918 network", cidr)
-    }
-    rfc1918 = append(rfc1918, *parsed)
+    addNet(rfc1918, cidr)
   }
 
   if skipDocker {
-    _, dockerNet, err := net.ParseCIDR(docker)
-    if err != nil {
-      log.Fatalln("Failed to parse Docker network", docker)
-    }
-
-    rejectable = append(rejectable, *dockerNet)
+    addNet(dockerNets, docker)
   }
 
   for _, arg := range flag.Args() {
-    if len(arg) == 0 {
+    if arg == "" {
       continue
     }
-
-    addTo := &acceptable
     if arg[0] == '!' || arg[0] == 'x' {
-      addTo = &rejectable
-      arg = arg[1:len(arg)]
+      addNet(rejectNets, arg[1:len(arg)])
+    } else {
+      addNet(preferNets, arg)
     }
+  }
 
-    network, err := parseNetwork(arg)
-    if err != nil {
-      log.Fatal(err)
+  if len(parseErrors) > 0 {
+    for _, e := range parseErrors {
+      log.Println(e)
     }
-
-    *addTo = append(*addTo, *network)
+    log.Fatalln("Exiting: couldn't parse all network arguments.")
   }
 
   found := make([]foundAddr, 0)
@@ -277,9 +308,9 @@ func main() {
     }
     found = append(found, foundAddr{
       IP: ip,
-      preferred: anyContains(acceptable, ip),
-      rejected: anyContains(rejectable, ip),
-      isRfc1918: anyContains(rfc1918, ip),
+      preferred: preferNets.contains(ip),
+      rejected: rejectNets.contains(ip),
+      isRfc1918: rfc1918.contains(ip),
       Loopback: ip.IsLoopback(),
       V6: v6,
       original: len(found),
