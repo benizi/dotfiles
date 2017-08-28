@@ -190,10 +190,10 @@ func main() {
   print6 := false
   external := false
   iface := false
-  excludeDocker := true
   docker := "172.16.0.0/12"
   findAll := false
   printName := false
+  skipDocker := false
   format := ""
   raw := false
   asJson := false
@@ -202,7 +202,7 @@ func main() {
   flag.BoolVar(&print6, "6", print6, "Print IPv6")
   flag.BoolVar(&external, "x", external, "Fetch external address")
   flag.BoolVar(&iface, "i", iface, "Fetch addresses per interface")
-  flag.BoolVar(&excludeDocker, "nodocker", excludeDocker, "Exclude Docker interface")
+  flag.BoolVar(&skipDocker, "nodocker", skipDocker, "Omit Docker networks")
   flag.StringVar(&docker, "dockernet", docker, "Docker network to exclude")
   flag.BoolVar(&printName, "name", printName, "Print interface name")
   flag.BoolVar(&printName, "n", printName, "Print interface name (alias)")
@@ -231,7 +231,7 @@ func main() {
     rfc1918 = append(rfc1918, *parsed)
   }
 
-  if excludeDocker {
+  if skipDocker {
     _, dockerNet, err := net.ParseCIDR(docker)
     if err != nil {
       log.Fatalln("Failed to parse Docker network", docker)
