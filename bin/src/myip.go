@@ -196,6 +196,7 @@ func main() {
   printAll := false
   format := ""
   raw := false
+  asJson := false
 
   flag.BoolVar(&print4, "4", print4, "Print IPv4")
   flag.BoolVar(&print6, "6", print6, "Print IPv6")
@@ -209,6 +210,9 @@ func main() {
   flag.BoolVar(&printAll, "a", printAll, "Print all addresses (alias)")
   flag.StringVar(&format, "fmt", format, "Output format")
   flag.BoolVar(&raw, "raw", raw, "Accept format string as-is (no newline)")
+  flag.BoolVar(&asJson, "json", asJson,
+    "Output as JSON objects (same as -fmt='{{json .}}')")
+  flag.BoolVar(&asJson, "j", asJson, "Output as JSON objects (alias)")
   flag.Parse()
 
   if !external && !iface {
@@ -290,6 +294,9 @@ func main() {
 
   sort.Sort(ByAttributes{found})
 
+  if format == "" && asJson {
+    format = "{{json .}}"
+  }
   if format == "" {
     if printName {
       format = "{{.Name}}\t"
