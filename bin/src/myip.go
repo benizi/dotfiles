@@ -1,6 +1,7 @@
 package main
 
 import (
+  "bytes"
   "encoding/json"
   "flag"
   "fmt"
@@ -14,6 +15,10 @@ import (
   "sort"
   "strings"
   "text/template"
+  "unicode"
+
+  // TODO: Dammit, Golang, I just want to reflect unexported fields.
+  "unsafe"
 )
 
 const (
@@ -100,17 +105,37 @@ type foundAddr struct {
 
 func (addr foundAddr) MarshalJSON() ([]byte, error) {
   ret := map[string]interface{}{}
-  val := reflect.ValueOf(addr)
-  t := val.Type()
-  for i := 0; i < t.NumField(); i++ {
+  // TODO: workaround for unexported fields
+  val := reflect.ValueOf(&addr).Elem()
+  t := reflect.TypeOf(addr)
+  for i := 0; i < val.NumField(); i++ {
     field := t.Field(i)
-    if field.PkgPath != "" {
-      continue
-    }
-    key := strings.ToLower(field.Name)
-    ret[key] = val.Field(i).Interface()
+    // TODO: workaround for unexported fields
+    fval := val.Field(i)
+    ftype := fval.Type()
+    obj := reflect.NewAt(ftype, unsafe.Pointer(fval.UnsafeAddr())).Elem()
+    key := snakeCase(field.Name)
+    ret[key] = obj.Interface()
   }
   return json.Marshal(ret)
+}
+
+func snakeCase(s string) string {
+  var b bytes.Buffer
+  justUp := true
+  for _, r := range s {
+    upper := unicode.IsUpper(r)
+    if upper {
+      if !justUp {
+        b.WriteRune('_')
+      }
+      b.WriteRune(unicode.ToLower(r))
+    } else {
+      b.WriteRune(r)
+    }
+    justUp = upper
+  }
+  return b.String()
 }
 
 var wirelessCache = make(map[string]bool)
