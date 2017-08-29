@@ -1,0 +1,14 @@
+#compdef _version
+
+case $#words in
+  (<4->)
+    _message 'No more arguments expected'
+    return 1
+    ;;
+  (3)
+    words[2]=( "${words[2]}" use )
+    (( CURRENT < 3 )) || (( ++CURRENT ))
+    ;;
+esac
+
+_verman
