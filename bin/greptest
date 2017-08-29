@@ -1,0 +1,16 @@
+#!/usr/bin/env perl
+use 5.016;
+use warnings;
+use utf8;
+for (@ARGV) {
+  utf8::decode($_);
+  my $negate = s{^(?:[!/¬¯≠]|not?)-?(?=.)}{};
+  $_ = '-'.$_ unless /^-/;
+  $_ = "$_ _";
+  $_ = '!'.$_ if $negate;
+}
+while (<STDIN>) {
+  chomp;
+  stat;
+  say if !grep !eval, @ARGV;
+}
