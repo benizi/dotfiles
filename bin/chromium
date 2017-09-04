@@ -60,8 +60,8 @@ esac
 function warn () { echo "\e[31m$*\e[0m" >&2 }
 function die () { warn $* ; exit 1 }
 if (( $+commands[chromium-remote] ))
-then _call_remote=true
-else _call_remote=false
+then _has_remote=true
+else _has_remote=false
 fi
 _dry=false
 _plugins=true
@@ -164,17 +164,24 @@ while [ $# -gt 0 ] ; do
     (--cpus=*) _taskset+=( -c ${arg#*=} ) ;;
     (--rdp=*|--remote-debugging-port=*) _remote_debug=true ; _debug_port=${arg#*=} ;;
     (--rdp|--remote-debug*) _remote_debug=true ;;
-    (--no-rdp|--no-remote-debugging-port) _remote_debug=false ; _call_remote=false ;;
-    (--incognito) _incognito=true ; _call_remote=false ; _args+=( $arg ) ;;
-    (-*) _args+=( $arg ) ; _call_remote=false ;;
+    (--no-rdp|--no-remote-debugging-port) _remote_debug=false ;;
+    (--incognito) _incognito=true ; _args+=( $arg ) ;;
+    (-*) _args+=( $arg ) ;;
     (*)
       if (( $+_url ))
-      then _args+=( $arg ) ; _call_remote=false
+      then _args+=( $arg )
       else _url=$arg
       fi
       ;;
   esac
 done
+
+if (( $+_url ))
+then _call_remote=$_has_remote
+fi
+if ! $_remote_debug || $_incognito || $_scratch || (( $#_args ))
+then _call_remote=false
+fi
 
 cleanup_tmp () { [[ $_profdir = *scratch* ]] && rm -rf $_profdir }
 if (( $+_scratch )) ; then
