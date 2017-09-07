@@ -189,7 +189,9 @@ __prompt_setup() {
   fi
 
   local mem="$(mem plain)"
-  [[ $mem = (*\!*) ]] && add.middle_row k:1 $mem
+  local -a memargs
+  [[ $mem = (*\!*) ]] && memargs+=( k:1 )
+  add.middle_row $memargs $mem
 
   (( $+DATABASE_URL )) && add.bottom_row k:167 "DB ${testdb:-$DATABASE_URL}"
   (( $+deleted )) && add.bottom_row k:196 '!deleted!'
