@@ -101,6 +101,16 @@ pathtest+=( ~$owner/android-sdks/platform-tools )
 pathtest+=( ~/git/racket/racket/bin )
 pathtest=( /opt/djb/bin $^pathtest )
 pathtest=( /opt/google/cloud-sdk/google-cloud-sdk/bin $pathtest )
+
+# Order of directories should be:
+# 1. in home dir and contains the word 'local'
+# 2. in home dir
+# 3. anything else
+local -a loc home
+home=( ${(M)pathtest:#$HOME/*} )
+loc=( ${(M)home:#*local*} )
+pathtest=( $loc $home $pathtest )
+
 path=( ${^pathtest}(N-/) )
 }
 
