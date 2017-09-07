@@ -19,6 +19,8 @@ zstyle ':completion:*:ssh:*' users ${^_ssh_users}
 zstyle ':completion:*:git:*' wanted-commands all
 # add custom git commands to completion
 zstyle ':completion:*:git:*' user-commands ${${(k)commands[(I)git-*]}#git-}
+# auto-rehash (tired of not tab-completing commands I just installed)
+zstyle ':completion:*' rehash true
 
 # (via mikachu): the following settings split options/completions by category
 # and shows a good description of the categories, rather than the default of
