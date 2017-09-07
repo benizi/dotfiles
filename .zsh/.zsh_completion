@@ -20,7 +20,9 @@ zstyle ':completion:*:git:*' wanted-commands all
 # add custom git commands to completion
 zstyle ':completion:*:git:*' user-commands ${${(k)commands[(I)git-*]}#git-}
 
-# from mikachu
+# (via mikachu): the following settings split options/completions by category
+# and shows a good description of the categories, rather than the default of
+# lumping them all together.
 zstyle ':completion:*:descriptions' format "%B---- %d%b"
 zstyle ':completion:*:messages' format '%B%U---- %d%u%b'
 zstyle ':completion:*:warnings' format '%B%F{9}---- no match for: %d%f%b'
