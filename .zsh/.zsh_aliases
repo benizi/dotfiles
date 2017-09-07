@@ -7,7 +7,9 @@ alias shit=' shit'
 # keep shell history separate
 () {
   local shell
-  for shell in {ba,c,fi,k,tc,}sh ; do
+  for shell in bash csh fish ksh mksh tcsh sh
+  do
+    (( $+commands[$shell] )) || continue
     alias $shell='HISTFILE=$zsh_dirs[-1]/'"${shell}-history $shell"
   done
 }
