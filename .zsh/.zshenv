@@ -101,6 +101,7 @@ pathtest+=( ~$owner/android-sdks/platform-tools )
 pathtest+=( ~/git/racket/racket/bin )
 pathtest=( /opt/djb/bin $^pathtest )
 pathtest=( /opt/google/cloud-sdk/google-cloud-sdk/bin $pathtest )
+pathtest=( /opt/yarn/versions/nightly/bin $pathtest )
 
 # Order of directories should be:
 # 1. in home dir and contains the word 'local'
