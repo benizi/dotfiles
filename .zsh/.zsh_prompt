@@ -254,11 +254,20 @@ __reset_cursor () {
   fi
 }
 
+unset __x11
+__add_x11_last_used() {
+  (( $+__x11 )) || __x11=$(( $+commands[xprop] && $+DISPLAY && $+WINDOWID ))
+  (( __x11 )) || return 0
+  xprop -id $WINDOWID -f _ZSH_LAST_USED 32c -set _ZSH_LAST_USED $EPOCHSECONDS
+  xprop -id $WINDOWID -f _ZSH_LAST_CMD 8u -set _ZSH_LAST_CMD $__last_command
+}
+
 preexec () {
   __last_command=$1
   (( __last_command_number ++ ))
   fancytitle "$1 $TITLESEP "
   __reset_cursor
+  __add_x11_last_used
   unset __prompt_return
 }
 
