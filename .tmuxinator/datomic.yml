@@ -1,11 +1,9 @@
 name: datomic
-root: /opt/datomic/versions/datomic-pro-latest/
+root: /opt/datomic/versions/datomic-latest/
 
 windows:
   - datomic:
       layout: even-vertical
       panes:
-        - docker run --name datomicdb -p 4333:5432 -v /opt/datomic/pgdata:/var/lib/postgresql/data -d -i -t postgres:9.3 || docker start datomicdb
-        - bin/transactor /opt/datomic/sql-transactor.properties
-        - bin/console -p 4335 local 'datomic:sql://?jdbc:postgresql://datomic.dev:4333/datomic?user=datomic&password=datomic'
-        - bin/rest -p 8090 local 'datomic:sql://?jdbc:postgresql://datomic.dev:4333/datomic?user=datomic&password=datomic'
+        - bin/transactor /opt/datomic/free-transactor.properties
+        - bin/rest -p 8090 local 'datomic:free://'
