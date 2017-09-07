@@ -169,12 +169,16 @@ syntax enable
 syntax sync maxlines=2000
 
 " no maximum syntax column, but only if there are no really long lines
+let s:default_smc = 100
+fun! SetMaxSyntaxLength()
+	let b:maxline = max(map(getline(1,'$'), 'len(v:val)'))
+	let &l:smc = b:maxline > 5000 ? s:default_smc : 0
+endf
+
 aug NoMaxSyntaxLength
 	au!
-	au BufReadPre * let &l:smc = 100
-	au BufRead *
-		\ let b:maxline = max(map(range(1,line('$')), 'len(getline(v:val))')) |
-		\ let &l:smc = b:maxline > 5000 ? 100 : 0
+	au BufReadPre * let &l:smc = s:default_smc
+	au BufRead * cal SetMaxSyntaxLength()
 aug END
 
 set foldmethod=syntax
