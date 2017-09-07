@@ -1,4 +1,5 @@
 #!/bin/zsh
+
 : ${browser_debug=3}
 scriptlog=~/browser.log
 if (( browser_debug ))
@@ -10,6 +11,7 @@ then
     pst $$ 2>/dev/null
   } >> $scriptlog
 fi
+
 dbg-exec() {
   local run=true ret=1 option=1
   local -a message options runinfo
@@ -48,6 +50,7 @@ dbg-exec() {
   "$@"
   exit $?
 }
+
 case $0 in
   (*-fresh) argv+=( --scratch http://${${0//-fresh/}:t} ) ;;
   (*chromium*|*open|*sensible-browser) ;;
@@ -57,8 +60,10 @@ case $0 in
   (*Flash) argv+=( --flash --scratch ) ;;
   (*) _profile=$0:t ;;
 esac
+
 function warn () { echo "\e[31m$*\e[0m" >&2 }
 function die () { warn $* ; exit 1 }
+
 if (( $+commands[chromium-remote] ))
 then _has_remote=true
 else _has_remote=false
