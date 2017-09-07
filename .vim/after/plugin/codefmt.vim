@@ -22,23 +22,33 @@ call s:registry.AddExtension(codefmt#gn#GetFormatter())
 call s:registry.AddExtension(codefmt#buildifier#GetFormatter())
 call s:registry.AddExtension(codefmt#googlejava#GetFormatter())
 
-" And we add `prettier`:
 let s:plugin = maktaba#plugin#Get('codefmt')
-cal s:plugin.Flag('prettier_executable', 'prettier')
 
-let s:prettier = {'name':'prettier'}
-
-fun! s:prettier.GetExe()
-  return s:plugin.Flag('prettier_executable')
+fun! s:GetExe() dict
+  return s:plugin.Flag(self.exe_flag)
 endf
 
-fun! s:prettier.IsAvailable()
-  return executable(s:prettier.GetExe())
+fun! s:IsAvailable() dict
+  return executable(self.GetExe())
 endf
 
-fun! s:prettier.AppliesToBuffer()
-  return &ft == 'javascript'
+fun! s:AppliesToBuffer(...)
+  return index(a:000, &ft) >= 0
 endf
+
+fun! s:CreateFormatter(name, ...)
+  let fmt = {'name': a:name, 'exe_flag': a:name . '_executable'}
+  cal s:plugin.Flag(fmt.exe_flag, fmt.name)
+  let fmt.GetExe = function('s:GetExe', fmt)
+  let fmt.IsAvailable = function('s:IsAvailable', fmt)
+  if a:0
+    let fmt.AppliesToBuffer = function('s:AppliesToBuffer', a:000)
+  end
+  return fmt
+endf
+
+" Use `prettier` to format JavaScript:
+let s:prettier = s:CreateFormatter('prettier', 'javascript')
 
 fun! s:prettier.FormatRange(startline, endline) abort
   cal maktaba#ensure#IsNumber(a:startline)
@@ -72,3 +82,25 @@ fun! s:prettier.FormatRange(startline, endline) abort
 endf
 
 cal s:registry.AddExtension(s:prettier)
+
+" Use `jq` to format JSON
+let s:jq = s:CreateFormatter('jq', 'json')
+
+cal s:plugin.Flag('jq_sort_keys', 0)
+
+fun! s:jq.Format() dict abort
+  let cmd = [self.GetExe()]
+  if s:plugin.Flag('jq_sort_keys')
+    cal add(cmd, '--sort-keys')
+  end
+  cal add(cmd, '.')
+  let input = join(getline(1,'$'), "\n")
+  let ret = maktaba#syscall#Create(cmd).WithStdin(input).Call(0)
+  if !empty(ret.stderr)
+    echoerr ret.stderr
+    return
+  end
+  cal maktaba#buffer#Overwrite(1, line('$'), split(ret.stdout, "\n"))
+endf
+
+cal s:registry.AddExtension(s:jq)
