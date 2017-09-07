@@ -3,4 +3,4 @@ root: ~/
 windows:
   - sshynergy:
     - synergy-killer
-    - sshynergy -notime | multilog t e ./sshynergy.log | tai64nlocal
+    - sshynergy -multilog=./sshynergy.log
