@@ -10,6 +10,7 @@
     evil
     expand-region
     git-gutter
+    gnu-apl-mode
     haml-mode
     haskell-mode
     highlight

@@ -157,6 +157,19 @@
 (require 'mic-paren) ;; show matching paren even when off-screen
 (paren-activate)
 
+;; APL
+(defun gnu-apl-interactive-send-line ()
+  "Evaluate the current line in the REPL"
+  (interactive)
+  (gnu-apl-interactive-send-string (thing-at-point 'line)
+                                   buffer-file-name
+                                   (line-number-at-pos)))
+
+(add-hook 'gnu-apl-mode-hook
+          (lambda () (define-key gnu-apl-mode-map
+                       (kbd "C-c C-c")
+                       'gnu-apl-interactive-send-line)))
+
 ;; highlight expr on eval
 (require 'highlight)
 (require 'eval-sexp-fu)
