@@ -1,7 +1,19 @@
 #!/bin/sh
 set -e
-test "$_UNSHARED" = 1 ||
-  exec sudo unshare -m su --session-command 'env _UNSHARED=1 "'"$0"'" "$@"' - $USER -- -- "$(pwd)" "$@"
+
+if test "$_UNSHARED" != 1
+then
+  nsroot=/root/ns
+  nsfile="$nsroot/${*/\//_}"
+  if ! sudo mountpoint "$nsroot"
+  then
+    sudo mkdir -p "$nsroot"
+    sudo mount --bind "$nsroot" "$nsroot"
+    sudo mount --make-private "$nsroot"
+    sudo touch "$nsfile"
+  fi
+  exec sudo unshare --mount="$nsfile" su --session-command 'env _UNSHARED=1 "'"$0"'" "$@"' - $USER -- -- "$(pwd)" "$@"
+fi
 
 test "$_UNSHARED" = 1
 cd "$1"
