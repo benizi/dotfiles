@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+require 'uri'
+require 'json'
+
+module URI
+  class SSH < Generic
+    DEFAULT_PORT = 22
+  end
+
+  @@schemes['SSH'] = SSH
+
+  def fields
+    component + %I[user password default_port] - %I[userinfo]
+  end
+
+  def to_h
+    fields.map { |k| [k, send(k)] }.to_h
+  end
+end
+
+def urls
+  @urls ||= ARGF.each_line.map { |url| URI(url.chomp) }
+end
+
+urls.each { |url| puts url.to_h.merge(url: url).to_json }
