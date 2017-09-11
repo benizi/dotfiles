@@ -45,6 +45,10 @@ check_config_exists_graphical() {
   map check_config_exists $configs
 
   configs=(
+    .XCompose
+    .XCompose-greek
+    .XCompose-ligatures
+    .XCompose-unicode
     .Xdefaults
     .urxvt/ext
     .xmonad
