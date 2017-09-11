@@ -25,6 +25,7 @@
 	autosquash = true
 [user]
 	name = Benjamin R. Haskell
+	useconfigonly = true
 [disable]
 	reset = true
 [pack]
