@@ -1,0 +1,6 @@
+#!/bin/sh
+chrome-desktops |
+picker |
+while read id rest
+do xdotool windowactivate $id
+done
