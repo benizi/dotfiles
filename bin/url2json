@@ -3,14 +3,16 @@ require 'uri'
 require 'json'
 
 module URI
-  class SSH < Generic
-    DEFAULT_PORT = 22
+  class << self
+    def add_scheme(name, default_port)
+      @@schemes[name.to_s] = const_set(name, Class.new(Generic)).class_eval do
+        const_set('DEFAULT_PORT', default_port)
+        self
+      end
+    end
   end
 
-  %w[SSH TCP UDP SCTP QUIC].each do |name|
-    const_defined?(name) or const_set(name, Class.new(Generic))
-    @@schemes[name] = const_get(name)
-  end
+  add_scheme :SSH, 22
 
   def fields
     component + %I[user password default_port] - %I[userinfo]
