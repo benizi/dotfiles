@@ -7,7 +7,10 @@ module URI
     DEFAULT_PORT = 22
   end
 
-  @@schemes['SSH'] = SSH
+  %w[SSH TCP UDP SCTP QUIC].each do |name|
+    const_defined?(name) or const_set(name, Class.new(Generic))
+    @@schemes[name] = const_get(name)
+  end
 
   def fields
     component + %I[user password default_port] - %I[userinfo]
