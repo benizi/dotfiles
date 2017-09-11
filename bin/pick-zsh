@@ -1,0 +1,6 @@
+#!/bin/sh
+sudo lsof -a -d cwd -c zsh -Fpn |
+awk '{ v = substr($0, 2) } /^p/ { pid = v } /^n/ { print v, pid }' |
+picker |
+awk '{ print $NF }' |
+xargs --no-run-if-empty x-activate
