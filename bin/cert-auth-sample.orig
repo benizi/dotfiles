@@ -1,0 +1,26 @@
+: 1504474521; unset cfssl_pkcs11_config
+: 1504474534; cfssl genkey -initca ca-csr.json
+: 1504474539; where cfssl
+: 1504474578; go get -u github.com/cloudflare/cfssl/cmd/...
+: 1504474624; where cfssl
+: 1504474628; cfssl genkey -initca ca-csr.json
+: 1504474659; jq -r . < ~/ca-cfssl/ca-csr.json
+: 1504474705; jq -r '.hosts|=["self","ca.self"]' < ~/ca-cfssl/ca-csr.json
+: 1504474779; edn <<<'{hosts [self ca.self] key {algo :rsa size 4096} names [{C US ST Pennsylvania L Pittsburg OU "Certificate Authority" O benizi}]}'
+: 1504474784; edn <<<'{hosts [self ca.self] key {algo :rsa size 4096} names [{C US ST Pennsylvania L Pittsburg OU "Certificate Authority" O benizi}]}' | jq -r .
+: 1504474806; edn <<<'{hosts [self ca.self] key {algo :rsa size 4096} names [{C US ST Pennsylvania L Pittsburg OU "Certificate Authority" O benizi}]}' | tee ~/ca-cfssl-test/ca-csr.json | jq -r .
+: 1504474811; cfssl genkey -initca ca-csr.json
+: 1504474852; cfssl genkey -initca ca-csr.json | cfssljson -bare ca
+: 1504474858; l
+: 1504475001; edn <<<'{key {algo :rsa size 4096} names [{C US ST Pennsylvania L Pittsburgh OU "Certificate Authority" O benizi}] CN ca.self}' | tee ~/ca-cfssl-test/ca-csr.json | cfssl genkey -initca ca-csr.json | cfssljson -bare ca LS
+: 1504475030; edn <<<'{key {algo :rsa size 4096} names [{C US ST Pennsylvania L Pittsburgh OU "Certificate Authority" O benizi}] CN ca.self}' | tee ~/ca-cfssl-test/ca-csr.json
+: 1504475045; edn <<<'{key {algo :rsa size 4096} names [{C US ST Pennsylvania L Pittsburgh OU "Certificate Authority" O benizi}] CN ca.self}' | tee ~/ca-cfssl-test/ca-csr.json | cfssl genkey -initca ca-csr.json | cfssljson -bare ca LS
+: 1504475056; edn <<<'{key {algo :rsa size 4096} names [{C US ST Pennsylvania L Pittsburgh OU "Certificate Authority" O benizi}] CN ca.self}' | tee ~/ca-cfssl-test/ca-csr.json | cfssl genkey -initca /dev/stdin | cfssljson -bare ca LS
+: 1504475065; l
+: 1504475177; cfssl gencert -ca ca.pem -ca-key ca-key.pem -hostname=test.self ca-csr.json | cfssljson -bare test.self
+: 1504475264; jq '.hosts|=["test.self"]' < ca-csr.json | cfssl genkey - | cfssljson -bare test.self
+: 1504475435; jq '.hosts|=["test.self"]' < ca-csr.json | cfssl genkey - | cfssljson -bare test.self
+: 1504475448; jq '.hosts|=["test.self"]' < ca-csr.json | cfssl gencert - | cfssljson -bare test.self
+: 1504475460; jq '.hosts|=["test.self"]' < ca-csr.json | cfssl gencert -ca ca.pem -ca-key ca-key.pem - | cfssljson -bare test.self
+: 1504494577; jq '.hosts|=["client1.self"]' < ca-csr.json | cfssl gencert -ca ca.pem -ca-key ca-key.pem - | cfssljson -bare client1.self
+# vim:se ft=zsh:
