@@ -1,0 +1,2 @@
+#!/bin/sh
+text2wave | pacat --rate=16000 --channels=1
