@@ -1,0 +1,15 @@
+#!/bin/sh
+: ${root_dir=/tmp/certbot.testing}
+: ${challenge_dir=$root_dir/.well-known/acme-challenge}
+mkdir -p $challenge_dir
+
+run_validate() { echo $CERTBOT_VALIDATION > $challenge_dir/$CERTBOT_TOKEN ; }
+
+run_serve() {
+  set -e
+  cd $root_dir
+  pwd
+  sudo python -m http.server 80
+}
+
+run_${1:-validate}
