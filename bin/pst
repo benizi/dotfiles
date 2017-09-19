@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-use strict;
+use 5.016;
 use warnings;
 use open ':std', ':utf8';
 use utf8;
