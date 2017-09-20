@@ -46,9 +46,7 @@ check_config_exists_graphical() {
 
   configs=(
     .XCompose
-    .XCompose-greek
-    .XCompose-ligatures
-    .XCompose-unicode
+    .XCompose.d
     .Xdefaults
     .urxvt/ext
     .xmonad
