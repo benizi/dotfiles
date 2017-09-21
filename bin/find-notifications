@@ -1,0 +1,10 @@
+#!/bin/sh
+while xprop-tree _NET_WM_WINDOW_TYPE |
+  awk '/_NET_WM_WINDOW_TYPE_NOTIFICATION/ && !seen++ {
+    print "xdotool windowmove", $1, 10, 10
+    print "xdotool windowraise", $1
+  }
+  END { print "exit", seen ? 0 : 1 }' |
+  sh -x && read
+do :
+done
