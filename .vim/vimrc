@@ -518,7 +518,7 @@ fun! CleanBlankLinesOrBackspace(...)
 
 	" Construct the set of commands to clean up the lines
 	let exit_insert_mode = insert ? "\<C-[>" : ""
-	let delete_blank_lines = ":".start.",".stop."d"
+	let delete_blank_lines = ":".start.",".stop."d _"
 	let add_blank_line = at_end ? "" : "|i\<CR>\<CR>."
 	return exit_insert_mode.delete_blank_lines.add_blank_line."\<CR>"
 endf
