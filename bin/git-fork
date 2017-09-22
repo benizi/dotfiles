@@ -1,0 +1,58 @@
+#!/bin/sh
+set -e
+
+gh_user="$(git config github.user)"
+gh_token="$(git config github.token)"
+
+test -n "$gh_user"
+test -n "$gh_token"
+
+remotes_impl() {
+  git config -z --get-regexp '^remote\..+\.url$' |
+  awk -F\\n -v RS=\\000 '{print$2}' |
+  git parse-url |
+  url2json |
+  jq -c 'select(.scheme=="ssh" and .host=="github.com") |
+  (.path | rtrimstr(".git") | split("/")) as $parts |
+  .gh = {user: $parts[1], repo: $parts[2]}'
+}
+
+remotes=
+remotes() {
+  test -n "$remotes" || remotes="$(remotes_impl)"
+  printf '%s\n' "$remotes"
+}
+
+fail_if_exists() {
+  remotes |
+  jq -r 'select(.gh.user=="'"$gh_user"'").url' |
+  while read fork
+  do
+    printf 'Already forked: %s\n' "$fork" >&2
+    exit 1
+  done
+}
+
+find_user_repo() {
+  remotes |
+  jq -r '[.gh.user,.gh.repo]|join(" ")' |
+  sed '1!d'
+}
+
+create_fork() {
+  up_user=$1
+  up_repo=$2
+  url=https://api.github.com/repos/$up_user/$up_repo/forks
+  #printf ']] %s\n' \
+  curl -X POST -H "Authorization: token $gh_token" -D - -o /dev/null "$url"
+}
+
+add_remote() {
+  up_repo=$2
+  git remote add "$gh_user" "gh:$gh_user/$up_repo"
+}
+
+fail_if_exists
+set -- $(find_user_repo)
+create_fork "$@"
+add_remote "$@"
