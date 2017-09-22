@@ -42,9 +42,18 @@ find_user_repo() {
 create_fork() {
   up_user=$1
   up_repo=$2
-  url=https://api.github.com/repos/$up_user/$up_repo/forks
-  #printf ']] %s\n' \
-  curl -X POST -H "Authorization: token $gh_token" -D - -o /dev/null "$url"
+  github_post https://api.github.com/repos/$up_user/$up_repo/forks
+}
+
+create_repo() {
+  jq --arg name "$2" -n '{
+  name: $name, has_issues: true, has_projects: false, has_wiki: false
+  }' |
+  github_post https://api.github.com/user/repos -d @-
+}
+
+github_post() {
+  curl -X POST -H "Authorization: token $gh_token" "$@" -D - -o /dev/null
 }
 
 add_remote() {
@@ -54,5 +63,10 @@ add_remote() {
 
 fail_if_exists
 set -- $(find_user_repo)
-create_fork "$@"
+if test $# -gt 0
+then create_fork "$@"
+else
+  set -- "$gh_user" "$(basename "$(pwd)")"
+  create_repo "$@"
+fi
 add_remote "$@"
