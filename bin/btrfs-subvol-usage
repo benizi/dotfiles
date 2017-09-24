@@ -1,0 +1,18 @@
+#!/bin/sh
+fs=${1:-/}
+{
+  sudo btrfs qgroup show --raw "$fs" | sed 's/^/quota /'
+  sudo btrfs subvolume list "$fs" | sed 's/^/subvol /'
+} |
+awk -v OFS=\\t '
+$1 == "quota" {
+  split($2, ids, "/")
+  id = ids[2]
+  rfer[id] = $3
+  excl[id] = $4
+}
+$1 == "subvol" {
+  id = $3
+  path = $NF
+  print rfer[id], excl[id], path
+}'
