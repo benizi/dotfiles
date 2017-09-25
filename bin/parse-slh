@@ -1,0 +1,20 @@
+#!/usr/bin/env perl
+use 5.016;
+use warnings;
+use bytes;
+
+sub skip { $/ = \(shift); <> }
+sub get {
+  $/ = \(shift);
+  unpack shift, scalar <>
+}
+
+skip 3; # S L H
+skip 1; # version
+my $entries = get 2, 'v';
+my $unknown_flag = get 2, 'v';
+
+$/=\5; my $hdr = <>;
+$/="\x00"; my $name = <>;
+undef $/;
+print <>;
