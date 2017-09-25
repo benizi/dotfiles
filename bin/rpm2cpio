@@ -1,0 +1,27 @@
+#!/usr/bin/env perl
+use 5.016;
+use warnings;
+use bytes;
+
+sub skip { $/ = \(shift); <> }
+
+sub align {
+  my $n = shift;
+  my $off = (tell) % $n;
+  skip -($off % -$n) if $off;
+}
+
+sub skipheader {
+  align 8;
+  skip 8;
+  $/ = \8;
+  my ($index_entries, $data_section) = unpack 'NN', scalar <>;
+  skip 16 * $index_entries + $data_section;
+}
+
+skip 96; # lead
+skipheader; # signature
+skipheader; # header
+# rest is data
+$/=\4096;
+print for <>;
