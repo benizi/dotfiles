@@ -1,0 +1,29 @@
+#!/bin/sh
+set -e -x
+
+case "$1" in
+  ('') printf 'Usage: %s iPXE-UEFI-file [qemu-options]\n' >&2 ; exit 1 ;;
+  (/*) ;;
+  (*) rel="$1" ; shift ; set -- "$(readlink -f "$rel")" "$@" ;;
+esac
+
+test -n "$tmpdir" || exec in-tmp /bin/sh "$0" "$@"
+
+ovmf=/usr/share/ovmf/x64
+cp $ovmf/OVMF_VARS.fd efivars
+cp $ovmf/OVMF_CODE.fd ovmf.code
+boot=fat/EFI/Boot
+mkdir -p $boot
+cp "${1?}" $boot/bootx64.efi
+shift
+qemu-system-x86_64 \
+  -enable-kvm \
+  -device virtio-net-pci,netdev=n \
+  -netdev user,ipv4,id=n \
+  -m 2G \
+  -drive if=pflash,format=raw,readonly,file=ovmf.code \
+  -drive if=pflash,format=raw,file=efivars \
+  -usb \
+  -drive if=none,id=fat,format=raw,file=fat:rw:fat \
+  -device usb-storage,drive=fat \
+  "$@"
