@@ -1,5 +1,6 @@
 #!/bin/sh
 tmpdir=$(mktemp -d -t in-tmp.XXXXXXXX) || exit 1
+export tmpdir
 cd "$tmpdir" || exit 2
 cleanup () {
   ret=${1:-$?}
