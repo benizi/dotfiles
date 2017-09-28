@@ -243,3 +243,8 @@ Family emoji:
 
 Spanish flag: (regional indicator characters for "E" and "S"):
 🇪🇸
+
+From http://n-gate.com/about/
+❤⃠
+❤	e2,9d,a4	2764	HEAVY BLACK HEART
+⃠	e2,83,a0	20e0	COMBINING ENCLOSING CIRCLE BACKSLASH
