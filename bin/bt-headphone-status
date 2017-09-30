@@ -16,6 +16,7 @@ do
       ('         Address '*')') btaddr=${${=line}[-2]} ;;
       ('         Connected '*) connected=${line##* } ;;
       ('         Icon '*')') icon=${${=line}[-2]} ;;
+      ('         Paired '*) paired=${line##* } ;;
       (*-0000-*) profiles=$line ;;
     esac
   done
@@ -23,5 +24,6 @@ do
   (( ${profiles[(I)0000110b-0000-1000-8000-00805f9b34fb]} )) || continue
   # And something audio-related (filter phones and computers)
   [[ $icon = (*audio*) ]] || continue
+  $paired || continue
   printf '%s\t%s\n' $btaddr $connected
 done
