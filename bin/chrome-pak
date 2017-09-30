@@ -1,0 +1,54 @@
+#!/usr/bin/env perl
+use 5.020;
+use warnings;
+use bytes;
+
+my $pak = shift // die "Usage: $0 pak-file [outdir]\n";
+my $outdir = shift // "pak-objects";
+my $data = do { local @ARGV = ($pak); undef local $/; <> };
+
+sub getd {
+  my ($off, $len) = @_;
+  substr $data, $off, $len
+}
+sub get {
+  my ($off, $len, $fmt) = @_;
+  unpack $fmt, getd $off, $len;
+}
+
+my ($V) = get 0, 4, 'V';
+die "Unhandled version (got: $V, expected <= 4).\n" if $V < 0 || $V > 4;
+my ($N) = get 4, 4, "V";
+get 8, 1, 'C';
+my (@data) = get 9, 6 * ($N + 1), "(vV)*";
+my @idx;
+while (my ($id, $off) = splice @data, 0, 2) {
+  push @idx, {id=>$id,off=>$off};
+}
+for (0..$#idx-1) {
+  my ($ia, $ib) = @idx[$_,$_+1];
+  $$ia{len} = $$ib{off} - $$ia{off};
+}
+pop @idx;
+for (@idx) {
+  my $str = getd @$_{qw/off len/};
+  my $id = $$_{id};
+  my $base = "$outdir/$id";
+  my $obj = "$base.obj";
+  open my $f, '>', $obj or die ">$obj: $!";
+  print $f $str;
+  close $f;
+  chomp(my $type = qx{file -b --mime-type $obj});
+  my ($cat, $kind) = split '/', $type;
+  my @ext;
+  if ($type eq 'text/plain') {
+    @ext = qw/txt/;
+  } elsif ($kind eq 'html') {
+    @ext = $kind;
+  } else {
+    @ext = ($cat, $kind);
+  }
+  system { 'mv' } 'mv', '-v', $obj, join '.', $obj, @ext;
+  #say join "\t", $id, $type;
+}
+#say join "\t", $$_{len} for @idx;
