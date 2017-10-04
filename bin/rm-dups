@@ -1,0 +1,26 @@
+#!/bin/sh
+rmargs=
+paths=
+for arg
+do
+  case "$arg" in
+    (-*) rmargs=${rmargs:+"$rmargs "}"$arg" ;;
+    (*) paths=${paths:+"$paths "}"$arg" ;;
+  esac
+done
+test -n "$paths" || paths="$(pwd)"
+find $paths -type f -name '* (*).*' |
+sort -r |
+while read f
+do
+  orig="$(printf '%s\n' "$f" | sed -e 's/ ([0-9]\+)//')"
+  printf '%s\n' "$f" "$orig"
+done |
+tac |
+greptest f |
+awk -v ORS=\\000 '!s[$0]++' |
+xargs -0 md5sum |
+awk -F'  ' -v rmargs="$rmargs" '
+seen[$1]++ { print "# dup of " orig[$1] ; print "rm", rmargs, "-v \"" $2 "\"" }
+!($1 in orig) { orig[$1] = $2 }
+'
