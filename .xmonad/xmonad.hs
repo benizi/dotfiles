@@ -149,6 +149,17 @@ warpIfVisible tag old = do
       Just s -> warpToScreen (W.screen s) 0.4 0.5
       _ -> return ()
 
+currentWindows :: XState -> [Window]
+currentWindows = W.integrate' . W.stack . W.workspace . W.current . windowset
+
+shiftAll :: WorkspaceId -> X ()
+shiftAll tag = gets currentWindows >>= windows . sendAll
+    where
+        sendAll :: [Window] -> WindowSet -> WindowSet
+        sendAll = flip $ foldl sendWindow
+        sendWindow :: WindowSet -> Window -> WindowSet
+        sendWindow = flip $ W.shiftWin tag
+
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- launch a terminal
@@ -298,7 +309,9 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     in [ ((modm .|. mask, key), action workspace)
        | (workspace, key) <- zip workspaces keys
        , (mask, action) <- [ (0, warpView)
-                           , (shiftMask, windows . W.shift)]
+                           , (shiftMask, windows . W.shift)
+                           , (mod4Mask .|. shiftMask, shiftAll)
+                           ]
        ]
     ++
     -- Toggle the state for warpView actions
