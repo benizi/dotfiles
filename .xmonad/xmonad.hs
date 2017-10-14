@@ -217,8 +217,8 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((mod4Mask, xK_m), spawn "rofi -show mpc")
 
     ---- brightness
-    , ((modm, xK_F5), spawn "brightness min")
-    , ((modm, xF86XK_MonBrightnessDown), spawn "brightness min")
+    , ((modm, xK_F5), spawn "brightness = 1")
+    , ((modm, xF86XK_MonBrightnessDown), spawn "brightness = 1")
     , ((modm .|. shiftMask, xK_F5), spawn "brightness down")
     , ((modm, xK_F6), spawn "brightness max")
     , ((modm, xF86XK_MonBrightnessUp), spawn "brightness max")
