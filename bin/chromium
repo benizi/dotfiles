@@ -204,7 +204,7 @@ if (( $+_scratch )) ; then
   _profdir=$(mktemp -t -d chromium-scratch.XXXXXXXX)
   (( $+_profdir )) || die "Couldn't create tmp dir?"
   printf '_profdir="%s"\n' $_profdir
-  trap cleanup_tmp EXIT INT TERM
+  (( $+keep )) || trap cleanup_tmp EXIT INT TERM
   chromium-theme $_profdir $+_javascript
 fi
 
