@@ -70,7 +70,7 @@ else _has_remote=false
 fi
 _dry=false
 _plugins=true
-unset _url _ua _scratch _incognito
+unset _url _ua _scratch _incognito _headless
 _logging=false
 _userscripts=true
 _ipv6=true
@@ -179,6 +179,7 @@ while [ $# -gt 0 ] ; do
     (--rdp|--remote-debug*) _remote_debug=true ;;
     (--no-rdp|--no-remote-debugging-port) _remote_debug=false ;;
     (--incognito) _incognito=true ; _args+=( $arg ) ;;
+    (--headless) _headless=true ; _args+=( $arg ) ;;
     (-*) _args+=( $arg ) ;;
     (*)
       if (( $+_url ))
@@ -309,6 +310,10 @@ if $_remote_debug &&
 then
   [[ $_debug_port = 9222 ]] && instance= || instance=-port=$_debug_port
   dbg-exec chromium-remote $instance ''
+fi
+# Workaround for current `--headless` mode bug: https://crbug.com/546953#c152
+if (( $+_headless ))
+then args+=( --disable-gpu )
 fi
 find_exe
 _cmd=( $_exec $exe $_args )
