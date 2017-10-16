@@ -83,7 +83,15 @@ unset _debug_port
 _default_debug_port=9222
 _args=()
 _taskset=()
-_flags=( plugins logging user-scripts ipv6 async-dns flash quic )
+_flags=(
+  async-dns
+  flash
+  ipv6
+  logging
+  plugins
+  quic
+  user-scripts
+)
 _pseudo_flags=( flash )
 _overscroll=0
 
