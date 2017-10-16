@@ -1,6 +1,8 @@
 #!/bin/zsh
 
+(( $+browser_debug )) && _explicit_debug=true || _explicit_debug=false
 : ${browser_debug=3}
+
 scriptlog=~/browser.log
 if (( browser_debug ))
 then
@@ -195,6 +197,16 @@ then _call_remote=$_has_remote
 fi
 if ! $_remote_debug || $_incognito || $_scratch || (( $#_args ))
 then _call_remote=false
+fi
+
+if ! $_explicit_debug
+then
+  for arg in "${_args[@]}"
+  do
+    case $arg in
+      (--incognito|--new-window) browser_debug=0 ;;
+    esac
+  done
 fi
 
 cleanup_tmp () { [[ $_profdir = *scratch* ]] && rm -rf $_profdir }
