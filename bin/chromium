@@ -232,7 +232,9 @@ for flag in $_pseudo_flags ; do
 done
 _args+=( ${_overscroll:+"--overscroll-history-navigation=$_overscroll"} )
 
-pepper_flash_source=( {/usr/lib,~}/PepperFlash(N[1]) )
+pepper_flash_source=( /opt/flash/current {/usr/lib,~}/PepperFlash )
+pepper_flash_source=( $^pepper_flash_source(N) )
+pepper_flash_source=( ${pepper_flash_source[1]} )
 
 if [[ -e $_profdir/PepperFlash ]] || (( $+_flash ))
 then pepper_flash_dir=$_profdir/PepperFlash
@@ -244,7 +246,9 @@ then warn 'PepperFlash requested, but not present'
 elif (( $+pepper_flash_dir ))
 then
   if [[ ! -d $pepper_flash_dir ]]
-  then mkdir -p $_profdir && cp -r $pepper_flash_source/. $pepper_flash_dir
+  then
+    mkdir -p $pepper_flash_dir
+    cp -r $pepper_flash_source/. $pepper_flash_dir
   fi
 
   pepper_flash=$pepper_flash_dir/libpepflashplayer.so
