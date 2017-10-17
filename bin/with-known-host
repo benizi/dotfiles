@@ -1,35 +1,37 @@
-#!/usr/bin/env ruby
-require 'optparse'
-require 'ostruct'
+#!/bin/sh
+set -e
 
-NAMESPACE_TYPES = Dir["/proc/self/ns/*"].map { |f| File.basename(f).to_sym }
+if ! mountpoint -q $HOME/.ssh
+then
+  set -x
+  exec with-private-mount $HOME/.ssh -- "$0" "$@"
+fi
 
-opts = OpenStruct.new(type: nil, pid: nil, file: nil)
-OptionParser.new do |parser|
-  [
-    ['-p', '--pid', '=PID', Integer, 'Other PID'],
-    ['-t', '--type', '=TYPE', NAMESPACE_TYPES, 'Namespace type'],
-    ['-f', '--file', '=FILENAME', String, 'Full namespace filename'],
-  ].each do |spec|
-    setter = spec[1].sub(/^--/,'').sub(/$/,'=').to_sym
-    parser.on(*spec, &opts.method(setter))
-  end
-end.parse!
+cat ~/.ssh/known_hosts > ~/.ssh/known_hosts.$$.orig
 
-unless opts.file or (opts.pid and opts.type)
-  raise "Must specify either --file or (--pid and --type)"
-end
+while test $# -gt 0
+do
+  case "$1" in
+    (*=*)
+      new=${1%%=*}
+      orig=${1#*=}
+      host=${new%:*}
+      port=${new#*:}
+      ip=$(dig +short $host)
 
-opts.file ||= "/proc/#{opts.pid}/ns/#{opts.type}"
+      if test "$port" = 22
+      then linehost="$host,$ip"
+      else linehost="[$host]:$port,[$ip]:$port"
+      fi
+      ssh-keygen -F "$orig" |
+      awk -v host="$linehost" '/^#/ { next } { $1 = host } 1' |
+      tee -a ~/.ssh/known_hosts
+      ;;
+    (*) break ;;
+  esac
+  shift
+done
 
-begin
-  ns = File::open(opts.file)
-rescue IOError => e
-  warn "Failed to open #{opts.file}: #{e}"
-  exit 1
-end
-syscall 308, ns.fileno, 0
-[opts.pid, 'self', 1].each do |pid|
-  target = File.readlink "/proc/#{pid}/ns/#{opts.type}"
-  puts [target, pid].join(' ')
-end
+test $# -gt 0 || set -- ${SHELL:-/bin/sh}
+stty sane
+"$@"
