@@ -1,0 +1,6 @@
+#!/bin/sh
+git remote |
+sed 1q |
+xargs git remote get-url |
+git parse-url |
+sed -e 's%^.*//%%' -e 's/^git@//'
