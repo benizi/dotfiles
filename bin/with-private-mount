@@ -1,0 +1,111 @@
+#!/bin/sh
+set -e
+
+test -n "$WPM_LOOP" || export WPM_LOOP=0
+((++WPM_LOOP))
+if test $WPM_LOOP -gt 10
+then
+  printf 'WPM loop detected: %s\n' $WPM_LOOP >&2
+  exit 1
+fi
+
+test -n "$UID" || UID=$(id -u)
+
+sudo() {
+  test $UID -eq 0 || set -- command sudo "$@"
+  "$@"
+}
+
+suvars='UID HOME MAIL LOGNAME USER USERNAME SHELL ROOTMNT SELFMNT'
+test -n "$USERNAME" || USERNAME=$USER
+test -n "$ROOTMNT" || ROOTMNT="$(sudo readlink /proc/1/ns/mnt)"
+test -n "$SELFMNT" || SELFMNT="$(readlink /proc/$$/ns/mnt)"
+
+save_env() {
+  for envvar in $suvars
+  do eval "printf 'WPM_%s=%s\n' $envvar \$$envvar"
+  done
+}
+
+restore_env() {
+  for envvar in $suvars
+  do eval "test -z \"\$WPM_$envvar\" || printf '$envvar=%s\n' \$WPM_$envvar"
+  done
+}
+
+hexmd5() { printf '%s' "$*" | openssl dgst -binary -md5 | xxd -p ; }
+
+test $UID -eq 0 || exec sudo env $(save_env) "$0" "$@"
+
+alias=
+for arg
+do case "$arg" in (@*) alias=${arg#?} ;; esac
+done
+
+nsroot=/root/ns
+bound=$nsroot/over
+over=$nsroot/overlays
+
+mntarg='--mount'
+nsfile=
+if test -n "$alias"
+then
+  nsfile="$nsroot/$alias"
+  mntarg="$mntarg=$nsfile"
+  over="$over.$alias"
+fi
+
+if ! mountpoint -q "$nsroot"
+then
+  mkdir -p "$nsroot"
+  mount --bind "$nsroot" "$nsroot"
+fi
+
+if test "$ROOTMNT" = "$SELFMNT"
+then
+  mount --make-private "$nsroot"
+  test -z "$nsfile" || test -e "$nsfile" || touch "$nsfile"
+  exec unshare "$mntarg" env WPM_UNSHARED="$mntarg" "$0" "$@"
+else
+  test "$WPM_UNSHARED" = "$mntarg"
+fi
+
+args=
+for tgt
+do
+  ((++args))
+  case "$tgt" in
+    (@*) continue ;;
+    (--) break ;;
+  esac
+
+  if ! mountpoint -q "$bound"
+  then
+    mkdir -p "$bound"
+    mount --bind / "$bound"
+  fi
+
+  hex="$(hexmd5 "$tgt")"
+  var="_over_$hex"
+  mountstatus="$(eval "printf %s \$$var")"
+
+  test -z "$mountstatus" || continue
+
+  lowerdir=$bound$tgt
+  upperdir=$over.$hex/upper
+  workdir=$over.$hex/work
+  mntarg="lowerdir=$lowerdir,upperdir=$upperdir,workdir=$workdir"
+
+  mkdir -p "$upperdir" "$workdir"
+  for cmd in chmod chown
+  do $cmd --reference="$tgt" "$upperdir" "$workdir"
+  done
+  mount -t overlay overlay -o "$mntarg" "$tgt"
+  exec env "$var=$lowerdir" _over_mounts="$_over_mounts $hex" "$0" "$@"
+done
+
+test -z "$args" || shift $args
+
+test $# -gt 0 || set -- "${WPM_SHELL:-$SHELL}"
+test $WPM_UID = $UID || set -- su-exec $WPM_UID env $(restore_env) "$@"
+exec "$@"
