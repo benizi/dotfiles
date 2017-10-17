@@ -1,12 +1,6 @@
-local goname dest
+local dest
 [[ ${${:-"$(pwd)"}:A} = "$(pwd)" ]] || return 0
-git remote |
-sed 1q |
-xargs git remote get-url |
-git parse-url |
-sed -e 's%^.*//%%' -e 's/^git@//' |
-read goname
-dest=$HOME/src/$goname
+dest="$HOME/src/$(goname)"
 mkdir -p ${dest:h}
 ln -nsf "$(pwd)" $dest
 cd $dest
