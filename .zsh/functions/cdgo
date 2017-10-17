@@ -1,4 +1,5 @@
 local goname dest
+[[ ${${:-"$(pwd)"}:A} = "$(pwd)" ]] || return 0
 git remote |
 sed 1q |
 xargs git remote get-url |
