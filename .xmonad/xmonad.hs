@@ -182,7 +182,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((mod4Mask,           xK_p     ), spawn $ XMonad.terminal conf ++ " -e sudo powertop")
 
     ---- web browsers
-    , ((modm,               xK_c     ), spawn "chromium")
+    , ((modm,               xK_c     ), spawn "chromium --new-window")
     , ((mod4Mask,           xK_c     ), spawn "chromium --incognito")
     , ((mod4Mask, xK_s), spawn "scratch")
 
