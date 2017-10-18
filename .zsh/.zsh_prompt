@@ -121,7 +121,7 @@ __prompt_setup() {
     current_dir="%~ [$current_dir]"
   fi
 
-  typeset -a top_row middle_row bottom_row
+  typeset -a top middle bottom
   map_att () {
     local att=$1
     local -A map
@@ -130,7 +130,7 @@ __prompt_setup() {
     printf %s $att
   }
 
-  add.top_row add.middle_row add.bottom_row () {
+  add.top add.middle add.bottom () {
     local arg
     local -a rest
     local -A atts
@@ -156,65 +156,65 @@ __prompt_setup() {
     eval "${0:e}+=( $c_pre${(@q)^rest}$c_post )"
   }
 
-  add.top_row k:22 $current_dir
-  add.top_row k:22 $real_pwd
-  add.top_row $__prompt_color ${${${(%):-%n@%m}#$owner@}#$owner-}
-  add.top_row k:128 $screen
-  add.top_row k:20 $^vcs[1,1]
-  add.top_row f:184 $^vcs[2,-1]
-  add.top_row k:88 $ruby_version
-  add.top_row k:128 ${node_version#v}
-  add.top_row k:166 ${go_version#go}
-  add.top_row k:88 $erlang_version
-  add.top_row k:93 ${elixir_version#v}
-  add.top_row k:130 ${rust_version#v}
-  add.top_row k:22 $virtenv_info
-  (( $+socks )) && add.top_row k:22 "socks:$socks"
-  (( $+x11 )) && add.top_row k:27 "display $x11"
-  add.top_row k:17 '%D{%Y-%m-%d %H:%M:%S}'
-  (( __prompt_once[term]++ )) || add.top_row k:68 $TERM
+  add.top k:22 $current_dir
+  add.top k:22 $real_pwd
+  add.top $__prompt_color ${${${(%):-%n@%m}#$owner@}#$owner-}
+  add.top k:128 $screen
+  add.top k:20 $^vcs[1,1]
+  add.top f:184 $^vcs[2,-1]
+  add.top k:88 $ruby_version
+  add.top k:128 ${node_version#v}
+  add.top k:166 ${go_version#go}
+  add.top k:88 $erlang_version
+  add.top k:93 ${elixir_version#v}
+  add.top k:130 ${rust_version#v}
+  add.top k:22 $virtenv_info
+  (( $+socks )) && add.top k:22 "socks:$socks"
+  (( $+x11 )) && add.top k:27 "display $x11"
+  add.top k:17 '%D{%Y-%m-%d %H:%M:%S}'
+  (( __prompt_once[term]++ )) || add.top k:68 $TERM
 
   if (( $__prompt_return )) && (( $+__last_command )) ; then
     local escaped_command=${${${__last_command%%$'\n'}:gs/[$]/\\\$}:gs/[%]/%%}
-    add.middle_row k:208 $escaped_command' -> %?'
+    add.middle k:208 $escaped_command' -> %?'
     __prompt_return=0
   fi
 
   local mem="$(mem plain)"
   local -a memargs
   [[ $mem = (*\!*) ]] && memargs+=( k:1 )
-  add.middle_row $memargs $mem
+  add.middle $memargs $mem
 
-  (( $+DATABASE_URL )) && add.bottom_row k:167 "DB ${testdb:-$DATABASE_URL}"
-  (( $+deleted )) && add.bottom_row k:196 '!deleted!'
-  (( $+fail_couchdb )) && add.bottom_row k:196 '!CouchDB!'
-  (( $+incognito_mode )) && add.bottom_row k:208 '!!!'
-  (( $+ssh_control_master )) && add.bottom_row k:88 SSH-MASTER
-  (( $+DOCKER_HOST )) && add.bottom_row k:167 docker=${${DOCKER_HOST:s%unix://%}:s%$HOME%\~}
-  (( $+MYVIMRC )) && add.bottom_row f:145 '(inside vim)'
-  add.bottom_row :norm $ps_char
-  (( $+curl_api_env )) && add.bottom_row k:167 "curl_api=$curl_api_env"
+  (( $+DATABASE_URL )) && add.bottom k:167 "DB ${testdb:-$DATABASE_URL}"
+  (( $+deleted )) && add.bottom k:196 '!deleted!'
+  (( $+fail_couchdb )) && add.bottom k:196 '!CouchDB!'
+  (( $+incognito_mode )) && add.bottom k:208 '!!!'
+  (( $+ssh_control_master )) && add.bottom k:88 SSH-MASTER
+  (( $+DOCKER_HOST )) && add.bottom k:167 docker=${${DOCKER_HOST:s%unix://%}:s%$HOME%\~}
+  (( $+MYVIMRC )) && add.bottom f:145 '(inside vim)'
+  add.bottom :norm $ps_char
+  (( $+curl_api_env )) && add.bottom k:167 "curl_api=$curl_api_env"
 
   local -a lines
   if hi_color
   then
     lines=(
       ''
-      '╭─╴'${(j:╶╴:)top_row}' ╼'
-      '│ '$^middle_row
-      '╰╴'${(j:╶╴:)bottom_row}' '
+      '╭─╴'${(j:╶╴:)top}' ╼'
+      '│ '$^middle
+      '╰╴'${(j:╶╴:)bottom}' '
     )
   else
     lines=(
       ''
-      '/- '${(j: - :)top_row}
-      '| '$^middle_row
-      '\\- '${(j: - :)bottom_row}' '
+      '/- '${(j: - :)top}
+      '| '$^middle
+      '\\- '${(j: - :)bottom}' '
     )
   fi
   PROMPT=${(F)lines}
 
-  unfunction map_att add.top_row add.middle_row add.bottom_row
+  unfunction map_att add.top add.middle add.bottom
 }
 
 TITLESEP='│' # ceçi n'est pas un pipe
