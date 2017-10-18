@@ -121,8 +121,10 @@ __prompt_setup() {
     current_dir="%~ [$current_dir]"
   fi
 
+  local C=$0.colorize map_att=$0.map_att
+
   typeset -a top middle bottom
-  map_att () {
+  $map_att() {
     local att=$1
     local -A map
     __light_terminal && map=( f k k f )
@@ -130,7 +132,6 @@ __prompt_setup() {
     printf %s $att
   }
 
-  local C=colorize
   $C() {
     local name=$1
     shift
@@ -149,7 +150,7 @@ __prompt_setup() {
     (( $#rest )) || return 0
     local att= val= c_pre= c_post=
     for att in ${(k)atts} ; do
-      local key="$(map_att $att)"
+      local key="$($map_att $att)"
       val=$atts[$att]
       c_pre+=%${key:u}
       (( $#val )) && c_pre+='{'$val'}'
@@ -216,7 +217,7 @@ __prompt_setup() {
   fi
   PROMPT=${(F)lines}
 
-  unfunction map_att $C
+  unfunction -m "$0.*"
 }
 
 TITLESEP='│' # ceçi n'est pas un pipe
