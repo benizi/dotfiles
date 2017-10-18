@@ -1,8 +1,13 @@
 #!/usr/bin/env perl
 undef $/;
-while (<>) {
+for my $f (@ARGV) {
+  if (open my $fh, '<', $f) {
+    $_ = <$fh>;
+  } else {
+    $_ = "(Error: $!)";
+  }
   my $empty = !length;
   s/\n?\Z/\n/;
-  print "==> $ARGV <==", /\n.*\n/sm ? "\n" : $empty ? " (empty)" : " ";
+  print "==> $f <==", /\n.*\n/sm ? "\n" : $empty ? " (empty)" : " ";
   print;
 }
