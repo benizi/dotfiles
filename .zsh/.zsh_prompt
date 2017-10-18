@@ -142,9 +142,9 @@ __prompt_setup() {
       local arg=$1
       shift
       case $arg in
-        :norm) atts=() ;;
-        f:*|k:*|?:) atts[${arg%%\:*}]=${arg#*:} ;;
-        *) rest+=( $arg $@ ) ; break ;;
+        (:norm) atts=() ;;
+        (f:*|k:*|?:) atts[${arg%%\:*}]=${arg#*:} ;;
+        (*) rest+=( $arg $@ ) ; break ;;
       esac
     done
     (( $#rest )) || return 0
@@ -229,7 +229,7 @@ fancytitle () {
   local host c=$TITLESEP title
   host="%m $c "
   case "$DISPLAY" in
-    :0*|localhost:*) [ -z "$SSH_CLIENT" ] && host="" ;;
+    (:0*|localhost:*) [ -z "$SSH_CLIENT" ] && host="" ;;
   esac
   local extra=
   __i_am_admin && extra="ROOT $c "
@@ -290,8 +290,8 @@ precmd () {
       return
     fi
     case $KEYMAP in
-      vicmd) print -rn -- $__terminal_seqs[cmd] ;;
-      main|viins) print -rn -- $__terminal_seqs[ins] ;;
+      (vicmd) print -rn -- $__terminal_seqs[cmd] ;;
+      (main|viins) print -rn -- $__terminal_seqs[ins] ;;
     esac
   }
   # need line-init for cancelled commands
