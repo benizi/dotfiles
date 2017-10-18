@@ -157,17 +157,17 @@ __prompt_setup() {
   }
 
   add.top_row k:22 $current_dir
-  (( $+real_pwd )) && add.top_row k:22 $real_pwd
+  add.top_row k:22 $real_pwd
   add.top_row $__prompt_color ${${${(%):-%n@%m}#$owner@}#$owner-}
   add.top_row k:128 $screen
   add.top_row k:20 $^vcs[1,1]
   add.top_row f:184 $^vcs[2,-1]
-  (( $+ruby_version )) && add.top_row k:88 $ruby_version
-  (( $+node_version )) && add.top_row k:128 ${node_version#v}
-  (( $+go_version )) && add.top_row k:166 ${go_version#go}
-  (( $+erlang_version )) && add.top_row k:88 $erlang_version
-  (( $+elixir_version )) && add.top_row k:93 ${elixir_version#v}
-  (( $+rust_version )) && add.top_row k:130 ${rust_version#v}
+  add.top_row k:88 $ruby_version
+  add.top_row k:128 ${node_version#v}
+  add.top_row k:166 ${go_version#go}
+  add.top_row k:88 $erlang_version
+  add.top_row k:93 ${elixir_version#v}
+  add.top_row k:130 ${rust_version#v}
   add.top_row k:22 $virtenv_info
   (( $+socks )) && add.top_row k:22 "socks:$socks"
   (( $+x11 )) && add.top_row k:27 "display $x11"
