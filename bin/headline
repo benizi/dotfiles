@@ -1,4 +1,5 @@
 #!/usr/bin/perl -0777 -n
+my $empty = !length;
 s/\n?\Z/\n/;
-print "==> $ARGV <==", /\n.*\n/sm ? "\n" : " ";
+print "==> $ARGV <==", /\n.*\n/sm ? "\n" : $empty ? " (empty)" : " ";
 print;
