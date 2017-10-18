@@ -1,9 +1,4 @@
-#!/usr/bin/env awk-run
-(!f || FILENAME != f) {
-  if (f) print ""
-  print "==>", FILENAME, "<=="
-  f = FILENAME
-}
-{
-  print
-}
+#!/usr/bin/perl -0777 -n
+s/\n?\Z/\n/;
+print "==> $ARGV <==", /\n.*\n/sm ? "\n" : " ";
+print;
