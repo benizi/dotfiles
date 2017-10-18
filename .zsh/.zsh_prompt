@@ -131,8 +131,7 @@ __prompt_setup() {
   }
 
   add.top_row add.middle_row add.bottom_row () {
-    local arg once_key
-    unset once_key
+    local arg
     local -a rest
     local -A atts
     atts=( f 15 )
@@ -140,19 +139,12 @@ __prompt_setup() {
       local arg=$1
       shift
       case $arg in
-        once.*) once_key=$arg:e ;;
         :norm) atts=() ;;
         f:*|k:*|?:) atts[${arg%%\:*}]=${arg#*:} ;;
         *) rest+=( $arg $@ ) ; break ;;
       esac
     done
     (( $#rest )) || return 0
-    if (( $+once_key )) ; then
-      if (( ! $+__prompt_once[$once_key] ))
-      then __prompt_once[$once_key]=true
-      else return 0
-      fi
-    fi
     local att= val= c_pre= c_post=
     for att in ${(k)atts} ; do
       local key="$(map_att $att)"
@@ -180,7 +172,7 @@ __prompt_setup() {
   (( $+socks )) && add.top_row k:22 "socks:$socks"
   (( $+x11 )) && add.top_row k:27 "display $x11"
   add.top_row k:17 '%D{%Y-%m-%d %H:%M:%S}'
-  add.top_row once.term k:68 $TERM
+  (( __prompt_once[term]++ )) || add.top_row k:68 $TERM
 
   if (( $__prompt_return )) && (( $+__last_command )) ; then
     local escaped_command=${${${__last_command%%$'\n'}:gs/[$]/\\\$}:gs/[%]/%%}
