@@ -1,6 +1,6 @@
 #!/bin/zsh
-: ${sbt_version=0.13.5}
-url=http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/$sbt_version/sbt-launch.jar
+: ${sbt_version=1.0.2}
+url=https://repo1.maven.org/maven2/org/scala-sbt/sbt-launch/$sbt_version/sbt-launch-$sbt_version.jar
 dest_dir=$HOME/.cache/sbt-launch
 dest=$dest_dir/sbt-launch-$sbt_version.jar
 
