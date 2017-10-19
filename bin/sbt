@@ -5,5 +5,5 @@ dest_dir=$HOME/.cache/sbt-launch
 dest=$dest_dir/sbt-launch-$sbt_version.jar
 
 [[ -d $dest_dir ]] || mkdir $dest_dir
-[[ -f $dest ]] || curl -Lo $dest $url
+find $dest -type f -size +1k | grep -q . || curl -Lo $dest $url
 java -X{ms512,mx1536,ss1}M -XX:{+CMSClassUnloadingEnabled,MaxPermSize=1024M} -jar $dest "$@"
