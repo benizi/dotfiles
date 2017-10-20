@@ -1,0 +1,13 @@
+#!/bin/sh
+answers() {
+  awk '
+  !length() { a = 0 }
+  a { print $NF }
+  /ANSWER SECTION/ { a = 1 }
+  '
+}
+case "$*" in
+  (*'+short'*) filter() { answers ; } ;;
+  (*) filter() { cat ; } ;;
+esac
+drill "$@" | filter
