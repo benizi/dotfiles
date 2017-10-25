@@ -1,4 +1,5 @@
 CFLAGS := -Wall
+CXXFLAGS := -Wall
 SRC = src
 allsource = $(wildcard $(SRC)/*.c $(SRC)/*.go $(SRC)/X11/*.c)
 
@@ -18,6 +19,10 @@ place-holder:	src/place-holder.c
 
 %:	src/%.go
 	go build -o $@ $<
+
+%:	src/%.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@.tmp $<
+	mv $@.tmp $@
 
 x-active-id:	src/X11/x-active-id.c
 	$(CC) $(CFLAGS) -o $@.tmp $< $(shell pkg-config --cflags --libs xcb-atom)
