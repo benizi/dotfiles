@@ -1,0 +1,47 @@
+#!/bin/sh
+base=${0##*/}
+
+sign() {
+  cert=$1
+  key=$2
+  ca=$3
+  file=$4
+  shift 4
+
+  if test $# -eq 1
+  then
+    case "$1" in
+      (-*) ;;
+      (*) set -- -out "$1" ;;
+    esac
+  fi
+
+  openssl cms -sign -binary -noattr \
+    -signer "$cert" \
+    -inkey "$key" \
+    -certfile "$ca" \
+    -in "$file" \
+    -outform DER \
+    "$@"
+}
+
+verify() {
+  file=$1
+  sig=$2
+  cert=$3
+  ca=${4:-"$cert"}
+
+  openssl cms -verify -partial_chain -purpose any -binary \
+    -content "$file" \
+    -inform DER -in "$sig" \
+    -certfile "$cert" \
+    -CAfile="$ca" -no-CApath \
+    -out /dev/null
+}
+
+case "$base" in
+  (ipxe-tool) ;;
+  (ipxe-*) set -- "${base#ipxe-}" "$@" ;;
+esac
+
+"$@"
