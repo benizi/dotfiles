@@ -1,0 +1,151 @@
+#!/bin/zsh
+
+dev=/dev/rfcomm0
+bound=0
+drain=0
+
+# unbind and kill locally-started drain if applicable
+cleanup() {
+  if (( bound )) ; then sudo rfcomm unbind 0 ; bound=0 ; fi
+  if (( drain )) ; then kill $drain ; drain=0 ; fi
+}
+trap cleanup INT EXIT
+
+# Find the first BT headphones listed as connected
+find-headset() {
+  bt-headphone-status |
+  awk '$2 == "true" { print $1 }' |
+  sed '1!d'
+}
+
+# Bind the first headset to an rfcomm device
+open-rfcomm() {
+  sudo rfcomm bind 0 $(find-headset)
+  bound=1
+}
+
+# helper function for fn's that need a socket open
+need-rfcomm() {
+  test -e $dev || open-rfcomm
+}
+
+# returns 0 if the device is connected and a process has opened it
+attached() {
+  rfcomm show $dev 2>/dev/null |
+  grep -qF 'connected [tty-attached]'
+}
+
+# Run `perl` with some settings useful for parsing the headphone's protocol
+perl-dev() {
+  perl -Mbytes -0xFE -nwE "$@" < $dev
+}
+
+# print error to stderr
+warn() {
+  printf '%s\n' "$*" >&2
+}
+
+# Start a process that will read from the device, which is necessary for some
+# commands. Record its PID in `$drain` so it can be killed at shutdown.
+need-rfcomm-reader() {
+  test -e $dev || open-rfcomm
+  attempt=0
+  if ! attached
+  then
+    () {
+      local pid=$1
+      perl-dev \
+      'BEGIN { warn $$.$/; close STDERR; }' \
+      '$a ||= time;' \
+      'exit if time - $a > 30' \
+      >&- 2> $pid &
+      while [[ ! -s $pid ]]
+      do
+        sleep 1
+        (( ++attempt > 20 )) || continue
+        warn 'No PID?'
+        return 1
+      done
+      drain=$(<$pid)
+    } =(:) || return 1
+  fi
+  while ! attached
+  do
+    sleep 1
+    (( ++attempt > 20 )) || continue
+    warn 'Exceeded timeout'
+    return 1
+  done
+}
+
+# print the hex bytes of each packet, one packet per line
+parse-packets-impl() {
+  set -- 'say join " ", map sprintf("%02x", ord), split //' "$@"
+  perl-dev ${(j:;:)@}
+}
+
+# parse-packets command needs a device, then calls the implementation (split
+# for debugging)
+parse-packets() {
+  need-rfcomm
+  parse-packets-impl
+}
+
+# read the first five packets from the device (always sends 5 at startup)
+read-initial-state() {
+  need-rfcomm
+  parse-packets-impl 'exit if $.==5'
+}
+
+# Pull battery, charging, and volume status out of the initial 5 packets.
+parse-initial-state() {
+  # ff 00 01 04 07 03 01 fe - 3 = battery level
+  # ff 00 01 04 07 13 01 fe - plugged in
+  perl -Mvars='$battery,$volume' -lnwE '
+  $battery = hex $1 if /^ff 00 01 04 07 (..) 01 fe$/;
+  $volume = hex $1 if /^ff 00 06 01 (..) fe$/;
+  END {
+    my $charge_bit = 0x10;
+    my $charging = $battery & $charge_bit;
+    $battery -= $charging;
+    for (
+      [battery => $battery],
+      [plugged => $charging ? "true" : "false"],
+      [volume => $volume],
+      ) { say sprintf "%s\t%s", @$_ }
+  }'
+}
+
+# show-initial-state action reads and parses the state (split for debugging)
+show-initial-state() {
+  read-initial-state | parse-initial-state
+}
+
+# gen-packet turns a list of hex strings into a byte stream
+gen-packet() {
+  perl -Mbytes -we 'print map chr hex, "ff", @ARGV, "fe"' "$@"
+}
+
+# send-packet generates a packet, sends it, and dumps it for debugging
+send-packet() {
+  need-rfcomm-reader
+  gen-packet "$@" | tee -a $dev | myod
+}
+
+# set-volume activates some kind of control mode, then sets the volume
+set-volume() {
+  need-rfcomm-reader
+  send-packet 0 c 1 1
+  send-packet 0 7 1 $1
+}
+
+case $1 in
+  ('') parse-packets ;;
+  (init) show-initial-state ;;
+  (v|vol) set-volume ${@:2} ;;
+  (sleep) open-rfcomm ; sleep ${2:-1m} ;;
+  (--debug) shift ; "$@" ;;
+  (*) send-packet "$@" ;;
+esac
+
+# vim:se isk+=-:
