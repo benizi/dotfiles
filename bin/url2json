@@ -1,27 +1,7 @@
 #!/usr/bin/env ruby
-require 'uri'
+$:.unshift(File.expand_path(File.dirname(__FILE__)))
+require 'benizi-uri'
 require 'json'
-
-module URI
-  class << self
-    def add_scheme(name, default_port)
-      @@schemes[name.to_s] = const_set(name, Class.new(Generic)).class_eval do
-        const_set('DEFAULT_PORT', default_port)
-        self
-      end
-    end
-  end
-
-  add_scheme :SSH, 22
-
-  def fields
-    component + %I[user password default_port] - %I[userinfo]
-  end
-
-  def to_h
-    fields.map { |k| [k, send(k)] }.to_h
-  end
-end
 
 def urls
   @urls ||= ARGF.each_line.map { |url| URI(url.chomp) }
