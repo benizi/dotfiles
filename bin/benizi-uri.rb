@@ -21,6 +21,7 @@ module URI
     end
   end
 
+  add_scheme :postgresql
   add_scheme :ssh
 
   def fields
