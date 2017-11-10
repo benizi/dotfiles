@@ -4,20 +4,24 @@
 # - support for SSH scheme
 # - `#to_h`
 require 'uri'
+require 'socket'
 
 module URI
   class << self
-    def add_scheme(name, default_port)
+    def add_scheme(name, default_port=nil)
       uc = name.to_s.upcase
       sym = uc.to_sym
+      unless default_port.is_a?(Fixnum)
+        default_port = Socket.getservbyname(uc.downcase) rescue nil
+      end
       @@schemes[uc] = const_set(sym, Class.new(Generic)).class_eval do
-        const_set('DEFAULT_PORT', default_port)
+        const_set('DEFAULT_PORT', default_port) if default_port
         self
       end
     end
   end
 
-  add_scheme :ssh, 22
+  add_scheme :ssh
 
   def fields
     component + %I[user password default_port] - %I[userinfo]
