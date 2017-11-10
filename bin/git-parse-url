@@ -4,6 +4,9 @@
 # 1. Git config `url.{{substitution}}.insteadOf` options
 # 2. SSH config alias/expansion
 
+$:.unshift(File.expand_path(File.dirname(__FILE__)))
+require 'benizi-uri'
+
 def insteadofs
   git = %w[git config -z --get-regexp ^url\..*\.insteadof$]
   IO.popen(git, 'rb').read.split("\0").map do |e|
@@ -32,17 +35,18 @@ def sshparams(host)
 end
 
 def fixupssh(url)
-  return url unless m = url.match(%r(^(\w+(?:\.\w+)?):(?!/)))
-  _, host, *_ = *m
-  params = sshparams(host)
-  return url if params[:hostname] == host
-  ssh = %Q[ssh://#{params[:user]}@#{params[:hostname]}/]
-  port = params[:port] == '22' ? '' : "?port=#{params[:port]}"
-  ssh + url[host.size+1..-1] + port
+  url = URI(url)
+  # Bare hostname (e.g., `github.com`):
+  url = URI("ssh://#{url.path}") if url.path and not url.scheme
+  # Short hostname + path (e.g., `gh:benizi/dotfiles`):
+  url = URI("ssh://#{url.scheme}/#{url.opaque}") if url.opaque
+  return url unless url.scheme == "ssh"
+  sshparams(url.host).each { |(k,v)| url.send("#{k}=", v) if v }
+  url
 end
 
 def input
-  ARGV.empty? ? STDIN.readlines : ARGV
+  ARGV.empty? ? STDIN.readlines.map(&:chomp) : ARGV
 end
 
 puts input.map { |url| fixupssh(subinsteadofs(url)) }
