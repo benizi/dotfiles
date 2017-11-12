@@ -1,0 +1,131 @@
+# precision = 50
+50k
+
+# output = hex
+16o
+
+## for debugging
+# p = print stack with newlines around it
+[10an f 10an]sp
+
+# g = debuG
+[]sg
+# [lpx]sg
+
+## helpers
+# d = duplicate the 'n'th item
+[d1+0r-SfRdLfR]sd
+
+# m = product of moduli when divided by primes <= 19
+# N = input
+# P = product of remainders
+[
+KSK0k dSN 1SP
+0 19 17 13 11 7 5 3 2
+[lNr%dSWLP*SPd0<X]sX
+lXx
++ LNd-+ LP LKk
+]sm
+
+# n = next prime
+[1+
+# L = Large primes (test the product of mods)
+[lmx0=n]sL
+# S = Small primes (TODO: this is dumb - find a better pattern)
+[d1=n d4=n d6=n d8=n d9=n d10=n d12=n d14=n d15=n d16=n d18=n]sS
+d19>S d19<L
+]sn
+
+# c = cuberoot (initial guess = n/3)
+[d3/llx]sc
+
+# i = implementation of one step
+[KSK50k d_3Rd3^3ldx-3 3ldx2^*/- LKk]si
+
+# l = loop
+[lix d4ldx-d*v1 2 32^/ lgx <l]sl
+
+# t = truncate
+[KSK0k d1 0k/LKk-]st
+
+# T = Thirty-two bit-ify
+[
+KSK0k
+d1/ LKk - KSK0k
+2 32^*
+1/
+LKk
+]sT
+
+# h = hash values (first 32 bits of fractional parts of the square roots of
+# first 8 primes
+[lnx
+# d [p'=]n n 10an
+d v
+# d [h'=]n n 10an
+[h]n lHn [ := 0x]n
+lTx lZx n 10an
+lH1+dsH 8>h]sh
+
+# k = round constants
+[
+lnx
+[k]n OSO10o lIn LOo [ := 0x]n
+lcx
+# d
+lTx lZx n 10an
+# OSO10o n 10an LOo
+lI1+dsI 64>k]sk
+
+# Z = leading zeros
+[
+d SA
+ISIAi16i 10000000 LIi SB
+[0n lA lB 16/ dsB >P]sP
+lA lB >P
+]sZ
+
+# M = main
+[
+# print hash values
+c 1 lhx
+# print round constants
+c 1 lkx
+]sM
+
+lMx
+
+# cuberoot(n) =
+#  x' = x-(x^3-n)/(3*x^2)
+#  x' = x - a / b
+#  x' = x x 3 ^ n - 3 x 2 ^ * / -
+
+# start = n x
+# d d 3 ^ = n x x (x^3)
+#   4R x x (x^3) n
+#   d  x x (x^3) n n
+#  _5R n x x (x^3) n
+# 4Rd_5R = n x x (x^3) n
+# - 3 = n x x ((x^3) - n) 3
+# 3Rd_4R = n x x ((x^3) - n) 3 x
+# 2 ^ * / -
+
+# [d_3Rd3^3Rd_4R-3 3Rd_4R2^*/-]sa
+
+# x x               3*2^
+# x b
+# x b n x             3^
+# x b n (x^3)          -
+# x b a                /
+# x (a/b)              -
+# x'
+# x x 2 ^ 3 * n x 3 ^ - / -
+# n x n x x 2 ^ 3 * 3 ^ - / -
+# x b n x 3 ^ - / -
+
+# starting with n x
+# d2^3* = n x b
+# 3Rd_4R 3Rd_4R = n x b n x
+# 3^ = n x b n (x^3)
+# r- = n x b a
+# r/- = n x'
