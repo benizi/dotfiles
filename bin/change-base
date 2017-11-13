@@ -1,0 +1,71 @@
+#!/bin/sh
+
+n=
+in=
+out=
+pfx=0
+
+for arg
+do
+  case "$arg" in
+    (pfx) pfx=1 ;;
+    (0x) out=16 ; pfx=1 ;;
+    (0o) out=8 ; pfx=1 ;;
+    (0b) out=2 ; pfx=1 ;;
+    (*r) out=${arg%?} ; pfx=1 ;;
+    (obase=*) out=${arg#*=} ;;
+    (*o) out=${arg%?} ;;
+    (ibase=*) in=${arg#*=} ;;
+    (*i) in=${arg%?} ;;
+    (*) n="$n $arg" ;;
+  esac
+done
+
+if test -z "$in"
+then
+  if test "$out" = 10
+  then in=16
+  else in=10
+  fi
+fi
+
+if test -z "$out"
+then
+  if test "$in" = 10
+  then out=16
+  else out=10
+  fi
+fi
+
+if ! test -t 0
+then n="$n $(cat -)"
+elif test -z "$n"
+then
+  printf '(Reading from stdin)\n' >&2
+  read n
+fi
+
+print_prefix() {
+  case "$out" in
+    (10) ;;
+    (16) printf 0x ;;
+    (8) printf 0o ;;
+    (2) printf 0b ;;
+    (*) printf %sr $out ;;
+  esac
+}
+
+# need input as uppercase for hex
+case "$in" in
+  (16) n="$(printf %s "$n" | tr a-z A-Z)" ;;
+esac
+
+set -- $n
+for n
+do
+  test $pfx -eq 0 || print_prefix
+  if hash dc 2>/dev/null
+  then printf '%so%si%sp' $out $in $n | dc -
+  else printf '%s\n' obase=$out ibase=$in $n | bc
+  fi
+done
