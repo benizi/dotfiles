@@ -21,6 +21,13 @@ has_cmd cfssljson
 # for generating JSON configuration
 has_cmd edn
 
+debugtee() {
+  if test -n "$debug"
+  then jq . | tee "$1"
+  else cat
+  fi
+}
+
 host_config() {
   edn <<CA_CSR_EDN
 {
@@ -32,9 +39,9 @@ CA_CSR_EDN
 }
 
 host_config $ca |
-tee req.$ca.json |
+debugtee req.$ca.json |
 cfssl genkey -initca - |
-tee genkey.$ca.json |
+debugtee genkey.$ca.json |
 cfssljson -bare $ca
 
 for shortname
@@ -42,7 +49,7 @@ do
   test x$shortname != x-- || continue
   host=$shortname.$tld
   host_config $host |
-  tee req.$host.json |
+  debugtee req.$host.json |
   cfssl gencert \
     -ca $ca.pem \
     -ca-key ${ca}-key.pem \
