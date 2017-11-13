@@ -1,6 +1,6 @@
 local dest
 [[ ${${:-"$(pwd)"}:A} = "$(pwd)" ]] || return 0
-dest="$HOME/src/$(goname)"
+dest="$HOME/src/$(goname "$@")"
 mkdir -p ${dest:h}
 ln -nsf "$(pwd)" $dest
 cd $dest
