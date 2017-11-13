@@ -17,7 +17,7 @@ has_cmd() {
 # driver for all of this
 has_cmd cfssl
 # for splitting resulting certs
-has_cmd cfssljson
+has_cmd cfssljson-dev || has_cmd cfssljson
 # for generating JSON configuration
 has_cmd edn
 
@@ -26,6 +26,25 @@ debugtee() {
   then jq . | tee "$1"
   else cat
   fi
+}
+
+cfssljson_binary() {
+  if has_cmd cfssljson-dev
+  then echo cfssljson-dev
+  elif has_cmd cfssljson
+  then echo cfssljson
+  else printf 'No `cfssljson` binary found?\n' >&2 ; exit 1
+  fi
+}
+
+export cfssl_names=benizi
+case "$(cfssljson_binary)" in
+  (*-dev) _cert=.cert _key=.key ;;
+  (*) _cert=.pem _key=-key.pem ;;
+esac
+
+cfssljson() {
+  command "$(cfssljson_binary)" "$@"
 }
 
 host_config() {
@@ -51,8 +70,8 @@ do
   host_config $host |
   debugtee req.$host.json |
   cfssl gencert \
-    -ca $ca.pem \
-    -ca-key ${ca}-key.pem \
+    -ca $ca$_cert \
+    -ca-key $ca$_key \
     -hostname=$host \
     - |
   cfssljson -bare $host
