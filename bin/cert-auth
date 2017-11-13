@@ -1,0 +1,68 @@
+#!/bin/sh
+
+set -e
+
+: ${tld=self}
+: ${ca=ca.$tld}
+: ${bits=4096}
+: ${O=benizi}
+: ${OU=WWW}
+
+test $# -gt 0 || set -- host1 host2
+
+has_cmd() {
+  hash "$1" 2>/dev/null
+}
+
+# driver for all of this
+has_cmd cfssl
+# for splitting resulting certs
+has_cmd cfssljson
+# for pretty-printing JSON
+has_cmd jq
+
+ca_config() {
+  if has_cmd edn
+  then
+    cat <<CA_CSR_EDN |
+{
+  CN $ca
+  key {algo rsa size $bits}
+  names [{C US, ST Pennsylvania, L Pittsburgh, O "$O", OU "$OU"}]
+}
+CA_CSR_EDN
+    edn |
+    jq .
+  else
+    jq -n --arg CN $ca --arg bits $bits --arg O "$O" --arg OU "$OU" '{
+      CN: $CN,
+      key: {algo: "rsa", size: ($bits|tonumber)},
+      names: [{
+      C: "US",
+      ST: "Pennsylvania",
+      L: "Pittsburgh",
+      O: $O,
+      OU: $OU
+    }]}'
+  fi
+}
+
+ca_config |
+tee req.$ca.json |
+cfssl genkey -initca - |
+tee genkey.$ca.json |
+cfssljson -bare $ca
+
+for shortname
+do
+  test x$shortname != x-- || continue
+  host=$shortname.$tld
+  jq --arg CN "$host" '.CN = $CN' < req.$ca.json |
+  tee req.$host.json |
+  cfssl gencert \
+    -ca $ca.pem \
+    -ca-key ${ca}-key.pem \
+    -hostname=$host \
+    - |
+  cfssljson -bare $host
+done
