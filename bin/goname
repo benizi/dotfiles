@@ -3,7 +3,9 @@ if test -n "$1"
 then echo "$1"
 else
   git remote |
-  sed 1q
+  awk -v me=$(git config github.user || :) '
+  { if ($0 == me) any = $0; else if (!nonme) nonme = $0; }
+  END { if (nonme) print nonme; else if (any) print any; else exit 1 }'
 fi |
 xargs git remote get-url |
 git parse-url |
