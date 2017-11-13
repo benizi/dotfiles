@@ -1,6 +1,10 @@
 #!/bin/sh
-git remote |
-sed 1q |
+if test -n "$1"
+then echo "$1"
+else
+  git remote |
+  sed 1q
+fi |
 xargs git remote get-url |
 git parse-url |
 sed -e 's%^.*//%%' -e 's/^git@//'
