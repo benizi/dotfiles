@@ -18,22 +18,20 @@ has_cmd() {
 has_cmd cfssl
 # for splitting resulting certs
 has_cmd cfssljson
-# for generating input to `jq`
+# for generating JSON configuration
 has_cmd edn
-# for pretty-printing JSON
-has_cmd jq
 
-ca_config() {
+host_config() {
   edn <<CA_CSR_EDN
 {
-  CN $ca
+  CN $1
   key {algo rsa size $bits}
   names [{C US, ST Pennsylvania, L Pittsburgh, O "$O", OU "$OU"}]
 }
 CA_CSR_EDN
 }
 
-ca_config |
+host_config $ca |
 tee req.$ca.json |
 cfssl genkey -initca - |
 tee genkey.$ca.json |
@@ -43,8 +41,7 @@ for shortname
 do
   test x$shortname != x-- || continue
   host=$shortname.$tld
-  ca_config |
-  jq --arg CN "$host" '.CN = $CN' |
+  host_config $host |
   tee req.$host.json |
   cfssl gencert \
     -ca $ca.pem \
