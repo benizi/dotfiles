@@ -1,0 +1,5 @@
+name: ghcihist
+root: ~/.ghc
+windows:
+  - ghcihist: |
+      while {:} {date; inotifywait -e CLOSE_WRITE ghci_history; sleep 2; cp ghci_history{,.$(date +%s.%9N)} }
