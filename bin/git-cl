@@ -10,14 +10,19 @@ Usage: git $0 [options] repo [-- other args to git-clone]
 
 Options:
   --dry   Dry run
+  -u/--include-user  Prepend the username to the clone destination, e.g.:
+     git $0 gh:benizi/dotfiles -> dotfiles
+     git $0 -u gh:benizi/dotfiles -> benizi-dotfiles
 USAGE
 }
 
 GetOptions(
   'dry' => \(my $dry = 0),
+  'u|include-user' => \(my $hyphenated = 0),
 ) or usage;
 
-my ($repo) = @ARGV;
+usage unless @ARGV;
+my ($repo, @extra) = splice @ARGV;
 chomp(my $resolved = qx/git parse-url $repo/);
 
 # Repo must resolve to a recognizable URL
@@ -41,10 +46,17 @@ unless ($upstream =~ $valid_upstream) {
   $upstream = URI->new($repo)->scheme if $repo ne $uri;
 }
 
-# Add upstream arg if one was found
-unshift @ARGV, -o => $upstream if $upstream;
+# Construct destination if requested
+my $dest;
+$dest = join '-', $1, $2 if $hyphenated and $path =~ m{^([^/]+)/([^/]+)};
 
-# Construct the `git-clone` command, print it, and run it (unless `--dry`)
-my @clone = (git => clone => @ARGV);
+# Construct the `git-clone` command
+my @clone = qw/git clone/;
+push @clone, -o => $upstream if $upstream;
+push @clone, $repo;
+push @clone, $dest if $dest;
+push @clone, @extra;
+
+# Print it, and run it (unless `--dry`)
 say "@clone";
 exec { $clone[0] } @clone unless $dry;
