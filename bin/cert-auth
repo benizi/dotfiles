@@ -47,6 +47,18 @@ cfssljson() {
   command "$(cfssljson_binary)" "$@"
 }
 
+exists() {
+  {
+    state=
+    if test -f $1$_cert
+    then ret=0 state='Already exists.'
+    else ret=1 state='Generating...'
+    fi
+    printf 'CN=%s\n  %s\n' $1 "$state"
+    return $ret
+  } >&2
+}
+
 host_config() {
   edn <<CA_CSR_EDN
 {
@@ -57,6 +69,7 @@ host_config() {
 CA_CSR_EDN
 }
 
+exists $ca ||
 host_config $ca |
 debugtee req.$ca.json |
 cfssl genkey -initca - |
@@ -67,6 +80,7 @@ for shortname
 do
   test x$shortname != x-- || continue
   host=$shortname.$tld
+  exists $host ||
   host_config $host |
   debugtee req.$host.json |
   cfssl gencert \
