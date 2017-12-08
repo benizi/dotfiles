@@ -74,5 +74,6 @@ do
     -ca-key $ca$_key \
     -hostname=$host \
     - |
+  debugtee genkey.$host.json |
   cfssljson -bare $host
 done
