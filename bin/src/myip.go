@@ -272,6 +272,7 @@ func main() {
   keepLoop := false
   keepRejected := false
   keepAll := false
+  onlyIfs := ""
   format := ""
   raw := false
   asJson := false
@@ -300,6 +301,8 @@ func main() {
   flag.BoolVar(&asJson, "j", asJson, "Output as JSON objects (alias)")
   flag.BoolVar(&quiet, "q", quiet,
     "Quiet output (currently: don't add unexported fields to JSON)")
+  flag.StringVar(&onlyIfs, "ifs", onlyIfs,
+    "Only show IPs on these interface names (comma-separated)")
   flag.Parse()
 
   if !external && !iface {
@@ -328,11 +331,26 @@ func main() {
     addNet(dockerNets, docker)
   }
 
+  filterInterfaceNames := false
+  okInterface := map[string]bool{}
+  addInterface := func(ifi string) {
+    filterInterfaceNames = true
+    okInterface[ifi] = true
+  }
+
+  if onlyIfs != "" {
+    for _, ifi := range strings.Split(onlyIfs, ",") {
+      addInterface(ifi)
+    }
+  }
+
   for _, arg := range flag.Args() {
     if arg == "" {
       continue
     }
-    if arg[0] == '!' || arg[0] == 'x' {
+    if arg[0] == '%' {
+      addInterface(arg[1:])
+    } else if arg[0] == '!' || arg[0] == 'x' {
       addNet(rejectNets, arg[1:len(arg)])
     } else {
       addNet(preferNets, arg)
@@ -366,6 +384,9 @@ func main() {
     isLoop := ip.IsLoopback()
 
     if xor(print4, print6) && xor(print6, v6) {
+      continue
+    }
+    if filterInterfaceNames && !okInterface[addr.name] {
       continue
     }
     if !keepAll {
