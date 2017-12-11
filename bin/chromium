@@ -325,7 +325,7 @@ then
 fi
 # Workaround for current `--headless` mode bug: https://crbug.com/546953#c152
 if (( $+_headless ))
-then args+=( --disable-gpu )
+then _args+=( --disable-gpu )
 fi
 find_exe
 _cmd=( $_exec $exe $_args )
