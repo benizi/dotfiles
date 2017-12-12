@@ -28,6 +28,7 @@ const (
 type namedAddr struct {
   name string
   ip   net.IP
+  mask net.IPMask
 }
 
 func getExternal() []net.Addr {
@@ -50,20 +51,16 @@ func getExternal() []net.Addr {
   return []net.Addr{network}
 }
 
-func findIPs(addrs []net.Addr) []net.IP {
-  ips := []net.IP{}
-  for _, addr := range addrs {
-    if network, ok := addr.(*net.IPNet); ok {
-      ips = append(ips, network.IP)
-    }
-  }
-  return ips
-}
-
 func namedIPs(name string, addrs []net.Addr) []namedAddr {
   named := []namedAddr{}
-  for _, ip := range findIPs(addrs) {
-    named = append(named, namedAddr{name: name, ip: ip})
+  for _, addr := range addrs {
+    if network, ok := addr.(*net.IPNet); ok {
+      named = append(named, namedAddr{
+        name: name,
+        ip: network.IP,
+        mask: network.Mask,
+      })
+    }
   }
   return named
 }
@@ -72,14 +69,11 @@ func getExternalNamedAddrs() []namedAddr {
   return namedIPs("external", getExternal())
 }
 
-func getInterfaceNamedAddrs() []namedAddr {
+func getInterfaceNamedAddrs() ([]namedAddr, error) {
   namedAddrs := []namedAddr{}
   ifis, err := net.Interfaces()
   if err != nil {
-    if true {
-      return []namedAddr{{ip: net.IP{}, name: err.Error()}}
-    }
-    return namedAddrs
+    return nil, err
   }
   for _, ifi := range ifis {
     addrs, err := ifi.Addrs()
@@ -88,11 +82,12 @@ func getInterfaceNamedAddrs() []namedAddr {
     }
     namedAddrs = append(namedAddrs, namedIPs(ifi.Name, addrs)...)
   }
-  return namedAddrs
+  return namedAddrs, nil
 }
 
 type foundAddr struct {
   IP net.IP
+  Network string
   preferred bool
   rejected bool
   Loopback bool
@@ -267,6 +262,7 @@ func main() {
   docker := "172.16.0.0/12"
   findAll := false
   printName := false
+  printMask := false
   skipDocker := false
   skipPrivate := false
   keepLoop := false
@@ -371,7 +367,11 @@ func main() {
     namedAddrs = getExternalNamedAddrs()
   }
   if iface {
-    namedAddrs = append(namedAddrs, getInterfaceNamedAddrs()...)
+    addrs, err := getInterfaceNamedAddrs()
+    if err != nil {
+      log.Fatalln(err)
+    }
+    namedAddrs = append(namedAddrs, addrs...)
   }
 
   for _, addr := range namedAddrs {
@@ -403,8 +403,10 @@ func main() {
         continue
       }
     }
+    network := net.IPNet{IP: ip, Mask: addr.mask}
     found = append(found, foundAddr{
       IP: ip,
+      Network: network.String(),
       preferred: isPreferred,
       rejected: isRejected,
       isRfc1918: isPrivate,
