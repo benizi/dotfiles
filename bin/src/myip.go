@@ -281,6 +281,9 @@ func main() {
   flag.StringVar(&docker, "dockernet", docker, "Docker network to exclude")
   flag.BoolVar(&printName, "name", printName, "Print interface name")
   flag.BoolVar(&printName, "n", printName, "Print interface name (alias)")
+  flag.BoolVar(&printMask, "cidr", printMask, "Print address in CIDR notation")
+  flag.BoolVar(&printMask, "mask", printMask,
+    "Print address in CIDR notation (alias)")
   flag.BoolVar(&findAll, "all", findAll, "Keep going after first match")
   flag.BoolVar(&findAll, "a", findAll, "Keep going after first match (alias)")
   flag.BoolVar(&skipPrivate, "nopriv", skipPrivate, "Omit RFC1918 addresses")
@@ -431,7 +434,11 @@ func main() {
     if printName {
       format = "{{.Name}}\t"
     }
-    format += "{{.IP}}"
+    if printMask {
+      format += "{{.Network}}"
+    } else {
+      format += "{{.IP}}"
+    }
   }
   if !raw {
     format += "\n"
