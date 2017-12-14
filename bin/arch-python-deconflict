@@ -1,0 +1,144 @@
+#!/bin/sh
+set -e -x
+
+: ${pfx="$HOME/arch.python"}
+findsite=$pfx.found.pkgs
+allpkgs=$pfx.pkgs.json
+conflicts=$pfx.conflicts.json
+
+find_site_packages() {
+  command find {/usr,"$HOME/.local"}/lib/python2.7/site-packages \
+    \( \
+      \( -type f -name '*.egg-info' \) \
+      -o \
+      -name PKG-INFO \
+    \) \
+    -print0 |
+  xargs -0 awk -F': ' '$1=="Name"{print $2 "\t" FILENAME}' |
+  tee "$findsite"
+}
+
+combine_with_pacman() {
+  test -s "$findsite"
+  pip2 list --format=json |
+  jq -r '.[].name' |
+  xargs pip2 show -f |
+  sed 's/^---$//' |
+  perl -000 -pwe '
+  ($name) = /^Name: (.+)$/m;
+  ($location) = /^Location: (.+)$/m;
+  s/^\s+(?=\S)/$name\t$location\//gm;
+  1 while s{/[^/]+/\Q..\E}{};
+  $_ = "$name\t_SYS\n" if /Cannot locate/
+  ' |
+  env egglist="$findsite" perl -MJSON -we '
+  my (%pkgs, %files, %dup_check);
+  sub file {
+    my($pp,$f)=@_;
+    $files{$f}=$pp;
+    $dup_check{$f}{$pp}=1
+  }
+  sub addpkg {
+    my($kind,$pp,$f,@atts) = @_;
+    $pkgs{$pp}//={kind=>$kind,@atts};
+    file $pp, $f
+  }
+  sub pacman {
+    my($ap,$pp,$f)=@_;
+    $pkgs{$pp}//={kind=>pacman=>archpkg=>$ap};
+    file $pp, $f
+  }
+  my %egg;
+  {
+    local @ARGV = ($ENV{egglist});
+    while (<>) {
+      chomp;
+      my ($pkg, $egg) = split /\t/;
+      $egg{$_} = $egg for $pkg, lc $pkg
+    }
+  }
+  my @pacman;
+  while (<STDIN>) {
+    chomp;
+    @F = split /\t/;
+    next if @F != 2;
+    my ($pkg, $loc) = @F;
+    if ($loc eq "_SYS") {
+      push @pacman, $pkg;
+      next;
+    }
+    addpkg pip2 => @F
+  }
+  for my $pkg (@pacman) {
+    my $eggfile = $egg{$pkg};
+    die "No eggfile for {$pkg}?" unless $eggfile;
+    my $cmd = "pacman -Qqo \Q$eggfile\E 2>/dev/null | xargs -r pacman -Ql";
+    chomp(my @files = readpipe $cmd);
+    my $archpkg;
+    ($archpkg, $_) = (split " ", $_, 2) for @files;
+    addpkg pacman => $pkg, $_, archpkg => $archpkg for grep -f, @files
+  }
+  {
+    my %dups;
+    while (my ($file, $v) = each %dup_check) {
+      my @pkgs = keys %$v;
+      next if @pkgs == 1;
+      $dups{$file} = [@pkgs]
+    }
+    my $obj = {
+      pkgs => \%pkgs,
+      files => \%files,
+      dups => \%dups,
+    };
+    print JSON->new->canonical(1)->encode($obj)
+  }
+  ' |
+  jq . |
+  tee "$allpkgs"
+}
+
+find_conflicts() {
+  sudo pacman -Su --noconfirm 2>&1 |
+  awk '/exists in filesystem/{print $2}' |
+  jq -R . |
+  jq -s '{conflicts:.}' |
+  tee "$conflicts"
+}
+
+list_site_conflicts() {
+  test -s "$allpkgs"
+  test -s "$conflicts"
+  jq -s add "$conflicts" "$allpkgs" |
+  jq -c '
+  . as $o|
+  .conflicts|
+  map(. as $f|$o.files|.[$f]|. as $p|({name:$p} + $o.pkgs[$p]))|
+  .[]
+  ' |
+  sort |
+  uniq |
+  jq -r .name
+}
+
+uninstall_conflicts() {
+  uninstall="$(list_site_conflicts)"
+  if test -z "$uninstall"
+  then echo "NOTHING TO UNINSTALL"
+  else sudo pip2 uninstall --yes $uninstall
+  fi
+}
+
+main() {
+  find_site_packages
+  combine_with_pacman
+  find_conflicts
+  uninstall_conflicts
+}
+
+test $# -gt 0 || set -- main
+"$@"
+
+## Original sequence:
+# pip2 list --format=json | jq -r '.[].name' | xargs pip2 show -f | sed 's/^---$//' | perl -000 -pwe '($name) = /^Name: (.+)$/m; ($location) = /^Location: (.+)$/m; s/^\s+(?=\S)/$name\t$location\//gm; 1 while s{/[^/]+/\Q..\E}{}; $_ = "$name\t_SYS\n" if /Cannot locate/' | perl -Mvars=@lines,%pkgs,%files,%dups -MJSON -F\\t -lanwe 'BEGIN { sub file { my($pp,$f)=@_; $files{$f}=$pp; $dups{$f}{$pp}=1 } sub pacman { my($ap,$pp,$f)=@_; $pkgs{$pp}//={kind=>pacman=>archpkg=>$ap}; file $pp, $f } sub pip2 { my($pp,$f) = @_; $pkgs{$pp}//={qw[kind pip2]}; file $pp, $f } } END { my %actualdups; while (my($k,$v) = each %dups) { my @pkgs = keys %$v; next if @pkgs == 1; $actualdups{$k} = [@pkgs] } my $obj = {pkgs=>\%pkgs,files=>\%files,dups=>\%actualdups}; print JSON->new->canonical(1)->encode($obj) } next if @F!=2; my($pkg,$loc)=@F; if ($ARGV ne "-") { $egg{$_} = $loc for $pkg, lc $pkg } elsif ($loc eq "_SYS") { my $eggfile = $egg{$pkg}; chomp(my @files = readpipe "pacman -Qqo \Q$eggfile\E 2>/dev/null | xargs -r pacman -Ql"); my $archpkg; s/^(\S+)\s*// and $archpkg = $1 for @files; pacman $archpkg, $pkg, $_ for grep -f, @files } else { pip2 @F }' =(command find /usr/lib/python2.7/site-packages \( \( -type f -name '*.egg-info' \) -o -name PKG-INFO \) -print0 | xargs -0 awk -F': ' '$1=="Name"{print $2 "\t" FILENAME}') - |& jq . | tee ~/all.python.pkgs.json
+# sudo pacman -Su --noconfirm |& awk '/exists in filesystem/{print $2}' | tee ~/conflicting.files
+# sudo pip2 uninstall $({ jq -R . < ~/conflicting.files | jq -s '{conflicts:.}' ; cat ~/all.python.pkgs.json } | jq -s add | jq -c '. as $o|.conflicts|map(. as $f|$o.files|.[$f]|. as $p|({name:$p} + $o.pkgs[$p]))|.[]' | sort | uniq | jq -r .name)
