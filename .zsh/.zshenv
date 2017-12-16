@@ -209,7 +209,7 @@ if (( $+commands[verman] )) ; then
   _version node v7.8.0
   _version ruby 2.2.2
   _version rust 1.11.0
-  _version go go1.6
+  _version go go1.7.6-nix
   _version stack v1.4.0
   _version ocaml 4.02.0
 fi
