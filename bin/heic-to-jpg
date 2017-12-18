@@ -1,0 +1,95 @@
+#!/bin/sh
+
+set -e
+
+test -n "$tmpdir" || exec in-tmp /bin/sh "$0" "$@" || exit 1
+
+gpac_repo=https://github.com/gpac/gpac
+gpac_dir=$HOME/git/gpac
+gpac_bin=$gpac_dir/bin/gcc
+
+set -x
+
+test -d "$gpac_dir"
+test -x "$gpac_bin/MP4Box"
+
+export PATH="${gpac_bin}:$PATH"
+export LD_LIBRARY_PATH=${gpac_bin}${LD_LIBRARY_PATH+:}"$LD_LIBRARY_PATH"
+
+live_img=$1
+jpg=$2
+test -r "$live_img"
+test -n "$jpg" || jpg="${live_img%.*}.jpg"
+test -n "$jpg"
+test "$jpg" != "$live_img"
+
+# 1-48 = 6x8 grid of hvc1
+for i in $(seq 48)
+do
+  MP4Box -dump-item "$i":path=$i.hevc "$live_img"
+  ffmpeg -y -i $i.hevc -frames:v 1 -vsync vfr -q:v 1 -an $i.png < /dev/null
+done
+
+# 49 = grid
+# 50 = hvc1 (thumbnail?)
+# 51 = Exif
+# 52 = mime (extra Exif-style stuff?)
+MP4Box -v -info "$live_img" 2>&1 |
+awk '/Read Box/ { print $6, $(NF-2), $NF }' |
+env live_img="$live_img" jpg="$jpg" perl -Mbytes -we '
+open my $fh, "<", $ENV{live_img} or die "<$ENV{live_img}: $!";
+my %blocks;
+while (<STDIN>) {
+  chomp;
+  my ($type, $size, $off) = split;
+  seek $fh, $off, 0;
+  my $data = do { local $/ = \$size; <$fh> };
+  push @{$blocks{$type}}, $data;
+}
+my %data;
+for my $iloc (@{$blocks{iloc}}) {
+  my $skip_hdr = 0;
+  while (length $iloc) {
+    next unless $skip_hdr++;
+    my ($id, $from_idat, $offset, $len) = (unpack "nC6NN", $iloc)[0,2,-2,-1];
+    next if $id < 49; # skip images (6x8 grid = 48 images)
+    my $data;
+    if ($from_idat) {
+      $data = substr $blocks{idat}[0], 8 + $offset, $len;
+    } else {
+      seek $fh, $offset, 0;
+      $data = do { local $/ = \$len; <$fh> };
+    }
+    $data{$id} = $data;
+  } continue {
+    $iloc = substr $iloc, 16;
+  }
+}
+my %byname;
+for my $infe (@{$blocks{infe}}) {
+  my ($id, $name) = unpack "x12nxxZ*", $infe;
+  $byname{$name} //= $id;
+}
+my ($rows, $cols, $w, $h) = unpack "x2C2n2", $data{$byname{grid}};
+$_++ for $rows, $cols;
+my $tile = join "x", $cols, $rows;
+my $N = $cols * $rows;
+{
+  open my $x, ">", "exif" or die ">exif: $!";
+  print $x $data{$byname{Exif}};
+}
+sub run { system { $_[0] } @_ }
+my @cmds;
+my $tmp = "tmp.jpg";
+my $out = $ENV{jpg};
+my @montage = (qw[montage -geometry +0+0 -tile], $tile, map "$_.png", 1..$N);
+my @mogrify = (mogrify => -crop => sprintf "%dx%d+0+0", $w, $h);
+my @exif = (qw[exiftool -tagsFromFile exif -out], $out);
+push @cmds, [@$_, "tmp.jpg"] for \@montage, \@mogrify, \@exif;
+push @cmds, [qw[mogrify -auto-orient], $out];
+run @$_ for @cmds;
+' "$live_img"
+
+## Original:
+# live_img="$(find ~/osx/photos/Masters/2017/11 -name '*.HEIC' | sort-by-time | sed -n -e 1p)"
+# ~g/gpac ; seq 48 | awk -v img="${live_img?}" '1;1;{print img}' | xargs printf ' base=/tmp/a-%02d ; bin/gcc/MP4Box -dump-item %d:path=$base.hevc %q ; ffmpeg -y -i $base.hevc -frames:v 1 -vsync vfr -q:v 1 -an $base.png < /dev/null\n' | LD_LIBRARY_PATH="$(pwd)/bin/gcc:$LD_LIBRARY_PATH" sh -e -x
