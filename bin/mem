@@ -9,7 +9,9 @@ END {
   free = ram_free + stats["SwapFree"]
   used = tot - free
   avail = stats["MemAvailable"]
-  low = (ram_tot > 20000) ? (ram_free < 4000) : (free < 2000)
+  if (ram_tot > 20000) low = ram_free < 4000
+  else if (ram_tot < 1000) low = 10 * avail < tot
+  else low = free < 2000 || avail < 300
   warn = (low && avail < 1000)
   mark = warn ? "!!! " : ""
   print mark "mem:" avail "/" used "/" tot
