@@ -1,24 +1,7 @@
 #!/bin/sh
 test -e /proc/meminfo || exit 0
-awk -v colorizer=${1:-shell} '
-function coloplain(c) { return "" }
-function resetplain() { return "" }
-
-function tput(c, o) {
-  if (!(c in tputcache)) {
-    ("tput " c " 2> /dev/null") | getline o
-    tputcache[c] = o
-  }
-  return tputcache[c]
-}
-function coloshell(warn) { return warn ? tput("setab 1") : "" }
-function resetshell() { return tput("sgr0") }
-
-function colodzen(warn) { return warn ? "^bg(#ff0000)" : "" }
-function resetdzen() { return "^fg()^bg()^ca()" }
-
+awk '
 { stats[substr($1,1,length($1)-1)] = int($2/1024) }
-
 END {
   ram_tot = stats["MemTotal"]
   tot = ram_tot + stats["SwapTotal"]
@@ -28,10 +11,7 @@ END {
   avail = stats["MemAvailable"]
   low = (ram_tot > 20000) ? (ram_free < 4000) : (free < 2000)
   warn = (low && avail < 1000)
-  colorfn = (warn ? colorizer : "plain")
-  color = "colo" colorfn
-  nocolor = "reset" colorfn
   mark = warn ? "!!! " : ""
-  print @color(warn) mark "mem:" avail "/" used "/" tot @nocolor()
+  print mark "mem:" avail "/" used "/" tot
 }
 ' /proc/meminfo
