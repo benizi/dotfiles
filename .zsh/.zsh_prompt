@@ -183,7 +183,7 @@ __prompt_setup() {
     __prompt_return=0
   fi
 
-  local mem="$(mem plain)"
+  local mem="$(mem)"
   local -a memargs
   [[ $mem = (*\!*) ]] && memargs+=( k:1 )
   $C middle $memargs $mem

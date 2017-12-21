@@ -72,7 +72,7 @@ add-essid() {
 funcs+=( add-essid )
 
 add-mem() {
-  mem dzen |
+  mem |
   read -r -A
   case "$reply" in
     (*'!!!'*) reply=( '^bg(#ff0000)'$reply'^bg()' ) ;;
