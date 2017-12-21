@@ -74,6 +74,9 @@ funcs+=( add-essid )
 add-mem() {
   mem dzen |
   read -r -A
+  case "$reply" in
+    (*'!!!'*) reply=( '^bg(#ff0000)'$reply'^bg()' ) ;;
+  esac
 }
 funcs+=( add-mem )
 
