@@ -40,9 +40,14 @@ def prep(contents)
   end
 end
 
+def use_salt?
+  encrypting? && ENV.has_key?('SALT')
+end
+
 def command
   op = encrypting? ? '-e' : '-d'
-  %Q{openssl enc #{op} -a -blowfish -pass #{password}}
+  salt = use_salt? ? %Q{ -S #{ENV['SALT']}} : ''
+  %Q{openssl enc #{op} -a -blowfish -pass #{password}} + salt
 end
 
 def post(result)
