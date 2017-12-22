@@ -40,6 +40,22 @@ def prep(contents)
   end
 end
 
+def find_salt(input)
+  require 'base64'
+  cipher = Base64.decode64(input)
+  return if cipher.size * 2 < input.size
+  marker = 'Salted__'
+  return unless cipher.start_with?(marker)
+  cipher[marker.size, 8].unpack("H*")[0].upcase
+end
+
+def showsalt(input)
+  input.tap do
+    return unless salt = find_salt(input)
+    warn "SALT=#{salt}"
+  end
+end
+
 def use_salt?
   encrypting? && ENV.has_key?('SALT')
 end
@@ -72,4 +88,16 @@ def process(input)
   end
 end
 
-%i[prep process post puts].reduce(input) { |ret, fn| send(fn, ret) }
+STAGES = %i[prep process post puts]
+
+def setup_salt!(list)
+  return unless ENV['SHOWSALT']
+  list.insert(list.find_index(encrypting? ? :post : :process), :showsalt)
+end
+
+def run_stages(input)
+  setup_salt!(STAGES)
+  STAGES.reduce(input) { |ret, fn| send(fn, ret) }
+end
+
+run_stages(contents)
