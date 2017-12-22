@@ -1,0 +1,70 @@
+#!/usr/bin/env ruby
+
+def encrypting?
+  !!(__FILE__ =~ /encrypt$/)
+end
+
+def contents
+  @contents ||= $stdin.read
+end
+
+def lines
+  @lines ||= contents.lines.to_a
+end
+
+def password
+  `git config filter.encryptedjs.password || true`.chomp
+end
+
+def encrypted?
+  !!((lines[0] || '') =~ /^benizi/)
+end
+
+def done?
+  encrypting? == encrypted?
+end
+
+if done? || password.empty?
+  # Already processed or no password
+  $stdout.write(contents)
+  exit
+end
+
+def prep(contents)
+  if encrypting?
+    "//OK\n#{contents}"
+  else
+    contents.lines.to_a[1..-2].map do |line|
+      line.sub(/^"/, '').sub(/\\n" \+/, '')
+    end.join
+  end
+end
+
+def command
+  op = encrypting? ? '-e' : '-d'
+  %Q{openssl enc #{op} -a -blowfish -pass #{password}}
+end
+
+def post(result)
+  if encrypting?
+    ret = []
+    ret << 'benizi.source ='
+    ret += result.lines.map { |line| %Q{"#{line.chomp}\\n" +} }
+    ret << '"";'
+    ret.map { |line| line + "\n" }.join
+  else
+    first_line = result.lines.first.chomp
+    abort "Bad decode (First line: #{first_line})" unless first_line == '//OK'
+    result.lines.drop(1).join
+  end
+end
+
+def process(input)
+  IO.popen(command, 'r+') do |io|
+    io.write input
+    io.close_write
+    io.read
+  end
+end
+
+%i[prep process post puts].reduce(input) { |ret, fn| send(fn, ret) }
