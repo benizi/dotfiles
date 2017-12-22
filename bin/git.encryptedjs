@@ -90,14 +90,32 @@ end
 
 STAGES = %i[prep process post puts]
 
+def sym_list(s)
+  String === s ? s.split(/\W+/).map(&:downcase).map(&:to_sym) : s
+end
+
 def setup_salt!(list)
   return unless ENV['SHOWSALT']
   list.insert(list.find_index(encrypting? ? :post : :process), :showsalt)
 end
 
+def stages
+  list = sym_list(ENV['ONLY'] || STAGES)
+  list << :puts if (STAGES & list).any? && !list.include?(:puts)
+  setup_salt!(list)
+  list.uniq.select { |s| should_run?(s) }
+end
+
+def in?(var, stage, default = '')
+  sym_list(ENV.fetch(var, default)).include?(stage.to_sym)
+end
+
+def should_run?(stage)
+  !in?('SKIP', stage)
+end
+
 def run_stages(input)
-  setup_salt!(STAGES)
-  STAGES.reduce(input) { |ret, fn| send(fn, ret) }
+  stages.reduce(input) { |ret, fn| send(fn, ret) }
 end
 
 run_stages(contents)
