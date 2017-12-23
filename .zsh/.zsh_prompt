@@ -195,8 +195,9 @@ __prompt_setup() {
   (( $+ssh_control_master )) && $C bottom k:88 SSH-MASTER
   (( $+DOCKER_HOST )) && $C bottom k:167 docker=${${DOCKER_HOST:s%unix://%}:s%$HOME%\~}
   (( $+MYVIMRC )) && $C bottom f:145 '(inside vim)'
-  $C bottom :norm $ps_char
   (( $+curl_api_env )) && $C bottom k:167 "curl_api=$curl_api_env"
+
+  $C bottom :norm $ps_char
 
   local -a lines
   if hi_color
