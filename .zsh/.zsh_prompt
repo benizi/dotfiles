@@ -188,6 +188,18 @@ __prompt_setup() {
   [[ $mem = (*\!*) ]] && memargs+=( k:1 )
   $C middle $memargs $mem
 
+  if (( $+_over_mounts ))
+  then
+    local var
+    local -a vars nsmount
+    vars=( $=_over_mounts )
+    $C nsmount :norm ns/mnt
+    for var in ${(k)parameters:*vars}
+    do $C nsmount k:17 ${${${(P)var}%% *}/$HOME/\~}
+    done
+    middle+=( "$nsmount" )
+  fi
+
   (( $+DATABASE_URL )) && $C bottom k:167 "DB ${testdb:-$DATABASE_URL}"
   (( $+deleted )) && $C bottom k:196 '!deleted!'
   (( $+fail_couchdb )) && $C bottom k:196 '!CouchDB!'
