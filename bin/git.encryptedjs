@@ -49,11 +49,19 @@ def find_salt(input)
   cipher[marker.size, 8].unpack("H*")[0].upcase
 end
 
-def showsalt(input)
+def dumpsalt(input, out)
   input.tap do
     return unless salt = find_salt(input)
-    warn "SALT=#{salt}"
+    out.puts("SALT=#{salt}")
   end
+end
+
+def showsalt(input)
+  dumpsalt(input, $stderr)
+end
+
+def putsalt(input)
+  dumpsalt(input, $stdout)
 end
 
 def use_salt?
@@ -90,19 +98,30 @@ end
 
 STAGES = %i[prep process post puts]
 
+SALT_FNS = %i[showsalt putsalt]
+
 def sym_list(s)
   String === s ? s.split(/\W+/).map(&:downcase).map(&:to_sym) : s
 end
 
 def setup_salt!(list)
-  return unless ENV['SHOWSALT']
-  list.insert(list.find_index(encrypting? ? :post : :process), :showsalt)
+  return unless ENV['SHOWSALT'] || (SALT_FNS & list).any?
+  to_add = [:prep] + (encrypting? ? [:process] : []) + [:showsalt]
+  to_find = Hash[to_add.reverse.each_cons(2).to_a]
+  to_add.each do |s|
+    next if list.include?(s)
+    after = to_find[s]
+    pos = list.find_index(after)
+    list.insert(pos ? pos + 1 : 0, s)
+  end
 end
 
 def stages
   list = sym_list(ENV['ONLY'] || STAGES)
   list << :puts if (STAGES & list).any? && !list.include?(:puts)
   setup_salt!(list)
+  salt_fn = list.include?(:puts) ? :showsalt : :putsalt
+  list.map! { |s| SALT_FNS.include?(s) ? salt_fn : s }
   list.uniq.select { |s| should_run?(s) }
 end
 
