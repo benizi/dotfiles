@@ -65,7 +65,7 @@ funcs+=( add-date )
 
 add-essid() {
   if (( ! ( EPOCHSECONDS % 10 ) )) || (( ! $+essid ))
-  then essid="$(essid)"
+  then essid="$(essid | awk 'END{print NR?"CONN+":"no con"}')"
   fi
   reply=( $essid )
 }
