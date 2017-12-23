@@ -81,7 +81,7 @@ __prompt_vcs () {
   done
 }
 
-typeset -A __prompt_once
+typeset -A __prompt_once __color_warn_once
 __prompt_setup() {
   setopt promptsubst
 
@@ -200,22 +200,48 @@ __prompt_setup() {
   $C bottom :norm $ps_char
 
   local -a lines
-  if hi_color
-  then
-    lines=(
-      ''
-      '╭─╴'${(j:╶╴:)top}' ╼'
-      '│ '$^middle
-      '╰╴'${(j:╶╴:)bottom}' '
-    )
-  else
-    lines=(
-      ''
-      '/- '${(j: - :)top}
-      '| '$^middle
-      '\\- '${(j: - :)bottom}' '
-    )
-  fi
+
+  $0.lowcolor() {
+    local var seqval
+    for var
+    do
+      if (( $+lo[${(P)var}] ))
+      then typeset -g $var="${lo[${(P)var}]}"
+      elif (( ! __color_warn_once["$var=${(P)var}"]++ ))
+      then
+        seqval="$var=«${(%):-"%216F"}${(P)var}${(%):-"%F{red}"}»"
+        warn "No low-color version of $seqval (new prompt sequence?)"
+      fi
+    done
+  }
+  local LOWCOLOR=$0.lowcolor
+
+  $0.lines() {
+    local sep='╶╴' fmt=$1 array=$2:r join=$2:e var val
+    hi_color || $LOWCOLOR sep fmt
+    if (( ${#join} ))
+    then set -- "${(Ppj:$sep:)array}"
+    else set -- "${(P@)array}"
+    fi
+    local -a rows
+    printf -v rows "$fmt" "$@"
+    lines+=( "${rows[@]}" )
+  }
+
+  local -A lo
+  lo=(
+    # sep
+    '╶╴' ' - '
+    # line formats
+    '' ''
+    '╭─╴%s╶╼' '/- %s -'
+    '│ %s' '| %s'
+    '╰╴%s ' '\\-%s '
+  )
+  $0.lines '' '' ''
+  $0.lines '╭─╴%s╶╼' top.join
+  $0.lines '│ %s' middle
+  $0.lines '╰╴%s ' bottom.join
   PROMPT=${(F)lines}
 
   unfunction -m "$0.*"
