@@ -267,6 +267,22 @@ fi
 
 run_local_versions
 
+() { # export `cfssl` PKCS#11 config
+  local -A cfg
+  cfg=(
+    module /lib/libykcs11.so
+    token 'YubiKey PIV'
+    pinfile env:yubikey_pin
+  )
+  [[ -f ${cfg[module]} ]] || return 0
+  local k v
+  local -a json
+  for k v in ${(kv)cfg}
+  do json+=( "$(printf '"%s":"%s"' $k $v)" )
+  done
+  export cfssl_pkcs11_config="{${(j:,:)json}}"
+}
+
 # Use local SSH agent under Ansible when not forwarding
 if (( $+TERM && $+SSH_CONNECTION )) &&
   (( ! $+SSH_AUTH_SOCK && ! $+SSH_AGENT_PID )) &&
