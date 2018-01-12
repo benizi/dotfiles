@@ -47,14 +47,22 @@ const aslines = sentence => {
           .join(""),
         subbed = "\n" + lines.replace(/`/g, "\\`"),
         out = [key, subbed, trail].join("`");
-      process.stdout.write(out);
+      return out;
     },
     fh = process.stdin,
-    line = "";
+    file = "",
+    wrapFile = () => {
+      let lines = file.split(/\n/),
+        isAttr = str => str.match(/^ *\w+: "(?:[^\\"]|\\")*",$/),
+        isLong = str => str.length > 78 && isAttr(str),
+        replaced = lines.map(l => (isLong(l) ? wrapLine(l) : l)),
+        out = replaced.join("\n");
+      process.stdout.write(out);
+    };
   fh.setEncoding("utf8");
   fh.on("readable", () => {
     let chunk = "";
-    while ((chunk = fh.read())) line += chunk;
+    while ((chunk = fh.read())) file += chunk;
   });
-  fh.on("end", () => wrapLine(line));
+  fh.on("end", () => wrapFile(file));
 }
