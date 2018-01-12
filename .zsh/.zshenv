@@ -218,7 +218,7 @@ if (( $+commands[verman] )) ; then
     node v7.8.0
     ruby 2.2.3-p0-nix
     rust 1.11.0
-    go go1.7.6-nix
+    go go1.9-nix
     stack v1.4.0
     ocaml 4.02.0
   )
