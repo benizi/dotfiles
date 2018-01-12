@@ -180,12 +180,13 @@ if (( $+commands[verman] )) ; then
   verman_eval() { eval "$(VERMAN_EVAL=1 verman "$@")" }
   _interactive_warn() {
     if [[ -o interactive ]] && [[ -t 1 ]] ; then warn "$@" ; fi
-    return 1
   }
   _verman_use() {
     local lang=$1 version=$2
     local var=${lang}_version
-    [[ ${(P)var} == $version ]] && return 0
+    if [[ ${(P)var} == $version ]]
+    then return 0
+    fi
     if (( $+parameters[$var] )) && [[ $parameters[$var] = *-export ]]
     then return $(_interactive_warn "Not overriding exported $var")
     fi
@@ -193,13 +194,18 @@ if (( $+commands[verman] )) ; then
   }
   _version() {
     local lang=$1 version=$2
-    local home=${lang}_home
+    local home=${lang}_home var=${lang}_version
     _verman_use $lang $version
-    [[ -e ${(P)home} ]] && return 0
+    if [[ -e ${(P)home} ]] && [[ "$version" = ${(P)var} ]]
+    then return 0
+    fi
+    if (( $+parameters[$var] )) && [[ ${parameters[$var]} = (*export) ]]
+    then return $(_interactive_warn "Not overriding exported $var")
+    fi
     local latest=$(verman $lang installed | sed -n '$p')
     if [[ -z $latest ]]
-    then return $(_interactive_warn "Not overriding exported $var")
-    else _interactive_warn "$lang $latest (wanted $version)"
+    then return $(_interactive_warn "No $lang available (wanted $version)")
+    else _interactive_warn "Using $lang $latest (wanted $version)"
     fi
     _verman_use $lang $latest
   }
