@@ -286,6 +286,24 @@ run_local_versions
   export cfssl_pkcs11_config="{${(j:,:)json}}"
 }
 
+() { # reset DBus address if missing
+  local sock
+  case "$DBUS_SESSION_BUS_ADDRESS" in
+    (unix:abstract=/tmp/*|unix:path=*)
+      sock=${${DBUS_SESSION_BUS_ADDRESS#*=}%%,*}
+      if [[ -e $sock ]]
+      then return 0
+      fi
+      ;;
+  esac
+  if [[ $sock != (/run/*) ]]
+  then sock=/run/user/$UID/bus
+  fi
+  if [[ -e $sock ]]
+  then export DBUS_SESSION_BUS_ADDRESS=unix:path=$sock
+  fi
+}
+
 # Use local SSH agent under Ansible when not forwarding
 if (( $+TERM && $+SSH_CONNECTION )) &&
   (( ! $+SSH_AUTH_SOCK && ! $+SSH_AGENT_PID )) &&
