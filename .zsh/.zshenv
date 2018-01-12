@@ -216,7 +216,7 @@ if (( $+commands[verman] )) ; then
     erlang 18.1.5
     elixir v1.2.1
     node v7.8.0
-    ruby 2.2.2
+    ruby 2.2.3-p0-nix
     rust 1.11.0
     go go1.7.6-nix
     stack v1.4.0
