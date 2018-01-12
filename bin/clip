@@ -6,12 +6,14 @@ clipout() { clip clipboard -out ; }
 trim() { printf '%s' "$(clipout)" | clipboard ; }
 
 mode=input
+echo=true
 raw=true
 
 while test $# -gt 0
 do
   arg=$1
   case "$arg" in
+    (-i) mode=input ; echo=false ;;
     (-o|-out) mode=output ;;
     (-O|-n) mode=output ; raw=false ;;
     (--) mode=cmdline ; shift ; break ;;
@@ -31,5 +33,6 @@ case "$mode" in
     ;;
 esac
 
+$echo || exit
 clipout
 $raw || printf '\n'
