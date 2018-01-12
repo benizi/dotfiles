@@ -14,6 +14,7 @@ do
   case "$arg" in
     (-o|-out) mode=output ;;
     (-O|-n) mode=output ; raw=false ;;
+    (--) mode=cmdline ; shift ; break ;;
     (*) break ;;
   esac
   shift
@@ -24,6 +25,9 @@ case "$mode" in
     clipboard
     trim
     clipout | clip primary
+    ;;
+  (cmdline)
+    printf '%s' "$*" | clipboard
     ;;
 esac
 
