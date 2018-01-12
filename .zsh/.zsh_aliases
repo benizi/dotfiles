@@ -192,6 +192,7 @@ zrails zrake zc zr() {
 alias -g L='| less'
 alias -g LS='|& less -S'
 alias -g LS1='| less -S'
+alias -g JQ='| jq -C -r . LS'
 
 (( UID )) && alias lvm='sudo lvm'
 
