@@ -1,1 +1,4 @@
-feh -FZ --magick-timeout -1 --action1 ";animate -delay 10 '%f'" --action2 ";animate '%f'" --action3 ";gimp '%f' &"
+feh -FZ --magick-timeout -1 \
+--action1 ";animate -delay 10 '%f'" \
+--action2 ";animate '%f'" \
+--action3 ";gimp '%f' &"
