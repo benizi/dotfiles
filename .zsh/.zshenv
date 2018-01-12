@@ -210,14 +210,30 @@ if (( $+commands[verman] )) ; then
     _verman_use $lang $latest
   }
 
-  _version erlang 18.1.5
-  _version elixir v1.2.1
-  _version node v7.8.0
-  _version ruby 2.2.2
-  _version rust 1.11.0
-  _version go go1.7.6-nix
-  _version stack v1.4.0
-  _version ocaml 4.02.0
+  local -a _versions args
+
+  _versions=(
+    erlang 18.1.5
+    elixir v1.2.1
+    node v7.8.0
+    ruby 2.2.2
+    rust 1.11.0
+    go go1.7.6-nix
+    stack v1.4.0
+    ocaml 4.02.0
+  )
+
+  local direct lang version
+  local -a args
+  (( $+commands[verman-multi] )) && direct=false || direct=true
+  for lang version in $_versions
+  do
+    if $direct
+    then _version $lang $version
+    else args+=( + $lang use $version )
+    fi
+  done
+  $direct || eval "$(VERMAN_EVAL=1 verman $args)"
 fi
 
 leapd() {
