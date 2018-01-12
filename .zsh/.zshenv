@@ -224,6 +224,8 @@ if (( $+commands[verman] )) ; then
     ocaml 4.02.0
   )
 
+  [[ ! -d /opt/racket ]] || _versions+=( racket git )
+
   local direct lang version
   local -a args
   (( $+commands[verman-multi] )) && direct=false || direct=true
