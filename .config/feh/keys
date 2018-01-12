@@ -1,7 +1,4 @@
-action_1 2
-action_2 3
-action_3 4
-action_4
+action_1
 save_filelist
 jump_random r
 reload_minus
