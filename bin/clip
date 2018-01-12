@@ -5,9 +5,22 @@ clipboard() { clip clipboard "$@" ; }
 clipout() { clip clipboard -out ; }
 trim() { printf '%s' "$(clipout)" | clipboard ; }
 
-case "$1" in
-  -o|-out|-O|-n) ;;
-  *)
+mode=input
+raw=true
+
+while test $# -gt 0
+do
+  arg=$1
+  case "$arg" in
+    (-o|-out) mode=output ;;
+    (-O|-n) mode=output ; raw=false ;;
+    (*) break ;;
+  esac
+  shift
+done
+
+case "$mode" in
+  (input)
     clipboard
     trim
     clipout | clip primary
@@ -15,7 +28,4 @@ case "$1" in
 esac
 
 clipout
-
-case "$1" in
-  -O|-n) printf '\n' ;;
-esac
+$raw || printf '\n'
