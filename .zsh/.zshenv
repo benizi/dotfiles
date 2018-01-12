@@ -102,6 +102,7 @@ pathtest+=( ~/git/racket/racket/bin )
 pathtest=( /opt/djb/bin $^pathtest )
 pathtest=( /opt/google/cloud-sdk/google-cloud-sdk/bin $pathtest )
 pathtest=( /opt/yarn/versions/nightly/bin $pathtest )
+pathtest+=( /opt/android-sdk/build-tools/23.0.2 )
 
 # Order of directories should be:
 # 1. in home dir and contains the word 'local'
