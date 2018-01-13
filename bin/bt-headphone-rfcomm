@@ -101,10 +101,12 @@ read-initial-state() {
 parse-initial-state() {
   # ff 00 01 04 07 03 01 fe - 3 = battery level
   # ff 00 01 04 07 13 01 fe - plugged in
+  # ff 00 01 04 07 01 fe - missing battery level sometimes?
   perl -Mvars='$battery,$volume' -lnwE '
   $battery = hex $1 if /^ff 00 01 04 07 (..) 01 fe$/;
   $volume = hex $1 if /^ff 00 06 01 (..) fe$/;
   END {
+    $_ //= 0 for $battery, $volume;
     my $charge_bit = 0x10;
     my $charging = $battery & $charge_bit;
     $battery -= $charging;
