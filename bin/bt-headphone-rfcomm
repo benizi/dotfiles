@@ -102,18 +102,21 @@ parse-initial-state() {
   # ff 00 01 04 07 03 01 fe - 3 = battery level
   # ff 00 01 04 07 13 01 fe - plugged in
   # ff 00 01 04 07 01 fe - missing battery level sometimes?
-  perl -Mvars='$battery,$volume' -lnwE '
+  perl -Mvars='$battery,$volume,$multi' -lnwE '
   $battery = hex $1 if /^ff 00 01 04 07 (..) 01 fe$/;
   $volume = hex $1 if /^ff 00 06 01 (..) fe$/;
+  $multi = 1 if /^ff 00 b0 01 01 fe$/;
   END {
     $_ //= 0 for $battery, $volume;
     my $charge_bit = 0x10;
     my $charging = $battery & $charge_bit;
     $battery -= $charging;
+    sub tf { shift, shift ? "true" : "false" }
     for (
       [battery => $battery],
-      [plugged => $charging ? "true" : "false"],
+      [tf plugged => $charging],
       [volume => $volume],
+      [tf multi => $multi],
       ) { say sprintf "%s\t%s", @$_ }
   }'
 }
