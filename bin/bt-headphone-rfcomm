@@ -11,6 +11,13 @@ cleanup() {
 }
 trap cleanup INT EXIT
 
+debug() {
+  if (( $+debug ))
+  then tee /dev/tty
+  else cat
+  fi
+}
+
 # Find the first BT headphones listed as connected
 find-headset() {
   bt-headphone-status |
@@ -32,6 +39,7 @@ need-rfcomm() {
 # returns 0 if the device is connected and a process has opened it
 attached() {
   rfcomm show $dev 2>/dev/null |
+  debug |
   grep -qF 'connected [tty-attached]'
 }
 
