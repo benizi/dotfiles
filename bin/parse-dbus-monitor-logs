@@ -1,0 +1,138 @@
+#!/bin/awk -f
+BEGIN {
+  n = split("\"\\", cs, "")
+  split("", backslash)
+  for (i=1;i<=n;i++) backslash[cs[i]] = 1
+  n = split("GetConnectionUnixUser GetConnectionUnixProcessID", cs)
+  for (i=1;i<=n;i++) skipmember[cs[i]] = 1
+}
+function q(s,c,r,nc,cs,i) {
+  if (s ~ /^[1-9]([0-9]*)(\.[0-9]*)?$/ && 0) {
+    return s
+  }
+  nc = split(s,cs,"")
+  r = "\""
+  for (i=1;i<=nc;i++) {
+    c = cs[i]
+    #r = r "("
+    if (backslash[c]) { r = r "\\" c }
+    else if (c == "\n") { r = r "\\n" }
+    else if (c ~ /[\x20-\x7f]/) { r = r c }
+    else { print "Can't escape: c=[" c "]" ; exit 1 }
+    #r = r ")"
+  }
+  return r "\""
+}
+function has(a,b) {
+  return ((a in attr) && (b in attr)) ? (attr[a] "|" attr[b]) : 0
+}
+function tf(a) {
+  return a ? "true" : "false"
+}
+function setskip(path,sender,destination,serial,reply_serial,orig_member,key,orig_key) {
+  skip = 0
+  orig_member = ""
+  path = attr["path"]
+  sender = attr["sender"]
+  destination = attr["destination"]
+
+  if (attr["type"] == "signal" && path ~ /NetworkManager/ && !netman) netman = sender
+
+  if (skipmember[attr["member"]]) skip = 1
+  if (path ~ /UPower/) skip = 1
+  if (entry ~ /Nameservers/ || entry ~ /NetworkManager/) skip = 1
+  if (netman && (sender == netman || destination == netman)) skip = 1
+
+  if (path ~ /.org.bluez.hci..dev_/ && path !~ /dev_00_6A/) skip = 1
+
+  key = has("sender", "serial")
+  orig_key = has("destination", "reply_serial")
+
+  if (key) everseen[key] = attr["ts"]
+
+  if (orig_key && orig_key in skipped) {
+    orig_member = skipped[orig_key]
+    skip = 1
+  }
+  if (orig_key) {
+    if (orig_key in everseen) { setattr("orig_ts", everseen[orig_key]) }
+    else { skip = 1 }
+  }
+
+  if (orig_member ~ /xyzzy/) skip = 1
+
+  if (skip && key && attr["type"] == "method call") skip = attr["member"]
+  if (skip) skipped[key] = skip
+}
+function dump(i,n,lines) {
+  setskip()
+  setattr("skip", tf(skip), 1) # if (skip) return
+  printf "{"
+  for (i=1;i<=nattr;i++) {
+    printf "%s:", q(akey[i])
+    printf "%s,", araw[i] ? aval[i] : q(aval[i])
+  }
+  printf "\"entry\":"
+  #printf "%s", q(entry)
+  n = split(entry,lines,"\n")
+  printf "["
+  for (i=1;i<=n;i++) {
+    if (i>1) printf ","
+    printf "%s", q(lines[i])
+  }
+  printf "]"
+  print "}"
+}
+function resetattr() {
+  nattr = 0
+  split("",akey)
+  split("",aval)
+  split("",araw)
+  split("",attr)
+}
+function setattr(k,v,raw) {
+  if (v == "(null " k ")") v = ""
+  nattr++
+  akey[nattr] = k
+  aval[nattr] = v
+  if (raw) araw[nattr] = 1
+  attr[k] = v
+}
+{
+  ts = $1
+  r = substr($0, 2 + length(ts))
+  start = (r ~ /^[a-z]/) ? 1 : 0
+}
+start && length(entry) { dump() }
+END { if (length(entry)) dump() }
+!start { entry = (entry ? (entry RS) : "") r }
+start {
+  i = 2
+  kind = $i
+  for (i=3;i<=NF && $i ~ /^[a-z]*$/;i++) kind = kind FS $i
+  entry = ""
+  skip = 0
+  nattr = 0
+  resetattr()
+  setattr("original", r)
+  setattr("type", kind)
+  setattr("ts", ts)
+}
+start {
+  for (;i<=NF;i++) {
+    kv = $i
+    if (kv ~ /\(/ && kv !~ /\)/) {
+      i++
+      kv = kv FS $i
+    }
+    sub(/;/,"",kv)
+    n = split(kv,a,/=/)
+    if (n<2) continue
+    if (n>2) {
+      print "KV=[" kv "]"
+      for (j=1;j<=n;j++) print " [" j "]=[" a[j] "]"
+      exit 1
+    }
+    setattr(a[1], a[2])
+  }
+}
