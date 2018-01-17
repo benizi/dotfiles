@@ -27,7 +27,7 @@ chomp(my $resolved = qx/git parse-url $repo/);
 
 # Repo must resolve to a recognizable URL
 my $uri = URI->new($resolved);
-unless ($uri->has_recognized_scheme) {
+unless ($uri->scheme eq 'git' or $uri->has_recognized_scheme) {
   my %seen;
   my $msg = join '->', map "{$_}", grep !$seen{$_}++, $repo, $uri;
   die "Couldn't resolve $msg.\n";
