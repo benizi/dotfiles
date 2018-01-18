@@ -1,0 +1,153 @@
+#!/usr/bin/env python
+#
+# Run a very simple, stripped-down Bluetooth pairing "agent".
+#
+# Mostly based on:
+# https://github.com/pauloborges/bluez/blob/master/test/simple-agent
+# but I ripped out most of the interactivity. (Just trying to debug an issue.)
+#
+# Usage:
+#   ## run the agent
+#   $ bt-dbus-agent
+#
+#   ## pair with something by specifying its BT address
+#   $ bt-dbus-agent 00:11:22:33:44:55
+
+from __future__ import print_function, unicode_literals
+
+from os import environ
+from sys import argv
+
+import dbus
+import dbus.service as srv
+import dbus.mainloop.glib as dmain
+from gi.repository import GObject
+
+CLAIM_NAME = True
+
+IAGENT = 'org.bluez.Agent1'
+IDEV = 'org.bluez.Device1'
+IMANAGE = 'org.bluez.AgentManager1'
+
+IOBJECT = 'org.freedesktop.DBus.ObjectManager'
+IPROPS = 'org.freedesktop.DBus.Properties'
+
+AGENT_CAPABILITY = 'KeyboardDisplay'
+AGENT_NAME = 'com.benizi.agent'
+AGENT_PATH = '/com/benizi/agent'
+BUS = 'org.bluez'
+MANAGER_PATH = '/org/bluez'
+
+bus = None
+mainloop = None
+
+def obj(path):
+    return bus.get_object(BUS, path)
+
+def iface(path, name):
+    return dbus.Interface(obj(path), name)
+
+def setprop(path, prop, val):
+    iface(path, IPROPS).Set(IDEV, prop, val)
+
+def trust(dev):
+    setprop(dev, "Trusted", True)
+    print("Trusted (%s)" % dev)
+
+def connect(path):
+    iface(path, IDEV).Connect()
+
+def managed():
+    return iface("/", IOBJECT).GetManagedObjects()
+
+def paired(*args,**kwargs):
+    print("Paired successfully (%s)" % repr(dict(args=args,kwargs=kwargs)))
+    mainloop.quit()
+
+def failed(msg):
+    print("Pairing FAILED (%s)" % msg)
+    mainloop.quit()
+
+def find(addr):
+    for path in managed():
+        try:
+            dev = iface(path, IDEV)
+            if iface(path, IPROPS).Get(IDEV, "Address") == addr:
+                return dev
+        except:
+            continue
+    raise Exception("Couldn't find device with address %s" % addr)
+
+def pair(addr):
+    find(addr).Pair(reply_handler=paired, error_handler=failed, timeout=60000)
+
+def setdefault():
+    iface(MANAGER_PATH, IMANAGE).RequestDefaultAgent(AGENT_PATH)
+    print("->RequestDefaultAgent")
+
+def agent_method(i="", o=""):
+    return lambda fn: srv.method(IAGENT, in_signature=i, out_signature=o)(fn)
+
+class Agent(srv.Object):
+    def __init__(self, bus, path, name):
+        bus_name = srv.BusName(name, bus) if CLAIM_NAME else None
+        super(Agent, self).__init__(bus, path, bus_name=bus_name)
+
+    @agent_method("os")
+    def AuthorizeService(self, dev, uuid):
+        print("AuthorizeService (%s, %s)" % (dev, uuid))
+
+    @agent_method("o","s")
+    def RequestPinCode(self, dev):
+        print("RequestPinCode (%s)" % dev)
+        trust(dev)
+        return "0000"
+
+    @agent_method("o","u")
+    def RequestPasskey(self, dev):
+        print("RequestPasskey (%s)" % dev)
+        trust(dev)
+        return dbus.UInt32(0)
+
+    @agent_method("ouq")
+    def DisplayPasskey(self, dev, key, entered):
+        print("DisplayPasskey (%s, %06u entered %u)" % (dev, key, entered))
+
+    @agent_method("os")
+    def DisplayPinCode(self, dev, pin):
+        print("DisplayPinCode (%s, %s)" % (dev, pin))
+
+    @agent_method("ou")
+    def RequestConfirmation(self, dev, key):
+        print("RequestConfirmation (%s, %06d)" % (dev, key))
+        trust(dev)
+
+    @agent_method("o")
+    def RequestAuthorization(self, dev):
+        print("RequestAuthorization (%s)" % dev)
+
+    @agent_method
+    def Quit(self):
+        print("Quit")
+        mainloop.quit()
+
+
+if __name__ == '__main__' and not environ.get('DEBUG'):
+    bt_addr = None
+    if len(argv) > 1:
+        bt_addr = argv[1]
+    run_agent = not bt_addr
+
+    dmain.DBusGMainLoop(set_as_default=True)
+    mainloop = GObject.MainLoop()
+
+    bus = dbus.SystemBus()
+    if run_agent:
+        agent = Agent(bus, AGENT_PATH, AGENT_NAME)
+        manager = iface(MANAGER_PATH, IMANAGE)
+        manager.RegisterAgent(AGENT_PATH, AGENT_CAPABILITY)
+        print("->RegisterAgent")
+        setdefault()
+    if bt_addr:
+        pair(bt_addr)
+    mainloop.run()
