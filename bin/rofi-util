@@ -1,0 +1,26 @@
+desktop() {
+  xdotool get_desktop
+}
+
+original_desktop="$(desktop)"
+
+move_here() {
+  window=$1
+  xdotool set_desktop_for_window $window $(desktop)
+  x-activate $window
+  mark_self_urgent
+}
+
+go_there() {
+  window=$1
+  x-activate $window
+  mark_self_urgent
+}
+
+mark_self_urgent() {
+  # set urgency hint if stayed on same desktop
+  test "$original_desktop" = "$(desktop)" || return
+  test -z "$WINDOWID" || xargs xdotool set_window --urgency 1 $WINDOWID
+}
+
+# vim:se ft=sh:

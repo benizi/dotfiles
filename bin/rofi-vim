@@ -1,6 +1,7 @@
 #!/bin/sh
 
 set -e
+. rofi-util
 
 dbg() { : echo "$*" >&2 ; }
 
@@ -13,12 +14,6 @@ export _action
 
 test -n "$_ROFI_VIM_WINDOWID$WINDOWID" ||
   exec env _ROFI_VIM_WINDOWID=TRIED WINDOWID="$(x-active-id)" "$0" "$@"
-
-get_desktop() {
-  xdotool get_desktop
-}
-
-original_desktop="$(get_desktop)"
 
 options() {
   dbg _action in options $_action
@@ -58,25 +53,6 @@ vimpick() {
     (move) move_here $window ;;
     (go) go_there $window ;;
   esac
-}
-
-mark_self_urgent() {
-  # set urgency hint if stayed on same desktop
-  test "$original_desktop" = "$(get_desktop)" || return
-  test -z "$WINDOWID" || xargs xdotool set_window --urgency 1 $WINDOWID
-}
-
-move_here() {
-  window=$1
-  xdotool set_desktop_for_window $window $(xdotool get_desktop)
-  x-activate $window
-  mark_self_urgent
-}
-
-go_there() {
-  window=$1
-  x-activate $window
-  mark_self_urgent
 }
 
 main() {
