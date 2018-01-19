@@ -1,2 +1,20 @@
 #!/bin/sh
-rofi -show $1 -modi "$1":rofi-$1
+set -e
+mode=$1
+
+rofi_modes() {
+  rofi -h |
+  sed \
+    -e '/^Detected/,/^$/!d' \
+    -e '/^ /!d' \
+    -e 's/^[ *+]*//'
+}
+
+mode_in_defaults() {
+  rofi_modes |
+  grep -qFx $1
+}
+
+set -- rofi -show $mode
+mode_in_defaults $mode || set -- "$@" -modi "$mode":rofi-$mode
+"$@"
