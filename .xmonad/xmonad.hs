@@ -169,33 +169,33 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((mod4Mask, xK_t), spawn "tmux-choose")
 
     -- launch dmenu
-    , ((modm,               xK_space ), spawn "dmenu_run")
-    , ((mod1Mask,           xK_space ), spawn "dmenu_run")
+    , ((modm, xK_space), spawn "dmenu_run")
+    , ((mod1Mask, xK_space), spawn "dmenu_run")
 
     -- launch rofi
     , ((mod4Mask, xK_r), spawn "rofi -show run")
 
     -- other launchers
     ---- process monitoring
-    , ((mod4Mask,           xK_h     ), spawn $ XMonad.terminal conf ++ " -e htop")
-    , ((mod4Mask,           xK_i     ), spawn $ XMonad.terminal conf ++ " -e sudo iotop")
-    , ((mod4Mask,           xK_p     ), spawn $ XMonad.terminal conf ++ " -e sudo powertop")
+    , ((mod4Mask, xK_h), spawn $ XMonad.terminal conf ++ " -e htop")
+    , ((mod4Mask, xK_i), spawn $ XMonad.terminal conf ++ " -e sudo iotop")
+    , ((mod4Mask, xK_p), spawn $ XMonad.terminal conf ++ " -e sudo powertop")
 
     ---- web browsers
-    , ((modm,               xK_c     ), spawn "chromium --new-window")
-    , ((mod4Mask,           xK_c     ), spawn "chromium --incognito")
+    , ((modm, xK_c), spawn "chromium --new-window")
+    , ((mod4Mask, xK_c), spawn "chromium --incognito")
     , ((mod4Mask, xK_s), spawn "scratch")
 
     ---- ssh
-    , ((modm,               xK_u     ), spawn "ssh-choose -r -1")
-    , ((modm,               xK_slash ), spawn "ssh-choose -r")
+    , ((modm, xK_u), spawn "ssh-choose -r -1")
+    , ((modm, xK_slash), spawn "ssh-choose -r")
 
     ---- screensaver/sleep
-    , ((modm,               xK_Scroll_Lock), spawn "xscreensaver-command -activate")
-    , ((mod4Mask,           xK_Scroll_Lock), spawn "xscreensaver-command -activate")
-    , ((mod4Mask,           xK_l     ), spawn "xscreensaver-command -activate")
-    , ((0,                  xF86XK_ScreenSaver), spawn "xscreensaver-command -activate")
-    , ((0,                  xF86XK_Sleep), spawn "slp")
+    , ((modm, xK_Scroll_Lock), spawn "xscreensaver-command -activate")
+    , ((mod4Mask, xK_Scroll_Lock), spawn "xscreensaver-command -activate")
+    , ((mod4Mask, xK_l), spawn "xscreensaver-command -activate")
+    , ((0, xF86XK_ScreenSaver), spawn "xscreensaver-command -activate")
+    , ((0, xF86XK_Sleep), spawn "slp")
     , ((mod4Mask .|. shiftMask, xK_l), spawn "slp")
 
     ---- screenshot
@@ -231,34 +231,34 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((mod4Mask, xK_v), spawn "vim-pick")
 
     -- launch gmrun
-    , ((modm .|. shiftMask, xK_p     ), spawn "gmrun")
+    , ((modm .|. shiftMask, xK_p), spawn "gmrun")
 
     -- close focused window
-    , ((modm .|. shiftMask, xK_c     ), kill)
+    , ((modm .|. shiftMask, xK_c), kill)
 
-     -- Rotate through the available layout algorithms
-    , ((mod4Mask,           xK_space ), sendMessage NextLayout)
+    -- Rotate through the available layout algorithms
+    , ((mod4Mask, xK_space), sendMessage NextLayout)
 
     --  Reset the layouts on the current workspace to default
-    , ((mod4Mask .|. shiftMask, xK_space ), setLayout $ XMonad.layoutHook conf)
+    , ((mod4Mask .|. shiftMask, xK_space), setLayout $ XMonad.layoutHook conf)
 
     -- Resize viewed windows to the correct size
-    , ((modm,               xK_n     ), refresh)
+    , ((modm, xK_n), refresh)
 
     -- Swap the focused window and the master window
     , ((mod4Mask .|. shiftMask, xK_Return), windows W.swapMaster)
 
     -- Increment the number of windows in the master area
-    , ((modm .|. shiftMask, xK_comma ), sendMessage (IncMasterN 1))
+    , ((modm .|. shiftMask, xK_comma), sendMessage (IncMasterN 1))
 
     -- Deincrement the number of windows in the master area
     , ((modm .|. shiftMask, xK_period), sendMessage (IncMasterN (-1)))
 
     -- Quit xmonad
-    , ((modm .|. shiftMask, xK_q     ), io (exitWith ExitSuccess))
+    , ((modm .|. shiftMask, xK_q), io (exitWith ExitSuccess))
 
     -- Restart xmonad
-    , ((modm              , xK_q     ), spawn "xmonad --recompile && xmonad --restart")
+    , ((modm, xK_q), spawn "xmonad --recompile && xmonad --restart")
     , ((modm, xK_r), spawn "xmonad --recompile")
     ]
     ++
