@@ -172,9 +172,6 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm, xK_space), spawn "dmenu_run")
     , ((mod1Mask, xK_space), spawn "dmenu_run")
 
-    -- launch rofi
-    , ((mod4Mask, xK_r), spawn "rofi -show run")
-
     -- other launchers
     ---- process monitoring
     , ((mod4Mask, xK_h), spawn $ XMonad.terminal conf ++ " -e htop")
@@ -214,7 +211,6 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((0, xF86XK_AudioPrev), spawn "mpc prev")
     , ((0, xF86XK_AudioMute), spawn "toggle-pulse-mute")
     , ((0, xF86XK_AudioLowerVolume), spawn "pavucontrol")
-    , ((mod4Mask, xK_m), spawn "rofi -show mpc")
 
     ---- brightness
     , ((modm, xK_F5), spawn "brightness = 1")
@@ -227,8 +223,15 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     ---- choose wifi
     , ((mod4Mask, xK_w), spawn "wifi-chooser")
 
-    ---- select from files open in Vim instances
-    , ((mod4Mask, xK_v), spawn "vim-pick")
+    ---- pickers
+    -- `run` a command
+    , ((mod4Mask, xK_r), spawn "pick run")
+    -- `vim` by file(s) being edited
+    , ((mod4Mask, xK_v), spawn "pick vim")
+    -- `zsh` by command or working directory
+    , ((mod4Mask, xK_z), spawn "pick zsh")
+    -- `mpc` by song
+    , ((mod4Mask, xK_m), spawn "pick mpc")
 
     -- launch gmrun
     , ((modm .|. shiftMask, xK_p), spawn "gmrun")
