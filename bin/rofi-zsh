@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+. rofi-util
+
+zshpick() {
+  pid="$*"
+  pid=${pid##* }
+  test -n $pid
+  window="0x$(printf "16o$(x-pid-to-window $pid)p" | dc -)"
+  go_there $window
+}
+
+main() {
+  case "$*" in
+    ('') zsh-by-dir ;;
+    (*) zshpick $* ;;
+  esac
+}
+
+main "$@"
