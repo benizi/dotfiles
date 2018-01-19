@@ -54,6 +54,8 @@
 	clean = git.encryptedjs.encrypt
 	smudge = git.encryptedjs.decrypt
 	required
+[diff "encryptedjs"]
+	textconv = "sh -c 'git.encryptedjs.decrypt < \"$1\"' -- \"$1\""
 [alias]
 	alias = "!a() { pattern=. ; extrased=\"\" ; args=() ; for arg ; do case $arg in --name-only) extrased=\"s/=.*$//\" ; pattern=. ;; *) pattern=\"^$arg=\" ;; esac ; done ; git config --get-regexp '^alias\\.' | sed \"s/alias.//; s/ /=/; $extrased\" | grep \"$pattern\" ; } ; a"
 	# allow "git git cmd" typo:

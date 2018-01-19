@@ -1,2 +1,2 @@
 /db/schema.rb merge=railsschema
-*.encrypted.js filter=encryptedjs
+*.encrypted.js filter=encryptedjs diff=encryptedjs
