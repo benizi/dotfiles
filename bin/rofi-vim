@@ -1,0 +1,98 @@
+#!/bin/sh
+
+set -e
+
+dbg() { : echo "$*" >&2 ; }
+
+dbg RUNNING $0 $@
+
+mark='>>>'
+suff='***'
+: ${_action=move}
+export _action
+
+test -n "$_ROFI_VIM_WINDOWID$WINDOWID" ||
+  exec env _ROFI_VIM_WINDOWID=TRIED WINDOWID="$(x-active-id)" "$0" "$@"
+
+get_desktop() {
+  xdotool get_desktop
+}
+
+original_desktop="$(get_desktop)"
+
+options() {
+  dbg _action in options $_action
+  printf '%s\n' 'move here' 'go there' |
+  awk -v current=$_action -v mark="$mark" -v suff="$suff" '
+  { sel = ($1 == current) }
+  sel { $(++NF) = suff }
+  { print sel mark FS $0 }
+  ' |
+  sort |
+  sed 's/^.//'
+}
+
+TODO_WTF_ROFI() {
+  awk 'BEGIN {n = split("move go",a)} {for(i=1;i<=n;i++) print $0, a[i]}' |
+  awk -v current=$1 '
+  { printf("%d%05d%s\n", $NF == current ? 0 : 1, NR, $0) }
+  ' |
+  sort |
+  cut -c7-
+}
+
+vimlist() {
+  dbg _action in vimlist $_action
+  vim-swap-list |
+  jq -r 'select(.running)|.display' | TODO_WTF_ROFI $_action
+  options "$1"
+}
+
+vimpick() {
+  dbg _action in vimpick $_action
+  pid="$*"
+  _action="$*" ; _action=${_action##* } ; pid=${pid% *} ; : TODO_WTF_ROFI
+  pid=${pid##* }
+  window="0x$(printf "16o$(x-pid-to-window $pid)p" | dc -)"
+  case $_action in
+    (move) move_here $window ;;
+    (go) go_there $window ;;
+  esac
+}
+
+mark_self_urgent() {
+  # set urgency hint if stayed on same desktop
+  test "$original_desktop" = "$(get_desktop)" || return
+  test -z "$WINDOWID" || xargs xdotool set_window --urgency 1 $WINDOWID
+}
+
+move_here() {
+  window=$1
+  xdotool set_desktop_for_window $window $(xdotool get_desktop)
+  x-activate $window
+  mark_self_urgent
+}
+
+go_there() {
+  window=$1
+  x-activate $window
+  mark_self_urgent
+}
+
+main() {
+  dbg _action in main $_action
+  case "$*" in
+    ('') vimlist ;;
+    ($mark' '*)
+      _action="$*"
+      _action="${_action#$mark }"
+      set -- $_action
+      _action=$1
+      dbg _action being set in main $_action
+      vimlist
+      ;;
+    (*) vimpick $* ;;
+  esac
+}
+
+main "$@"
