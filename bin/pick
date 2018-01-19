@@ -1,0 +1,2 @@
+#!/bin/sh
+rofi -show $1 -modi "$1":rofi-$1
