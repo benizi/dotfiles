@@ -282,7 +282,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm, xK_d), groupToVerticalLayout)
     , ((modm .|. shiftMask, xK_h), moveToGroupUp False)
     , ((modm .|. shiftMask, xK_l), moveToGroupDown False)
-    , ((modm, xK_space), toggleFocusFloat)
+    , ((modm, xK_space), withFocused float)
     , ((modm .|. shiftMask, xK_space), withFocused $ windows . W.sink)
     ]
     ++
