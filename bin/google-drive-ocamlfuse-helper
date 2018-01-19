@@ -1,0 +1,11 @@
+#!/bin/zsh
+export HOME="$(getent passwd $USER | awk -F: '{print $6}')"
+case -o in
+  ($2) label=default ;;
+  ($3) label=$1 ; shift ;;
+esac
+mountpoint=$1
+shift
+set -- google-drive-ocamlfuse -label "$label" "$@" "$mountpoint"
+printf ']] %s\n' "$@" >&2
+"$@"
