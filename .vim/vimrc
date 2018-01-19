@@ -546,4 +546,7 @@ Glaive codefmt plugin[register]=0
 " open new-window files in new tab instead
 nn <C-W>f <C-W>gf
 
+" default to splitright and splitbelow
+se spr sb
+
 run! after/vimrc
