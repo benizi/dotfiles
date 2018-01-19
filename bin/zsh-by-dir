@@ -1,3 +1,4 @@
 #!/bin/sh
 sudo lsof -a -d cwd -c zsh -Fpn 2>/dev/null |
-awk '{ val = substr($0, 2) } /^p/ { pid = val } /^n/ { print val, pid }'
+awk '{ val = substr($0, 2) } /^p/ { pid = val } /^n/ { print val, pid }' |
+sed -e "s|^$HOME|~|"
