@@ -2,6 +2,11 @@
 set -e
 . rofi-util
 
+zshlist() {
+  zsh-by-dir
+  xprop-tree _ZSH_LAST_CMD
+}
+
 zshpick() {
   pid="$*"
   pid=${pid##* }
@@ -12,7 +17,8 @@ zshpick() {
 
 main() {
   case "$*" in
-    ('') zsh-by-dir ;;
+    ('') zshlist ;;
+    (0x*) go_there $1 ;;
     (*) zshpick $* ;;
   esac
 }
