@@ -30,6 +30,7 @@ import XMonad.Layout.Named (named)
 import XMonad.Layout.Renamed (renamed, Rename(CutWordsLeft))
 import XMonad.Layout.Simplest
 import XMonad.Layout.Tabbed (addTabs)
+import XMonad.Operations (rescreen)
 
 import System.Directory (getHomeDirectory)
 import GHC.IO.Handle (hClose, hFlush)
@@ -159,6 +160,17 @@ shiftAll tag = gets currentWindows >>= windows . sendAll
         sendAll = flip $ foldl sendWindow
         sendWindow :: WindowSet -> Window -> WindowSet
         sendWindow = flip $ W.shiftWin tag
+
+fixXinerama :: X ()
+fixXinerama = do
+  rescreen
+  windows $ \wins@(W.StackSet { W.visible = vis, W.hidden = hid }) ->
+    let present = fromList $ W.tag <$> W.workspaces wins
+        wanted = fromList $ show <$> [1..10]
+        missing = toList $ wanted \\ present
+        base = W.workspace (W.current wins)
+        withTag tag = base { W.tag = tag, W.stack = Nothing }
+     in wins { W.hidden = W.hidden wins ++ (withTag <$> missing) }
 
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
@@ -299,6 +311,10 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm .|. shiftMask, xK_n), swapTo Next)
     , ((modm .|. shiftMask, xK_minus), removeEmptyWorkspace)
     ]
+    ++
+
+    -- fix issue with Xinerama when (dis-/)connecting laptop dock
+    [ ((mod4Mask, xK_q), fixXinerama) ]
     ++
 
     --
