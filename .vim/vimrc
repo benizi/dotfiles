@@ -549,4 +549,7 @@ nn <C-W>f <C-W>gf
 " default to splitright and splitbelow
 se spr sb
 
+" `vim-unimpaired` `co`-style toggle for whitespace errors
+nn <silent> coe :ToggleSpacingErrors<CR>
+
 run! after/vimrc
