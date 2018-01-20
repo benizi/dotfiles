@@ -180,7 +180,6 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((mod4Mask, xK_t), spawn "tmux-choose")
 
     -- launch dmenu
-    , ((modm, xK_space), spawn "dmenu_run")
     , ((mod1Mask, xK_space), spawn "dmenu_run")
 
     -- other launchers
