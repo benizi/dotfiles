@@ -46,7 +46,7 @@ import Graphics.X11.ExtraTypes.XF86
 
 -- for myDynamicLogWithPP
 import Codec.Binary.UTF8.String (encodeString)
-import Data.List (intersperse, sortBy)
+import Data.List (find, intersperse, sortBy)
 import Data.Maybe (isJust, catMaybes)
 import System.Posix (getProcessGroupIDOf)
 import System.Posix.Signals (signalProcessGroup, sigTERM)
@@ -57,8 +57,7 @@ import XMonad.Util.WorkspaceCompare (getWsCompareByTag, WorkspaceSort)
 import Control.Applicative (liftA)
 import qualified Control.Exception as E
 
-import qualified Data.List as List
-import Data.Set (toList, fromList)
+import Data.Set ((\\), toList, fromList)
 
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
@@ -146,7 +145,7 @@ warpView tag = do
 warpIfVisible :: String -> WindowSet -> X ()
 warpIfVisible tag old = do
     let byTag = ((tag ==) . W.tag . W.workspace)
-    case List.find byTag (W.visible old) of
+    case find byTag (W.visible old) of
       Just s -> warpToScreen (W.screen s) 0.4 0.5
       _ -> return ()
 
