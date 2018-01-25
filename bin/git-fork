@@ -64,12 +64,21 @@ add_remote() {
   git remote add "$gh_user" "gh:$gh_user/$up_repo"
 }
 
-fail_if_exists
-set -- $(find_user_repo)
-if test $# -gt 0
-then create_fork "$@"
-else
-  set -- "$gh_user" "$(basename "$(pwd)")"
-  create_repo "$@"
+main() {
+  fail_if_exists
+  set -- $(find_user_repo)
+  if test $# -gt 0
+  then create_fork "$@"
+  else
+    set -- "$gh_user" "$(basename "$(pwd)")"
+    create_repo "$@"
+  fi
+  add_remote "$@"
+}
+
+if test $# -gt 0 && expr match "$1" "--" > /dev/null
+then shift
+else set -- main "$@"
 fi
-add_remote "$@"
+
+"$@"
