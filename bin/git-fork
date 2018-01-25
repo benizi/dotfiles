@@ -3,8 +3,22 @@ set -e
 
 cfg() { git config github.$1 ; }
 
+# required config
 gh_user="$(cfg user | grep .)"
 gh_token="$(cfg token | grep .)"
+
+# optional config
+gh_repo="$(cfg repo || basename "$(pwd)")"
+up_stream="$(cfg upstream || :)"
+up_user="$(cfg upuser || :)"
+up_repo="$(cfg uprepo || :)"
+
+# take default up_user and up_repo from up_stream, if it was provided
+if test -n "$up_stream"
+then
+  test -n "$up_user" || up_user=${up_stream%/*}
+  test -n "$up_repo" || up_repo=${up_stream#*/}
+fi
 
 dry_run="$(cfg dry || :)"
 
@@ -50,15 +64,21 @@ fail_if_exists() {
   done
 }
 
+upstream_from_config() {
+  case "$up_user":"$up_repo" in (*:|:*) return 1 ;; esac
+  printf '%s %s\n' "$up_user" "$up_repo"
+}
+
 find_user_repo() {
+  upstream_from_config ||
   remotes |
   jq -r '[.gh.user,.gh.repo]|join(" ")' |
   sed '1!d'
 }
 
 create_fork() {
-  up_user=$1
-  up_repo=$2
+  : ${up_user:=$1}
+  : ${up_repo:=$2}
   github_post https://api.github.com/repos/$up_user/$up_repo/forks
 }
 
@@ -74,8 +94,8 @@ github_post() {
 }
 
 add_remote() {
-  up_repo=$2
-  dryly git remote add "$gh_user" "gh:$gh_user/$up_repo"
+  : ${gh_repo:=$2}
+  dryly git remote add "$gh_user" "gh:$gh_user/$gh_repo"
 }
 
 main() {
@@ -84,7 +104,7 @@ main() {
   if test $# -gt 0
   then create_fork "$@"
   else
-    set -- "$gh_user" "$(basename "$(pwd)")"
+    set -- "$gh_user" "$gh_repo"
     create_repo "$@"
   fi
   add_remote "$@"
