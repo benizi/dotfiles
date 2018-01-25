@@ -1,6 +1,59 @@
 #!/bin/sh
 set -e
 
+helpmsg() {
+  cat >&2 <<'USAGE'
+Usage:
+  Fork or create repository:
+    git [config] fork [flags]
+  Debug `git-fork` script:
+    git [config] fork (--|--debug) command [args]
+
+Flags:
+    -h Show usage
+
+Config:
+    Configuration is through `github.{{option}}` values.
+    To set for one command:
+      git -c github.{{option}}={{value}} fork ...
+    To set for all runs:
+      git config github.{{option}} {{value}}
+
+Configuration options:
+
+  Upstream repo information:
+    upstream - GitHub `{{user}}/{{repo}}` for source
+    upuser (?) - `{{user}}` portion of source repository
+    uprepo (?) - `{{repo}}` portion of source repository
+
+  Fork/new repository information:
+    user (*) - `{{user}}` portion of new/forked repository
+    repo - `{{repo}}` portion of new/forked repository
+
+  Script options:
+    token (*) - GitHub API token
+    dry - activates "dry run" mode (if non-empty)
+
+  (*): must be set
+
+  (?): will be taken from the first of the following that yields a valid value:
+    1. explicit configuration
+    2. parsed from `upstream`
+    3. parsed from the first `git remote` that looks like a GitHub URL
+USAGE
+}
+
+usage() {
+  if test $# -gt 0
+  then ret=$1 ; shift
+  else ret=0
+  fi
+  test $# -eq 0 || printf '** %s **\n\n' "$*" >&2
+  helpmsg
+  test $# -eq 0 || printf '\n** %s **\n' "$*" >&2
+  exit $ret
+}
+
 cfg() { git config github.$1 ; }
 
 # required config
@@ -110,9 +163,29 @@ main() {
   add_remote "$@"
 }
 
-if test $# -gt 0 && expr match "$1" "--" > /dev/null
-then shift
-else set -- main "$@"
+case "$1" in
+  (--|--debug)
+    shift
+    test $# -gt 0 || usage 1 --debug requires a command
+    parse=false
+    ;;
+  (*)
+    parse=true
+    set -- main "$@"
+    ;;
+esac
+
+if $parse
+then
+  blanked=false
+  for arg
+  do
+    $blanked || { blanked=true ; set -- ; }
+    case "$arg" in
+      (-h|--help) usage 0 ;;
+      (*) set -- "$@" "$arg" ;;
+    esac
+  done
 fi
 
 "$@"
