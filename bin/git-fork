@@ -1,15 +1,29 @@
 #!/bin/sh
 set -e
 
-gh_user="$(git config github.user)"
-gh_token="$(git config github.token)"
+cfg() { git config github.$1 ; }
 
-test -n "$gh_user"
-test -n "$gh_token"
+gh_user="$(cfg user | grep .)"
+gh_token="$(cfg token | grep .)"
+
+dry_run="$(cfg dry || :)"
 
 fail() {
   printf "$@" >&2
-  exit 1
+  test -n "$dry_run" && exit 0 || exit 1
+}
+
+dryly() {
+  if test -n "$dry_run"
+  then
+    printf ']] %s\n' 'Would run:' "$@" >&2
+    test -t 0 || {
+      printf '%s\n' 'With input: >>>'
+      cat -
+      printf '%s\n' '<<<'
+    } >&2
+  else "$@"
+  fi
 }
 
 remotes_impl() {
@@ -56,12 +70,12 @@ create_repo() {
 }
 
 github_post() {
-  curl -X POST -H "Authorization: token $gh_token" "$@" -D - -o /dev/null
+  dryly curl -X POST -H "Authorization: token $gh_token" "$@" -D - -o /dev/null
 }
 
 add_remote() {
   up_repo=$2
-  git remote add "$gh_user" "gh:$gh_user/$up_repo"
+  dryly git remote add "$gh_user" "gh:$gh_user/$up_repo"
 }
 
 main() {
