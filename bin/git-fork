@@ -7,6 +7,11 @@ gh_token="$(git config github.token)"
 test -n "$gh_user"
 test -n "$gh_token"
 
+fail() {
+  printf "$@" >&2
+  exit 1
+}
+
 remotes_impl() {
   git config -z --get-regexp '^remote\..+\.url$' |
   awk -F\\n -v RS=\\000 '{print$2}' |
@@ -27,9 +32,7 @@ fail_if_exists() {
   remotes |
   jq -r 'select(.gh.user=="'"$gh_user"'").url' |
   while read fork
-  do
-    printf 'Already forked: %s\n' "$fork" >&2
-    exit 1
+  do fail 'Already forked: %s\n' "$fork"
   done
 }
 
