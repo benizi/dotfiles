@@ -6,7 +6,7 @@ die() {
 }
 
 # use /sys/class/backlight to simulate `xbacklight`
-hash xbacklight 2>/dev/null || xbacklight() {
+setbacklight() {
   glob='/sys/class/backlight/*'
   op=$1 pct=$2
   set -- $glob
@@ -32,10 +32,10 @@ hash xbacklight 2>/dev/null || xbacklight() {
 }
 
 case "$1" in
-  (up) xbacklight + 10 ;;
-  (down) xbacklight - 10 ;;
-  (min) xbacklight '=' 10 ;;
-  (max) xbacklight '=' 100 ;;
-  (''|-get) xbacklight -get ;;
+  (up) setbacklight + 10 ;;
+  (down) setbacklight - 10 ;;
+  (min) setbacklight '=' 10 ;;
+  (max) setbacklight '=' 100 ;;
+  (''|-get) setbacklight -get ;;
   (*) die "Usage: $0 up | down | min | max | op pct" ;;
 esac
