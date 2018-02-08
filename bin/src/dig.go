@@ -8,12 +8,22 @@ import (
 )
 
 func main() {
-	for _, arg := range os.Args {
-		if arg == "+short" {
-			continue
+	var short bool
+	var hosts []string
+	for _, arg := range os.Args[1:] {
+		switch arg {
+		case "+short":
+			short = true
+		default:
+			hosts = append(hosts, arg)
 		}
-		ips, err := net.LookupIP(arg)
+	}
+	for _, host := range hosts {
+		ips, err := net.LookupIP(host)
 		if err != nil {
+			if !short {
+				fmt.Fprintln(os.Stderr, err)
+			}
 			continue
 		}
 		fmt.Println(ips[0].String())
