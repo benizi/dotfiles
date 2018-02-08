@@ -10,11 +10,16 @@ import (
 	"github.com/miekg/dns"
 )
 
+// A resolver consists of a "spec" (as the server was specified) and an "addr"
+// to which the server was resolved.  defaultport is only used for printing the
+// resolver back out (port is omitted if it was defaulted).
 type resolver struct {
 	spec, addr  string
 	defaultport bool
 }
 
+// String prints the resolver's specification, along with what it resolved to,
+// if it differs from the spec.
 func (r resolver) String() string {
 	resolved := ""
 	host, port, err := net.SplitHostPort(r.addr)
@@ -36,6 +41,7 @@ func (r resolver) String() string {
 	return r.spec + resolved
 }
 
+// newResolver returns a server spec and its locally-resolved address.
 func newResolver(server string) (resolver, error) {
 	r := resolver{spec: server}
 	host, port, err := net.SplitHostPort(server)
@@ -59,6 +65,7 @@ func newResolver(server string) (resolver, error) {
 	return r, err
 }
 
+// resolve a host via the given server
 func query(host string, server resolver) ([]net.IP, error) {
 	fqhost := dns.Fqdn(host)
 	client := dns.Client{}
@@ -80,6 +87,7 @@ func query(host string, server resolver) ([]net.IP, error) {
 	return addrs, nil
 }
 
+// Fetch IPs for the given host. If servers is empty, resolve it locally.
 func lookupIPs(host string, servers []resolver) ([]net.IP, error) {
 	if servers == nil {
 		return net.LookupIP(host)
