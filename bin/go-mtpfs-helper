@@ -1,0 +1,47 @@
+#!/bin/sh
+
+set -e
+
+warn() {
+  printf '%s\n' "$*" >&2
+}
+
+fail() {
+  warn "$@"
+  exit 1
+}
+
+have() {
+  hash $1 2>/dev/null
+}
+
+require() {
+  have $1 || fail "No \`$1\` found"
+}
+
+rehash 2>/dev/null || rehash() { : ; }
+
+test -n "$GOPATH" || fail 'No `$GOPATH` set'
+
+bin=${GOPATH%%:*}/bin
+go="$(echo "$bin" | sed s%/path/%/versions/%)"
+export PATH="$bin":"$go":"$PATH"
+
+if ! have go-mtpfs
+then
+  warn 'Will try to build `go-mtpfs`'
+  require go
+  sudo /bin/su -c 'go get -v -u github.com/hanwen/go-mtpfs' - $USER
+  rehash
+fi
+require go-mtpfs
+
+case -o in
+  ($2) label=default ;;
+  ($3) label=$1 ; shift ;;
+esac
+mountpoint=$1
+shift
+set -- go-mtpfs "$mountpoint"
+set -x
+"$@"
