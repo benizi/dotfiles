@@ -94,21 +94,18 @@ func lookupIPs(host string, servers []resolver) ([]net.IP, error) {
 	}
 	var addrs []net.IP
 	var failures []error
-	failed := func(err error) bool {
-		failed := err != nil
-		if failed {
+	addFailure := func(err error) {
+		if err != nil {
 			failures = append(failures, err)
 		}
-		return failed
 	}
 	for _, server := range servers {
 		ips, err := query(host, server)
-		if !failed(err) {
-			addrs = append(addrs, ips...)
-		}
+		addrs = append(addrs, ips...)
+		addFailure(err)
 	}
 	if addrs == nil && failures == nil {
-		failed(fmt.Errorf("No results for [%s] from [%v]", host, servers))
+		addFailure(fmt.Errorf("No results for [%s] from [%v]", host, servers))
 	}
 	var err error
 	if failures != nil {
