@@ -18,6 +18,9 @@ place-holder:	src/place-holder.c
 	mv $@.tmp $@
 
 %:	src/%.go
+	go list -json $< \
+		| jq -r '(.DepsErrors//[])[].ImportStack[-1]' \
+		| xargs -r go get -v
 	go build -o $@ $<
 
 %:	src/%.cc
