@@ -23,4 +23,5 @@ xargs -0 md5sum |
 awk -F'  ' -v rmargs="$rmargs" '
 seen[$1]++ { print "# dup of " orig[$1] ; print "rm", rmargs, "-v \"" $2 "\"" }
 !($1 in orig) { orig[$1] = $2 }
-'
+' |
+awk 'NR==1 { print "{" } END { if (NR) print "}" } 1'
