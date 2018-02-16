@@ -1,0 +1,25 @@
+#!/bin/sh
+caller=$1
+shift
+
+case $caller in
+  (udev) exec flock -en $0 $0 locked "$@" ; exit 1 ;;
+esac
+
+devname=$1
+devnum=$2
+
+case "$devname" in
+  (input/event$devnum) ;;
+  (*) exit ;;
+esac
+
+sleep 4
+home="$(getent passwd bhaskell | awk -F: '{print $6}')"
+bin="$home/dotfiles/bin"
+/usr/bin/env - \
+  PATH="${bin}:${PATH}:/usr/bin" \
+  HOME="$home" \
+  XAUTHORITY="$home/.Xauthority" \
+  DISPLAY="${DISPLAY:-":0.0"}" \
+  "$bin/k"
