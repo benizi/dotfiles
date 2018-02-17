@@ -1,5 +1,10 @@
 #!/bin/sh
-ft=$1
-shift
-test -z "$ft" || set -- +"se ft=$ft" "$@"
-vim - "$@"
+case "$1" in
+  (-*|+*|'') ;;
+  (*)
+    ft=$1
+    shift
+    set -- +"se ft=$ft" "$@"
+    ;;
+esac
+vim "$@" -
