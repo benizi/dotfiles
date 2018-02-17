@@ -1,0 +1,34 @@
+#!/bin/sh
+set -e
+pem="$(cat "${1:--}" | openssl x509)"
+pem() { printf '%s\n' "$pem" ; }
+der() { pem | openssl x509 -outform der ; }
+get() { pem | openssl x509 -noout "$@" | sed 's/^[^=]*=//' ; }
+allnames() { get "$@" | awk -v RS=', ' '{sub(" = ","=");print}' ; }
+names() {
+  allnames "$@" |
+  awk -F= '$1~/^(CN|O|OU)$/' |
+  sort |
+  paste -sd' '
+}
+cn() { allnames "$@" | awk -F= '$1=="CN"{print$2}' ; }
+dgst() {
+  der |
+  openssl dgst -"$(echo $1 | tr A-Z a-z)" -binary |
+  xxd -g 1 |
+  awk -F'[: ] ' '{print$2}' |
+  sed '1!s/^/ /;y/ /:/' |
+  tr -d \\n
+}
+content="$(printf '%s\n' "$pem" | sed '1d;$d')"
+set +x
+printf '\n'
+printf '# %s: %s\n' \
+  Issuer "$(names -issuer)" \
+  Subject "$(names -subject)" \
+  Label "\"$(cn -subject)\"" \
+  Serial "$(get -serial | sed 's/.*/16i & p/' | dc -)"
+for hash in MD5 SHA1 SHA256
+do printf '# %s Fingerprint: %s\n' $hash "$(dgst $hash)"
+done
+printf '%s\n' "$pem"
