@@ -178,7 +178,12 @@ __prompt_setup() {
   (( __prompt_once[term]++ )) || $C top k:68 $TERM
 
   if (( $__prompt_return )) && (( $+__last_command )) ; then
-    local escaped_command=${${${__last_command%%$'\n'}:gs/[$]/\\\$}:gs/[%]/%%}
+    # ellipsize multi-line commands
+    local escaped_command=${__last_command//$'\n'*/ …}
+    # backslash-escape shell metachars in set: { $ \ ` }
+    escaped_command=${escaped_command:gs/(#b)([$\\\`\\\\])/\\${match[1]}/}
+    # percent-escape prompt substitutions
+    escaped_command=${escaped_command:gs/[%]/%%}
     $C middle k:208 $escaped_command' -> %?'
     __prompt_return=0
   fi
