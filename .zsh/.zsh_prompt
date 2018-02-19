@@ -245,14 +245,14 @@ TITLESEP='│' # ceçi n'est pas un pipe
 fancytitle () {
   (( $+terminfo[tsl] )) || return 0
   [[ -n "$NOTITLE" ]] && return 0
-  local host c=$TITLESEP title
+  local host admin title c=$TITLESEP
   host="%m $c "
   case "$DISPLAY" in
     (:0*|localhost:*) [ -z "$SSH_CLIENT" ] && host="" ;;
   esac
-  local extra=
-  __i_am_admin && extra="ROOT $c "
-  title="$1$(print -nP "$extra$host"'%~ $c %n${STY+ $c $STY}')"
+  __i_am_admin && admin="ROOT $c "
+  title=${1//$'\n'/¬}
+  title+="$(print -nP "$admin$host"'%~ $c %n${STY+ $c $STY}')"
   [[ $title = ?(#c100,) ]] && title=${title[1,88]}...
   echoti tsl
   printf %s $title
