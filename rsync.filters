@@ -1,0 +1,64 @@
+:- .rsync-exclude
+: .rsync.filters
+
+- .git
+- .stack-work
+
+## cache dirs
+- Application Cache
+- Cache
+- cache
+- elpa
+- /.cache
+- /.hoogle
+
+## log dirs
+- /.config/Slack/logs
+
+## initial super-prune
+
+- /git/*/
+
+## for initial sync, but definitely wanted overall
+- /osx
+- /Downloads
+
+## definitely not for the local system, but maybe wanted
+- *.exe
+- *.msi
+
+## for initial sync, maybe easy ways to sync
+- doc
+- /Dropbox
+- /DV.2017
+- /Haskell
+- /compile
+- /git
+- /good
+- /hg
+- /tmp
+- /www/www_logs
+
+## for initial sync, possibly unwanted
+- /.AndroidStudio
+- /.atom
+- /.boot2docker
+- /.cabal
+- /.gradle
+- /.m2
+- /.meteor
+- /.vagrant.d/boxes
+- /.wine
+- /Android/Sdk/system-images
+- /SL baby shower photos
+- /VirtualBox VMs
+- /arch-builds
+- /backup.*
+- /minidlnad
+- /plan9
+- /playground
+- /videos
+- /wine32
+
+# Andrew photo staging area, need to clean up?
+- /calendar
