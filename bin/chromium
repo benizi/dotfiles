@@ -72,7 +72,7 @@ else _has_remote=false
 fi
 _dry=false
 _plugins=true
-unset _url _ua _scratch _incognito _headless
+unset _url _ua _scratch _incognito _headless _new_window
 _logging=false
 _userscripts=true
 _ipv6=true
@@ -180,8 +180,9 @@ while [ $# -gt 0 ] ; do
     (--rdp=*|--remote-debugging-port=*) _remote_debug=true ; _debug_port=${arg#*=} ;;
     (--rdp|--remote-debug*) _remote_debug=true ;;
     (--no-rdp|--no-remote-debugging-port) _remote_debug=false ;;
-    (--incognito) _incognito=true ; _args+=( $arg ) ;;
-    (--headless) _headless=true ; _args+=( $arg ) ;;
+    (--incognito) _incognito=true ;|
+    (--headless) _headless=true ;|
+    (--new-window) _new_window=true ;|
     (-*) _args+=( $arg ) ;;
     (*)
       if (( $+_url ))
@@ -199,14 +200,8 @@ if ! $_remote_debug || $_incognito || $_scratch || (( $#_args ))
 then _call_remote=false
 fi
 
-if ! $_explicit_debug
-then
-  for arg in "${_args[@]}"
-  do
-    case $arg in
-      (--incognito|--new-window) browser_debug=0 ;;
-    esac
-  done
+if (( $+_scratch || $+_incognito || $+_headless || $+_new_window ))
+then $_explicit_debug || browser_debug=0
 fi
 
 cleanup_tmp () { [[ $_profdir = *scratch* ]] && rm -rf $_profdir }
