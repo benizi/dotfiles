@@ -245,17 +245,17 @@ TITLESEP='│' # ceçi n'est pas un pipe
 fancytitle () {
   (( $+terminfo[tsl] )) || return 0
   [[ -n "$NOTITLE" ]] && return 0
-  local host admin title c=$TITLESEP
-  host="%m $c "
-  case "$DISPLAY" in
-    (:0*|localhost:*) [ -z "$SSH_CLIENT" ] && host="" ;;
-  esac
-  __i_am_admin && admin="ROOT $c "
-  title=${1//$'\n'/¬}
-  title+="$(print -nP "$admin$host"'%~ $c %n${STY+ $c $STY}')"
-  [[ $title = ?(#c100,) ]] && title=${title[1,88]}...
+  local -a parts
+  [[ $DISPLAY = (:0*|localhost:*) ]] && [[ -z $SSH_CLIENT ]] || parts+=( %m )
+  ! __i_am_admin || parts+=( ROOT )
+  parts+=( %~ %n )
+  (( $#STY )) && parts+=( $STY )
+  print -nP -v parts -f '%s' $parts
+  parts=( ${1//$'\n'/¬} $parts )
+  # "${(pj: $TITLESEP :)parts}" doesn't work -- (pj:$var:) form is "strict"
+  local spacer=" $TITLESEP "
   echoti tsl
-  printf %s $title
+  printf %s ${(pj/$spacer/)parts}
   echoti fsl
 }
 
@@ -279,7 +279,7 @@ __add_x11_last_used() {
 preexec () {
   __last_command=$1
   (( __last_command_number ++ ))
-  fancytitle "$1 $TITLESEP "
+  fancytitle $1
   __reset_cursor
   __add_x11_last_used
   unset __prompt_return
