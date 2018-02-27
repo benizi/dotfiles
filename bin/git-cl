@@ -3,6 +3,7 @@ use 5.016;
 use warnings;
 use URI;
 use Getopt::Long;
+use IPC::Run qw(harness);
 
 sub usage {
   die <<USAGE;
@@ -13,12 +14,14 @@ Options:
   -u/--include-user  Prepend the username to the clone destination, e.g.:
      git $0 gh:benizi/dotfiles -> dotfiles
      git $0 -u gh:benizi/dotfiles -> benizi-dotfiles
+  -v/--verbose  Print a bunch of extra info for scripting
 USAGE
 }
 
 GetOptions(
   'dry' => \(my $dry = 0),
   'u|include-user' => \(my $hyphenated = 0),
+  'v|verbose' => \(my $verbose = 1 - -t 1),
 ) or usage;
 
 usage unless @ARGV;
@@ -49,6 +52,9 @@ unless ($upstream =~ $valid_upstream) {
 # Construct destination if requested
 my $dest;
 $dest = join '-', $1, $2 if $hyphenated and $path =~ m{^([^/]+)/([^/]+)};
+(my $default_dest = $path) =~ s{[/.]+git$}{};
+$default_dest =~ s{^.*/}{};
+my $chosen_dest = $dest // $extra[0];
 
 # Construct the `git-clone` command
 my @clone = qw/git clone/;
@@ -57,6 +63,42 @@ push @clone, $repo;
 push @clone, $dest if $dest;
 push @clone, @extra;
 
-# Print it, and run it (unless `--dry`)
-say "@clone";
-exec { $clone[0] } @clone unless $dry;
+sub tee {
+  my ($prefix, $fh, $string) = @_;
+  $$string = '';
+  sub {
+    local $_ = shift;
+    $$string .= $_;
+    s{(\A|\n(?!\Z))}{$1$prefix> }g;
+    print $fh $_;
+  };
+}
+
+say "@clone" unless $verbose;
+my $ret = 0;
+my ($out, $err);
+if (not $dry) {
+  my $out_sub = tee out => $verbose ? \*STDERR : \*STDOUT, \$out;
+  my $err_sub = tee err => \*STDERR, \$err;
+  my $cmd = harness \@clone, \undef, $out_sub, $err_sub;
+  run $cmd;
+  $ret = $cmd->result;
+}
+if ($verbose) {
+  my $info = {
+    original => [$repo, @extra],
+    dry => bool($dry),
+    grep($upstream, upstream => $upstream),
+    repo => $repo,
+    resolved => $resolved,
+    path => $path,
+    dest => $chosen_dest // $default_dest,
+    defaulted => bool(not defined $chosen_dest),
+    grep(!$dry, code => $ret||0),
+  };
+  while (my ($k, $v) = each %$info) {
+    $v = join "\t", @$v if 'ARRAY' eq ref $v;
+    say join "\t", $k, $v;
+  }
+}
+exit $ret;
