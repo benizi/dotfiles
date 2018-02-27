@@ -1,0 +1,15 @@
+# wrapper around `git-cl` to also auto-cd
+
+local name val dest
+
+git cl "$@" |
+while read name val
+do
+  [[ $name = dest ]] || continue
+  dest=$val
+done
+
+if [[ -e $dest ]] && pushd $dest
+then notice "==> $dest"
+else warn "Something went wrong. pwd=$(pwd)"
+fi
