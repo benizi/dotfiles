@@ -1,6 +1,6 @@
 # wrapper around `git-cl` to also auto-cd
 
-local name val dest
+local name val dest started="$(pwd)"
 
 git cl "$@" |
 while read name val
@@ -11,5 +11,7 @@ done
 
 if [[ -e $dest ]] && pushd $dest
 then notice "==> $dest"
+elif [[ "$(pwd)" = $started ]]
+then warn "Didn't change directory. pwd=($started)"
 else warn "Something went wrong. pwd=$(pwd)"
 fi
