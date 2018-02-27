@@ -1,17 +1,39 @@
 # wrapper around `git-cl` to also auto-cd
 
-local name val dest started="$(pwd)"
+local name val dest started="$(pwd)" code=1 url remote=origin
 
 git cl "$@" |
 while read name val
 do
-  [[ $name = dest ]] || continue
-  dest=$val
+  case $name in
+    (dest) dest=$val ;;
+    (code) code=$val ;;
+    (repo) url=$val ;;
+    (upstream) remote=$val ;;
+  esac
 done
 
-if [[ -e $dest ]] && pushd $dest
-then notice "==> $dest"
-elif [[ "$(pwd)" = $started ]]
-then warn "Didn't change directory. pwd=($started)"
-else warn "Something went wrong. pwd=$(pwd)"
+local -a err
+err=()
+
+if [[ -e $dest ]]
+then pushd $dest
+else err+=( "Directory {$val} not created?" )
+fi
+local ended="$(pwd)"
+
+if ! git remote get-url $remote 2>/dev/null | grep -qFx $url
+then err+=( "Remote [$remote] doesn't have expected URL [$url]" )
+fi
+
+if [[ $ended = $started ]]
+then err+=( "Didn't change directory" )
+else notice "==> $dest"
+fi
+
+if (( $#err ))
+then
+  (( $code )) || code=9
+  printfc 1 'Something went wrong. %s.\n' $err
+  return $code
 fi
