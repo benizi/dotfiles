@@ -4,6 +4,7 @@ use warnings;
 use URI;
 use Getopt::Long;
 use IPC::Run qw(harness);
+use JSON qw(encode_json);
 
 sub usage {
   die <<USAGE;
@@ -15,6 +16,7 @@ Options:
      git $0 gh:benizi/dotfiles -> dotfiles
      git $0 -u gh:benizi/dotfiles -> benizi-dotfiles
   -v/--verbose  Print a bunch of extra info for scripting
+  -j/--json  Print debug info in JSON format (default is tab-delimited)
 USAGE
 }
 
@@ -22,9 +24,11 @@ GetOptions(
   'dry' => \(my $dry = 0),
   'u|include-user' => \(my $hyphenated = 0),
   'v|verbose' => \(my $verbose = 1 - -t 1),
+  'j|json' => \(my $json = 0),
 ) or usage;
 
 usage unless @ARGV;
+$verbose ||= $json;
 my ($repo, @extra) = splice @ARGV;
 chomp(my $resolved = qx/git parse-url $repo/);
 
@@ -63,6 +67,8 @@ push @clone, $repo;
 push @clone, $dest if $dest;
 push @clone, @extra;
 
+sub bool { local $_ = @_ ? $_[0] : $_; $_ ? JSON::true : JSON::false }
+
 sub tee {
   my ($prefix, $fh, $string) = @_;
   $$string = '';
@@ -96,9 +102,14 @@ if ($verbose) {
     defaulted => bool(not defined $chosen_dest),
     grep(!$dry, code => $ret||0),
   };
-  while (my ($k, $v) = each %$info) {
-    $v = join "\t", @$v if 'ARRAY' eq ref $v;
-    say join "\t", $k, $v;
+  if ($json) {
+    $$info{$$_[0]} = $$_[1] for [stdout => $out], [stderr => $err];
+    say encode_json $info;
+  } else {
+    while (my ($k, $v) = each %$info) {
+      $v = join "\t", @$v if 'ARRAY' eq ref $v;
+      say join "\t", $k, $v;
+    }
   }
 }
 exit $ret;
