@@ -57,7 +57,7 @@ $default_dest =~ s{^.*/}{};
 my $chosen_dest = $dest // $extra[0];
 
 # Construct the `git-clone` command
-my @clone = qw/git clone/;
+my @clone = qw/git clone --progress/;
 push @clone, -o => $upstream if $upstream;
 push @clone, $repo;
 push @clone, $dest if $dest;
