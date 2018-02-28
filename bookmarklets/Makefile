@@ -1,4 +1,9 @@
+JAR = $(HOME)/bin.local/google-closure-compiler-1.0-SNAPSHOT.jar
+ARGS = -O ADVANCED
+
 %:	%.js
-	@echo '(copied to clipboard:)'
+	@echo minifying...
 	@echo
-	@sed -e 1ijavascript: -e 's/^ \+//' $< | tr -d '\n' | pbcopy
+	@java -jar $(JAR) $(ARGS) < $< | sed '1s/^/javascript:/' | pbcopy
+	@echo
+	@echo ...copied to clipboard
