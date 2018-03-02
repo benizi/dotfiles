@@ -11,6 +11,9 @@ if (( $+zsh_start_timing )) ; then
   setopt xtrace prompt_subst
 fi
 
+# for `$EPOCHSECONDS`
+zmodload zsh/datetime
+
 # work around multios bug by not using it
 setopt nomultios
 

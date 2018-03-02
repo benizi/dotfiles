@@ -61,8 +61,6 @@ couchdb_put couchdb_create_db () {
   couchdb_request PUT "$@"
 }
 
-zmodload zsh/datetime
-
 couchdb_history_add () {
   local cmd=
   cmd=${1%%$'\n'}
