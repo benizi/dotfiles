@@ -1,0 +1,81 @@
+#!/bin/zsh
+
+set -e
+
+unset n min
+for arg
+do
+  if (( arg > 1000 )) && (( ! $+min ))
+  then min=$arg
+  elif (( ! $+n ))
+  then n=$arg
+  else
+    printf 'ARG[%s]?\n' $arg >&2
+    exit 1
+  fi
+done
+
+: ${n=10}
+: ${min=0}
+
+prog=~/git/google-drive-nodejs
+folder=$(<$prog/folder.id)
+script=$prog/login.js
+sum() {
+  md5sum | awk '{print$1}'
+}
+
+yesno() {
+  local ret
+  read -q "?$* "
+  ret=$?
+  echo
+  return $ret
+}
+
+set -- ~/Dropbox/Camera\ Uploads/*(NL+${min}OL[1,$n])
+
+upload() {
+  local l=$1
+  b=~/backup.dropbox.camera/$l:t
+  d=/drive/dropbox-camera-overflow/$l:t
+  ls -trl $b $d $l
+  node $script list /$folder $l:t | grep . ||
+  node $script upload $l $folder
+}
+
+fileinfo() {
+  local l=$1
+  printf '%s\t%s\t%s\n' $l:t "$(sum < $l)" "$(zstat +size $l)"
+}
+
+driveinfo() {
+  local l=$1
+  OUTPUT=json FIELDS='*' node $script md5s /$folder $l:t 2>/dev/null |
+    jq -r '"\(.name)\t\(.md5)\t\(.size)"'
+}
+
+checkrm() {
+  local l=$1
+  shift
+  (( $# )) || set -- false
+  file=$(fileinfo $l)
+  back=$(fileinfo ~/backup.dropbox.camera/$l:t)
+  drive=$(driveinfo $l)
+  printf '%s\t%s\n' file "$file" back "$back" drive "$drive"
+  if [[ $file == $drive ]] || "$@"
+  then rm -v $l
+  fi
+}
+
+for l
+do
+  upload $l
+  checkrm $l
+done
+
+set -- "$@"(N.)
+
+for l
+do checkrm $l yesno 'ok?'
+done
