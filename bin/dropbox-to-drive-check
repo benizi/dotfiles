@@ -1,0 +1,50 @@
+#!/bin/zsh
+set -e
+yesno() {
+  local ret
+  read -q "?$* "
+  ret=$?
+  echo
+  return $ret
+}
+
+warn() {
+  printf '\e[31m%s\e[0m\n' "$@"
+}
+
+alias l='ls -trlA --color'
+while :
+do
+  local -a find
+  find=( find /drive/dropbox-camera-overflow -maxdepth 1 -type f )
+  $find |
+  sort-by-size |
+  tac |
+  while read drive
+  do
+    t=~/tmp/$drive:t
+    orig=~/Dropbox/Camera\ Uploads/$drive:t
+    backup=~/backup.dropbox.camera/$drive:t
+    [[ -e $orig ]] || continue
+    if [[ ! -e $backup ]]
+    then
+      warn "No backup found for $orig" " (expected $backup)"
+      continue
+    fi
+    [[ -e $t ]] || continue
+    if [[ ! -s $t ]]
+    then
+      warn "Temp copy is empty: $t"
+      continue
+    fi
+    echo
+    echo trying $drive
+    () {
+      l "$@"
+      sha1sum "${@:2}"
+      stat -c %s "$@" | sort | uniq -c
+    } $drive $t $orig $backup
+    yesno 'okay?' || break
+  done
+  yesno 'try again?' || exit
+done
