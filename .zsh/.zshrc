@@ -123,17 +123,18 @@ auto_git_alias () {
 (( $+commands[git] )) && command_not_found_handlers+=( auto_git_alias )
 
 TRAPZERR () {
-  local dir= choice banner=${${:-"$(printf '%*s' $COLUMNS)"}// /*}
+  [[ $zsh_eval_context[1] == toplevel ]] || return 0
+  local dir= choice banner
   unset choice
   local -a dirs
   set -- ${=__last_command}
   (( $# == 1 )) || return 0
   [[ $1 == */* ]] || return 0
   [[ $1 == "<"* ]] && return 0
-  [[ $zsh_eval_context[1] == toplevel ]] || return 0
   dir=${~1}
   dirs=( ${~:-$dir*}(-/N) )
   if [[ ! -e $dir ]] && (( $#dirs > 1 )) ; then
+    banner=${${:-"$(printf '%*s' $COLUMNS)"}// /*}
     choice="$(printf '%s\n' $banner "Create $dir" $dirs $banner | dmenu -b -l 40)"
     if [[ -z $choice ]] || [[ $choice = $banner ]] ; then
       return 0
