@@ -219,6 +219,16 @@ if (( $+functions[_version] )) ; then
   chpwd_functions+=( auto_version )
 fi
 
+chpwd_functions_ls() {
+  [[ $zsh_eval_context[1] == toplevel ]] || return 0
+  printf 'CONTEXT[%s]\n' "${zsh_eval_context[@]}"
+  printf '%s[%s]\n' SHLVL "$SHLVL"
+  ls -tlA --color=always |
+  sed '2,11!d' |
+  tac
+}
+chpwd_functions+=( chpwd_functions_ls )
+
 local cmd
 for cmd in $chpwd_functions ; do $cmd ; done
 
