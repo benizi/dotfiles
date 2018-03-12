@@ -227,7 +227,7 @@ chpwd_functions_ls() {
   sed '2,11!d' |
   tac
 }
-chpwd_functions+=( chpwd_functions_ls )
+# chpwd_functions+=( chpwd_functions_ls )
 
 local cmd
 for cmd in $chpwd_functions ; do $cmd ; done
