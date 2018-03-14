@@ -220,14 +220,22 @@ __prompt_setup() {
 
   local sep='╶╴' sep_lo=' - '
   $0.lines() {
-    local fmt=$1 fmt_lo=$2 array=$3 join=$4
+    local fmt=$1 fmt_lo=$2 array=$3 join=$4 joined arg
     hi_color || sep="$sep_lo" fmt="$fmt_lo"
-    if (( ${#join} ))
-    then set -- "${(Ppj:$sep:)array}"
-    else set -- "${(P@)array}"
-    fi
+    # For `$#join` case, would prefer `set -- "${(Ppj:$sep:)array}"`, but
+    # doesn't work in old Zsh versions
+    set -- "${(P@)array}"
+    while (( $#join )) && (( $# > 1 ))
+    do
+      joined="$1$sep$2"
+      shift 2
+      set -- "$joined" "$@"
+    done
     local -a rows
-    printf -v rows "${fmt// }" "$@"
+    # `printf -v rows` unavailable in old Zsh versions
+    for arg
+    do rows+=( "$(printf "${fmt// }" "$arg")" )
+    done
     lines+=( "${rows[@]}" )
   }
   $0.lines '          ' '       ' ''
