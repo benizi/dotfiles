@@ -1,0 +1,6 @@
+#!/bin/sh
+sleep 2
+. ~/ssh-script
+blank='xset dpms force suspend'
+$blank
+ssh _ "DISPLAY=:0 $blank"
