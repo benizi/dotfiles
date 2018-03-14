@@ -119,6 +119,40 @@ pathtest=( $loc $home $pathtest )
 path=( ${^pathtest}(N-/) )
 }
 
+# Export PATH to systemd for `--user` services
+() {
+  # Only update if running interactively on a `systemd` box with X11 active
+  [[ -o interactive ]] || return
+  (( $+commands[systemctl] )) || return
+  x-is-active -maxtry 1 2>/dev/null || return
+
+  # X11 properties to set are:
+  # _ZSH_systemd_update_time (32-bit CARDINAL)
+  # _ZSH_systemd_path (8-bit UTF8_STRING)
+  local prop_t=_ZSH_systemd_update_time
+  local prop_v=_ZSH_systemd_path
+  local -a formats
+  formats=(
+    -f $prop_t 32c '\n$0\n'
+    -f $prop_v 8u '\n$0\n'
+  )
+
+  # Bail if `systemd` was updated more recently than `.zshenv`'s file mod time
+  local systemd_update_time=$(xprop -root $formats $prop_t | sed 1d)
+  [[ -n $systemd_update_time ]] || systemd_update_time=0
+  local zshenv_update_time=$(zstat +mtime ${(%):-%x})
+  (( systemd_update_time < zshenv_update_time )) || return
+
+  # Don't bother updating if the PATH hasn't changed
+  local systemd_path=$(xprop -root $formats $prop_v | sed 1d)
+  [[ $systemd_path != $PATH ]] || return
+
+  # Export PATH to `systemd` and set X11 props on the root window
+  systemctl --user import-environment PATH
+  xprop -root $formats -set $prop_t $EPOCHSECONDS
+  xprop -root $formats -set $prop_v $PATH
+}
+
 # Remove duplicate paths in Arch (where {/bin,/sbin,/usr/sbin} -> /usr/bin)
 function () {
 local -a arch_same
