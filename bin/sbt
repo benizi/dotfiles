@@ -1,9 +1,8 @@
 #!/bin/zsh
 : ${sbt_version=1.0.2}
-url=https://repo1.maven.org/maven2/org/scala-sbt/sbt-launch/$sbt_version/sbt-launch-$sbt_version.jar
 dest_dir=$HOME/.cache/sbt-launch
 dest=$dest_dir/sbt-launch-$sbt_version.jar
-
-[[ -d $dest_dir ]] || mkdir $dest_dir
-find $dest -type f -size +1k | grep -q . || curl -Lo $dest $url
+[[ -f $dest ]] || mvn dependency:copy \
+  -Dartifact=org.scala-sbt:sbt-launch:$sbt_version \
+  -DoutputDirectory=$dest_dir
 java -X{ms512,mx1536,ss1}M -XX:{+CMSClassUnloadingEnabled,MaxPermSize=1024M} -jar $dest "$@"
