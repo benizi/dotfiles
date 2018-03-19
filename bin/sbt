@@ -1,5 +1,5 @@
 #!/bin/zsh
-: ${sbt_version=1.0.2}
+: ${sbt_version=1.1.1}
 dest_dir=$HOME/.cache/sbt-launch
 dest=$dest_dir/sbt-launch-$sbt_version.jar
 [[ -f $dest ]] || mvn dependency:copy \
