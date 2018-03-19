@@ -5,4 +5,4 @@ dest=$dest_dir/sbt-launch-$sbt_version.jar
 [[ -f $dest ]] || mvn dependency:copy \
   -Dartifact=org.scala-sbt:sbt-launch:$sbt_version \
   -DoutputDirectory=$dest_dir
-java -X{ms512,mx1536,ss1}M -XX:{+CMSClassUnloadingEnabled,MaxPermSize=1024M} -jar $dest "$@"
+java -X{ms512,mx1536,ss1}M -XX:+CMSClassUnloadingEnabled -jar $dest "$@"
