@@ -31,6 +31,7 @@ check_config_exists_graphical() {
   local -a configs
 
   configs=(
+    .config/nixpkgs/config.nix
     .emacs.d
     .gitconfig
     .ghc/ghci.conf
