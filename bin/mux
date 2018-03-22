@@ -39,7 +39,9 @@ end
 YAML::load(ARGF.read).tap do |file|
   root, @pre, windows = %w(root pre_window windows).map { |k| file.delete(k) }
   file.delete("name")
+  history = file.delete("history")
   out :root, 0, File.expand_path(root) if root
+  out :history, 0, ![nil, false, 0, "0", "false", "no"].include?(history)
   abort "Unhandled file keys: #{file.inspect}" unless file.empty?
   windows.each_with_index do |whash, wi|
     wname, window = whash.to_a.first
@@ -71,7 +73,7 @@ RUBY
 
 mux_start() {
   set -e
-  local sess=$1 action target command root
+  local sess=$1 action target command root history=false
   local file="$(mux_file $sess)"
   mux_exists "$file"
   mux_parse "$file" |
@@ -79,6 +81,7 @@ mux_start() {
   do
     case $action in
       (root) cd $command ;;
+      (history) history=$command ;;
       (window)
         if test $target -eq 0
         then tmux new-session -d -s $sess -n "$command"
@@ -91,6 +94,7 @@ mux_start() {
         if test $pane -gt 0
         then tmux split-window ${root+"-c"} ${root+"$root"} -t "=$sess:$win"
         fi
+        $history || command=" $command"
         tmux_send_keys $sess:$target "$command" C-m
         ;;
       (layout)
