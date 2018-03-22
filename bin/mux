@@ -154,4 +154,7 @@ case "$1" in
     else mux_start "$sess"
     fi
     ;;
+  (*)
+    "$@"
+    ;;
 esac
