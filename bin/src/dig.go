@@ -122,6 +122,7 @@ func main() {
 	var short bool
 	var hosts []string
 	var servers []resolver
+	var anyOK bool
 	for _, arg := range os.Args[1:] {
 		switch arg {
 		case "+short":
@@ -139,6 +140,7 @@ func main() {
 			}
 		}
 	}
+hosts:
 	for _, host := range hosts {
 		ips, err := lookupIPs(host, servers)
 		if err != nil {
@@ -147,7 +149,15 @@ func main() {
 			}
 			continue
 		}
-		fmt.Println(ips[0].String())
+		anyOK = true
+		for _, ip := range ips {
+			fmt.Println(ip.String())
+			if short {
+				break hosts
+			}
+		}
+	}
+	if anyOK {
 		syscall.Exit(0)
 	}
 failed:
