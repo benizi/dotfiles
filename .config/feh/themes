@@ -2,4 +2,4 @@ feh -FZ --magick-timeout -1 \
 --action2 ";animate -delay 10 %F" \
 --action3 ";animate %F" \
 --action4 ";gimp %F &" \
---info ";echo %F"
+--info ";printf '%%05d/%%05d - %%s' %u %l %F"
