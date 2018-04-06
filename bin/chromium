@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 (( $+browser_debug )) && _explicit_debug=true || _explicit_debug=false
-: ${browser_debug=3}
+: ${browser_debug=1}
 
 scriptlog=~/browser.log
 if (( browser_debug ))
@@ -39,7 +39,7 @@ dbg-exec() {
       (*) printf 'Unknown choice: [%s]\n' $option >&2 ; exit $option ;;
     esac
   elif (( browser_debug == 2 ))
-  then runit=false
+  then run=false
   fi
   runinfo=( "run=$run" )
   if $_dry
