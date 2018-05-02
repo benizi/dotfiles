@@ -104,3 +104,20 @@ fun! s:jq.Format() dict abort
 endf
 
 cal s:registry.AddExtension(s:jq)
+
+" use `mix format` to format Elixir
+let s:mix_format = s:CreateFormatter('mix', 'elixir')
+
+fun! s:mix_format.Format() dict abort
+  let cmd = [s:mix_format.GetExe(), 'format', '-']
+  " TODO: this is pretty similar to s:jq.Format() *cough, cough*
+  let input = join(getline(1,'$'), "\n")
+  let ret = maktaba#syscall#Create(cmd).WithStdin(input).Call(0)
+  if !empty(ret.stderr)
+    echoerr ret.stderr
+    return
+  end
+  cal maktaba#buffer#Overwrite(1, line('$'), split(ret.stdout, "\n"))
+endf
+
+cal s:registry.AddExtension(s:mix_format)
