@@ -1,0 +1,2 @@
+#!/bin/sh
+ruby -ryaml -rjson -e 'puts JSON::parse(ARGF.read).to_yaml' "$@"
