@@ -1,0 +1,34 @@
+#!/bin/sh
+set -x
+
+: ${qemu_bridge=qemu0}
+: ${ethernet_iface=enp0s25}
+
+bridge_exists() {
+  brctl show "${1:-$qemu_bridge}" >/dev/null 2>/dev/null
+}
+
+createbridge() {
+  bridge_exists $qemu_bridge || sudo brctl addbr $qemu_bridge
+  sudo ip link set dev $qemu_bridge up
+  sudo brctl addif $qemu_bridge $ethernet_iface
+}
+
+ifup() {
+  bridge_exists || createbridge
+  sudo ip link set $1 up promisc on
+  sudo brctl addif $qemu_bridge $1
+}
+
+ifdown() {
+  sudo ip link set $1 down
+  sudo brctl delif $qemu_bridge $1
+  sudo ip link delete dev $1
+}
+
+case "${0##*/}" in
+  (qemu-iftool) ;;
+  (qemu-if*) set -- "${0##*/qemu-}" "$@" ;;
+esac
+
+"$@"
