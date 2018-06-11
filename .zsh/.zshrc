@@ -91,7 +91,13 @@ command_not_found_handler () {
   for fn in $command_not_found_handlers ; do
     $fn "$@" && return 0
   done
-  return 1
+  local cmd=$1 context
+  if (( $#funcstack > 1 ))
+  then context=${funcstack[2]}
+  else context=$ZSH_ARGZERO
+  fi
+  printf '%s: command not found: %s\n' $context $cmd >&2
+  return 127
 }
 
 all_git_aliases () {
