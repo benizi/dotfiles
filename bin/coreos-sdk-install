@@ -1,0 +1,67 @@
+#!/bin/sh
+set -e -x
+set -o nounset
+
+coreroot=/opt/coreos
+bindir=$coreroot/bin
+sdkdir=$coreroot/sdk
+gitconfig=$HOME/.gitconfig.coreos
+cork=$bindir/cork
+version=0.9.1
+
+export PATH=$bindir:$PATH
+
+#git config --global user.email coreos@benizi.com
+#git config --global user.name 'Benjamin R. Haskell'
+
+getchar() {
+  { set +x ; } 2>/dev/null
+  echo Hit Enter to continue
+  read continue
+  set -x
+}
+
+for dir in $bindir $sdkdir
+do
+  test -d $dir && continue || :
+  sudo mkdir -p $dir
+  sudo chown -R $(id -un):$(id -gn) $dir
+done
+
+test -f $gitconfig || cat > $gitconfig <<GITCONFIG
+[user]
+  email = coreos@benizi.com
+  name = "$(git config user.name)"
+GITCONFIG
+
+if ! test -f $cork
+then
+  url=https://github.com/coreos/mantle/releases/download/v${version}/cork-${version}-amd64
+  curl -L -o $cork $url
+  curl -L -o $cork.sig $url.sig
+  gpg --keyserver keys.gnupg.net --recv-keys 9CEB8FE6B4F1E9E752F61C82CDDE268EBB729EC7
+  gpg --verify $cork.sig $cork
+  getchar
+fi
+chmod ugo+x $cork
+
+#rsync -PHXvax --info=stats0,flist0 --chmod=u=rwx,go=rx cork $bindir/
+
+cd $sdkdir
+
+if test -e .time
+then echo using chroot from $(cat .time)
+else
+  if cork create || cork update
+  then date > .time
+  else sudo rm -rfI $sdkdir/chroot
+  fi
+fi
+
+cork enter <<'SCRIPT'
+./set_shared_user_password.sh
+./setup_board --default --board=amd64-usr
+./build_packages
+SCRIPT
+
+getchar
