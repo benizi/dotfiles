@@ -1,7 +1,12 @@
 #!/bin/zsh
 xscreensaver -lock &
 sudo umount -a -t fuse.sshfs
-sudo pm-suspend
+if (( $+commands[pm-suspend] ))
+then sudo pm-suspend
+elif (( $+commands[systemctl] ))
+then sudo systemctl suspend
+else printf 'Don'\''t know how to suspend this system\n' >&2
+fi
 sudo chown $UID:$GID -R /run/user/$UID/pulse 2> /dev/null
 k
 mon
