@@ -1,0 +1,1 @@
+au! fugitive_remove
