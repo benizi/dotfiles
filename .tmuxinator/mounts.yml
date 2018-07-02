@@ -1,0 +1,12 @@
+name: mounts
+root: ~/
+windows:
+  - mounts:
+      layout: even-vertical
+      panes:
+        - >
+          ~g/s3cmd/s3cmd env --env-style=aws
+          --
+          yas3fs -f s3://s3.benizi.com /aws/s3.benizi.com
+        - mount /drive
+        - zip-fuse-fs /mnt/unzip -d
