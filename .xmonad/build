@@ -1,10 +1,4 @@
 #!/bin/sh
-set -e
-stack build
-stack path --local-install-root |
-sed 's!$!/bin/xmonad-config!' |
-while read bin
-do
-  cp "$bin" "$bin".to-move
-  mv "$bin".to-move "$1"
-done
+export STACK_ROOT=/opt/stack/root
+stack build --copy-bins --local-bin-path .
+stack install xmonad
