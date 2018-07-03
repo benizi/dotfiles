@@ -221,6 +221,9 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((0, xF86XK_AudioNext), spawn "mpc next")
     , ((0, xF86XK_AudioPrev), spawn "mpc prev")
     , ((0, xF86XK_AudioMute), spawn "toggle-pulse-mute")
+    , ((mod4Mask, xF86XK_AudioRaiseVolume), spawn "sound-check")
+    , let speakerTest = spawn "speaker-test -t wav -c2 -l1"
+       in ((mod4Mask .|. shiftMask, xF86XK_AudioRaiseVolume), speakerTest)
     , ((0, xF86XK_AudioLowerVolume), spawn "pavucontrol")
 
     ---- brightness
