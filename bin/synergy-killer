@@ -10,9 +10,22 @@ GetOptions(
 	'dry-run+' => \(my $dry = 0),
 ) or die 'options';
 
-my $running_remotely = $0 eq '-';
-die "Don't specify hosts if running remotely\n" if @ARGV and $running_remotely;
-my @hosts = (@ARGV or $running_remotely) ? (splice @ARGV) : ('_');
+my $run_local = 0;
+my @hosts;
+for (@ARGV) {
+	if ($_ eq '.') { $run_local = 1; }
+	else { push @hosts, $_; }
+}
+
+if ($0 eq '-') {
+	# running remotely
+	die "Don't specify hosts if running remotely\n" if @hosts;
+	$run_local = 1;
+} elsif (not $run_local and not @hosts) {
+	($run_local, @hosts) = qw(1 _);
+}
+
+@hosts = qw(_) unless $run_local or @hosts;
 
 sub lines {
 	my $out;
@@ -70,7 +83,7 @@ sub kill_remote {
 }
 
 sub main {
-	kill_local;
+	kill_local if $run_local;
 	kill_remote for @hosts;
 }
 
