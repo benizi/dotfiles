@@ -120,6 +120,9 @@ else
 fi
 
 find_exe () {
+  if (( ! $+exe )) && [[ -L $_profdir/exe ]]
+  then exe="$(readlink $_profdir/exe)"
+  fi
   if (( $+exe )) && [[ -f $exe ]]
   then return
   fi
