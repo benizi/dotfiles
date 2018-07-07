@@ -183,9 +183,16 @@ while [ $# -gt 0 ] ; do
   done
   $_found && continue
   case "$arg" in
-    (-profile*|--profile*) _profile=${arg/*=}
+    (-profile*|--profile*)
+      _profile=${arg/*=}
       if [ "$arg" = "$_profile" ] ; then _profile="$1" ; shift ; fi
-      [ -z "$_profile" ] && die "Bad argument: $arg" ;;
+      [ -z "$_profile" ] && die "Bad argument: $arg"
+      argfiles=( $_profile $^_config_dirs/$_profile )
+      argfiles=( "${^argfiles[@]}/_args"(N) )
+      if (( $#argfiles ))
+      then set -- "${(f)"$(cat $argfiles)"}" "$@"
+      fi
+      ;;
     (--scratch) _scratch=true ;;
     (--firefox) _ua='Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.4) Gecko/20100527 SUSE/3.6.4-2.2 Firefox/3.6.4' ;;
     (--googlebot) _ua='Googlebot/2.1 (+http://www.google.com/bot.html)' ;;
