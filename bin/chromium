@@ -53,9 +53,16 @@ dbg-exec() {
   exit $?
 }
 
-case $0 in
+case ${0:t} in
+  (xdg-open|open)
+    if (( $# == 1 )) && [[ -e $1 ]]
+    then
+      [[ $1 = (/*) ]] || set -- "$(pwd)/$1"
+      set -- "file://$1"
+    fi
+    ;;
   (*-fresh) argv+=( --scratch http://${${0//-fresh/}:t} ) ;;
-  (*chromium*|*open|*sensible-browser) ;;
+  (*chromium*|*sensible-browser) ;;
   (*nojs) argv+=( --nojs --scratch ) ;;
   (*scratch) argv+=( --scratch ) ;;
   (*webmail) argv+=( --firefox --profile webmail ) ;;
