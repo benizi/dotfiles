@@ -84,8 +84,8 @@ say "@clone" unless $verbose;
 my $ret = 0;
 my ($out, $err);
 if (not $dry) {
-  my $out_sub = tee out => $verbose ? \*STDERR : \*STDOUT, \$out;
-  my $err_sub = tee err => \*STDERR, \$err;
+  my $out_sub = tee git => $verbose ? \*STDERR : \*STDOUT, \$out;
+  my $err_sub = tee git => \*STDERR, \$err;
   my $cmd = harness \@clone, \undef, $out_sub, $err_sub;
   run $cmd;
   $ret = $cmd->result;
