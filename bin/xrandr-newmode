@@ -1,0 +1,26 @@
+#!/bin/sh
+width=
+height=
+rate=
+name=
+for arg
+do
+  case "$arg" in
+    (*x*@*)
+      width=${arg%%x*}
+      height=${arg##*x}
+      height=${height%%@*}
+      rate=${arg##*@}
+      ;;
+    (*) name=$arg ;;
+  esac
+done
+test -n "$width$height" || width=1920 height=1080
+test -n "$rate" || rate=60
+test -n "$name" || name=fullhd
+gtf 1920 1080 60 |
+awk -v name=$name '
+!/Mode/ { next }
+{ $1 = "xrandr --newmode" ; $2 = name }
+1' |
+sh -xs
