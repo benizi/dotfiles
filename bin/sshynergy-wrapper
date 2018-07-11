@@ -1,0 +1,4 @@
+#!/bin/sh
+! test -f ~/.config/sshynergy || . ~/.config/sshynergy
+synergy-killer ${killhosts:-$(printf '%s\n' "$@" | grep -vFx .)}
+sshynergy -multilog=./sshynergy.log "$@"
