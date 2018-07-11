@@ -79,12 +79,13 @@ sub kill_remote {
 	my @cmd = (ssh => $host, qw/perl - --port/, $port, ('--dry') x $dry);
 	say "  => @cmd";
 	return if $dry > 1;
-	say for lines \@cmd, '<', \$this_script;
+	say "    $_" for lines \@cmd, '<', \$this_script;
 }
 
 sub main {
 	kill_local if $run_local;
 	kill_remote for @hosts;
+	say "";
 }
 
 main();
