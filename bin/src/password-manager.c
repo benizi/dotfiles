@@ -31,6 +31,12 @@ default_user(void)
 #define FIND_STRING(ATT) FIND_NAMED_KIND(ATT, #ATT, string)
 #define FIND_INT(ATT) FIND_NAMED_KIND(ATT, #ATT, integer)
 
+#define MAX_ATTR_STR 65536
+#define MAX_ATTR_NAME 512
+#define ATTR_OUTPUT_PADDING 16 /* other characters per line of extra attr */
+#define MAX_ATTR_VAL (MAX_ATTR_STR - MAX_ATTR_NAME - ATTR_OUTPUT_PADDING)
+#define CHECK(VAR) if (VAR == NULL) { perror("malloc"); return; }
+
 static void
 short_key_listing(gchar *keyring, guint32 id)
 {
@@ -47,9 +53,11 @@ short_key_listing(gchar *keyring, guint32 id)
 
   if (result == GNOME_KEYRING_RESULT_OK) {
     GnomeKeyringAttribute att, *atts;
-    int i;
+    int i, j, printable, n_extra, len;
     atts = (GnomeKeyringAttribute *)attlist->data;
-    for (i = 0; i < attlist->len; i++) {
+    char **extra_attrs = (char **)malloc(attlist->len * sizeof(char*));
+    CHECK(extra_attrs);
+    for (i = 0, n_extra = 0; i < attlist->len; i++) {
       att = atts[i];
       if (att.type == GNOME_KEYRING_ATTRIBUTE_TYPE_STRING) {
         FIND_NAMED_KIND(schema, "xdg:schema", string);
@@ -59,7 +67,23 @@ short_key_listing(gchar *keyring, guint32 id)
         FIND_STRING(protocol);
         FIND_STRING(name);
         FIND_STRING(magic);
-        printf("UNHANDLED STRING: %s\n", att.name);
+        extra_attrs[n_extra] = (char *)malloc(MAX_ATTR_STR * sizeof(char));
+        CHECK(extra_attrs[n_extra]);
+        len = strlen(att.value.string);
+        if (len > MAX_ATTR_VAL)
+          printable = 0;
+        else {
+          for (j = 0, printable = 1; j < len; j++) {
+            if (att.value.string[j] >= 0x20 && att.value.string[j] <= 0x7e)
+              continue;
+            printable = 0;
+            break;
+          }
+        }
+        sprintf(extra_attrs[n_extra++],
+            "[%s]=[%s]",
+            strlen(att.name) < MAX_ATTR_NAME ? att.name : "(long name)",
+            printable ? att.value.string : "(unprintable)");
       } else if (att.type == GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32) {
         FIND_INT(port);
         printf("UNHANDLED INT: %s\n", att.name);
@@ -74,6 +98,7 @@ short_key_listing(gchar *keyring, guint32 id)
     if (schema_p && 0) printf(" {%s}", schema);
     if (name_p) printf(" name=%s", name);
     if (magic_p) printf(" magic=%s", magic);
+    for (i = 0; i < n_extra; i++) printf("  %s\n", extra_attrs[i]);
     gnome_keyring_attribute_list_free(attlist);
   }
 }
