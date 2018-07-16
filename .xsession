@@ -28,4 +28,6 @@ fi
 
 xsetroot -solid black
 
+dbus-update-activation-environment --systemd DISPLAY
+
 exec xmonad
