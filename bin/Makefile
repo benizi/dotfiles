@@ -3,6 +3,15 @@ CXXFLAGS := -Wall
 SRC = src
 allsource = $(wildcard $(SRC)/*.c $(SRC)/*.go $(SRC)/X11/*.c)
 
+GO_STATIC_FLAGS = -a -tags netgo -ldflags '-w -extldflags -static'
+ifeq ($(GO_STATIC),1)
+	GO_BUILD_FLAGS = $(GO_STATIC_FLAGS)
+	GO_EXT = .static
+else
+	GO_BUILD_FLAGS =
+	GO_EXT =
+endif
+
 all:	$(notdir $(basename $(allsource)))
 
 place-holder:	src/place-holder.c
@@ -17,11 +26,14 @@ place-holder:	src/place-holder.c
 	$(CC) $(CFLAGS) -I$(HOME)/include $(shell pkg-config --cflags x11) -o $@.tmp $< $(shell pkg-config --libs x11)
 	mv $@.tmp $@
 
-%:	src/%.go
+%$(GO_EXT):	src/%.go
 	go list -json $< \
 		| jq -r '(.DepsErrors//[])[].ImportStack[-1]' \
-		| xargs -r go get -v
-	go build -o $@ $<
+		| xargs -r go get -v $(GO_BUILD_FLAGS)
+	go build $(GO_BUILD_FLAGS) -o $@ $<
+
+%.static$(GO_EXT):
+	$(MAKE) GO_STATIC=1 $@
 
 %:	src/%.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@.tmp $<
