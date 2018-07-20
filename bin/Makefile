@@ -4,12 +4,11 @@ SRC = src
 allsource = $(wildcard $(SRC)/*.c $(SRC)/*.go $(SRC)/X11/*.c)
 
 GO_STATIC_FLAGS = -a -tags netgo -ldflags '-w -extldflags -static'
-ifeq ($(GO_STATIC),1)
+GO_STATIC_EXT = .static
+ifeq ($(GO_EXT),$(GO_STATIC_EXT))
 	GO_BUILD_FLAGS = $(GO_STATIC_FLAGS)
-	GO_EXT = .static
 else
 	GO_BUILD_FLAGS =
-	GO_EXT =
 endif
 
 all:	$(notdir $(basename $(allsource)))
@@ -32,9 +31,9 @@ place-holder:	src/place-holder.c
 		| xargs -r go get -v $(GO_BUILD_FLAGS)
 	go build $(GO_BUILD_FLAGS) -o $@ $<
 
-%.static$(GO_EXT):
+%$(GO_STATIC_EXT)$(GO_EXT):
 	@test x = x$(GO_EXT)
-	$(MAKE) GO_STATIC=1 $@
+	$(MAKE) GO_EXT=$(GO_STATIC_EXT) $@
 
 %:	src/%.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@.tmp $<
