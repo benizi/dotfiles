@@ -33,6 +33,7 @@ place-holder:	src/place-holder.c
 	go build $(GO_BUILD_FLAGS) -o $@ $<
 
 %.static$(GO_EXT):
+	@test x = x$(GO_EXT)
 	$(MAKE) GO_STATIC=1 $@
 
 %:	src/%.cc
