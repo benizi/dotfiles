@@ -166,7 +166,7 @@ if (!@m) {
 my @p = @m;
 for my $l (1..$parent_levels) {
 	my %seen;
-	@p = grep !$seen{$$_{pid}}++, @p, grep defined, map $$_{parent}, @p;
+	@p = grep !$seen{$$_{pid}//''}++, @p, grep defined, map $$_{parent}, @p;
 }
 my @k = @m;
 for (1..$kid_levels) {
