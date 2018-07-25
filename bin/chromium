@@ -126,7 +126,7 @@ find_exe () {
   if (( $+exe )) && [[ -f $exe ]]
   then return
   fi
-  if (( $+exe )) && [[ $exe = newest ]]
+  if (( $+exe )) && [[ $exe = (newest|latest) ]]
   then
     local -a exes
     exes=( /opt/google/chrom{e,ium}/*/chrome(N.xom) )
