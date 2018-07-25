@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -12,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+
+	"gopkg.in/yaml.v2"
 )
 
 var (
