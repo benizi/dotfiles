@@ -125,6 +125,12 @@ toggle-middle() {
 funcs=( toggle-middle $funcs )
 
 reset-keyboard() {
+  local flag=~/.cache/keyboard.plugged
+  if test -e $flag
+  then
+    k >&2
+    rm -f $flag
+  fi
   if (( $+commands[x-kbdesc] ))
   then x-kbdesc +benizi
   else false
