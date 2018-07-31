@@ -20,44 +20,5 @@ test -n "$ID_INPUT_MOUSE" ||
 test -n "$ID_INPUT_POINTINGSTICK" ||
 exit 0
 
-PS4=" $$ > "
-exec 2>> /tmp/testing
-set -x
-
-cat /proc/$$/cgroup
-(setsid "$0.wrapped" "$devname" "$devnum" </dev/null >/dev/null 2>/dev/null &) &
-sleep 1
-exit $?
-
-case $caller in
-  (udev)
-    # daemonize
-    ("$0" daemon "$devname" "$devnum" </dev/null >/dev/null 2>/dev/null &) &
-    exit $?
-    ;;
-  (daemon)
-    home="$(getent passwd bhaskell | awk -F: '{print $6}')"
-    bin="$home/dotfiles/bin"
-    export \
-      PATH="${bin}:${PATH}:/usr/bin" \
-      HOME="$home" \
-      XAUTHORITY="$home/.Xauthority" \
-      DISPLAY="${DISPLAY:-":0.0"}"
-    trykeyboard
-    # get exclusive, non-blocking lock on this script's file; otherwise exit 42
-    #set -- flock -E 42 -en "$0" "$0" locked "$devname" "$devnum"
-    #printf ']] %s\n' "$@" >> /tmp/testing
-    #"$@"
-    #ret=$?
-    ## discard exit code if lock couldn't be obtained (don't care)
-    #test "$ret" != 42 || ret=0
-    #exit $ret
-    ;;
-  (locked)
-    trykeyboard
-    ;;
-  (*)
-    printf 'Unknown caller??: %s\n' "$caller" >&2
-    exit 1
-    ;;
-esac
+# strip `dotfiles/bin/scriptname`
+touch "${0%/*/*/*}/.cache/keyboard.plugged"
