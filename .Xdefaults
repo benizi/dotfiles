@@ -50,6 +50,9 @@ URxvt*background: black
 URxvt*foreground: white
 URxvt*cursorColor: gray70
 
+! color0 is often used for "bold", but default (black) is invisible on black bg
+*color0: gray50
+
 !make yellow orange, for readability against white
 *VT100*color3: orange3
 *color3: orange3
