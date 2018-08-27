@@ -11,7 +11,7 @@ module URI
     def add_scheme(name, default_port=nil)
       uc = name.to_s.upcase
       sym = uc.to_sym
-      unless default_port.is_a?(Fixnum)
+      unless default_port.is_a?(Integer)
         default_port = Socket.getservbyname(uc.downcase) rescue nil
       end
       @@schemes[uc] = const_set(sym, Class.new(Generic)).class_eval do
