@@ -1,0 +1,60 @@
+#!/bin/zsh
+
+imedia=org.mpris.MediaPlayer2.Player
+spotify=
+mpc=
+
+running() {
+  case $1 in
+    (spotify)
+      spotifydbus \
+        org.freedesktop.DBus.Properties.Get \
+        string:$imedia \
+        string:PlaybackStatus \
+        &>/dev/null
+      ;;
+    (mpc|mpd)
+      mpc status &>/dev/null
+      ;;
+  esac
+}
+
+spotifydbus() {
+  dbus-send \
+    --print-reply=literal \
+    --dest=com.spotify.qt \
+    /org/mpris/MediaPlayer2 \
+    "$@"
+}
+
+spotify_ctl() {
+  local cmd=$1
+  shift
+  case $cmd in
+    (play|pause|toggle) cmd=PlayPause ;;
+    (next|prev|*) cmd=${1:0:1:u}${1:1} ;;
+  esac
+  spotifydbus $imedia.$cmd "$@"
+}
+
+mpc_ctl() {
+  case $1 in
+    (play|pause) mpc toggle ;;
+    (stop) mpd --kill ;;
+    (next|prev|toggle) mpc $1 ;;
+  esac
+}
+
+whatplayer() {
+  case $1 in
+    (--spotify) spotify=spotify ; mpc= ;;
+    (--mpc|--mpd) spotify= ; mpc=mpc ;;
+  esac
+  test -z "$spotify$mpc" || return 0
+  ! running spotify || spotify=spotify
+  ! running mpc || mpc=mpc
+  [[ $spotify$mpc != spotifympc ]] || mpc=
+}
+
+whatplayer
+${spotify}${mpc}_ctl "$@"
