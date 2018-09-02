@@ -215,11 +215,11 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((shiftMask, xF86XK_Display), spawn "mon --cycle")
 
     ---- mpd
-    , ((0, xF86XK_AudioPlay), spawn "mpc toggle")
-    , ((0, xF86XK_AudioPause), spawn "mpc toggle") {- headset sends "Pause" -}
-    , ((0, xF86XK_AudioStop), spawn "mpd --kill")
-    , ((0, xF86XK_AudioNext), spawn "mpc next")
-    , ((0, xF86XK_AudioPrev), spawn "mpc prev")
+    , ((0, xF86XK_AudioPlay), spawn "music toggle")
+    , ((0, xF86XK_AudioPause), spawn "music toggle") {- headset sends "Pause" -}
+    , ((0, xF86XK_AudioStop), spawn "music stop")
+    , ((0, xF86XK_AudioNext), spawn "music next")
+    , ((0, xF86XK_AudioPrev), spawn "music prev")
     , ((0, xF86XK_AudioMute), spawn "toggle-pulse-mute")
     , ((mod4Mask, xF86XK_AudioRaiseVolume), spawn "sound-check")
     , let speakerTest = spawn "speaker-test -t wav -c2 -l1"
