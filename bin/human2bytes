@@ -1,0 +1,28 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+my @mult = ('', qw/K M G T/);
+my %val;
+my $x = 0;
+for my $p (@mult) {
+  for my $i ('', grep length($p), 'i') {
+    $val{$p.$i."B"} = $i ? (1 << (10 * $x)) : (10 ** (3 * $x));
+  }
+  $x++;
+}
+
+$val{$$_[0]} = $val{$$_[1]} for [qw/kB KB/], [qw/b B/];
+
+my $r = join '|', reverse sort keys %val;
+$r = qr/^(\d+(?:\.\d+)?)($r)$/;
+
+while (<>) {
+  chomp;
+  my @f = split /(\s+)/, $_, -1;
+  for (@f) {
+    $_ = $1 * $val{$2} if /$r/;
+  }
+  print @f;
+  print $/;
+}
