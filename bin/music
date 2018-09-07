@@ -45,16 +45,20 @@ mpc_ctl() {
   esac
 }
 
-whatplayer() {
-  case $1 in
-    (--spotify) spotify=spotify ; mpc= ;;
-    (--mpc|--mpd) spotify= ; mpc=mpc ;;
-  esac
-  test -z "$spotify$mpc" || return 0
+findplayer() {
   ! running spotify || spotify=spotify
   ! running mpc || mpc=mpc
   [[ $spotify$mpc != spotifympc ]] || mpc=
 }
 
-whatplayer
+while test $# -gt 0
+do
+  case $1 in
+    (--spotify) spotify=spotify ; mpc= ;;
+    (--mpc|--mpd) spotify= ; mpc=mpc ;;
+    (*) break ;;
+  esac
+  shift
+done
+test -n "$spotify$mpc" || findplayer
 ${spotify}${mpc}_ctl "$@"
