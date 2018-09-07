@@ -32,7 +32,8 @@ spotify_ctl() {
   shift
   case $cmd in
     (play|pause|toggle) cmd=PlayPause ;;
-    (next|prev|*) cmd=${cmd:0:1:u}${cmd:1} ;;
+    (prev) cmd=Previous ;;
+    (next|*) cmd=${cmd:0:1:u}${cmd:1} ;;
   esac
   spotifydbus $imedia.$cmd "$@"
 }
