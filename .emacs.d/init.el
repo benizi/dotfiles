@@ -170,11 +170,6 @@
                        (kbd "C-c C-c")
                        'gnu-apl-interactive-send-line)))
 
-;; highlight expr on eval
-(require 'highlight)
-(require 'eval-sexp-fu)
-(setq eval-sexp-fu-flash-duration 0.5)
-
 ;; extend cider to handle flashing
 ;; (defun handle-flash-in-cider ()
 ;;   (define-eval-sexp-fu-flash-command cider-eval-last-sexp

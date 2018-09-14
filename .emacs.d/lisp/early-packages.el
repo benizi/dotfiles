@@ -6,14 +6,12 @@
     clojure-mode
     color-theme-railscasts
     elscreen
-    eval-sexp-fu ;; for highlighting when eval'ing
     evil
     expand-region
     git-gutter
     gnu-apl-mode
     haml-mode
     haskell-mode
-    highlight
     inf-ruby
     markdown-mode
     mic-paren ;; better paren matching
