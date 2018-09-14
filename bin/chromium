@@ -80,7 +80,7 @@ fi
 _dry=false
 _plugins=true
 unset _url _ua _scratch _incognito _headless _new_window
-_logging=false
+_locallogging=false
 _userscripts=true
 _ipv6=true
 _javascript=true
@@ -96,12 +96,16 @@ _flags=(
   async-dns
   flash
   ipv6
+  local-logging
   logging
   plugins
   quic
   user-scripts
 )
-_pseudo_flags=( flash )
+_pseudo_flags=(
+  flash
+  local-logging
+)
 _overscroll=0
 
 if [[ -d /Applications ]] ; then
@@ -352,7 +356,7 @@ then _args+=( --disable-gpu )
 fi
 find_exe
 _cmd=( $_exec $exe $_args )
-if $_logging ; then
+if $_locallogging ; then
   _logfile=~/logs/errors-chromium-${_logext}-$(date +%Y-%m-%d-%H%M%S)
   if $_dry ; then
     echo LOG file: $_logfile
