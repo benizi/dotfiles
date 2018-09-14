@@ -247,17 +247,13 @@ if (( $+_scratch )) ; then
   chromium-theme $_profdir $+_javascript
 fi
 
-: ${_profile=Default}
+: ${_profile=$USER}
 : ${_profdir=$_profile}
 if ! [[ $_profdir = */* ]] ; then
   for loc in $_config_dirs ; do
     _profdir=$loc/$_profile
     [[ -e $_profdir ]] && break
   done
-  if [[ $_profile = Default ]] ; then
-    _profdir=$_profdir:h
-    [[ -e $_profdir ]] || unset _profdir
-  fi
 fi
 _logext=$_profdir:t
 (( $+_profdir )) && _args+=( --user-data-dir=$_profdir )
