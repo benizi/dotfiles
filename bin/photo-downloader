@@ -1,0 +1,40 @@
+#!/bin/zsh
+
+in=~/Downloads
+out=/downloads
+
+pushd $in
+json=( photos*.json(Nom[1]) )
+jq -r '
+"(",
+"echo \(.url|@base64) |
+  openssl base64 -d -A |
+  url2json |
+  jq -r \".host + .path\" |
+  awk -F/ \u0027{$2=\"\";NF=6}1\u0027 |
+  awk -v OFS=/ \u0027{$1=$1}1\u0027 |
+  sed \"s%^www\\.%p/%\"",(.photos|map(["printf %s\\ %03d\\ %s\\\\n",.urls.original,.number,(.urls.original|split("/")[-1])]|map(tostring)|join(" "))|.[]),
+")"
+' < $json |
+sh -se |
+() {
+  setopt local_options xtrace
+  local dir n base
+  local -a parts
+  read dir
+  parts=( ${(s:/:)dir} )
+  local album=${parts[-3]} id=${parts[-2]} name=${parts[-1]}
+  printf '%s=[%s]\n' album $album id $id name $name >&2
+  mkdir -p $dir
+  rsync -Pav $json $dir/photos.json
+  allgood=true
+  while read url n base
+  do
+    curl -C - -o $dir/$n-$base $url
+    case $? in
+      (0|33) ;;
+      (*) allgood=false ;;
+    esac
+  done
+  $allgood && rm $json
+}
