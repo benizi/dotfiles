@@ -165,6 +165,21 @@
                                    buffer-file-name
                                    (line-number-at-pos)))
 
+;; same as gnu-apl, but with fewer choices
+(defun gnu-apl-jack-in ()
+  "Start a GNU APL interpreter (buffer) and evaluate the current buffer"
+  (interactive)
+  (let ((buffer (get-buffer-create "*gnu-apl*")))
+    (pop-to-buffer-same-window buffer)
+    (unless (comint-check-proc buffer)
+      (gnu-apl--cleanup-trace-symbol buffer)
+      (apply #'make-comint-in-buffer
+             "apl" buffer "apl" nil
+             "--rawCIN" "--emacs" '("--emacs_arg" "0"))
+      (setq gnu-apl-current-session buffer)
+      (gnu-apl-interactive-mode)
+      (set-buffer-process-coding-system 'utf-8 'utf-8))))
+
 (add-hook 'gnu-apl-mode-hook
           (lambda () (define-key gnu-apl-mode-map
                        (kbd "C-c C-c")
