@@ -355,6 +355,36 @@ if (( $+_headless ))
 then _args+=( --disable-gpu )
 fi
 find_exe
+if (( $+_scratch )) && $_has_remote && (( ! $+_headless ))
+then
+  if (( ! $+commands[ws] ))
+  then
+    warn 'Need `ws` command to nicely create initial state'
+  else
+    _port=10019
+    $exe --user-data-dir=$_profdir --remote-debugging-port=$_port &!
+    _pid=$!
+    while ! lsof -Pni :$_port 2&>/dev/null
+    do sleep 0.1
+    done
+    _ws_url=$(
+      curl -s localhost:$_port/json/version |
+      jq -r .webSocketDebuggerUrl
+    )
+    sleep 1
+    jq -n -c '{id:1,method:"Browser.close"}' | ws $_ws_url || :
+    while kill -0 $_pid
+    do :
+    done
+    sleep 0.1
+  fi
+  statefile="$_profdir/Local State"
+  jq -c '
+  .browser|=(
+    .enabled_labs_experiments|=(.//[])+["enable-native-notifications@2","extension-apis"]
+  )' < "$statefile" > "$statefile.tmp" &&
+  mv "$statefile.tmp" "$statefile"
+fi
 _cmd=( $_exec $exe $_args )
 if $_locallogging ; then
   _logfile=~/logs/errors-chromium-${_logext}-$(date +%Y-%m-%d-%H%M%S)
