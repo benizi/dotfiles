@@ -220,6 +220,9 @@
 ; Haskell stuff
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
 
+;; Magit
+(require 'magit)
+
 (setup-tabstop 2 t)
 
 (defun cider-eval-expression-at-point-in-repl ()

@@ -13,6 +13,7 @@
     haml-mode
     haskell-mode
     inf-ruby
+    magit
     markdown-mode
     mic-paren ;; better paren matching
     monroe ;; minimalist Clojure nREPL client
