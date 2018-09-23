@@ -5,6 +5,7 @@ set -e +x
 # Alter values to taste. These values are appropriate for running a second
 # Docker daemon (if the first running daemon uses default values).
 
+: ${exe=docker${suffix:-}}
 : ${altname=altdocker} # basis for names for the alternate daemon
 : ${bridge=$altname} # network bridge we'll create
 : ${ip=10.100.100.1} # IP address of bridge
@@ -35,7 +36,7 @@ printf 'To use `docker` without having to specify the host, run:\n'
 printf '  export DOCKER_HOST=%s\n' $host
 
 mkdir -p $base
-sudo docker daemon \
+sudo $exe daemon \
   --pidfile=$pidfile \
   --bridge=$bridge \
   --graph=$graph \
