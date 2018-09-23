@@ -4,3 +4,4 @@ let g:SuperTabCompletionContexts = ['s:ContextMarkup']
 " reset default completion type after leaving 'insert' mode
 let g:SuperTabRetainCompletionType = 2
 inoremap <C-t> <C-v><Tab>
+ino <C-Tab> <C-v><Tab>
