@@ -211,6 +211,7 @@ while [ $# -gt 0 ] ; do
     (--overscroll*) _overscroll=${arg#*=} ;;
     (//*) _url=https:$arg ;;
     (http:*|https:*|ftp:*|file:*|/*) _url=$arg ;;
+    (blockstack:*) _url="http://blockstack.dev:8888/auth?authRequest=${arg#blockstack://}" ;;
     (--exe=*) exe=${arg#*=} ;;
     (--cpus=*) _taskset+=( -c ${arg#*=} ) ;;
     (--rdp=*|--remote-debugging-port=*) _remote_debug=true ; _debug_port=${arg#*=} ;;
