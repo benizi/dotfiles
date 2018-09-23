@@ -1,0 +1,7 @@
+#!/bin/sh
+cmdstatus="$(which "$1" 2>&1)"
+case "$cmdstatus" in
+  (*/git-core/*|*': no '*|'') exec man "$@" ;;
+esac
+printf 'which "%s" -> [[[\n  %s\n]]]\n' "$1" "$cmdstatus" >&2
+"$1" --help

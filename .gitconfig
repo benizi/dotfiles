@@ -32,6 +32,10 @@
 [pack]
 	windowMemory = 1g
 	threads = 4
+[man]
+	viewer = custom
+[man "custom"]
+	cmd = git-man-custom
 [merge "railsschema"]
 	name = newer Rails schema version
 	driver = "ruby -e '\n\
