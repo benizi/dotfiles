@@ -17,12 +17,45 @@ set -e +x
 : ${pidfile=$base/pidfile} # PID file location
 : ${host=unix://$base/socket} # listening socket (in net.Dial notation)
 
+case "$1" in
+  (--dry) action=gen_rm_script ;;
+  (--rm) action=demolish ;;
+  (*) action=daemon ;;
+esac
+test $action = daemon || shift
+
 ## Extra options I need:
 set -- \
   --dns=$ip \
   --storage-driver=btrfs \
   --exec-opt native.cgroupdriver=cgroupfs \
   "$@"
+
+gen_rm_script() {
+  sudo btrfs su li / |
+  awk -v subpre=${base#/}/ '
+  1!=index($NF,subpre){next}
+  !header++{print "printf \"%s\\\\000\""}
+  {print $NF}
+  END{
+    if(header) {
+      print "| sudo xargs -n 1 -0 -r printf \"]] %s\\\\n\" btrfs su de"
+    }
+  }
+  ' |
+  sed '$!s/$/ \\/'
+}
+
+demolish() {
+  gen_rm_script
+}
+
+## Other modes
+if test $action != daemon
+then
+  $action "@$"
+  exit $?
+fi
 
 ## Set up alternate network bridge
 if ! ip link show $bridge 2> /dev/null | grep -q .
