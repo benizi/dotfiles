@@ -207,6 +207,9 @@ fun! SetupSpacing(...)
 		return
 	endif
 	let b:setup_spacing = 1
+	if SetInModeline('sw')
+		return
+	endif
 	if a:0 && a:1 < 2
 		for [t, default] in items({ 'tabbed': [ 4, 0 ], 'spaced': [ 2, 1 ] })
 			if !exists('g:setup_spacing_default_{t}')
