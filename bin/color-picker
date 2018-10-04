@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+
+$OPTS = {initial: nil, format: :hex}
+
+OptionParser.new do |opts|
+  opts.on('-iINITIAL', 'Initial color') { |v| $OPTS[:initial] = v }
+  opts.on('--rgb') { $OPTS[:format] = :rgb }
+  opts.on('--hex') { $OPTS[:format] = :hex }
+end.parse!
+
+def initial
+  [$OPTS[:initial]].reject(&:nil?).map do |x|
+    x.gsub!(/(\h)/) { |m| m + m } if x =~ /^#?\h{3}$/
+    x.sub!(/^(?=(?:\h{3}){1,2}$)/, '#')
+    "--color=#{x}"
+  end
+end
+
+cmd = %W(zenity --color-selection) + initial
+#$stderr.puts({cmd: cmd}.inspect)
+rgb = IO.popen(cmd, err: :close).read.chomp
+hex = rgb.scan(/\d+/).map { |n| sprintf("%02x", n) }.join.sub(/^/, "#")
+colors = {rgb: rgb, hex: hex}
+$stdout.write(colors[$OPTS[:format]])
+#$stderr.puts({colors: colors}.inspect)
