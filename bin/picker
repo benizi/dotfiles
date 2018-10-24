@@ -39,6 +39,8 @@ do
   case "$cmd:$arg" in
     (fzf:-select) arg=-q ;;
     (rofi:-q) arg=-select ;;
+    (dmenu:-password) arg=--secret ;;
+    (rofi:--secret) arg=-password ;;
   esac
 
   forcmd=
