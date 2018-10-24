@@ -7,6 +7,6 @@ esac
 args="$({
   [[ -n "$default" ]] && echo $default
   password-manager -l | sort | awk '/^ [^ ]/'
-} | dmenu)"
+} | picker)"
 
 test -n "$args" && password-manager $args | clip

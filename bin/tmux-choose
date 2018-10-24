@@ -4,7 +4,7 @@
   hash mux 2>/dev/null && mux completions start | sed 's!$!:mux!'
 } |
 awk -F: '!seen[$1]++ || $NF != "mux"' |
-dmenu |
+picker |
 while read session
 do
   case "$session" in

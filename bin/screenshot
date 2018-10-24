@@ -40,7 +40,7 @@ def sorted_existing_basenames
 end
 
 def dmenu_get(*options)
-  IO.popen('dmenu', 'r+') do |io|
+  IO.popen('picker', 'r+') do |io|
     io.puts(options)
     io.close_write
     io.read.chomp

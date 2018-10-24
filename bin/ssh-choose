@@ -63,7 +63,7 @@ my $out;
 if ($just_one) {
 	$out = $hosts;
 } else {
-	$out = run_forked dmenu => { child_stdin => $hosts };
+	$out = run_forked picker => { child_stdin => $hosts };
 	chomp($out = $$out{stdout}) if $out;
 }
 chomp $out;

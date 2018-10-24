@@ -243,11 +243,11 @@ password_prompt(const char *user, const char *server, const char *domain, const 
     if (ret < 0 || !*password) password[0] = '\0';
     password_cleaner(password);
   } else {
-    char *argv[] = { "dmenu", "--secret", "-p", "password", NULL };
+    char *argv[] = { "picker", "--secret", "-p", "password", NULL };
     close(fd[0]);
     dup2(fd[1], 1);
     close(0);
-    execvp("dmenu", argv);
+    execvp("picker", argv);
     exit(1);
   }
   return password;
