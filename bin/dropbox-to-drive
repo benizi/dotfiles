@@ -1,0 +1,196 @@
+#!/bin/zsh
+
+unset maxsize nfiles actions
+for arg
+do
+  case $arg in
+    (<->)
+      if (( $+maxsize )) || (( arg < 1000 ))
+      then nfiles=$arg
+      elif (( $+nfiles )) || (( arg >= 1000 ))
+      then maxsize=$arg
+      else printf 'Too many args?\n' >&2 ; exit 1
+      fi
+      ;;
+    (*)
+      if (( $+actions ))
+      then printf 'Actions already specified\n' >&2 ; exit 1
+      else actions=$arg
+      fi
+  esac
+done
+(( $+nfiles )) || (( $+maxsize )) || nfiles=20
+: ${maxsize=$(( 1 << 30 ))}
+printf '%s: %s; %s: %s\n' '# of files' $nfiles 'total size' $maxsize
+(( $+actions )) || actions=everything
+
+folder_id=0ByTJTCMeJc5jSnJBYjBIWnc1aG8
+
+gdrive() {
+  node ~/git/google-drive-nodejs "$@"
+}
+
+exists_on_gdrive() {
+  local n id name size md5 f OIFS=$IFS
+  f=${1:t}
+  {
+    IFS=$'\t'
+    gdrive sums /$folder_id $f |
+    while read n id name size md5
+    do
+      if [[ $name != $f ]]
+      then printf '!!exists_on_gdrive: %s != %s\n' $name $f
+      elif [[ "$(stat -c %s $1)" != "$size" ]]
+      then printf '!!exists_on_gdrive: %d != %d\n' "$(stat -c %s $1)" $size
+      elif [[ "$(md5sum < $1)" != "$md5  -" ]]
+      then printf '!!exists_on_gdrive: [%s] != [%s]\n' "$(md5sum < $1)" "$md5  -"
+      else printf '  exists_on_gdrive: [%s]\n' $1 ; return 0
+      fi
+    done
+    return 1
+  } always {
+    IFS=$OIFS
+  }
+}
+sha1sum64() {
+  local sha
+  sha1sum "$@" |
+  while read -r sha rest
+  do printf '  %s %s\n' "$(nix to-base64 --type sha1 $sha)" $rest
+  done
+}
+
+yesno() {
+  local ret
+  read -q "?$* "
+  ret=$?
+  echo
+  return $ret
+}
+
+action_allowed() {
+  case " $actions "/$1 in
+    (*everything*/*) return 0 ;;
+    (*" $1 "*/*) return 0 ;;
+  esac
+  return 1
+}
+
+{
+  set -eu
+  files=()
+  totalsize=0
+  src=~/Dropbox/Camera\ Uploads
+  dest=/drive/dropbox-camera-overflow
+  tmp=~/tmp
+  bak=~/backup.dropbox.camera
+  mountpoint /drive
+  cd $src
+  set -- *(.OL)
+  while (( $# ))
+  do
+    (( ! $+nfiles )) || (( ! $nfiles )) || (( $#files < $nfiles )) || break
+    (( totalsize < maxsize )) || break
+    files+=( $1 )
+    (( totalsize += $(zstat +size $1) ))
+    shift
+  done
+  (( $#files )) || { printf 'No files?\n' >&2 ; exit 1 }
+  stat --printf=']] %n\t%s\n' $files |
+  perl -lapwe '$tot+=$F[-1]; s/^/$. /; s/$/\t$tot/; 1 while s/(?<=\d)(?=\d\d\d(,|\s|$))/,/'
+  yesno 'proceed with actions ('$actions')?' || exit 1
+  #rsync --size-only -Pav "${files[@]}" $dest/
+  #cp -a -v --target-directory=$tmp/ "$dest/${^files[@]}"
+  if action_allowed rsyncing
+  then
+    for d in $tmp $bak
+    do
+      echo "==> rsyncing $d"
+      printf '%s\n' $files |
+      rsync --size-only -RPHAXvax -i --info=stats0,flist0 --files-from=- "$src/./" $d/
+    done
+  fi
+
+  for f in "${(@)files}"
+  do
+    echo
+    echo
+    if action_allowed check_gdrive
+    then
+      printf '==> Checking existence\n'
+      if ! exists_on_gdrive $f
+      then
+        gdrive upload $src/$f $folder_id
+        if ! exists_on_gdrive $f
+        then
+          printf 'Could not copy to google drive: %s\n' $f
+          yesno 'press y to continue'
+          continue
+        fi
+      fi
+    fi
+    if action_allowed check_tmp
+    then
+      if [[ ! -s $tmp/$f ]]
+      then
+        printf 'File is empty: %s\n' $tmp/$f
+        yesno 'press y to continue'
+        continue
+      fi
+    fi
+
+    if action_allowed check_local
+    then
+      () {
+        local f fname
+        local -a rep
+        if [[ -e $1 ]]
+        then :
+        else
+          rep=( ${1:r}*(.N) )
+          if (( $#rep ))
+          then
+            set -- ${(@)rep[1]} ${@:2}
+            printf 'Versioned filename:\n%20s%s\n' '' $1
+          else
+            printf 'Not synced in /drive: %s\n' $1
+          fi
+        fi
+        printf '==> Comparing xattrs\n'
+        for f
+        do
+          if [[ -e $f ]]
+          then
+            if xattr list $f | grep -q .
+            then printf '%s %s\n' "$(xattr $f | sha1sum64)" $f
+            fi
+          else printf 'No such file?: %s\n' $f
+          fi
+        done
+        printf '==> ls -trlA\n'
+        ls -trlA --color "$@" | sed -e 's/ 1 / /' -e 's/^/  /'
+        printf '==> sha1sum (non-Drive)\n'
+        sha1sum64 "${@:2}"
+      } $dest/$f $src/$f $tmp/$f $bak/$f |
+      sed -e 's/bhaskell bhaskell //' |
+      sed -e 's/  - / /g' |
+      sed -e 's@'$HOME'@~@g' |
+      sed -e 's@/drive@/d@g'
+    fi
+    if action_allowed delete
+    then
+      set -- rm -v $f $tmp/$f
+      printf ']] %s\n' "$@"
+      if yesno 'okay [y/N]?'
+      then "$@"
+      fi
+    fi
+  done
+} always {
+  for l in -sh -sm
+  do
+    for d in ~/Dropbox{,'/Camera Uploads'}
+    do du $l $d
+    done
+  done
+}
