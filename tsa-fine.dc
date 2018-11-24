@@ -1,0 +1,38 @@
+# precision = 50
+50k
+
+# p = Print stack
+#[10 42 d d an an an an f 10 42 an an]sp
+[10[** stack **]nanf10[************]nan]sp
+
+# d = Drop
+[Z0*K+k]sd
+
+# g = debuG (choose to print stack or not
+#[]sg
+[lpx]sg
+
+# r = Round down
+[K0kr1/rk]sr
+
+# f = adjust by Factor
+[d r]sf
+#[d p ldx * lrx]sf
+
+# m = Multiply and do crazy rounding
+
+
+#3000
+3000
+lgx
+
+1.28651 lfx
+lgx
+
+1.01636 lfx
+lgx
+
+1.02041 lfx
+lgx
+
+p
