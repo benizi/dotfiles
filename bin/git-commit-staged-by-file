@@ -1,0 +1,38 @@
+#!/bin/sh
+
+# git commit-tree TREE-SHA -m MSG -p PARENT-SHA | read COMMIT
+# git update-index --add --cacheinfo "MODE,FILE-SHA,FILENAME"
+# git hash-object -w --stdin < CONTENTS | read FILE-SHA
+# git write-tree | read TREE-SHA
+# git mktree < LS-TREE | read TREE-SHA
+# git ls-tree TREEISH | LS-TREE
+maketree() {
+  local tag=$1 filename=$2
+  shift 2
+  local message=$*
+  git update-index --add --cacheinfo "100644,$(git hash-object -w --stdin),$filename"
+  local parent="$(git rev-parse HEAD)"
+  local tree="$(git write-tree)"
+  local commit="$(git commit-tree $tree -m "$message" -p $parent)"
+  git tag -f $tag $commit
+}
+
+awk '/\/\*/&&!/TODO|original/{$1="";print}' for-each-tab.js |
+awk '{$1=$1}1' |
+while read label
+do
+  awk -v label=$label '
+  {c=s=e=0}
+  /\/\*/ {c=s=1}
+  /\*\// {c=e=1}
+  s {
+    pos = index($0,label)
+    inc = length()-length(label)-pos+1
+    if(!pos) inc=1
+      if(0) print inc, index($0,label), length(label), length(), $0
+  }
+  !(c||inc) {print}
+  e { inc=0 }
+  ' for-each-tab.js |
+  maketree style-${label// /-} for-each-tab.js $label
+done
