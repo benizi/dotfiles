@@ -543,6 +543,12 @@ nn <Leader>f :FormatCode<CR>
 " Disable default formatters. See: .vim/after/plugin/codefmt.vim
 Glaive codefmt plugin[register]=0
 
+let g:google_java_format_jar = expand('~/.local/bin/google-java-format-all-deps.jar')
+if filereadable(g:google_java_format_jar)
+	Glaive codefmt google_java_executable='java -jar '
+	Glaive codefmt google_java_executable+=`g:google_java_format_jar`
+end
+
 " open new-window files in new tab instead
 nn <C-W>f <C-W>gf
 
