@@ -3,12 +3,12 @@
 ## Pick from a dynamically filterable set of choices using whatever installed
 ## option will work best.
 
-# - Prefer `rofi` always
-# - In terminal: prefer `fzf` over `dmenu`
-# - Otherwise: prefer `dmenu` over `fzf`
+# - Prefer `dmenu` always
+# - In terminal: prefer `fzf` over `rofi`
+# - Otherwise: prefer `rofi` over `fzf`
 if test -t 1
-then : ${choices='rofi fzf dmenu'}
-else : ${choices='rofi dmenu fzf'}
+then : ${choices='dmenu rofi fzf'}
+else : ${choices='dmenu fzf rofi'}
 fi
 
 for cmd in $choices :fail
@@ -25,6 +25,7 @@ fi >&2
 case "$cmd" in
   (rofi) set -- -width 90 -lines 40 -matching fuzzy "$@" ;;
   (fzf) set -- -x "$@" ;;
+  (dmenu) set -- -l 20 "$@" ;;
 esac
 
 sep="$(printf '\001x')"
