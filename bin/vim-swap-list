@@ -31,7 +31,7 @@ end.each do |set|
       when /^modified:/
         {modified: !!line[/YES/]}
       when /^process ID:\s+(\d+)/
-        {pid: $1.to_i, running: !!line[/still running/]}
+        {pid: $1.to_i, running: !!line[/(?:still running|STILL RUNNING)/]}
       else
         $stderr.puts "NO INFO ON:\n  #{line}"
         {}
