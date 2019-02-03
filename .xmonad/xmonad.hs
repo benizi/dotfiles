@@ -367,10 +367,6 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
     -- alt + scroll = workspace up/down
     , (mainmods, button4, (\w -> windowUp))
     , (mainmods, button5, (\w -> windowDown))
-
-    -- Win + scroll = window/tab up/down
-    , ([mod4Mask], button4, (\w -> moveTo Prev NonEmptyWS))
-    , ([mod4Mask], button5, (\w -> moveTo Next NonEmptyWS))
     ]
         where
             mainmods = [modm, mod1Mask]
