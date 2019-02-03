@@ -12,7 +12,6 @@ import XMonad.Actions.Warp (warpToScreen)
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageDocks (avoidStruts, docks)
-import XMonad.Hooks.SetWMName (setWMName)
 import XMonad.Hooks.UrgencyHook
 import XMonad.Layout.Grid
 import qualified XMonad.Layout.Fullscreen as FS
@@ -597,7 +596,7 @@ externalStatusCmd = let
 -- per-workspace layout choices.
 --
 -- By default, do nothing.
-myStartupHook = setWMName "LG3D" >> ewmhDesktopsStartup
+myStartupHook = ewmhDesktopsStartup
 
 ------------------------------------------------------------------------
 -- Shutdown hook
