@@ -34,65 +34,66 @@ end
 # https://noobnotes.net/super-mario-bros-theme-nintendo/
 # + converted ^X -> X5, *X -> X6
 # http://www.mariopiano.com/mario-sheet-music-overworld-main-theme.html
+# + for durations and rests
 MARIO = <<'MARIO'
-E5 E5 E5
-C5 E5 G5 G4
+E5 E5 r E5
+r C5 E5 r G5 r r r G4 r r r
 
-C5 G4 E4
-A4 B4 Bb4 A4
-G4 E5 G5 A5
-F5 G5 E5 C5 D5 B4
+C5 r r G4 r r E4 r
+r A4 r B4 r Bb4 A4 r
+h G4 h E5 h G5 A5 r
+F5 G5 r E5 r C5 D5 B4 r r
 
-C5 G4 E4
-A4 B4 Bb4 A4
-G4 E5 G5 A5
-F5 G5 E5 C5 D5 B4
+C5 r r G4 r r E4 r
+r A4 r B4 r Bb4 A4 r
+h G4 h E5 h G5 A5 r
+F5 G5 r E5 r C5 D5 B4 r r
 
-G5 F#5 F5 D5 E5
-# [sic] G4 A4 C5
-G#4 A4 C5
-A4 C5 D5
-G5 F#5 F5 D5 E5
-C6 C6 C6
+r r G5 F#5 F5 D5 r E5
+# [sic] r G4 A4 C5
+r G#4 A4 C5
+r A4 C5 D5
+r r G5 F#5 F5 D5 r E5
+r C6 r C6 C6 r r r
 
-G5 F#5 F5 D5 E5
-# [sic] G4 A4 C5
-G#4 A4 C5
-A4 C5 D5
-D#5 D5 C5
+r r G5 F#5 F5 D5 r E5
+# [sic] r G4 A4 C5
+r G#4 A4 C5
+r A4 C5 D5
+r r D#5 r r D5 r r C5 r r r r r r r
 
 # mariopiano repeats the prior two phrases?
 
-C5 C5 C5
-C5 D5 E5 C5 A4 G4
-C5 C5 C5
-C5 D5 E5
+C5 C5 r C5
+r C5 D5 r E5 C5 r A4 G4 r r r
+C5 C5 r C5
+r C5 D5 E5 r r r r r r r r
 
-C5 C5 C5
-C5 D5 E5 C5 A4 G4
-E5 E5 E5
-C5 E5 G5
-G4
+C5 C5 r C5
+r C5 D5 r E5 C5 r A4 G4 r r r
+E5 E5 r E5
+r C5 E5 r G5 r r r
+G4 r r r
 
-C5 G4 E4
-A4 B4 Bb4 A4
-G4 E5 G5 A5
-F5 G5 E5 C5 D5 B4
+C5 r r G4 r r E4 r
+r A4 r B4 r Bb4 A4 r
+h G4 h E5 h G5 A5 r
+F5 G5 r E5 r C5 D5 B4 r r
 
-C5 G4 E4
-A4 B4 Bb4 A4
-G4 E5 G5 A5
-F5 G5 E5 C5 D5 B4
+C5 r r G4 r r E4 r
+r A4 r B4 r Bb4 A4 r
+h G4 h E5 h G5 A5 r
+F5 G5 r E5 r C5 D5 B4 r r
 
-E5-C5 G4
-G4 A4 F5 F5 A4
-B4 A5 A5 A5 G5 F5
-E5 C5 A4 G4
+E5-C5 r G4
+r r G4 r A4 F5 r F5 A4 r r r
+h B4 h A5 h A5 h A5 h G5 h F5
+E5 C5 r A4 G4 r r r
 
-E5-C5 G4
-G4 A4 F5 F5 A4
-B4 F5 F5 F5 E5 D5 C5
-G4 E4 C4
+E5-C5 r G4
+r r G4 r A4 F5 r F5 A4 r r r
+B4 F5 r F5 h F5 h E5 h D5 C5
+G4 r E4 C4 r r r
 
 TODO
 
