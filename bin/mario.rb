@@ -33,6 +33,7 @@ end
 
 # https://noobnotes.net/super-mario-bros-theme-nintendo/
 # + converted ^X -> X5, *X -> X6
+# http://www.mariopiano.com/mario-sheet-music-overworld-main-theme.html
 MARIO = <<'MARIO'
 E5 E5 E5
 C5 E5 G5 G4
@@ -48,15 +49,19 @@ G4 E5 G5 A5
 F5 G5 E5 C5 D5 B4
 
 G5 F#5 F5 D5 E5
-G4 A4 C5
+# [sic] G4 A4 C5
+G#4 A4 C5
 A4 C5 D5
 G5 F#5 F5 D5 E5
 C6 C6 C6
 
 G5 F#5 F5 D5 E5
-G4 A4 C5
+# [sic] G4 A4 C5
+G#4 A4 C5
 A4 C5 D5
 D#5 D5 C5
+
+# mariopiano repeats the prior two phrases?
 
 C5 C5 C5
 C5 D5 E5 C5 A4 G4
@@ -89,6 +94,8 @@ G4 A4 F5 F5 A4
 B4 F5 F5 F5 E5 D5 C5
 G4 E4 C4
 
+# not sure what this part is supposed to be?
+
 C5 G4 E4
 A4 B4 A4
 G#4 Bb4 G#4
@@ -97,6 +104,7 @@ MARIO
 
 q = 12
 puts MARIO.
+  gsub(/^#.*$/s, '').
   gsub(/-/, " ").
   gsub(/r/, "0 #{q} ").
   gsub(/[A-G][#b]?\d/) { |m| "#{freq(m)} #{q} " }.
