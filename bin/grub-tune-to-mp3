@@ -1,0 +1,78 @@
+#!/bin/sh
+
+sox_commands() {
+  tempo=$1
+  shift
+  while test $# -gt 0
+  do
+    tone=$1
+    duration=$2
+    len="$(dc -e "6 k [0n]sp $duration 60 * $tempo / d 1 >p p")"
+    gain=-10
+    case $tone in
+      (0) tone=110 gain=-100 ;;
+      (*) gain=-10 ;;
+    esac
+    echo sox -n -r 48k -b 16 -t raw - synth $len $timbre $tone gain $gain
+    shift 2
+  done
+}
+
+maybe_convert() {
+  case $format in
+    (mp3) lame -r -s 48 - - ;;
+    (wav|raw) cat ;;
+  esac
+}
+
+maybe_redirect() {
+  if $stdout || test ! -t 1
+  then cat
+  else
+    set -- ~/tmp/m.mp3
+    printf '[Dumping to %s]\n' "$1" >&2
+    cat > "$1"
+  fi
+}
+
+maybe_encode() {
+  if $encode
+  then sh -exs | maybe_convert | maybe_base64 | maybe_redirect
+  else cat
+  fi
+}
+
+maybe_base64() {
+  if $base64
+  then base64 | tr -d '\n' | sed 's@^@data:audio/mp3;base64,@'
+  else cat
+  fi
+}
+
+main() {
+  while test $# -gt 0
+  do
+    case "$1" in
+      (--commands) : ${encode=false} ;;
+      (--stdout) : ${stdout=true} ;;
+      (--base64) : ${base64=true} ;;
+      (--raw) : ${format=raw} ;;
+      (--sine) : ${timbre=sine} ;;
+      (*) break ;;
+    esac
+    shift
+  done
+
+  : ${encode=true}
+  : ${format=mp3}
+  : ${base64=false}
+  : ${stdout=false}
+  : ${timbre=triangle}
+
+  sox_commands "$@" | maybe_encode
+}
+
+main "$@"
+
+## Original (zsh) command:
+# () { setopt localoptions xtrace ; tempo=$1 ; shift ; while (( $# )) ; do sox -n -r 48k -b 16 -t raw - synth $(( ( ${2} * 1.0 * tempo ) / 48000.0 )) sine $1 gain -10 ; shift 2 ; done | lame -r -s 48 - - | tee ~/tmp/m.mp3 | base64 | tr -d \\n | prepend 'data:audio/mp3;base64,' | clip } 1750 523 1 392 1 523 1 659 1 784 1 1047 1 784 1 415 1 523 1 622 1 831 1 622 1 831 1 1046 1 1244 1 1661 1 1244 1 466 1 587 1 698 1 932 1 1195 1 1397 1 1865 1 1397 1
