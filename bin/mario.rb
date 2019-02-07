@@ -94,6 +94,8 @@ G4 A4 F5 F5 A4
 B4 F5 F5 F5 E5 D5 C5
 G4 E4 C4
 
+TODO
+
 # not sure what this part is supposed to be?
 
 C5 G4 E4
@@ -104,6 +106,8 @@ MARIO
 
 q = 12
 puts MARIO.
+  gsub(/\A.*SKIP/m, '').
+  gsub(/TODO.*\Z/m, '').
   gsub(/^#.*$/s, '').
   gsub(/-/, " ").
   gsub(/r/, "0 #{q} ").
