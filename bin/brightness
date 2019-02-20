@@ -10,25 +10,25 @@ setbacklight() {
   glob='/sys/class/backlight/*'
   op=$1 pct=$2
   set -- $glob
-  if [ "$1" != "$glob" ] ; then
-    bl=$1
-    max="$(cat $bl/max_brightness)"
-    cur="$(cat $bl/brightness)"
-    delta=$(( pct * max / 100 ))
+  test "$1" != "$glob" || die "No backlight device(s) found"
+  bl=$1
+  max="$(cat "$bl"/max_brightness)"
+  cur="$(cat "$bl"/brightness)"
+  delta=$(( pct * max / 100 ))
 
-    case "$op" in
-      (-get)
-        printf '6 k %s 100 * %s / p\n' $cur $max | dc
-        exit
-        ;;
-      ('=') val=$delta ;;
-      (*) val=$(( cur $op delta )) ;;
-    esac
-    if [ -z "$val" ] || [ $val -lt 1 ] ; then
-      die Not setting zero brightness
-    fi
-    echo $val | sudo sh -c "cat - > $bl/brightness"
+  case "$op" in
+    (-get)
+      printf '6 k %s 100 * %s / p\n' $cur $max | dc
+      exit
+      ;;
+    ('=') val=$delta ;;
+    (*) val=$(( cur $op delta )) ;;
+  esac
+
+  if [ -z "$val" ] || [ $val -lt 1 ] ; then
+    die Not setting zero brightness
   fi
+  echo $val | sudo sh -c "cat - > $bl/brightness"
 }
 
 case "$1" in
