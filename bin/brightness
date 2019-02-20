@@ -5,10 +5,15 @@ die() {
   exit 1
 }
 
+check_range() {
+  test "$1" -lt $2 || test "$1" -gt $3 || return 0
+  die "Out of range: val=($1), expected: [$2,$3]"
+}
+
 # use /sys/class/backlight to simulate `xbacklight`
 setbacklight() {
   glob='/sys/class/backlight/*'
-  op=$1 pct=$2
+  op=$1 pct=$2 min=${3:-1}
   set -- $glob
   test "$1" != "$glob" || die "No backlight device(s) found"
   bl=$1
@@ -25,10 +30,8 @@ setbacklight() {
     (*) val=$(( cur $op delta )) ;;
   esac
 
-  if [ -z "$val" ] || [ $val -lt 1 ] ; then
-    die Not setting zero brightness
-  fi
-  echo $val | sudo sh -c "cat - > $bl/brightness"
+  check_range "$val" $min $max
+  printf '%s' $val | sudo tee -a "$bl/brightness" > /dev/null
 }
 
 case "$1" in
@@ -36,7 +39,8 @@ case "$1" in
   (down) setbacklight - 10 ;;
   (min) setbacklight '=' 10 ;;
   (max) setbacklight '=' 100 ;;
+  (off) setbacklight '=' 0 0 ;;
   ('='|set) setbacklight '=' $2 ;;
   (''|-get) setbacklight -get ;;
-  (*) die "Usage: $0 up | down | min | max | op pct" ;;
+  (*) die "Usage: $0 up | down | min | max | off | op pct" ;;
 esac
