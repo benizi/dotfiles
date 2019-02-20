@@ -27,6 +27,7 @@ setbacklight() {
       exit
       ;;
     ('=') val=$delta ;;
+    (raw) val=$pct ;;
     (*) val=$(( cur $op delta )) ;;
   esac
 
@@ -37,10 +38,11 @@ setbacklight() {
 case "$1" in
   (up) setbacklight + 10 ;;
   (down) setbacklight - 10 ;;
+  (@|raw) setbacklight raw "$2" ;;
   (min) setbacklight '=' 10 ;;
   (max) setbacklight '=' 100 ;;
   (off) setbacklight '=' 0 0 ;;
   ('='|set) setbacklight '=' $2 ;;
   (''|-get) setbacklight -get ;;
-  (*) die "Usage: $0 up | down | min | max | off | op pct" ;;
+  (*) die "Usage: $0 up | down | min | max | off | op pct | @ val | raw val" ;;
 esac
