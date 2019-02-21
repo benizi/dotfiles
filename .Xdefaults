@@ -71,3 +71,28 @@ rofi.color-normal: #fdf6e3,#002b36,#eee8d5,#586e75,#eee8d5
 rofi.color-urgent: #fdf6e3,#dc322f,#eee8d5,#dc322f,#fdf6e3
 rofi.color-active: #fdf6e3,#268bd2,#eee8d5,#268bd2,#fdf6e3
 rofi.color-window: #fdf6e3,#002b36
+
+! Use `xterm` (instance) rather than `XTerm`/`UXTerm` (class)
+xterm.termName: xterm-256color
+xterm*faceName: Bitstream Vera Sans Mono:size=12
+xterm*background: black
+xterm*foreground: white
+
+xterm*utf8: true
+xterm*utf8Title: true
+xterm*locale: false
+
+! eightBitInput = old method for entering "8-bit" single-byte-charset chars
+xterm*eightBitInput: false
+
+xterm*altIsNotMeta: true
+xterm*metaSendsEscape: true
+xterm*altSendsEscape: true
+
+! <Ctrl-Button2> = emulated scrolling, so use <Ctrl-Shift-Button(1|3)> instead
+xterm*translations: #override \n\
+  Ctrl Shift <Btn1Down>: popup-menu(vtMenu) \n\
+  Ctrl Shift <Btn3Down>: popup-menu(vtMenu)
+
+! for sixel graphics
+xterm*decTerminalID: vt340
