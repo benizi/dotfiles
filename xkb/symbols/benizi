@@ -132,9 +132,12 @@ xkb_symbols "ralt-iso3" {
 
 partial modifier_keys
 xkb_symbols "ralt-mod3" {
-    replace key <RALT> { [ Alt_R, Meta_R ] };
+    replace key <RALT> {
+        type[Group1] = "ONE_LEVEL",
+        symbols[Group1] = [ Alt_R ]
+    };
     modifier_map Mod1 { Alt_L, Meta_L };
-    modifier_map Mod3 { Alt_R, Meta_R };
+    modifier_map Mod3 { Alt_R };
 };
 
 partial alphanumeric_keys
