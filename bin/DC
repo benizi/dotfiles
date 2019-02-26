@@ -4,6 +4,8 @@ require 'json'
 require 'open3'
 require 'set'
 
+$debug = false
+
 DC = %q(docker-compose.yml)
 DC_ENV = %q(.env)
 DC_OVER = %q(docker-compose.override.yml)
@@ -18,15 +20,28 @@ end
 
 EXPORT_IP = %w(DOCKER_HOST_IP)
 
+def with_env(e, &func)
+  orig = ENV.to_h
+  ENV.replace(e)
+  func.()
+rescue
+ensure
+  ENV.replace(orig)
+end
+
 def compose_file_from_command
-  if dir = DIR_BY_CMD[File.basename($0)]
+  cmd = File.basename($0)
+  if dir = DIR_BY_CMD[cmd]
+    puts "$0 «#{cmd}» -> expand(#{dir})" if $debug
     expand_compose_file(dir)
   end
 end
 
 def compose_file_from_args(args)
   return nil unless File.basename($0) == "dcf"
-  expand_compose_file(args.first)
+  expand_compose_file(args.first).tap do |ret|
+    puts "«dcf filename» -> #{ret||"(none)"}" if $debug
+  end
 end
 
 def expand_compose_file(path)
@@ -36,6 +51,8 @@ def expand_compose_file(path)
   if path["/"] && File.directory?(path)
     file = File.join(path, DC)
     [file] if File.file?(file)
+  end.tap do |ret|
+    puts "expand(#{path}) -> #{ret||"(none)"}" if $debug
   end
 end
 
@@ -56,6 +73,8 @@ def split_compose_file_args(args)
       [specified, args.clone.drop(1)]
     else
       [[], args]
+    end.tap do |fs, mod|
+      puts "split(#{args.inspect}) -> #{fs.inspect} + #{mod.inspect}" if $debug
     end
 
   [add_override(files), modified]
@@ -149,6 +168,9 @@ rescue
 end
 
 def main(args)
+  orig = args.clone
+  orig_env = ENV.to_h
+
   files, args = split_compose_file_args(args)
 
   if ENV.has_key?("DC_COMPLETION")
@@ -162,6 +184,13 @@ def main(args)
   set_env(files)
 
   case cmd
+  when "info", "debug" then
+    $debug = cmd == "debug"
+    files, args = with_env(orig_env) { split_compose_file_args(orig) }
+    files.each { |f| puts "Docker compose file: #{f}" }
+    (ENV.to_a - orig_env.to_a).each do |(k,v)|
+      puts "Added $#{k} = «#{v}»"
+    end
   when "reup" then
     opts = []
     opts << rest.shift while rest.first && rest.first =~ /^-/
