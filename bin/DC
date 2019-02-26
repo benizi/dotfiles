@@ -1,0 +1,134 @@
+#!/usr/bin/env ruby
+
+require 'json'
+require 'open3'
+require 'set'
+
+DC = %q(docker-compose.yml)
+DC_ENV = %q(.env)
+DC_OVER = %q(docker-compose.override.yml)
+
+LOCAL_CFG = File.expand_path("~/.config/DC")
+
+if File.exists?(LOCAL_CFG)
+  load LOCAL_CFG
+else
+  DIR_BY_CMD = {}
+end
+
+EXPORT_IP = %w(DOCKER_HOST_IP)
+
+def compose_file_from_command
+  if dir = DIR_BY_CMD[File.basename($0)]
+    expand_compose_file(dir)
+  end
+end
+
+def compose_file_from_args(args)
+  return nil unless File.basename($0) == "dcf"
+  expand_compose_file(args.first)
+end
+
+def expand_compose_file(path)
+  return nil unless path
+  return [path] if File.extname(path) == ".yml" || File.file?(path)
+
+  if path["/"] && File.directory?(path)
+    file = File.join(path, DC)
+    [file] if File.file?(file)
+  end
+end
+
+def add_override(files)
+  files.flat_map do |file|
+    over = File.join(File.dirname(file), DC_OVER)
+    [file, over].select { |f| File.file?(f) }
+  end
+end
+
+def split_compose_file_args(args)
+  files, modified =
+    if ENV.has_key?("COMPOSE_FILE")
+      [[], args]
+    elsif expanded = compose_file_from_command
+      [expanded, args]
+    elsif specified = compose_file_from_args(args)
+      [specified, args.clone.drop(1)]
+    else
+      [[], args]
+    end
+
+  [add_override(files), modified]
+end
+
+def export_myip
+  ip = %x(myip %docker0).chomp
+  EXPORT_IP.each { |name| ENV[name] = ip }
+end
+
+def add_dotenv(files)
+  return unless compose_file = files.first
+  env = File.join(File.dirname(compose_file), DC_ENV)
+  return unless File.file?(env)
+  File.open(env) do |fh|
+    fh.each_line do |line|
+      line.chomp!
+      case line
+      when /\A(\w+)=(.+)\Z/ then
+        var, val = line.split(/=/, 2)
+        ENV[var] = val unless ENV.has_key?(var)
+      when /\A#/ then
+        nil
+      else
+        $stderr.puts("Wrong format for line in #{env}:")
+        $stderr.puts(line)
+      end
+    end
+  end
+end
+
+def export_compose_files(files)
+  return unless files.first
+  ENV["COMPOSE_FILE"] = files.join(File::PATH_SEPARATOR)
+end
+
+def set_env(files)
+  export_myip
+  add_dotenv(files)
+  export_compose_files(files)
+end
+
+def run_dc(args)
+  cmd = %w(docker-compose) + args
+  system(*cmd)
+end
+
+def main(args)
+  files, args = split_compose_file_args(args)
+
+  if ENV.has_key?("DC_COMPLETION")
+    puts files.join(":")
+    exit
+  end
+
+  cmd, *rest = args
+  abort "No command specified" unless cmd
+
+  set_env(files)
+
+  case cmd
+  when "reup" then
+    opts = []
+    opts << rest.shift while rest.first && rest.first =~ /^-/
+    abort "No service(s) specified" if rest.empty?
+    run_dc(%w(rm -s -f) + rest)
+    run_dc(%w(up) + opts + rest)
+  when "restart" then
+    run_dc(%w(down --remove-orphans))
+    run_dc(%w(up) + rest)
+  else
+    run_dc(args)
+  end
+end
+
+main(ARGV.clone)
