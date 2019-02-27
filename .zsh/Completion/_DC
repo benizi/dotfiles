@@ -1,0 +1,15 @@
+#compdef DC dcf
+
+local -a expanded args
+expanded=( ${~words[2]} )
+local files="$(DC_COMPLETION=1 DC $expanded)"
+if [[ $service == dcf ]]
+then
+  (( CURRENT <= 2 )) || (( --CURRENT )) || :
+  words[2]=()
+fi
+
+if [[ -n "$files" ]]
+then COMPOSE_FILE="$files" service=docker-compose _docker-compose "$@"
+else service=docker-compose _docker-compose "$@"
+fi
