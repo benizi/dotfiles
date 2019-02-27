@@ -193,6 +193,7 @@ alias -g L='| less'
 alias -g LS='|& less -S'
 alias -g LS1='| less -S'
 alias -g JQ='| jq -C -r . LS'
+alias -g JQV='| jq -r . | v- json'
 
 (( UID )) && alias lvm='sudo lvm'
 
