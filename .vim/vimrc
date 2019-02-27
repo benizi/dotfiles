@@ -131,6 +131,10 @@ fun! PostColorScheme()
 		hi rubyRegexpDelimiter guifg=#ff9900
 		hi! link rubyRegexp Constant
 		hi! link rubyRegexpSpecial String
+		" Mute the diff background colors a bit
+		hi DiffAdd guibg=#003300
+		hi DiffDelete guibg=#330000
+		hi DiffChange guibg=#162f3c
 	elseif colo == 'railscasts'
 		hi TabLine guibg=#0000cc gui=none,reverse guifg=#ffffff
 		hi TabLineSel guibg=#0000cc gui=none guifg=#ffffff
