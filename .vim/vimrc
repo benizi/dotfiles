@@ -124,9 +124,9 @@ fun! PostColorScheme()
 			" set cursor color
 			sil! !printf '\e]12;8\a'
 		end
-		hi Search cterm=NONE ctermfg=0 ctermbg=220 guifg=#000000 guibg=#ffff00
-		hi Normal guibg=black ctermbg=0
-		hi NonText guibg=black ctermbg=0
+		hi Search cterm=NONE ctermfg=16 ctermbg=220 guifg=#000000 guibg=#ffff00
+		hi Normal guibg=black ctermbg=16
+		hi NonText guibg=black ctermbg=16
 		hi ColorColumn guibg=#993333 ctermbg=88
 		hi rubyRegexpDelimiter guifg=#ff9900
 		hi! link rubyRegexp Constant
