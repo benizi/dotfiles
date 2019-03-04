@@ -118,13 +118,40 @@ func lookupIPs(host string, servers []resolver) ([]net.IP, error) {
 	return addrs, err
 }
 
+func filterByVersion(ips []net.IP, ipv4OK, ipv6OK bool) ([]net.IP, error) {
+	filtered := []net.IP{}
+	var err error
+	if len(ips) != 0 {
+		for _, ip := range ips {
+			if (ip.To4() != nil && ipv4OK) || (ip.To16() != nil && ipv6OK) {
+				filtered = append(filtered, ip)
+			}
+		}
+		if len(filtered) == 0 {
+			wanted := 4
+			if ipv6OK {
+				wanted = 6
+			}
+			err = fmt.Errorf("No IPv%d addresses found", wanted)
+		}
+	}
+	return filtered, err
+}
+
 func main() {
 	var short bool
 	var hosts []string
 	var servers []resolver
 	var anyOK bool
+	var ipv4OK, ipv6OK, ipvSpecified bool
 	for _, arg := range os.Args[1:] {
 		switch arg {
+		case "-4":
+			ipvSpecified = true
+			ipv4OK = true
+		case "-6":
+			ipvSpecified = true
+			ipv6OK = true
 		case "+short":
 			short = true
 		default:
@@ -143,6 +170,9 @@ func main() {
 hosts:
 	for _, host := range hosts {
 		ips, err := lookupIPs(host, servers)
+		if err == nil && ipvSpecified {
+			ips, err = filterByVersion(ips, ipv4OK, ipv6OK)
+		}
 		if err != nil {
 			if !short {
 				fmt.Fprintln(os.Stderr, err)
