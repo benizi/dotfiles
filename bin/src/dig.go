@@ -138,6 +138,30 @@ func filterByVersion(ips []net.IP, ipv4OK, ipv6OK bool) ([]net.IP, error) {
 	return filtered, err
 }
 
+func preferIPv4(ips []net.IP) []net.IP {
+	tot := len(ips)
+	ret := make([]net.IP, tot)
+	off, lastsix := 0, tot
+	for i, ip := range ips {
+		if ip.To4() != nil {
+			ret[off] = ip
+			off += 1
+		} else {
+			lastsix = tot - 1 - i + off
+			ret[lastsix] = ip
+		}
+	}
+	for {
+		mirr := (tot - 1) - (off - lastsix)
+		if off >= mirr || off >= tot {
+			break
+		}
+		ret[off], ret[mirr] = ret[mirr], ret[off]
+		off += 1
+	}
+	return ret
+}
+
 func main() {
 	var short bool
 	var hosts []string
@@ -170,6 +194,7 @@ func main() {
 hosts:
 	for _, host := range hosts {
 		ips, err := lookupIPs(host, servers)
+		ips = preferIPv4(ips)
 		if err == nil && ipvSpecified {
 			ips, err = filterByVersion(ips, ipv4OK, ipv6OK)
 		}
