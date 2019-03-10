@@ -251,7 +251,7 @@ if (( $+commands[verman] )) ; then
   local -a _versions args
 
   _versions=(
-    erlang 18.1.5
+    erlang 21.0.5
     elixir v1.6.5-nix
     node v9.7.1
     ruby 2.2.3-p0-nix
