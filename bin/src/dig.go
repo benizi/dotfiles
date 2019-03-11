@@ -139,27 +139,16 @@ func filterByVersion(ips []net.IP, ipv4OK, ipv6OK bool) ([]net.IP, error) {
 }
 
 func preferIPv4(ips []net.IP) []net.IP {
-	tot := len(ips)
-	ret := make([]net.IP, tot)
-	off, lastsix := 0, tot
-	for i, ip := range ips {
+	ret := []net.IP{}
+	six := []net.IP{}
+	for _, ip := range ips {
 		if ip.To4() != nil {
-			ret[off] = ip
-			off += 1
+			ret = append(ret, ip)
 		} else {
-			lastsix = tot - 1 - i + off
-			ret[lastsix] = ip
+			six = append(six, ip)
 		}
 	}
-	for {
-		mirr := (tot - 1) - (off - lastsix)
-		if off >= mirr || off >= tot {
-			break
-		}
-		ret[off], ret[mirr] = ret[mirr], ret[off]
-		off += 1
-	}
-	return ret
+	return append(ret, six...)
 }
 
 func main() {
