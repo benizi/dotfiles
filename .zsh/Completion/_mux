@@ -2,20 +2,33 @@
 
 __mux_sessions() {
   local ret=0
-  local -a configs running
-  running=( $(_call_program tm tm ls) )
+  local -a configs
   configs=( $(_call_program mux mux completions start) )
-  running=( ${running:*configs} )
-  configs=( ${configs:|running} )
+
+  case "${words[2]}" in
+    (start)
+      local -a running
+      running=( $(_call_program tm tm ls) )
+      running=( ${running:*configs} )
+      configs=( ${configs:|running} )
+      ;;
+  esac
+
   _describe -t mux-configs 'mux configs' configs
   (( ret += $? )) || :
+  (( $#running )) || return $ret
+
   _describe -t mux-running 'running mux sessions' running
-  return $((ret + $?))
+  (( ret += $? )) || :
+  return $ret
 }
 
 __mux_commands() {
   local -a cmds
-  cmds=( 'start:Start a mux session' )
+  cmds=(
+    'start:Start a mux session'
+    'parse:Print the configuration for a session'
+  )
   _describe -t mux-commands 'mux commands' cmds
 }
 
