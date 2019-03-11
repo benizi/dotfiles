@@ -10,11 +10,11 @@ die() {
 }
 
 usage() {
-  warnf 'Usage: mux [start template-name] | [completions start]\n'
+  warnf 'Usage: mux [start template-name] | [completions]\n'
   test $# -eq 0 || exit $1
 }
 
-mux_completions_start() {
+mux_sessions() {
   find ~/.tmuxinator/ -maxdepth 1 -name '*.yml' |
   awk -F/ '{ print $NF }' |
   awk -F. '{ NF-- } 1' |
@@ -134,14 +134,10 @@ tmux_send_keys() {
 
 set -e
 
-case "$*" in
-  ('completions start')
-    mux_completions_start
-    exit
-    ;;
-esac
-
 case "$1" in
+  (completions)
+    mux_sessions
+    ;;
   (parse)
     shift
     test $# -eq 1 || usage 1
