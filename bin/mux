@@ -41,7 +41,7 @@ YAML::load(ARGF.read).tap do |file|
   file.delete("name")
   history = file.delete("history")
   out :root, 0, File.expand_path(root) if root
-  out :history, 0, ![nil, false, 0, "0", "false", "no"].include?(history)
+  out :history, 0, ![false, 0, "0", "false", "no"].include?(history)
   abort "Unhandled file keys: #{file.inspect}" unless file.empty?
   windows.each_with_index do |whash, wi|
     wname, window = whash.to_a.first
