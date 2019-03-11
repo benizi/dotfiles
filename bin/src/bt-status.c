@@ -1,3 +1,8 @@
+// for `dprintf(3)`
+#define _POSIX_C_SOURCE 200809L
+// restore `le32toh(3)` under _POSIX_C_SOURCE
+#define _DEFAULT_SOURCE
+
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -128,14 +133,20 @@ static int bind_raw_hci(void) {
   return sock;
 }
 
+// Use `write(2)` (not printf) to write a constant string to a file descriptor
+#define blit(FD, STR) write(FD, STR, sizeof(STR))
+
 // Use `write(2)` (not printf) to print a constant string to stdout
-#define print(STR) write(1, STR, sizeof(STR))
+#define print(STR) blit(1, STR)
 
 // Use `write(2)` (not printf) to print a constant string to stdout w/ newline.
 #define echo(STR) print(STR "\n")
 
+// Use `write(2)` (not printf) to print a constant string to stderr w/ newline.
+#define warn(STR) blit(2, STR "\n")
+
 // `echo` + exit with error status
-#define die(STR) { echo(STR); return 1; }
+#define die(STR) { warn(STR); return 1; }
 
 // Stringify any single `ARG`.
 #define STRINGIFY(ARG) #ARG
@@ -203,7 +214,7 @@ int main(int argc, char **argv) {
   ret = read(sock, buf, MAX_REPLY_SIZE);
   expected = mgmt_hdr_sz + mgmt_ev_cmd_complete_sz + mgmt_rp_read_info_sz;
   if (ret < expected) {
-    printf("TOO SHORT (got %zd, wanted %zd)\n", ret, expected);
+    dprintf(2, "TOO SHORT (got %zd, wanted %zd)\n", ret, expected);
     return 1;
   }
 
