@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# Ensure a cli-entered commit message doesn't violate the following two styles:
+# - Message must start with a summary line no longer than 50 chars.
+# - Summary and body (if present) should be separated by a blank line.
+
+# If `$GIT_EDITOR` is set, the message is going to be edited manually, so don't
+# fail it via this script.
+test "$GIT_EDITOR" = : || exit 0
+
+awk -v err=0 '
+END { exit err }
+function tput(args) {
+  system("{ tput " args " 2>/dev/null || : ; } | cat >&2")
+}
+function fail(msg, code) {
+  tput("setaf 1")
+  printf("ERROR: %s", msg) | "cat >&2"
+  tput("sgr0")
+  print "" | "cat >&2"
+  err = code
+}
+NR == 1 && length() > 50 {
+  fail("Summary line is longer than 50 chars (" length() ")", 1)
+}
+NR == 2 && length() {
+  fail("Summary line must be followed by a blank line", 2)
+}
+NR == 3 && !/[^[:space:]]/ {
+  fail("Summary line should be followed by at most one blank line", 3)
+}
+' "$1"
