@@ -214,8 +214,26 @@ if (( $+XAUTHLOCALHOSTNAME )) && (( ! $+XAUTHORITY )) ; then
 fi
 
 if (( $+commands[verman] )) ; then
+  local multi=false envflags=false cachefile=~/.cache/verman-features
   fpath=( $commands[verman]:h:h/zsh $fpath )
-  verman_eval() { eval "$(VERMAN_EVAL=1 verman "$@")" }
+  if (( $+commands[verman-features] ))
+  then
+    if [[ -f $cachefile ]] && [[ $cachefile -nt =verman-features ]]
+    then eval "$(<$cachefile)"
+    else
+      ! verman-features multi || multi=true
+      ! verman-features envflags || envflags=true
+      printf '%s=%s\n' multi $multi envflags $envflags > $cachefile
+    fi
+  elif (( $+commands[verman-multi] ))
+  then multi=true
+  fi
+
+  if $envflags
+  then verman_eval() { eval "$(verman --eval --zsh "$@")" }
+  else verman_eval() { eval "$(VERMAN_ZSH=1 VERMAN_EVAL=1 verman "$@")" }
+  fi
+
   _interactive_warn() {
     if [[ -o interactive ]] && [[ -t 1 ]] ; then warn "$@" ; fi
   }
@@ -263,17 +281,16 @@ if (( $+commands[verman] )) ; then
 
   [[ ! -d /opt/racket ]] || _versions+=( racket git )
 
-  local direct lang version
+  local lang version
   local -a args
-  (( $+commands[verman-multi] )) && direct=false || direct=true
   for lang version in $_versions
   do
-    if $direct
-    then _version $lang $version
-    else args+=( + $lang use $version )
+    if $multi
+    then args+=( + $lang use $version )
+    else _version $lang $version
     fi
   done
-  $direct || eval "$(VERMAN_EVAL=1 verman $args)"
+  ! $multi || verman_eval $args
 fi
 
 leapd() {
