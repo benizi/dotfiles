@@ -3,6 +3,7 @@
 	attributesfile = ~/.gitattributes.global
 	commentChar = ";"
 	quotepath = false
+	hookspath = ~/.githooks
 [transfer]
 	fsckObjects = true
 [fetch]
