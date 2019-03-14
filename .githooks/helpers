@@ -1,0 +1,58 @@
+#!/bin/sh
+
+cleanup() {
+  at_exit=${1:-reset_term} ret=${2:-$?}
+  set +e
+  $at_exit
+  trap '' EXIT INT TERM
+  exit $ret
+}
+gotsig() {
+  ret=$?
+  set +e
+  trap '' EXIT
+  cleanup ${1:-reset_term} $ret
+}
+
+trap_cleanup() {
+  local at_exit=$1
+  cat <<TRAPS
+trap 'cleanup $at_exit' EXIT
+trap 'gotsig $at_exit' INT QUIT TERM
+TRAPS
+}
+
+reset_term() {
+  stty icanon echo < /dev/tty
+}
+
+read_yn() {
+  local ret
+  eval "$(trap_cleanup reset_term)"
+  stty -icanon -echo < /dev/tty
+  case "$(dd bs=1 count=1 < /dev/tty 2>/dev/null)" in
+    (Y|y) ret=0 ;;
+    (*) ret=1 ;;
+  esac
+  reset_term
+  return $ret
+}
+
+confirm() {
+  local ret color echo
+  printf 'ok? '
+  if read_yn
+  then ret=0 color=2 echo=Yes
+  else ret=1 color=1 echo=NO
+  fi
+  printf_color $color '%s\n' $echo
+  return $ret
+}
+
+printf_color() {
+  local color=$1
+  shift
+  tput setaf $color 2>/dev/null || :
+  printf "$@"
+  tput sgr0 2>/dev/null || :
+}

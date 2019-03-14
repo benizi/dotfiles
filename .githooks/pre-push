@@ -1,0 +1,45 @@
+#!/bin/sh
+
+set -e
+
+. "${0%/*}/helpers"
+
+test -n "$protect" || protect="$(git config --get-all branches.protect || :)"
+test -n "$protect" || protect="$(git devbranch 2>/dev/null || :)"
+test -n "$protect" || exit 0
+
+remote="$1"
+url="$2"
+z40=0000000000000000000000000000000000000000
+safe=true
+
+git_summary() {
+  # Identical to `--pretty=oneline`, but indented two spaces.
+  git log --color=always --format='%C(auto)  %h%d %s' --reverse "$@"
+}
+
+while read loc_ref loc_sha rem_ref rem_sha
+do
+  bad_ref=false
+  for branch in $protect
+  do
+    case $rem_ref in
+      (*/$branch) bad_ref=true ;;
+      (*) continue ;;
+    esac
+  done
+  $bad_ref || continue
+  safe=false
+
+  skiplog=true
+  case $z40 in
+    ($loc_sha) action='Deleting' ;;
+    ($rem_sha) action='Creating' ;;
+    (*) action='Pushing to' skiplog=false ;;
+  esac
+
+  printf_color 4 '\n%s %s requires confirmation\n' "$action" "$rem_ref" >&2
+  $skiplog || git_summary $rem_sha..$loc_sha
+done
+
+$safe || confirm
