@@ -384,24 +384,23 @@ se is
 nn <silent> <Esc>t :tabnew<CR>
 nn <silent> <Esc>{ gT
 nn <silent> <Esc>} gt
-fun! CloseAndQuitIfLast()
-	let closing = bufnr('')
-	let tabpos = tabpagenr() - 1
-	winc q
-	let allbufs = []
-	for t in range(tabpagenr('$'))
-		cal extend(allbufs, tabpagebuflist(t + 1))
+
+fun! WinQuitOrBufDelete()
+	let buf = bufnr('')
+	let seen = 0
+	for t in range(1, tabpagenr('$'))
+		if index(tabpagebuflist(t), buf) >= 0
+			let seen += 1
+		end
 	endfor
-	if -1 == index(allbufs, closing)
-		try
-			exe closing.'bd'
-		catch
-			exe tabpos.'tabnew|sil! '.closing.'b'
-			unsil echom v:exception
-		endtry
+	if seen > 1
+		winc q
+	else
+		bd
 	end
 endf
-nn <silent> <Esc>w :sil call CloseAndQuitIfLast()<CR>
+
+nn <silent> <Esc>w :sil cal WinQuitOrBufDelete()<CR>
 
 " settings for TOhtml
 let g:html_no_progress=1
