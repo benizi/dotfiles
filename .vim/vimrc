@@ -68,12 +68,18 @@ if $TERM =~ '\(st\|tmux\)-256color' || exists('$KONSOLE_DBUS_SERVICE')
 	se t_Co=1000
 end
 
+" xterm supports 24-bit color, but reports t_Co=256 if t_RV gets sent
+if exists('$XTERM_VERSION')
+	se t_Co=1000
+	let &t_RV = ''
+end
+
 if has('termguicolors') && &t_Co > 256
 	se termguicolors
 end
 
-if $TERM =~ '^st'
-	" fix cursor shape in st
+" fix cursor shape
+if $TERM =~ '^\(st\|xterm\)'
 	let &t_SI="\e[6 q"
 	let &t_EI="\e[2 q"
 end
@@ -123,6 +129,9 @@ fun! PostColorScheme()
 		if &t_Co <= 256
 			" set cursor color
 			sil! !printf '\e]12;8\a'
+		elseif &t_Co > 256 && $TERM =~ 'xterm'
+			" set cursor color
+			sil! !printf '\e]12;#bbbbbb\e\\'
 		end
 		hi Search cterm=NONE ctermfg=16 ctermbg=220 guifg=#000000 guibg=#ffff00
 		hi Normal guibg=black ctermbg=16
