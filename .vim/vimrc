@@ -593,4 +593,20 @@ se spr sb
 " `vim-unimpaired` `co`-style toggle for whitespace errors
 nn <silent> coe :ToggleSpacingErrors<CR>
 
+" Presentation mode (removes distracting decorations)
+fun! PresoMode(...)
+	if a:0 ? a:1 : !exists('b:preso_restore')
+		bufdo let b:preso_restore = {'cc': &l:cc}
+		se noru nosc nonu ls=0 stal=0 cc&
+		exe 'sil! windo wincmd T'
+	else
+		bufdo let &l:cc = b:preso_restore.cc
+		bufdo unlet b:preso_restore
+		se ru sc nu ls=2 stal=2
+		exe 'sil! tabo'
+		ball
+	end
+endf
+com! Preso cal PresoMode()
+
 run! after/vimrc
