@@ -385,6 +385,24 @@ nn <silent> <Esc>t :tabnew<CR>
 nn <silent> <Esc>{ gT
 nn <silent> <Esc>} gt
 
+fun! AllUnchangedDiffs()
+	for buf in tabpagebuflist()
+		if getbufinfo(buf)[0].changed || !getbufvar(buf, '&diff')
+			return 0
+		end
+	endfor
+	return 1
+endf
+
+fun! BufDeleteAll()
+	try
+		exe join(['bd'] + tabpagebuflist(), ' ')
+	catch
+		return 0
+	endtry
+	return 1
+endf
+
 fun! WinQuitOrBufDelete()
 	let buf = bufnr('')
 	let seen = 0
@@ -400,7 +418,11 @@ fun! WinQuitOrBufDelete()
 	end
 endf
 
-nn <silent> <Esc>w :sil cal WinQuitOrBufDelete()<CR>
+fun! QuitDiffsOrWindow()
+	return AllUnchangedDiffs() ? BufDeleteAll() : WinQuitOrBufDelete()
+endf
+
+nn <silent> <Esc>w :sil cal QuitDiffsOrWindow()<CR>
 
 " settings for TOhtml
 let g:html_no_progress=1
