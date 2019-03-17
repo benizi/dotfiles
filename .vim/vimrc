@@ -403,9 +403,22 @@ fun! AllUnchangedDiffs()
 	return 1
 endf
 
+fun! QuitLastUnnamed()
+	try
+		if tabpagenr('$') == 1
+			let [buf] = tabpagebuflist()
+			if empty(getbufvar(buf, '&name'))
+				qall
+			end
+		end
+	catch
+	endtry
+endf
+
 fun! BufDeleteAll()
 	try
 		exe join(['bd'] + tabpagebuflist(), ' ')
+		cal QuitLastUnnamed()
 	catch
 		return 0
 	endtry
@@ -429,6 +442,8 @@ fun! WinQuitOrBufDelete()
 	else
 		sil! bd
 	end
+	cal QuitLastUnnamed()
+	return 1
 endf
 
 fun! QuitDiffsOrWindow()
