@@ -404,15 +404,9 @@ fun! AllUnchangedDiffs()
 endf
 
 fun! QuitLastUnnamed()
-	try
-		if tabpagenr('$') == 1
-			let [buf] = tabpagebuflist()
-			if empty(getbufvar(buf, '&name'))
-				qall
-			end
-		end
-	catch
-	endtry
+	if tabpagenr('$') * winnr('$') * empty(bufname('')) == 1
+		qall
+	end
 endf
 
 fun! BufDeleteAll()
