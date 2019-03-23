@@ -60,7 +60,7 @@ fi
 ## Set up alternate network bridge
 if ! ip link show $bridge 2> /dev/null | grep -q .
 then
-  sudo brctl addbr $bridge
+  sudo ip link add name $bridge type bridge
   sudo ip addr add $addr dev $bridge
   sudo ip link set dev $bridge up
 fi
