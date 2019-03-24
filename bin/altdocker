@@ -19,21 +19,28 @@ set -e +x
 : ${host=unix://$base/socket} # listening socket (in net.Dial notation)
 
 case "$1" in
-  (--dry) action=gen_rm_script ;;
-  (--rm) action=demolish ;;
-  (*) action=daemon ;;
+  (--dry) action=gen_rm_script ; shift ;;
+  (--rm) action=demolish ; shift ;;
+  (*) action=run_daemon ;;
 esac
-test $action = daemon || shift
 
-## Extra options I need:
-set -- \
-  --dns=$ip \
-  --storage-driver=btrfs \
-  --exec-opt native.cgroupdriver=cgroupfs \
-  "$@"
+# args to prepend between the command and the args that this script sets
+args=
 
-# Old `docker` had `docker daemon` subcommand, not standalone `dockerd`
-case "${exe##*/}" in (docker|docker-*) set -- daemon "$@" ;; esac
+set_args() {
+  if ${extra_options:-true}
+  then
+    ## Extra options I need:
+    args="
+    --dns=$ip
+    --storage-driver=btrfs
+    --exec-opt native.cgroupdriver=cgroupfs
+    "
+  fi
+
+  # Old `docker` had `docker daemon` subcommand, not standalone `dockerd`
+  case "${exe##*/}" in (docker|docker-*) args="daemon $args" ;; esac
+}
 
 gen_rm_script() {
   sudo btrfs su li / |
@@ -54,28 +61,35 @@ demolish() {
   gen_rm_script
 }
 
-## Other modes
-if test $action != daemon
-then
-  $action "@$"
-  exit $?
-fi
+bridge_exists() {
+  ip link show $bridge 2> /dev/null | grep -q .
+}
 
 ## Set up alternate network bridge
-if ! ip link show $bridge 2> /dev/null | grep -q .
-then
+bridge_create() {
+  ! bridge_exists || return 0
   sudo ip link add name $bridge type bridge
   sudo ip addr add $addr dev $bridge
   sudo ip link set dev $bridge up
-fi
+}
 
-printf 'To use `docker` without having to specify the host, run:\n'
-printf '  export DOCKER_HOST=%s\n' $host
+host_info() {
+  printf 'To use `docker` without having to specify the host, run:\n'
+  printf '  export DOCKER_HOST=%s\n' $host
+}
 
-mkdir -p $base
-sudo "$exe" "$@" \
-  --pidfile=$pidfile \
-  --bridge=$bridge \
-  --exec-root="$base" \
-  --$dataflag="$dataroot" \
-  --host=$host
+run_daemon() {
+  set_args
+  bridge_create
+  host_info
+
+  mkdir -p $base
+  sudo "$exe" "$@" $args \
+    --pidfile=$pidfile \
+    --bridge=$bridge \
+    --exec-root="$base" \
+    --$dataflag="$dataroot" \
+    --host=$host
+}
+
+"$action" "$@"
