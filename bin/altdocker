@@ -21,7 +21,14 @@ set -e +x
 case "$1" in
   (--dry) action=gen_rm_script ; shift ;;
   (--rm) action=demolish ; shift ;;
-  (*) action=run_daemon ;;
+  ('') action=run_daemon ;;
+  (docker) action=env ;;
+  (*)
+    if docker 2>&1 | sed 1,/Commands:/d | awk '/^ / {print$1}' | grep -Fxq $1
+    then action=env ; set -- docker "$@"
+    else action=$1 ; shift
+    fi
+    ;;
 esac
 
 # args to prepend between the command and the args that this script sets
@@ -77,6 +84,10 @@ bridge_create() {
 
 bridge_destroy() {
   ! bridge_exists || sudo ip link delete dev $bridge
+}
+
+env() {
+  command env DOCKER_HOST=$host "$@"
 }
 
 host_info() {
