@@ -50,7 +50,7 @@ gen_rm_script() {
   {print $NF}
   END{
     if(header) {
-      print "| sudo xargs -n 1 -0 -r printf \"]] %s\\\\n\" btrfs su de"
+      print "| sudo xargs -iSUBVOL -0 -r btrfs su de /SUBVOL"
     }
   }
   ' |
@@ -58,7 +58,9 @@ gen_rm_script() {
 }
 
 demolish() {
-  gen_rm_script
+  gen_rm_script | sh -esx
+  sudo rm --verbose -r "$base"
+  bridge_destroy
 }
 
 bridge_exists() {
@@ -71,6 +73,10 @@ bridge_create() {
   sudo ip link add name $bridge type bridge
   sudo ip addr add $addr dev $bridge
   sudo ip link set dev $bridge up
+}
+
+bridge_destroy() {
+  ! bridge_exists || sudo ip link delete dev $bridge
 }
 
 host_info() {
