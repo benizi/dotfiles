@@ -7,6 +7,7 @@ single=0
 toggle=0
 virtuals=0
 lid-open && defclam=0 || defclam=1
+orphan=1
 for arg ; do
   case "$arg" in
     (-n|--dry*) ((++dry)) ;;
@@ -18,6 +19,13 @@ for arg ; do
     (--noclam|--all) clam=0 ;;
     (--single) single=1 ;;
     (--virt) virtuals=1 ;;
+    (--orphan=*)
+      case "${arg#--orphan=}" in
+        (left) orphan=0 ;;
+        (mid|middle|center) orphan=1 ;;
+        (right) orphan=2 ;;
+      esac
+      ;;
     (--no=*|--off=*|--skip=*) skip+=( ${arg#*=} ) ;;
     (*)
       tput setaf 1 >&2
@@ -48,6 +56,7 @@ awk \
   -v virtuals=$virtuals \
   -v debug=$debug \
   -v status=$printstate \
+  -v orphan=$orphan \
 'BEGIN {
   nout = split("", outs)
   nmodes = split("", modes)
@@ -245,7 +254,7 @@ END {
       maxy = h[out]
     }
     if (i == nwide + 1 && noutodd) {
-      posx += int(w[out] / 2)
+      posx += int(orphan * w[out] / 2)
     }
     mode = modeid[usedmode[out]]
     pos = posx "x" posy
