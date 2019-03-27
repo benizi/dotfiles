@@ -1,3 +1,4 @@
 #!/bin/sh
+! hash bt-status 2>/dev/null || exec bt-status -q
 hash btmgmt 2>/dev/null || exit 2
 btmgmt -i 0 info | grep -q 'current settings:.*powered'
