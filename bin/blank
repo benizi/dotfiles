@@ -1,6 +1,22 @@
 #!/bin/sh
-sleep 2
-. ~/ssh-script
 blank='xset dpms force suspend'
-$blank
-ssh _ "DISPLAY=:0 $blank"
+test $# -gt 0 || set -- -
+
+local_blank() {
+  # wait for keypresses to clear
+  sleep 1
+  $blank
+}
+
+ssh_blank() {
+  test -n "$SSH_AGENT_PID" || . ~/ssh-script
+  ssh "$1" "DISPLAY=:0 $blank"
+}
+
+for host
+do
+  case "$host" in
+    (-) local_blank ;;
+    (*) ssh_blank "$host" ;;
+  esac
+done
