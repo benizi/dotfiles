@@ -70,7 +70,7 @@ disable() {
 # send rxvt-unicode extension code to set the font size to be huge
 font() {
   case $1 in
-    (big) set -- size=28 ;;
+    (big) set -- size=48 ;;
     (*) set -- ;;
   esac
   printf '\e]777'
