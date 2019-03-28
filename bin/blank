@@ -1,5 +1,10 @@
 #!/bin/sh
 : ${state=suspend}
+
+for arg
+do case "$arg" in (--standby|--suspend|--off|--on) state=${arg#--} ;; esac
+done
+
 blank="xset dpms force $state"
 test $# -gt 0 || set -- -
 
@@ -17,6 +22,7 @@ ssh_blank() {
 for host
 do
   case "$host" in
+    (--*) : ignore arg ;;
     (-) local_blank ;;
     (*) ssh_blank "$host" ;;
   esac
