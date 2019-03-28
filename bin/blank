@@ -1,5 +1,6 @@
 #!/bin/sh
-blank='xset dpms force suspend'
+: ${state=suspend}
+blank="xset dpms force $state"
 test $# -gt 0 || set -- -
 
 local_blank() {
