@@ -1,12 +1,19 @@
 #!/bin/sh
 : ${state=suspend}
+cfg=$HOME/.config/blank
 
 for arg
 do case "$arg" in (--standby|--suspend|--off|--on) state=${arg#--} ;; esac
 done
 
 blank="xset dpms force $state"
-test $# -gt 0 || set -- -
+
+if test $# -gt 0
+then :
+elif test -e "$cfg"
+then set -- $(cat "$cfg")
+else set -- -
+fi
 
 local_blank() {
   # wait for keypresses to clear
