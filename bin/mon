@@ -3,6 +3,7 @@ dry=0
 debug=0
 primarypref=
 printstate=0
+label=0
 single=0
 toggle=0
 virtuals=0
@@ -13,6 +14,7 @@ for arg ; do
     (-n|--dry*) ((++dry)) ;;
     (-d|--debug) ((++debug)) ;;
     (--status) ((++printstate)) ;;
+    (--label) ((++label)) ;;
     (--toggle) ((++toggle)) ;;
     (--primary=*) primarypref=${arg#*=} ;;
     (--clam|--only-ext) clam=1 ;;
@@ -36,6 +38,49 @@ for arg ; do
   esac
 done
 [[ -f ~/.config/mon ]] && . ~/.config/mon
+
+if (( label ))
+then
+  xrandr |
+  awk -v q=\' '
+  $1 == "Screen" {
+    # "2160," -> "2160"
+    h = substr($10,1,length($10)-1)
+    print "convert -geometry +0+0 -size " $8 $9 h " xc:none \\"
+    print " -pointsize 72 -fill white \\"
+  }
+  $2 == "connected" {
+    nd = split($3 ~ /x/ ? $3 : $4, d, /[^0-9]/)
+    name = $1
+    w = d[1]
+    h = d[2]
+    x = d[3]
+    y = d[4]
+    tw = w/2
+    tx = x + w/2
+    ty = y + h/2
+    print "\\( \\"
+    print " -size " w "x" h " xc:none \\"
+    txt = "-draw \"text 0,0 " q name q "\""
+    print " -gravity center \\"
+    print " -stroke black -strokewidth 15 " txt " \\"
+    print " -stroke none " txt " \\"
+    print " -trim +repage \\"
+    print " -bordercolor none -border " (w/64) " \\"
+    print " \\( +clone -draw \"color 0,0 reset\" \\) \\"
+    print " -compose overlay -composite \\"
+    print " -background none -extent " w "x" h " \\"
+    print " -shave 10x10 \\"
+    print " -compose copy \\"
+    print " -bordercolor green -border 10 \\"
+    print " -repage +" x "+" y " \\"
+    print "\\) \\"
+  }
+  END { print " -layers flatten -geometry +0+0 x:" }
+  ' |
+  tee /dev/tty |
+  exec sh -xs
+fi
 
 if (( toggle ))
 then
