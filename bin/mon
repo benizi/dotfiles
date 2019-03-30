@@ -41,12 +41,13 @@ done
 
 if (( label ))
 then
+  filename=monitor-labels-$(date +%s)
   xrandr |
-  awk -v q=\' '
+  awk -v q=\' -v filename=$filename '
   $1 == "Screen" {
     # "2160," -> "2160"
     h = substr($10,1,length($10)-1)
-    print "convert -geometry +0+0 -size " $8 $9 h " xc:none \\"
+    print "convert -geometry +0+0 -size " $8 $9 h " null:" filename " \\"
     print " -pointsize 72 -fill white \\"
   }
   $2 == "connected" {
@@ -79,7 +80,12 @@ then
   END { print " -layers flatten -geometry +0+0 x:" }
   ' |
   tee /dev/tty |
-  exec sh -xs
+  sh -xs &
+  exec xdotool \
+    search --name --sync "^ImageMagick: $filename" \
+    windowmove 0 0 \
+    windowraise \
+    mousemove 2 2
 fi
 
 if (( toggle ))
