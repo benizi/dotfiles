@@ -22,7 +22,7 @@ running() {
 spotifydbus() {
   dbus-send \
     --print-reply=literal \
-    --dest=com.spotify.qt \
+    --dest=org.mpris.MediaPlayer2.spotify \
     /org/mpris/MediaPlayer2 \
     "$@"
 }
@@ -55,6 +55,7 @@ findplayer() {
 while test $# -gt 0
 do
   case $1 in
+    (--debug) shift ; set -x ; "$@" ; exit $? ;;
     (--spotify) spotify=spotify ; mpc= ;;
     (--mpc|--mpd) spotify= ; mpc=mpc ;;
     (*) break ;;
