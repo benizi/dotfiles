@@ -3,7 +3,7 @@ recurse=false
 if test $# -gt 0
 then recurse=true
 fi
-pid=$$
+: ${pid=$$}
 first=true
 while :
 do
