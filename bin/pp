@@ -10,16 +10,17 @@ GetOptions(
 $^I = $bak if $in_place;
 my $indent = 0;
 my $space = $tabs ? "\t" : " ";
+sub spaces { local $_ = shift; $_ > 0 ? ($space x $_) : '' }
 my $gi = qr/[\w\-]/;
 while (<>) {
 	s/></>\n</gsm;
 	my @lines = split /\n/;
 	for (@lines) {
 		s{^\s+}{};
-		s{^<(?![/?!])}{($space x $indent++)."<"}e;
+		s{^<(?![/?!])}{(spaces $indent++)."<"}e;
 		$indent-- if m{^\s*\S.*</$gi+(?::$gi+)?>};
 		$indent-- if m{<[^>]+/>};
-		s{^\s*(</$gi+(?::$gi+)?>)}{($space x --$indent).$1}e;
+		s{^\s*(</$gi+(?::$gi+)?>)}{(spaces --$indent).$1}e;
 	}
 	print "$_\n" for @lines;
 }
