@@ -115,10 +115,6 @@
 
 (add-hook 'window-setup-hook 'setup-color-theme)
 
-;; set up xterm (necessary evil?)
-(custom-set-variables
- '(xterm-extra-capabilities (quote modifyOtherKeys)))
-
 ;; clipboard in emacs -nw
 (defun copy-from-clip ()
   (shell-command-to-string "clip -o"))
@@ -235,3 +231,5 @@
     (goto-char (point-max))
     (insert form)
     (cider-repl-return)))
+
+(load (setq custom-file "~/.emacs.d/custom.el"))
