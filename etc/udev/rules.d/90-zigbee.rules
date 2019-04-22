@@ -1,0 +1,2 @@
+# SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="8a2a", OWNER="bhaskell", GROUP="bhaskell", MODE:="0666"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="8a2a", OWNER="bhaskell", GROUP="root", MODE:="0660"
