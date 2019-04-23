@@ -1,0 +1,6 @@
+#!/bin/sh
+size=${1:-100}
+color=${2:-'#0000ff'}
+printf ' %s' -background "$color" \
+  -crop ${size}x -chop 1x0-0+0 -splice 1x0-0+0 +append \
+  -crop x${size} -chop 0x1+0-0 -splice 0x1+0-0 -append
