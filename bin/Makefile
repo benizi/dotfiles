@@ -55,6 +55,10 @@ x-find-free:	src/X11/x-find-free.c
 	$(CC) $(CFLAGS) $(shell pkg-config --cflags x11) -o $@.tmp $< $(shell pkg-config --libs x11)
 	mv $@.tmp $@
 
+x-idle:	src/X11/x-idle.c
+	$(CC) $(CFLAGS) $(shell pkg-config --cflags x11) -o $@.tmp $< $(shell pkg-config --libs x11) $(shell pkg-config --libs xscrnsaver)
+	mv $@.tmp $@
+
 x-is-active:	src/X11/x-is-active.c
 	$(CC) $(CFLAGS) $(shell pkg-config --cflags x11) -o $@.tmp $< $(shell pkg-config --libs x11)
 	mv $@.tmp $@
