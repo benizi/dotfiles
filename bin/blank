@@ -30,7 +30,7 @@ for host
 do
   case "$host" in
     (--*) : ignore arg ;;
-    (-) local_blank ;;
+    (-|.) local_blank ;;
     (*) ssh_blank "$host" ;;
   esac
 done
