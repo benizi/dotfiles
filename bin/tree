@@ -1,0 +1,37 @@
+#!/usr/bin/env perl
+use File::Find;
+use File::Spec;
+use POSIX qw/getcwd/;
+use 5.016;
+
+shift while @ARGV and $ARGV[0] =~ /^-/;
+
+my %tree;
+my $root = shift;
+
+find {
+  wanted => sub {
+    return if $_ eq '.';
+    my $rel = File::Spec->abs2rel($File::Find::dir, $root);
+    $rel = $rel eq '.' ? '' : "/$rel";
+    my $name = -l ? "$_ -> ".(readlink($_)//"(ENOPERM)") : $_;
+    push @{$tree{$rel}}, $name;
+  },
+}, $root;
+
+sub print_tree {
+  my ($prefix, $location) = (@_, "", "");
+  my @kids = sort @{$tree{$location}};
+  while (@kids) {
+    my $kid = shift @kids;
+    my $kid_pre = @kids ? "|-- " : "\`-- ";
+    (my $sub_pre = $kid_pre) =~ y/|/ /c;
+    say $prefix, $kid_pre, $kid;
+    my $sub = "$location/$kid";
+    next unless exists $tree{$sub};
+    print_tree($prefix . $sub_pre, $sub);
+  }
+}
+
+say $root;
+print_tree;
