@@ -24,6 +24,7 @@ my @drawing = qw/
 my $pattern = qr/./;
 GetOptions(
   'a' => \(my $list_all = 0),
+  'l' => \(my $follow = 0),
   'P=s' => sub {
     shift;
     local $_ = shift;
@@ -46,6 +47,7 @@ find {
     my $name = -l ? "$_ -> ".(readlink($_)//"(ENOPERM)") : $_;
     push @{$tree{$rel}}, $name;
   },
+  follow => $follow,
 }, $root;
 
 my %chars;
