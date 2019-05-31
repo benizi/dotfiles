@@ -3,6 +3,18 @@ use File::Find;
 use File::Spec;
 use POSIX qw/getcwd/;
 use 5.016;
+use open ':std', ':utf8';
+use utf8;
+
+my $line_drawing = 1;
+
+# s_ = sub, k_ = kid, mid = not last, end = last
+my @drawing = qw/
+  s_end        
+  s_mid |   │  
+  k_mid |-- ├──
+  k_end `-- └──
+/;
 
 shift while @ARGV and $ARGV[0] =~ /^-/;
 
@@ -19,13 +31,24 @@ find {
   },
 }, $root;
 
+my %chars;
+while (@drawing) {
+  my ($name, @versions) = splice @drawing, 0, 3;
+  for ($versions[$line_drawing]) {
+    y/\xa0/ /;
+    s/$/ /;
+    $chars{$name} = $_;
+  }
+}
+
 sub print_tree {
   my ($prefix, $location) = (@_, "", "");
   my @kids = sort @{$tree{$location}};
   while (@kids) {
     my $kid = shift @kids;
-    my $kid_pre = @kids ? "|-- " : "\`-- ";
-    (my $sub_pre = $kid_pre) =~ y/|/ /c;
+    my $pos = @kids ? 'mid' : 'end';
+    my $kid_pre = $chars{"k_$pos"};
+    my $sub_pre = $chars{"s_$pos"};
     say $prefix, $kid_pre, $kid;
     my $sub = "$location/$kid";
     next unless exists $tree{$sub};
