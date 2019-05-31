@@ -32,7 +32,10 @@ GetOptions(
     s/\*$//;
     $pattern = $_
   },
+  'ignore-case' => \(my $ignore_case = 0),
 ) or die 'options';
+
+$pattern = qr/$pattern/i if $ignore_case;
 
 my %tree;
 my $root = shift;
