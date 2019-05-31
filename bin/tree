@@ -33,11 +33,13 @@ GetOptions(
     $pattern = $_
   },
   'ignore-case' => \(my $ignore_case = 0),
+  'prune' => \(my $prune = 0),
 ) or die 'options';
 
 $pattern = qr/$pattern/i if $ignore_case;
 
 my %tree;
+my %anyfiles;
 my $root = shift;
 
 find {
@@ -47,6 +49,11 @@ find {
     $rel = $rel eq '.' ? '' : "/$rel";
     return if /\A\./ and not $list_all;
     return unless -d or /$pattern/;
+    $tree{"$rel/$_"} //= [] if -d;
+    unless (-d or $anyfiles{$rel}++) {
+      my @parts = split '/', "/$rel", -1;
+      $anyfiles{join '/', @parts[0..$_]}++ for 0..$#parts;
+    }
     my $name = -l ? "$_ -> ".(readlink($_)//"(ENOPERM)") : $_;
     push @{$tree{$rel}}, $name;
   },
@@ -75,6 +82,15 @@ sub print_tree {
     my $sub = "$location/$kid";
     next unless exists $tree{$sub};
     print_tree($prefix . $sub_pre, $sub);
+  }
+}
+
+if ($prune) {
+  for (grep !$anyfiles{$_}, keys %tree) {
+    delete $tree{$_};
+    next unless my ($dir, $file) = m{^(.*)/([^/]+)$};
+    next unless exists $tree{$dir};
+    @$_ = grep $_ ne $file, @$_ for $tree{$dir};
   }
 }
 
