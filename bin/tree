@@ -40,7 +40,7 @@ $pattern = qr/$pattern/i if $ignore_case;
 
 my %tree;
 my %anyfiles;
-my $root = shift;
+my $root = shift // '.';
 
 find {
   wanted => sub {
