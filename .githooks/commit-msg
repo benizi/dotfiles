@@ -20,7 +20,7 @@ function fail(msg, code) {
   print "" | "cat >&2"
   err = code
 }
-NR == 1 && length() > 50 {
+NR == 1 && length() > 50 && !(/^(fixup|squash)!/ || /^wip[: ]/) {
   fail("Summary line is longer than 50 chars (" length() ")", 1)
 }
 NR == 2 && length() {
