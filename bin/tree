@@ -21,6 +21,7 @@ my @drawing = qw/
 
 @ARGV = map { decode_utf8($_, 1) } @ARGV;
 
+my %unimplemented_flags;
 my $pattern = qr/./;
 GetOptions(
   'a' => \(my $list_all = 0),
@@ -34,6 +35,12 @@ GetOptions(
   },
   'ignore-case' => \(my $ignore_case = 0),
   'prune' => \(my $prune = 0),
+  (map { ($_, \$unimplemented_flags{$_}) }
+    'C', # always colorize
+    'I=s', # exclude pattern
+    'matchdirs', # use -P for dirs too
+    'noreport', # don't print final report
+  ),
 ) or die 'options';
 
 $pattern = qr/$pattern/i if $ignore_case;
