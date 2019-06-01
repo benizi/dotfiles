@@ -79,7 +79,7 @@ while (@drawing) {
 
 sub print_tree {
   my ($prefix, $location) = (@_, "", "");
-  my @kids = sort @{$tree{$location}};
+  my @kids = sort @{$tree{$location} // []};
   while (@kids) {
     my $kid = shift @kids;
     my $pos = @kids ? 'mid' : 'end';
