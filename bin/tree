@@ -52,7 +52,7 @@ my $root = shift // '.';
 find {
   wanted => sub {
     return if $_ eq '.';
-    my $rel = File::Spec->abs2rel($File::Find::dir, $File::Find::topdir);
+    my $rel = File::Spec->abs2rel($File::Find::dir, $root);
     $rel = $rel eq '.' ? '' : "/$rel";
     return if /\A\./ and not $list_all;
     return unless -d or /$pattern/;
