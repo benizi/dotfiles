@@ -54,8 +54,17 @@ get-default () {
 
 get-email () { gconf user.email }
 
+git-email-addresses() {
+  local dir
+  awk '/email =/ { print $NF }' ~/git/*/.git/config |
+  sort |
+  uniq -c
+}
+
 set-email () {
   local mail default=$(get-default)
+  printf 'Other email addresses used:\n'
+  git-email-addresses | sed 's/^/  /'
   printf "Set email to [%s]: " $default
   read mail
   [[ -z $mail ]] && mail=$default
