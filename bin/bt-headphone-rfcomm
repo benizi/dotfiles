@@ -115,7 +115,7 @@ parse-initial-state() {
   $volume = hex $1 if /^ff 00 06 01 (..) fe$/;
   $multi = 1 if /^ff 00 b0 01 01 fe$/;
   END {
-    $_ //= 0 for $battery, $volume;
+    $_ //= 0 for $battery, $volume, $multi;
     my $charge_bit = 0x10;
     my $charging = $battery & $charge_bit;
     $battery -= $charging;
