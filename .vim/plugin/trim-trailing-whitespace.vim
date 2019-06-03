@@ -8,8 +8,8 @@ fun! TrimTrailingWhitespace(type, ...)
   else
     let range = '`[v`]'
   endif
-  sil exe "normal! ".range."=\<CR>"
-  let cmd = "normal! ".range.":s/\\s\\+$//e\<CR>"
+  sil exe "normal! ".range."="
+  let cmd = "normal! ".range.":s/\\s\\+$//e"
   sil exe cmd
 endf
 
