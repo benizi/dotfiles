@@ -56,10 +56,6 @@ def find_salt(input)
   @salt = cipher[marker.size, 8].unpack("H*")[0].upcase
 end
 
-def salt
-
-end
-
 def dumpsalt(input, out)
   input.tap do
     return unless find_salt(input)

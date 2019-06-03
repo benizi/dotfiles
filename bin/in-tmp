@@ -1,4 +1,9 @@
 #!/bin/sh
+# detect whether being sourced (_main=false) or run directly (_main=true)
+if test -n "$zsh_eval_context"
+then test "$zsh_eval_context" = "toplevel" && _main=true || _main=false
+else (return >/dev/null 2>&1) && _main=false || _main=true
+fi
 tmpdir=$(mktemp -d -t in-tmp.XXXXXXXX) || exit 1
 export tmpdir
 cd "$tmpdir" || exit 2
@@ -15,5 +20,6 @@ gotsig () {
 }
 trap cleanup EXIT
 trap gotsig INT QUIT TERM
+$_main || return
 test $# -gt 0 || set -- "${SHELL:-sh}"
 "$@"
