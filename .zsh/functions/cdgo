@@ -1,6 +1,12 @@
 local dest
 [[ ${${:-"$(pwd)"}:A} = "$(pwd)" ]] || return 0
-dest="$HOME/src/$(goname "$@")"
+if (( $#gopath ))
+then dest=${gopath[1]}
+elif test -n "$GOPATH"
+then dest=${GOPATH%%:*}
+else dest=$HOME
+fi
+dest="$dest/src/$(goname "$@")"
 mkdir -p ${dest:h}
 ln -nsf "$(pwd)" $dest
 cd $dest
