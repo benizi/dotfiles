@@ -21,6 +21,14 @@ const aslines = sentence => {
     bk;
   while ((bk = breaker.nextBreak())) {
     let token = sentence.slice(last, bk.position);
+    // Don't want to wrap already-hyphenated words:
+    if (token.match(/[-\/]$/)) {
+      continue;
+    }
+    // Don't want to wrap incomplete anchor tags:
+    if (token.match(/<a /) && !token.match(/">/)) {
+      continue;
+    }
     if (80 < (line + token).length || bk.required) {
       ret.push(line.replace(/\s*$/, ""));
       line = "";
