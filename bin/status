@@ -222,6 +222,9 @@ then
   shift
   setup
   "$@"
+  if (( $#reply ))
+  then printf 'reply=[%s]\n' "${reply[@]}"
+  fi
   exit $?
 fi
 
