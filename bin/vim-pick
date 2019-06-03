@@ -1,8 +1,2 @@
 #!/bin/sh
-vim-swap-list |
-jq -r 'select(.running)|.display' |
-picker -p 'vim:' |
-awk '{ print $NF }' |
-while read pick
-do x-activate $pick
-done
+exec rofi -modi vim:rofi-vim -show vim
