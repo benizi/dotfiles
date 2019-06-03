@@ -106,7 +106,7 @@ G4-F#4-G4
 MARIO
 
 q = 12
-puts MARIO.
+puts (ARGV.size > 0 ? ARGV.join(" ") : MARIO).
   gsub(/\A.*SKIP/m, '').
   gsub(/TODO.*\Z/m, '').
   gsub(/^#.*$/s, '').
