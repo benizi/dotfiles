@@ -214,6 +214,7 @@ if (( $+functions[_version] )) ; then
     local v
     if [[ -f .ruby-version ]] ; then
       v=$(<.ruby-version)
+      v=${v#ruby-}
       unset ruby_version
       _version ruby $v
       if [[ $ruby_version = $v ]]
