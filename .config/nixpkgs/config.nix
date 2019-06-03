@@ -6,4 +6,5 @@
     "slack"
     "spotify"
   ];
+  pulseaudio = true;
 }
