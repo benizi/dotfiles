@@ -64,9 +64,7 @@ couchdb_put couchdb_create_db () {
 couchdb_history_add () {
   local cmd=
   cmd=${1%%$'\n'}
-  [[ $1 = ' '* ]] && return 0
-  [[ -z "$cmd" ]] && return 0
-  # print -sr -- ${1%%$'\n'}
+  case "$cmd" in (''|' '*) return 0 ;; esac
   local -a json_params
   json_params=(
     host "$HOST"
@@ -76,10 +74,8 @@ couchdb_history_add () {
     pid "$$"
     user "$USERNAME"
   )
-  if (( $+commands[uuidgen] )) ; then
-    if (( ! $+couchdb_session )) ; then
-      couchdb_session=$(uuidgen)
-    fi
+  if (( $+commands[uuidgen] )) && (( ! $+couchdb_session ))
+  then couchdb_session=$(uuidgen)
   fi
   (( $+couchdb_session )) && json_params+=( session $couchdb_session )
   local json="$(json_object "${json_params[@]}")"
