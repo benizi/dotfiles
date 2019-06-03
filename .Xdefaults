@@ -86,6 +86,7 @@ xterm.termName: xterm-256color
 xterm*faceName: Bitstream Vera Sans Mono:size=12
 xterm*background: black
 xterm*foreground: white
+xterm*directColor: true
 
 xterm*utf8: true
 xterm*utf8Title: true
