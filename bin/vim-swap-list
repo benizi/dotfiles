@@ -1,6 +1,14 @@
 #!/usr/bin/env ruby
 require 'etc'
 require 'json'
+require 'date'
+
+VIM_DATE_FORMAT = '%a %b %d %H:%M:%S %Y'
+
+def parse_date(date)
+  ts = DateTime.strptime(date, VIM_DATE_FORMAT).strftime('%s').to_i rescue nil
+  {date: date, ts: ts}
+end
 
 user_dir = "~#{Etc.getlogin}/"
 io = IO.popen({'LC_ALL'=>'POSIX'}, %w[vim -r], err: [:child, :out])
@@ -15,15 +23,15 @@ end.each do |set|
     when 'In current directory:' ; then '.'
     else dir_line.sub(/^In directory /, '').sub(/:$/, '')
     end
-  set.slice_when { |_,line| line =~ /^\d+\./ }.each do |f|
+  set.slice_when { |_,line| line =~ /^\d+\./ }.map do |f|
     f.map do |line|
       case line.strip
       when /^(\d+)\.\s+(.+?)$/
         {n: $1.to_i, swapfile: $2}
       when /^owned by:\s(.+?)\s+dated:\s+(.+?)$/
-        {owner: $1, date: $2}
+        {owner: $1}.merge(parse_date($2))
       when /^dated:\s+(.+?)$/
-        {date: $1}
+        parse_date($1)
       when /^file name:\s+(.+?)$/
         {file: $1.sub(user_dir, '~/')}
       when /^user name:\s+(.+?)\s+host name:\s+(.+?)$/
@@ -36,10 +44,8 @@ end.each do |set|
         $stderr.puts "NO INFO ON:\n  #{line}"
         {}
       end
-    end.tap do |rows|
-      info = rows.reduce({dir: dir}, :merge)
-      info.merge!(display: [info[:file], info[:pid]].join("\t"))
-      puts info.to_json
-    end
-  end
+    end.reduce({dir: dir}, :merge)
+  end.sort_by { |x| -x[:ts] || x[:date] }.map do |info|
+    info.merge!(display: [info[:file], info[:pid]].join("\t"))
+  end.each { |info| puts info.to_json }
 end
