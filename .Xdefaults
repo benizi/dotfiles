@@ -51,6 +51,17 @@ URxvt*foreground: white
 URxvt*cursorColor: gray70
 
 ! color0 is often used for "bold", but default (black) is invisible on black bg
+!*color0: #ff832c
+!*color0: #8e4817
+!*color0: #884411
+! Try a brownish color that works against either a dark or bright background.
+!*color0: #995522
+!*color0: #993333
+!*color0: #332266
+!*color0: #553399
+!*color0: #ddcc44
+! Try a reddish color that works against either a dark or bright background.
+!*color0: #cc4455
 *color0: white
 
 !make yellow orange, for readability against white
