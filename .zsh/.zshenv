@@ -270,7 +270,7 @@ if (( $+commands[verman] )) ; then
 
   _versions=(
     erlang 21.0.5
-    elixir v1.6.5-nix
+    elixir v1.8.1-R21-nix
     node v10.5.0
     ruby 2.2.3-p0-nix
     rust 1.26.0
