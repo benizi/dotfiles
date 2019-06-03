@@ -165,21 +165,19 @@ if ($rdesktop =~ /xfreerdp/) {
 		? qw/+clipboard/
 		: qw/--plugin cliprdr/;
 	if ($new_style_xfreerdp) {
+		my %option_map = qw(-a /bpp -u /u -p /p);
+		my %flag_map = qw(-z +compression);
 		my @new_cmd;
 		while (@rcmd) {
 			local $_ = shift @rcmd;
 			if (m{^[/+]}) {
 				push @new_cmd, $_;
-			} elsif (/^-a$/) {
-				push @new_cmd, join ':', '/bpp', shift @rcmd;
-			} elsif (/^-u$/) {
-				push @new_cmd, join ':', '/u', shift @rcmd;
-			} elsif (/^-z$/) {
-				push @new_cmd, '+compression';
+			} elsif (my $mapped = $option_map{$_}) {
+				push @new_cmd, join ':', $mapped, shift @rcmd;
+			} elsif (my $flag = $flag_map{$_}) {
+				push @new_cmd, $flag;
 			} elsif (!@rcmd) {
 				push @new_cmd, "/v:$_";
-			} else {
-				use Data::Dumper; die Dumper [\@new_cmd, $_, \@rcmd];
 			}
 		}
 		@rcmd = @new_cmd;
