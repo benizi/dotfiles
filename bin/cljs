@@ -18,7 +18,7 @@ maven_location() {
 # Find the newest version of a given group+artifact
 maven_latest() {
   maven_location "$@" |
-  xargs -0 -iDIR find DIR -mindepth 1 -maxdepth 1 -type d -print0 |
+  xargs -0 -iDIR find DIR -mindepth 1 -maxdepth 1 -type d ! -empty -print0 |
   sort -zrV |
   awk -v RS='\000' -v ORS= -F/ 'NR==1 { print $NF }'
 }
