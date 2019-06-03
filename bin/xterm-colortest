@@ -1,4 +1,12 @@
 #!/usr/bin/perl
+
+=begin
+
+Another version:
+
+perl -CDS -we 'for my $r (map +($_) x 3, 0..16) { print "\n"; for my $g (0,3,5,7,9,11..16) { for my $b (0..16) { printf "\e[38;2;%d;%d;%dm%s", abs(16*$r-1), abs(16*$g-1), abs(16*$b-1), "\x{2588}" } } }'
+=cut
+
 use strict;
 use warnings;
 use utf8;
