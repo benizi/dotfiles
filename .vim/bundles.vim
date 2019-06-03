@@ -41,6 +41,7 @@ Plugin 'mileszs/ack.vim'
 Plugin 'benizi/dbext.vim'
 Plugin 'jelera/vim-javascript-syntax'
 Plugin 'dart-lang/dart-vim-plugin'
+Plugin 'junegunn/vim-easy-align'
 
 Plugin 'derekwyatt/vim-scala'
 Plugin 'cespare/vim-toml'
