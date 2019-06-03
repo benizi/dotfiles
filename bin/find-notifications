@@ -1,8 +1,13 @@
 #!/bin/sh
 while xprop-tree _NET_WM_WINDOW_TYPE |
   awk '/_NET_WM_WINDOW_TYPE_NOTIFICATION/ && !seen++ {
-    print "xdotool windowmove", $1, 10, 10
+    print "eval \"$(x-active-id |"
+    print "xargs xdotool getwindowgeometry --shell)\""
+    print "X=$((X+10))"
+    print "Y=$((Y+10))"
+    print "xdotool windowmove", $1, "$X $Y"
     print "xdotool windowraise", $1
+    print "xdotool mousemove $((X+10)) $((Y+10))"
   }
   END { print "exit", seen ? 0 : 1 }' |
   sh -x && read
