@@ -79,7 +79,10 @@ cfssljson -bare $ca
 for shortname
 do
   test x$shortname != x-- || continue
-  host=$shortname.$tld
+  case $shortname in
+    (*.*) host="$shortname" ;;
+    (*) host=$shortname.$tld ;;
+  esac
   exists $host ||
   host_config $host |
   debugtee req.$host.json |
