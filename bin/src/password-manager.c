@@ -22,20 +22,27 @@ default_user(void)
   return ret;
 }
 
-#define FIND_NAMED_KIND(ATT, NAME, KIND) \
+#define FIND_NAMED_KIND(ATT, NAME, KIND, NORMAL) \
   if (!strcmp(att.name, NAME)) { \
     ATT = att.value.KIND; \
     ATT ## _p = 1; \
+    any_normal += NORMAL; \
     continue; \
   }
-#define FIND_STRING(ATT) FIND_NAMED_KIND(ATT, #ATT, string)
-#define FIND_INT(ATT) FIND_NAMED_KIND(ATT, #ATT, integer)
+#define FIND_STRING(ATT) FIND_NAMED_KIND(ATT, #ATT, string, 1)
+#define FIND_INT(ATT) FIND_NAMED_KIND(ATT, #ATT, integer, 1)
 
 #define MAX_ATTR_STR 65536
 #define MAX_ATTR_NAME 512
 #define ATTR_OUTPUT_PADDING 16 /* other characters per line of extra attr */
 #define MAX_ATTR_VAL (MAX_ATTR_STR - MAX_ATTR_NAME - ATTR_OUTPUT_PADDING)
 #define CHECK(VAR) if (VAR == NULL) { perror("malloc"); return; }
+
+#define OK_EXTRA(NAME, XNAME) \
+  if (!strcmp(att.name, #NAME)) { \
+    renamed = #XNAME; \
+  }
+
 
 static void
 short_key_listing(gchar *keyring, guint32 id)
@@ -53,20 +60,25 @@ short_key_listing(gchar *keyring, guint32 id)
 
   if (result == GNOME_KEYRING_RESULT_OK) {
     GnomeKeyringAttribute att, *atts;
-    int i, j, printable, n_extra, len;
+    int i, j, printable, n_extra, len, any_normal;
     atts = (GnomeKeyringAttribute *)attlist->data;
+    char *renamed;
     char **extra_attrs = (char **)malloc(attlist->len * sizeof(char*));
     CHECK(extra_attrs);
-    for (i = 0, n_extra = 0; i < attlist->len; i++) {
+    for (i = 0, n_extra = 0, any_normal = 0; i < attlist->len; i++) {
       att = atts[i];
       if (att.type == GNOME_KEYRING_ATTRIBUTE_TYPE_STRING) {
-        FIND_NAMED_KIND(schema, "xdg:schema", string);
+        FIND_NAMED_KIND(schema, "xdg:schema", string, 0);
         FIND_STRING(user);
         FIND_STRING(server);
         FIND_STRING(domain);
         FIND_STRING(protocol);
         FIND_STRING(name);
         FIND_STRING(magic);
+        renamed = NULL;
+        OK_EXTRA(username_value, username);
+        OK_EXTRA(signon_realm, realm);
+        if (renamed == NULL) continue;
         extra_attrs[n_extra] = (char *)malloc(MAX_ATTR_STR * sizeof(char));
         CHECK(extra_attrs[n_extra]);
         len = strlen(att.value.string);
@@ -80,25 +92,28 @@ short_key_listing(gchar *keyring, guint32 id)
             break;
           }
         }
-        sprintf(extra_attrs[n_extra++],
-            "[%s]=[%s]",
-            strlen(att.name) < MAX_ATTR_NAME ? att.name : "(long name)",
-            printable ? att.value.string : "(unprintable)");
+        sprintf(extra_attrs[n_extra++], "%s: [%s]",
+                strlen(renamed) < MAX_ATTR_NAME ? renamed : "(long name)",
+                printable ? att.value.string : "(unprintable)");
       } else if (att.type == GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32) {
         FIND_INT(port);
         printf("UNHANDLED INT: %s\n", att.name);
       }
     }
-    printf(" ");
-    if (user_p && strcmp(user, default_user())) printf("%s@", user);
+    if (user_p && !strcmp(user, default_user())) {
+      user_p = 0;
+      any_normal--;
+    }
+    if (any_normal) printf(" ");
+    else if (schema_p) printf(" > %s", schema);
+    if (user_p) printf("%s@", user);
     if (server_p) printf("%s", server);
     if (domain_p) printf(".%s", domain);
     if (port_p) printf(":%d", port);
     if (protocol_p) printf(" [%s]", protocol);
-    if (schema_p && 0) printf(" {%s}", schema);
     if (name_p) printf(" name=%s", name);
     if (magic_p) printf(" magic=%s", magic);
-    for (i = 0; i < n_extra; i++) printf("  %s\n", extra_attrs[i]);
+    for (i = 0; i < n_extra; i++) printf("\n   %s", extra_attrs[i]);
     gnome_keyring_attribute_list_free(attlist);
   }
 }
@@ -180,6 +195,8 @@ key_listing(int verbose, int secret)
       switch (result) {
         case GNOME_KEYRING_RESULT_OK:
           short_key_listing(keyring, GPOINTER_TO_INT(cid->data));
+          if (verbose)
+            printf("\n");
           if (verbose)
             detailed_key_listing(keyring, GPOINTER_TO_INT(cid->data));
           if (secret) {
