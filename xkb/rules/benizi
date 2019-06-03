@@ -1,5 +1,5 @@
 ! model = keycodes types compat
-  * = evdev complete complete
+  * = evdev complete benizi
 
 ! model = symbols
   * = pc+inet(evdev)+%l(%v)

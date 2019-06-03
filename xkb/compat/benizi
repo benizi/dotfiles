@@ -1,0 +1,8 @@
+default xkb_compatibility "benizi" {
+  include "complete"
+
+  interpret Hyper_R+AnyOfOrNone(all) {
+    useModMapMods = any;
+    action = SetMods(modifiers = Mod3);
+  };
+};

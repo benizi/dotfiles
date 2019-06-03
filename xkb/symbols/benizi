@@ -140,6 +140,22 @@ xkb_symbols "ralt-mod3" {
     modifier_map Mod3 { Alt_R };
 };
 
+partial modifier_keys
+xkb_symbols "lalt-no-meta" {
+    replace key <LALT> { [ Alt_L ] };
+};
+
+partial modifier_keys
+xkb_symbols "ralt-hyper" {
+    replace key <RALT> {
+        type[Group1] = "ONE_LEVEL",
+        symbols[Group1] = [ Hyper_R ]
+    };
+    replace key <META> { [ Meta_L, Meta_R ] };
+    modifier_map Mod1 { Alt_L };
+    modifier_map Mod3 { Alt_R, Hyper_R };
+};
+
 partial alphanumeric_keys
 xkb_symbols "intl-crap" {
 
@@ -563,6 +579,17 @@ xkb_symbols "intl" {
     include "benizi(caps-group)"
     include "benizi(menu-compose-latch)"
     include "benizi(ralt-mod3)"
+    include "benizi(gnu-apl):2"
+    include "benizi(fix-fn-keys)"
+};
+
+partial alphanumeric_keys modifier_keys
+xkb_symbols "hyper" {
+    include "benizi(intl-shared)"
+    include "benizi(caps-group)"
+    include "benizi(menu-compose-latch)"
+    include "benizi(lalt-no-meta)"
+    include "benizi(ralt-hyper)"
     include "benizi(gnu-apl):2"
     include "benizi(fix-fn-keys)"
 };
