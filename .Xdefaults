@@ -83,6 +83,7 @@ rofi.color-window: #fdf6e3,#002b36
 
 ! Use `xterm` (instance) rather than `XTerm`/`UXTerm` (class)
 xterm.termName: xterm-256color
+!xterm.termName: xterm-direct
 xterm*faceName: Bitstream Vera Sans Mono:size=12
 xterm*background: black
 xterm*foreground: white
@@ -106,3 +107,17 @@ xterm*translations: #override \n\
 
 ! for sixel graphics
 xterm*decTerminalID: vt340
+
+! get+set titles as UTF-8
+! xterm*titleModes: 12
+
+!xterm*altIsNotMeta: false
+
+!xterm*metaSendsEscape: false
+
+!xterm*altSendsEscape: false
+
+!xterm*modifyOtherKeys: true
+!xterm*reverseVideo: true
+!xterm*color3: orange3
+!xterm*color4: rgb:99/99/ff
