@@ -4,6 +4,8 @@ alias bg=' builtin bg'
 alias rehash=' builtin rehash'
 alias shit=' shit'
 
+alias D=docker
+
 # keep shell history separate
 () {
   local shell
