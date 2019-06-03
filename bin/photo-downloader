@@ -1,40 +1,76 @@
 #!/bin/zsh
 
-in=~/Downloads
-out=/downloads
+set -e
 
-pushd $in
-json=( photos*.json(Nom[1]) )
-jq -r '
-"(",
-"echo \(.url|@base64) |
-  openssl base64 -d -A |
+in=~/Downloads
+: ${out=/downloads}
+
+if (( $# ))
+then
+  specified=true
+  : ${rmjson=false}
+else
+  specified=false
+  : ${rmjson=true}
+  set -- $in/photos*.json(Nom)
+fi
+
+for json
+do
+  jq -r .url $json |
   url2json |
-  jq -r \".host + .path\" |
-  awk -F/ \u0027{$2=\"\";NF=6}1\u0027 |
-  awk -v OFS=/ \u0027{$1=$1}1\u0027 |
-  sed \"s%^www\\.%p/%\"",(.photos|map(["printf %s\\ %03d\\ %s\\\\n",.urls.original,.number,(.urls.original|split("/")[-1])]|map(tostring)|join(" "))|.[]),
-")"
-' < $json |
-sh -se |
-() {
-  setopt local_options xtrace
-  local dir n base
-  local -a parts
-  read dir
-  parts=( ${(s:/:)dir} )
-  local album=${parts[-3]} id=${parts[-2]} name=${parts[-1]}
-  printf '%s=[%s]\n' album $album id $id name $name >&2
-  mkdir -p $dir
-  rsync -Pav $json $dir/photos.json
-  allgood=true
-  while read url n base
+  jq -r '"\(.host)\(.path)"' |
+  sed 's/^www\.//' |
+  awk -F/ '{$2="";$4="";NF--}1' |
+  read site user id album
+
+  test -d $out/$site || die "! -d $out/$site"
+  meta=$out/$site/json
+  base=$out/$site/$user/$album
+  jout=$meta/$user.$id.$album.json
+
+  mkdir -p $meta
+  $specified || rsync --itemize-changes --info=stats0,flist0 -Pav $json $jout >&2
+
+  jq -r '.photos|length' $json |
+  read total
+  jq -r '.photos[].urls.original' $json |
+  nl |
+  while read -r n url
   do
-    curl -C - -o $dir/$n-$base $url
-    case $? in
-      (0|33) ;;
-      (*) allgood=false ;;
+    dst=$out/$site/$user/$album/$(printf '%03d' $n)-${url##*/}
+    echo down $url $dst $n
+  done |
+  sed -e '1idir '$meta |
+  sed -e '1idir '$base |
+  while read action url out i
+  do
+    case $action in
+      (dir) printf 'mkdir -p "%s"\n' $url ;;
+      (down)
+        cat <<DL
+printf '[%03d/%03d] %s %s \\n' $i $total "$user" "$album"
+curl --progress-bar -C - -o "$out" "$url"
+case \$? in
+  (0) nodownload=false ;;
+  (33) : ;;
+  (*) hadfailure=true ;;
+esac
+DL
+        case $i in
+          ($total) : ;;
+          (*) cat <<'CURSOR'
+tput cuu 2 2>/dev/null || :
+printf '\r'
+CURSOR
+        esac
     esac
-  done
-  $allgood && rm $json
-}
+  done |
+  {
+    echo 'hadfailure=false nodownload=true'
+    cat
+    ! $rmjson || printf '$hadfailure || $nodownload || rm "%s"\n' "$json"
+  } |
+  sed -e '1i{' -e '$a}' |
+  sh -es
+done
