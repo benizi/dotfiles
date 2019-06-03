@@ -1,9 +1,12 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use Getopt::Long qw/:config pass_through/;
-sub usage {
-	die join "\n", <<USAGE, @_, '';
+sub msg;
+sub usage;
+sub help { warn msg(@_); exit }
+sub usage { die msg(@_) }
+sub msg {
+	join "\n", <<USAGE, @_, '';
 This is a wrapper around 'git filter-branch' to make tree-path munging easier.
 
 Usage: $0 [options] cmd [args] -- [filter-branch options]
@@ -18,12 +21,19 @@ Presets:
 USAGE
 }
 
-GetOptions(
-	'help|usage' => \(my $help),
-	'n|dry-run' => \(my $dry),
-	'preset=s' => \(my $preset_name = ''),
-) or usage;
-usage if $help;
+my $help;
+my $dry;
+my $preset_name = '';
+while (@ARGV) {
+	local $_ = $ARGV[0];
+	if (/\A(-h|--help|--usage)\Z/) { $help++; shift }
+	elsif (/\A(-n|--dry-run)\Z/) { $dry++; shift }
+	elsif (/\A--preset\Z/) { shift; $preset_name = shift }
+	elsif (/\A--preset=(.+)\Z/) { $preset_name = $1; shift }
+	elsif (/\A--\Z/) { shift; last }
+	else { last }
+}
+help if $help;
 
 sub path_sub {
 	$_ = (ref) ? $$_ : quotemeta($_) for my ($from, $to) = @_;
