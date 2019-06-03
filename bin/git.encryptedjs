@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+require 'base64'
+
 def encrypting?
   !!(__FILE__ =~ /encrypt$/)
 end
@@ -30,29 +32,38 @@ if done? || password.empty?
   exit
 end
 
+MARKER = '//OK'
+
 def prep(contents)
-  if encrypting?
-    "//OK\n#{contents}"
-  else
-    contents.lines.to_a[1..-2].map do |line|
-      line.sub(/^"/, '').sub(/\\n" \+/, '')
-    end.join
-  end
+  encrypting? ? mark(contents) : from_js_source(contents)
+end
+
+def mark(contents)
+  [MARKER, contents].join("\n")
+end
+
+def from_js_source(contents)
+  contents.lines.to_a[1..-2].map do |line|
+    line.sub(/^"/, '').sub(/\\n" \+/, '')
+  end.join
 end
 
 def find_salt(input)
-  require 'base64'
   cipher = Base64.decode64(input)
   return if cipher.size * 2 < input.size
   marker = 'Salted__'
   return unless cipher.start_with?(marker)
-  cipher[marker.size, 8].unpack("H*")[0].upcase
+  @salt = cipher[marker.size, 8].unpack("H*")[0].upcase
+end
+
+def salt
+
 end
 
 def dumpsalt(input, out)
   input.tap do
-    return unless salt = find_salt(input)
-    out.puts("SALT=#{salt}")
+    return unless find_salt(input)
+    out.puts("SALT=#{@salt}")
   end
 end
 
@@ -75,17 +86,21 @@ def command
 end
 
 def post(result)
-  if encrypting?
-    ret = []
-    ret << 'benizi.source ='
-    ret += result.lines.map { |line| %Q{"#{line.chomp}\\n" +} }
-    ret << '"";'
-    ret.map { |line| line + "\n" }.join
-  else
-    first_line = result.lines.first.chomp
-    abort "Bad decode (First line: #{first_line})" unless first_line == '//OK'
-    result.lines.drop(1).join
-  end
+  encrypting? ? to_js_source(result) : unmark(result)
+end
+
+def to_js_source(result)
+  ret = []
+  ret << 'benizi.source ='
+  ret += result.lines.map { |line| %Q{"#{line.chomp}\\n" +} }
+  ret << '"";'
+  ret.map { |line| line + "\n" }.join
+end
+
+def unmark(result)
+  first_line = result.lines.first.chomp
+  abort "Bad decode (First line: #{first_line})" unless first_line == MARKER
+  result.lines.drop(1).join
 end
 
 def process(input)
