@@ -11,7 +11,7 @@ def executable?(cmd)
 end
 
 cmd = [
-  %w[maim -s -c 0,0.7,1,0.6],
+  %w[maim -u -s -c 0,0.7,1,0.6],
   %w[import +repage],
   %w[scrot -s],
 ].find { |cmd| executable?(cmd.first) }
