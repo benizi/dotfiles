@@ -4,6 +4,9 @@ set -e
 
 in=~/Downloads
 : ${out=/downloads}
+: ${dry=false}
+: ${checklength=true}
+: ${size=original}
 
 if (( $# ))
 then
@@ -34,7 +37,7 @@ do
 
   jq -r '.photos|length' $json |
   read total
-  jq -r '.photos[].urls.original' $json |
+  jq --arg sz ${size} -r '.photos[].urls[$sz]' $json |
   nl |
   while read -r n url
   do
@@ -50,6 +53,7 @@ do
       (down)
         cat <<DL
 printf '[%03d/%03d] %s %s \\n' $i $total "$user" "$album"
+test -e "$out" && ! $checklength ||
 curl --progress-bar -C - -o "$out" "$url"
 case \$? in
   (0) nodownload=false ;;
@@ -72,5 +76,8 @@ CURSOR
     ! $rmjson || printf '$hadfailure || $nodownload || rm "%s"\n' "$json"
   } |
   sed -e '1i{' -e '$a}' |
-  sh -es
+  if $dry
+  then cat
+  else sh -es
+  fi
 done
