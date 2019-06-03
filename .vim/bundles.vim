@@ -40,6 +40,7 @@ PluginLocalMaybe '~/git/lilypond', {'rtp': 'vim/'}
 Plugin 'mileszs/ack.vim'
 Plugin 'benizi/dbext.vim'
 Plugin 'jelera/vim-javascript-syntax'
+Plugin 'dart-lang/dart-vim-plugin'
 
 Plugin 'derekwyatt/vim-scala'
 Plugin 'cespare/vim-toml'
