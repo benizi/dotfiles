@@ -13,6 +13,7 @@ rotate() {
 playlist() {
   test $# -gt 0 || set -- cat
   . mpc-format-vars
+  printf 'toggle\n'
   mpc current | sed -e 's/^/jump /'
   printf 'random order\n'
   mpc playlist | "$@"
@@ -23,5 +24,6 @@ case "$1" in
   ('') playlist ;;
   (jump) playlist rotate $2 ;;
   (random) playlist sort --random-sort ;;
+  (toggle) mpc "$1" >/dev/null ;;
   (*) mpc play $1 >/dev/null ;;
 esac
