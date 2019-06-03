@@ -250,8 +250,34 @@ __prompt_setup() {
 TITLESEP='│' # ceçi n'est pas un pipe
 (( $+INCYG || $+STY )) && TITLESEP='|'
 [[ $TERM = (screen|cygwin)* ]] && TITLESEP='|'
+
+has-title() {
+  # XTerm takes the correct, but pedantic, view that `tsl` isn't appropriate
+  # for "set window title", which lacks the (required) "column" parameter of
+  # the "to status line" terminfo entry:
+  # https://bugs.debian.org/634956
+  # XTerm is correct, but pedantic, here
+  case $TERM in
+    (xterm*) true ;;
+    (*) (( $+terminfo[tsl] )) ;;
+  esac
+}
+
+echoti-or() {
+  if (( $+terminfo[$1] ))
+  then echoti $1
+  else printf $2
+  fi
+}
+
+set-term-title() {
+  echoti-or tsl '\e]2;'
+  printf '%s' "$@"
+  echoti-or fsl '\e\\'
+}
+
 fancytitle () {
-  (( $+terminfo[tsl] )) || return 0
+  has-title || return 0
   [[ -n "$NOTITLE" ]] && return 0
   local -a parts
   [[ $DISPLAY = (:0*|localhost:*) ]] && [[ -z $SSH_CLIENT ]] || parts+=( %m )
@@ -262,9 +288,7 @@ fancytitle () {
   parts=( ${1//$'\n'/¬} $parts )
   # "${(pj: $TITLESEP :)parts}" doesn't work -- (pj:$var:) form is "strict"
   local spacer=" $TITLESEP "
-  echoti tsl
-  printf %s ${(pj/$spacer/)parts}
-  echoti fsl
+  set-term-title ${(pj/$spacer/)parts}
 }
 
 typeset -A __terminal_seqs
