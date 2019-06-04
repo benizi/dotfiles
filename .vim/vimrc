@@ -426,17 +426,17 @@ fun! WinQuitOrBufDelete()
 	end
 	let buf = bufnr('')
 	let seen = 0
-	for t in range(1, tabpagenr('$'))
-		if index(tabpagebuflist(t), buf) >= 0
-			let seen += 1
-		end
+	let tabs = tabpagenr('$')
+	for t in range(1, tabs)
+		let seen += len(filter(tabpagebuflist(t), 'v:val == '.buf))
 	endfor
 	if seen > 1
 		winc q
-	else
+	elseif tabs > 1
 		sil! bd
+	else
+		cal QuitLastUnnamed()
 	end
-	cal QuitLastUnnamed()
 	return 1
 endf
 
