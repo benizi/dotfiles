@@ -42,6 +42,9 @@ import qualified Data.Map        as M
 import XMonad.Prompt
 import XMonad.Prompt.Workspace (workspacePrompt)
 
+import qualified Graphics.X11.Xlib.Atom as Atom
+import qualified Graphics.X11.Xlib.Extras as Xtras
+import qualified Graphics.X11.Types as Key
 import Graphics.X11.ExtraTypes.XF86
 
 -- for myDynamicLogWithPP
@@ -56,6 +59,7 @@ import XMonad.Util.WorkspaceCompare (getWsCompareByTag, WorkspaceSort)
 
 import Control.Applicative (liftA)
 import qualified Control.Exception as E
+import Control.Monad (when)
 
 import Data.Set ((\\), toList, fromList)
 
@@ -171,6 +175,38 @@ fixXinerama = do
         withTag tag = base { W.tag = tag, W.stack = Nothing }
      in wins { W.hidden = W.hidden wins ++ (withTag <$> missing) }
 
+raiseWindowByClass :: String -> X ()
+raiseWindowByClass cls = withDisplay $ \d -> do
+    XConf{ theRoot = r } <- ask
+    (_, _, lowToHigh) <- io $ Xtras.queryTree d r
+    case (reverse lowToHigh) of
+      (top:r:rs) -> do
+          tclass <- classOf top
+          when (tclass /= Just cls) $ withDisplay $ \d -> do
+              win <- findFirst (r:rs)
+              maybe (pure ()) (io . raiseWindow d) win
+
+      _ -> pure ()
+    where
+        findFirst :: [Window] -> X (Maybe Window)
+        findFirst [] = pure Nothing
+        findFirst (w:ws) = do
+            c <- classOf w
+            case c of
+              Just x | x == cls -> return $ Just w
+              _ -> findFirst ws
+
+        classOf :: Window -> X (Maybe String)
+        classOf win = do
+            cs <- (classes win) `catchX` (pure [])
+            case cs of
+              (_:c:_) -> return $ Just c
+              _ -> pure Nothing
+
+        classes :: Window -> X [String]
+        classes win = withDisplay $ \d -> io $ do
+            p <- Xtras.getTextProperty d win Atom.wM_CLASS
+            Xtras.wcTextPropertyToTextList d p
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- launch a terminal
@@ -565,7 +601,9 @@ dropcolon s = if takeWhile (/= ':') s == s
               else drop 1 $ dropWhile (/= ':') s
 
 myLogHook :: Handle -> X ()
-myLogHook statusproc = myDynamicLogWithPP (withLogHandlePP myLogPP statusproc)
+myLogHook statusproc = do
+    raiseWindowByClass "Dunst"
+    myDynamicLogWithPP (withLogHandlePP myLogPP statusproc)
 
 wrapIn :: String -> String -> String
 wrapIn q string = q ++ string ++ q
