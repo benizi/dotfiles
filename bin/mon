@@ -10,6 +10,7 @@ virtuals=0
 lid-open && defclam=0 || defclam=1
 orphan=1
 nwide=0
+selected=
 for arg ; do
   case "$arg" in
     (-n|--dry*) ((++dry)) ;;
@@ -23,6 +24,8 @@ for arg ; do
     (--single) single=1 ;;
     (--virt) virtuals=1 ;;
     (--nwide=*) nwide=${arg#*=} ;;
+    (--only=*|--select*=*) selected=${arg#*=} ;;
+    (--vertical=*) nwide=1 ; selected=${arg#*=} ;;
     (--orphan=*)
       case "${arg#--orphan=}" in
         (left) orphan=0 ;;
@@ -111,6 +114,7 @@ awk \
   -v status=$printstate \
   -v orphan=$orphan \
   -v nwide=$nwide \
+  -v selected=$selected \
 'BEGIN {
   nout = split("", outs)
   nmodes = split("", modes)
@@ -215,11 +219,13 @@ END {
   # 1. --single, and the single monitor was already found
   # 2. !virtuals, and the output is virtual
   # 3. --clam, and nothing has been skipped
+  # 4. --only/--selected, and not selected
   for (i=1; i<=nout; i++) {
     out = outs[i]
     if (!hasmode[out]) {
       continue
     }
+    ++idx
     turnoff = 0
     if (skip[out]) {
       turnoff = 1
@@ -232,6 +238,8 @@ END {
     } else if (onlypref && !inpref[out]) {
       turnoff = 1
     } else if (nout > 1 && clam && !skippedclam++) {
+      turnoff = 1
+    } else if (length(selected) && !index(selected, idx)) {
       turnoff = 1
     }
     if (turnoff) {
