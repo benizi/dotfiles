@@ -1,0 +1,30 @@
+#!/bin/sh
+set -e
+test $# -gt 0 || set -- .
+
+tmpfile="$(mktemp -t jqt.XXXXXXXX)"
+test -n "$tmpfile"
+
+## this is why shell can't have nice things:
+# portable version of cleaning up on exit or deadly signal starts here ...
+cleanup() {
+  ret=${1:-$?}
+  rm -r "$tmpfile"
+  trap '' EXIT INT TERM
+  exit $ret
+}
+
+gotsig() {
+  ret=$?
+  trap '' EXIT
+  cleanup $ret
+}
+
+trap cleanup EXIT
+trap gotsig INT QUIT TERM
+# ... and ends here
+
+test ! -t 0 || printf 'Reading from stdin\n' >&2
+cat > "$tmpfile"
+jq -C "$@" < "$tmpfile" >&2
+cat "$tmpfile"
