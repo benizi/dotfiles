@@ -26,6 +26,7 @@ for arg ; do
     (--nwide=*) nwide=${arg#*=} ;;
     (--only=*|--select*=*) selected=${arg#*=} ;;
     (--vertical=*) nwide=1 ; selected=${arg#*=} ;;
+    (--vertical) nwide=1 ; selected=vertical ;;
     (--orphan=*)
       case "${arg#--orphan=}" in
         (left) orphan=0 ;;
@@ -43,6 +44,14 @@ for arg ; do
   esac
 done
 [[ -f ~/.config/mon ]] && . ~/.config/mon
+
+if [[ $selected == vertical ]]
+then
+  if (( $+default_vertical ))
+  then selected=$default_vertical
+  else printf -- '--vertical unavailable (no defaults specified)\n' >&2 ; exit 1
+  fi
+fi
 
 if (( label ))
 then
