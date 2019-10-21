@@ -110,7 +110,7 @@ for my $p (@procs) {
 	$$p{$_} = slurp "$dir/$_" for qw{cmdline stat};
 	$$p{$_} = linky "$dir/$_" for qw{root exe cwd};
 	unless ((@$p{qw/taskname status ppid pgid sid/}) =
-		$$p{stat} =~ /^\d+ \((\S+)\) (.) (\d+) (\d+) (\d+)/) {
+		$$p{stat} =~ /^\d+ \((.+)\) (.) (\d+) (\d+) (\d+)(?: -?\d+)+$/) {
 		# deal with readdir(/proc/*) race condition
 		$$p{invalid} = 1;
 		next;
