@@ -25,6 +25,9 @@
 	default = tracking
 [rebase]
 	autosquash = true
+[rerere]
+	autoupdate = true
+	enabled = true
 [user]
 	name = Benjamin R. Haskell
 	useconfigonly = true
