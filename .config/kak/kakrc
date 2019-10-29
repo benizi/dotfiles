@@ -1,6 +1,6 @@
 colorscheme desertex
 
-add-highlighter global/ number-lines -hlcursor
+add-highlighter global/line-numbers number-lines -hlcursor
 add-highlighter global/list-chars show-whitespaces \
   -tab '»' -tabpad '·' -nbsp '•' -spc ' ' -lf ' '
 
