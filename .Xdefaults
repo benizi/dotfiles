@@ -16,9 +16,6 @@ URxvt.urgentOnBell: true
 URxvt.keysym.S-Up: command:\033]720;1\007
 URxvt.keysym.S-Down: command:\033]721;1\007
 
-! <Ctrl>+<Meta>+<0> => regex scrollback search:
-URxvt.searchable-scrollback: CM-0
-
 ! Win + minus,0,equal = decrease,reset,increase font size
 URxvt.keysym.4-0: command:\033]777;font-switch;reset\007
 URxvt.keysym.4-1: command:\033]777;font-switch;reset;size=10\007
@@ -30,7 +27,7 @@ URxvt.keysym.4-minus: command:\033]777;font-switch;down\007
 URxvt.keysym.4-equal: command:\033]777;font-switch;up\007
 
 ! Perl extensions:
-URxvt*perl-ext-common: default,font-switch
+URxvt*perl-ext-common: default,font-switch,-searchable-scrollback
 
 ! Allow terminal bracketed paste sequences:
 URxvt.insecure: true
