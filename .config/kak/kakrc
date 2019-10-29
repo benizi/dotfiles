@@ -24,6 +24,9 @@ hook global ModuleLoaded x11 %{
 hook global BufWritePost .* 'git show-diff'
 hook global BufOpenFile .* 'git show-diff'
 
+eval %sh{kak-lsp --kakoune -s $kak_session}
+lsp-enable
+
 hook global WinSetOption filetype=elixir %{
   set-option buffer autowrap_column 98
 }
