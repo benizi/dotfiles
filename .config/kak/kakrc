@@ -17,3 +17,6 @@ map -docstring 'fzf = <Ctrl+p>' global normal <c-p> ': fzf-mode<ret>'
 hook global ModuleLoaded x11 %{
   set-option global termcmd 'term -e sh -c'
 }
+
+hook global BufWritePost .* 'git show-diff'
+hook global BufOpenFile .* 'git show-diff'
