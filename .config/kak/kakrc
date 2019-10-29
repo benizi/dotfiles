@@ -1,7 +1,8 @@
 colorscheme desertex
 
 add-highlighter global/ number-lines -hlcursor
-add-highlighter global/ show-whitespaces -tab '>' -tabpad ' ' -nbsp ' ' -spc ' ' -lf ' '
+add-highlighter global/list-chars show-whitespaces \
+  -tab '»' -tabpad '·' -nbsp '•' -spc ' ' -lf ' '
 
 declare-option str localkak %sh{echo $HOME/.local/kak}
 
