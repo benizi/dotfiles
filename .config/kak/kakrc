@@ -23,6 +23,7 @@ hook global ModuleLoaded x11 %{
 
 hook global BufWritePost .* 'git show-diff'
 hook global BufOpenFile .* 'git show-diff'
+map global user 'd' ': git diff %val{buffile}<ret>'
 
 eval %sh{kak-lsp --kakoune -s $kak_session}
 lsp-enable
