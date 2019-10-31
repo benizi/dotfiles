@@ -51,7 +51,7 @@ plug "andreyorst/fzf.kak" defer 'fzf' %{
 }
 try %{ require-module fzf } catch %{ echo -markup '{Error}fzf not installed' }
 
-plug "alexherbo2/toggle-highlighter.kak" config %{
+plug "benizi/toggle-highlighter.kak" config %{
   map -docstring 'toggle line numbers' global user N \
     ': toggle-highlighter global/line-numbers number-lines -hlcursor<ret>'
   map -docstring 'toggle line wrapping' global user w \
