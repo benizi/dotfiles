@@ -7,6 +7,8 @@ add-highlighter global/list-chars show-whitespaces \
 add-highlighter global/overlong-line dynregex \
   '^[^\n]{%opt{autowrap_column}}([^\n]+)' 1:Error
 
+alias global h doc
+
 ## plug.kak plugins
 
 declare-option -docstring 'Install plugins in ~/.local/kak by default' \
