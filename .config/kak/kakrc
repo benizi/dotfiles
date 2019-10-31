@@ -58,7 +58,7 @@ set-option global grepcmd 'rg --hidden --column'
 
 hook global BufWritePost .* 'git show-diff'
 hook global BufOpenFile .* 'git show-diff'
-map global user 'd' ': git diff %val{buffile}<ret>'
+map global user 'd' ': git diff %reg{%}<ret>' -docstring 'git diff current file'
 
 eval %sh{kak-lsp --kakoune -s $kak_session}
 # lsp-enable # TODO: enable per-filetype?
