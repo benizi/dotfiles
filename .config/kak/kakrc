@@ -7,6 +7,9 @@ add-highlighter global/list-chars show-whitespaces \
 add-highlighter global/overlong-line dynregex \
   '^[^\n]{%opt{autowrap_column}}([^\n]+)' 1:Error
 
+# default to 2-space indentation everywhere (override in individual filetypes)
+set-option global indentwidth 2
+
 alias global h doc
 
 ## plug.kak plugins
@@ -43,4 +46,5 @@ hook global WinSetOption filetype=elixir %{
 
 hook global WinSetOption filetype=java %{
   set-option buffer autowrap_column 120
+  set-option buffer indentwidth 4
 }
