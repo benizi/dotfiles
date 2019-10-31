@@ -29,7 +29,7 @@ hook global BufOpenFile .* 'git show-diff'
 map global user 'd' ': git diff %val{buffile}<ret>'
 
 eval %sh{kak-lsp --kakoune -s $kak_session}
-lsp-enable
+# lsp-enable # TODO: enable per-filetype?
 
 hook global WinSetOption filetype=elixir %{
   set-option buffer autowrap_column 98
