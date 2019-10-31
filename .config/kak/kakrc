@@ -5,7 +5,7 @@ add-highlighter global/list-chars show-whitespaces \
   -tab '»' -tabpad '·' -nbsp '•' -spc ' ' -lf ' '
 
 add-highlighter global/overlong-line dynregex \
-  '^[^\n]{%opt{autowrap_column}}([^\n])' 1:Error
+  '^[^\n]{%opt{autowrap_column}}([^\n]+)' 1:Error
 
 declare-option str localkak %sh{echo $HOME/.local/kak}
 
