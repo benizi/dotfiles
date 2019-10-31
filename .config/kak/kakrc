@@ -48,6 +48,19 @@ plug "andreyorst/fzf.kak" defer 'fzf' %{
 }
 try %{ require-module fzf } catch %{ echo -markup '{Error}fzf not installed' }
 
+plug "alexherbo2/toggle-highlighter.kak" config %{
+  map -docstring 'toggle line numbers' global user N \
+    ': toggle-highlighter global/line-numbers number-lines -hlcursor<ret>'
+  map -docstring 'toggle line wrapping' global user w \
+    ': toggle-highlighter buffer/wrap wrap<ret>'
+  define-command toggle-overlong-lines %{
+    toggle-highlighter global/overlong-line dynregex \
+      '^[^\n]{%opt{autowrap_column}}([^\n]+)' 1:Error
+  }
+  map -docstring 'toggle overlong line Errors' global user E \
+    ': toggle-overlong-lines<ret>'
+}
+
 map -docstring 'insert case-insensitive flag for searching by default' global normal / '/(?i)'
 
 hook global ModuleLoaded x11 %{
