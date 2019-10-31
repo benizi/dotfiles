@@ -21,16 +21,20 @@ source "%opt{localkak}/plugins/plug.kak/rc/plug.kak"
 plug "andreyorst/plug.kak" noload
 try %{ set-option global plug_install_dir "%opt{localkak}/plugins" }
 
-plug "andreyorst/fzf.kak"
+plug "andreyorst/fzf.kak" defer 'fzf' %{
+  map global normal <c-p> ': fzf-file<ret>' -docstring 'fzf = <Ctrl+p>'
+  map global user b ': fzf-buffer<ret>' -docstring 'fzf buffer selection'
+  map global user F ': fzf-mode<ret>' -docstring 'FZF mode'
+  set-option global fzf_file_command 'rg'
+}
+try %{ require-module fzf } catch %{ echo -markup '{Error}fzf not installed' }
 
 map -docstring 'insert case-insensitive flag for searching by default' global normal / '/(?i)'
-map -docstring 'fzf = <Ctrl+p>' global normal <c-p> ': fzf-mode<ret>'
 
 hook global ModuleLoaded x11 %{
   set-option global termcmd 'term -e sh -c'
 }
 
-hook global ModuleLoaded fzf %{set-option global fzf_file_command 'rg'}
 set-option global grepcmd 'rg --hidden --column'
 
 hook global BufWritePost .* 'git show-diff'
