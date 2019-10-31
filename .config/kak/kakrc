@@ -7,6 +7,9 @@ add-highlighter global/list-chars show-whitespaces \
 add-highlighter global/overlong-line dynregex \
   '^[^\n]{%opt{autowrap_column}}([^\n]+)' 1:Error
 
+# keep tabstop synced with indentwidth
+hook global WinSetOption indentwidth=.* \
+  %{ set-option buffer tabstop %opt{indentwidth} }
 # default to 2-space indentation everywhere (override in individual filetypes)
 set-option global indentwidth 2
 
