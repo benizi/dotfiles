@@ -58,7 +58,7 @@ hi_color() { (( $terminfo[colors] > 8 )) }
 export LESS="-R -i -M --shift 5 -F -X -j4"
 (( $+commands[lesspipe.sh] )) && export LESSOPEN="|lesspipe.sh %s"
 export PAGER=less
-export EDITOR=vim
+export EDITOR=kak
 export READNULLCMD=$PAGER
 
 for dir in $zsh_dirs ; do
