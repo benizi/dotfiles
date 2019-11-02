@@ -73,6 +73,7 @@
 	ka = "!gitk --all"
 	kas = "!git ka --simplify-by-decoration"
 	kass = !git kas --select-commit=$1
+	devbranch = !git config branches.dev | grep . || echo dev
 	# s = shell -- simple interactive shell
 	s = "!d() { d=\"$(git rev-parse --show-toplevel)\" ; b=\"$(git config --get alias.bc >/dev/null && git bc)\" ; d=\"$d${b:+[branch:$b]}\" ; } ; s() { d ; unset cmdprefix ; while echo -e \"$d git${cmdprefix:+ $cmdprefix}> \\c\" ; do read cmd ; handled=true ; case $cmd in \\!*) eval ${cmd#\\!} ;; /*) cd $cmd ;; \"\") [ -z \"$cmdprefix\" ] && break ; echo \"(locked, not quitting: q/quit)\" ; handled=false ;; q|quit) break ;; \\?) git help ${cmdprefix:---all} ;; prefix*) cmdprefix=\"${cmd#prefix }\" ;; lock*) cmdprefix=\"${cmd#lock }\" ;; noprefix*|unprefix*|unlock*) unset cmdprefix ;; *) handled=false ;; esac ; d ; $handled && continue ; git $cmdprefix $cmd ; done ; echo ; } ; s"
 	st = "! : status via ls-files ; eval `git cd` ; do_ls() { git nopipe ls-files -tdom --no-empty-directory --exclude-standard \"$@\" ; } ; st() { noredo=false ; dir=\"\" ; actual_args=false ; for arg ; do case $arg in -c) noredo=true ;; --directory) ;; *) actual_args=true ;; esac ; done ; do_ls \"$@\" | grep . && return 0 ; $noredo && return 0 ; if ! $actual_args ; then if ! git diff --cached | awk '1..1 { exit 1; }' ; then echo \"Staged changes awaiting commit\" ; else echo \"$(do_ls -c \"$@\" | wc -l) cached files\" ; fi ; return 0 ; fi ; st -c \"$@\" ; } ; st"
@@ -95,10 +96,10 @@
 	close = "! : close merged branch ; remote() { git remote | sed 1q ; } ; branch() { git branch | awk '/^\\*/ { print $2 }' ; } ; ismerged() { git branch --merged=\"$1\" | cut -c3- | grep -qxF \"$2\" ; } ; closeit() { branch=${1:-$(branch)} ; remote=${2:-$(remote)/dev} ; if ! ismerged $remote $branch ; then printf '%s is not merged into %s\\n' $branch $remote ; return 1 ; fi ; git push $(remote) :$branch ; git ab $branch merged/$branch ; } ; closeit"
 	co = checkout
 	com = checkout master
-	cod = checkout dev
+	cod = !git checkout $(git devbranch)
 	cor = checkout release-candidate
 	comb = checkout master -b
-	codb = checkout dev -b
+	codb = !git checkout $(git devbranch) -b
 	corb = checkout release-candidate -b
 	ci = "!eval `git cd` ; git check-email && git commit"
 	cia = "!git ci --amend"
@@ -116,11 +117,11 @@
 	rea = rebase --abort
 	refeature = "!usage() { echo \"Usage: git refeature branch [onto]\" >&2 ; [[ $# -gt 0 ]] && echo \"$@\" >&2 ; exit 1 ; } ; rf () { unset branch onto ; case $# in 1) branch=$1 onto=master ;; 2) branch=$1 onto=$2 ;; *) usage ;; esac ; base=\"$(git merge-base $branch $onto)\" ; [[ -z \"$base\" ]] && usage \"Couldn't find base for $branch onto $onto\" ; cmd=( git rebase --onto $onto $base $branch ) ; ${cmd[@]} || echo \"${cmd[@]} failed\" ; } ; rf"
 	rem = rebase master
-	red = rebase dev
+	red = !git rebase $(git devbranch)
 	reu = rebase @{upstream}
 	ri = rebase --interactive
 	rim = rebase --interactive master
-	rid = rebase --interactive dev
+	rid = !git rebase --interactive $(git devbranch)
 	riu = rebase --interactive @{upstream}
 	# TODO: rmup is a misnomer; it just prints invalid upstreams
 	rmup = "! : remove invalid upstreams ; rmup() { for branch in $(git bb) ; do git config branch.$branch.remote | grep -q . || continue ; git rev-parse --verify $branch@{upstream} 2>/dev/null | grep -q . && continue ; echo $branch ; done ; } ; rmup"
@@ -141,7 +142,7 @@
 	dn = diff --name-only --relative
 	dc = diff --cached
 	dcn = diff --cached --name-only --relative
-	dd = diff dev
+	dd = !git diff $(git devbranch)
 	dt = difftool
 	meld = difftool --tool=meld
 	pwn = "! : fix ownership ; pwn () { git check-email ; owner=$(git config user.email) ; git filter-branch --env-filter 'export GIT_AUTHOR_EMAIL='$owner' GIT_COMMITTER_EMAIL='$owner \"$@\" ; } ; pwn"
