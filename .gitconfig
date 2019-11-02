@@ -9,6 +9,8 @@
 [fetch]
 	# TODO: remove when equivalent of `receive.fsck.skiplist` exists
 	fsckobjects = false
+[gc]
+	reflogExpire = never
 [include]
 	path = ~/.gitconfig.local
 	path = ~/.config/git/config
