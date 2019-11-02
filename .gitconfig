@@ -185,5 +185,10 @@
 	new-commits = "! : find commits not present on remote ; nc () { local=\"${1:-HEAD}\" ; remote=\"$(git first-remote)\" ; (git rev-list $local | sed 's/^/L /' ; git rev-list --remotes=$remote | sed 's/^/R /') | awk '/^R/ { remote[$2] = $1 } /^L/ { local[$2] = $1 } END { for (commit in local) if (!remote[commit]) print commit }' ; } ; nc"
 	clone-broken = "! : disable fsck for broken repos ; wrap() { git -c transfer.fsckobjects=false clone \"$@\" ; } ; wrap"
 	vi = "!eval `git cd` ; gvi() { vim -p $(git dn) \"$@\" ; } ; gvi"
+	w = worktree
+	wa = worktree add
+	wr = worktree remove
+	wl = worktree list
+	wh = "! : add HOME-relative worktree ; wh() { set -e ; local b=$1 ; test -n \"$b\" ; shift ; case $b in ($HOME/*) b=${b#\"$HOME/\"} ;; esac ; if git rev-parse --verify --quiet $b >/dev/null ; then echo 'branch already exists' ; return 1 ; fi ; git worktree add -b $b ~/$b \"$@\" ; } ; wh"
 [tag]
 	sort = version:refname
