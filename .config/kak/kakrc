@@ -79,6 +79,7 @@ hook global BufReload .* 'git update-diff'
 hook global ModeChange insert:normal 'git update-diff'
 
 map global user 'd' ': git diff %reg{%}<ret>' -docstring 'git diff current file'
+map global user 'u' ': git update-diff<ret>' -docstring 'update git markers'
 
 eval %sh{kak-lsp --kakoune -s $kak_session}
 # lsp-enable # TODO: enable per-filetype?
