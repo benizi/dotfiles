@@ -57,7 +57,7 @@
 [difftool "image-diff"]
 	cmd = "ls -l \"$LOCAL\" \"$REMOTE\" ; convert \"$LOCAL\" -write mpr:orig +delete \"$REMOTE\" -write mpr:new +delete '(' mpr:orig mpr:new -compose Difference -composite -write mpr:diff +delete ')' '(' mpr:diff -auto-level -write mpr:norm +delete ')' '(' mpr:diff mpr:orig -append ')' '(' mpr:norm mpr:new -append ')' +append x:"
 [cd]
-	cd = "[[ -n \"$GIT_PREFIX\" ]] && cd \"$GIT_PREFIX\""
+	cd = "git_cdup=\"$(git rev-parse --show-cdup)\" ; [[ -z \"$git_cdup\" ]] || cd \"$git_cdup\""
 [url "https://github.com/"]
 	insteadOf = ghh:
 [filter "encryptedjs"]
