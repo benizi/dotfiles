@@ -92,6 +92,22 @@ hook global WinSetOption filetype=java %{
   set-option buffer indentwidth 4
 }
 
+hook global WinSetOption filetype=git-commit %{
+  set-option buffer comment_line ';'
+  set-option buffer autowrap_column 72
+  autowrap-enable
+
+  # first non-{comment/empty} line ("summary" line) should stay under 50 chars
+  add-highlighter buffer/summary-line dynregex \
+    '\A(?:(?:%opt{comment_line}[^\n]*)?\n)*(?:(?<=\n)|\A)(?!%opt{comment_line})[^\n]{50}([^\n]+)' \
+    1:Error
+
+  # first line after summary line, excepting comment lines, needs to be blank
+  add-highlighter buffer/space-between dynregex \
+    '\A(?:(?:%opt{comment_line}[^\n]*)?\n)*(?:(?<=\n)|\A)(?!%opt{comment_line})[^\n]+\n(?:%opt{comment_line}[^\n]*\n)*(?!%opt{comment_line})([^\n]+)' \
+    1:Error
+}
+
 # SuperTab: <Tab> with only whitespace preceding? indent ; otherwise, completion
 hook global InsertChar '\t' %{
   try %{
