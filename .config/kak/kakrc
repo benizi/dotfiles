@@ -70,6 +70,8 @@ plug "benizi/toggle-highlighter.kak" config %{
     ': toggle-overlong-lines<ret>'
 }
 
+plug "Delapouite/kakoune-palette"
+
 map -docstring 'insert case-insensitive flag for searching by default' global normal / '/(?i)'
 
 hook global ModuleLoaded x11 %{
