@@ -123,7 +123,7 @@ hook global WinSetOption filetype=git-commit %{
 }
 
 # SuperTab: <Tab> with only whitespace preceding? indent ; otherwise, completion
-hook global InsertChar '\t' %{
+hook -group supertab global InsertChar '\t' %{
   try %{
     execute-keys -draft <a-h><a-K>\S<ret>
     execute-keys -draft h@
@@ -136,14 +136,14 @@ hook global InsertChar '\t' %{
 
 # Navigate completion menu with <Tab>/<Shift+Tab>
 # https://www.reddit.com/r/kakoune/comments/8jllac/how_can_i_navigate_the_completion_menu_with_tab/dz0k94e/
-hook global InsertCompletionShow .* %{
+hook -group supertab global InsertCompletionShow .* %{
   try %{
     exec -draft 'h<a-K>\h<ret>'
     map window insert <s-tab> <c-p>
     map window insert <tab> <c-n>
   }
 }
-hook global InsertCompletionHide .* %{
+hook -group supertab global InsertCompletionHide .* %{
   unmap window insert <tab> <c-n>
   unmap window insert <s-tab> <c-p>
 }
