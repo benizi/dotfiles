@@ -13,6 +13,10 @@ hook global WinSetOption indentwidth=.* \
 # default to 2-space indentation everywhere (override in individual filetypes)
 set-option global indentwidth 2
 
+# default `%opt{path}` includes `/usr/include`, which only makes sense for C/C++
+# also moves `%/` in front of `./` (though I'm not sure it matters)
+set-option global path %/ ./
+
 # TODO: organize this better: full plugin? / autoload/ ?
 define-command vim-star -docstring %{
   Make `*` in Kakoune work more like `*` in Vim.
