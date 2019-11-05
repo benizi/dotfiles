@@ -82,7 +82,8 @@ hook global ModuleLoaded x11 %{
   set-option global termcmd 'term -e sh -c'
 }
 
-set-option global grepcmd 'rg --hidden --column'
+# No `--hidden` for `rg` for use with `:grep` by default
+set-option global grepcmd 'rg --column'
 
 hook global BufOpenFile .* 'git show-diff'
 hook global WinCreate .* 'git show-diff'
