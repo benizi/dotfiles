@@ -122,13 +122,19 @@ hook global WinSetOption filetype=git-commit %{
     1:Error
 }
 
+declare-option -docstring 'Expand tabs into spaces' \
+  bool expandtab true
+
 # SuperTab: <Tab> with only whitespace preceding? indent ; otherwise, completion
 hook -group supertab global InsertChar '\t' %{
   try %{
-    execute-keys -draft <a-h><a-K>\S<ret>
-    execute-keys -draft h@
-  } catch %{
-    execute-keys -draft hd<c-n>
+    evaluate-commands %sh{ $kak_opt_expandtab || echo fail not expanding tabs }
+    try %{
+      execute-keys -draft <a-h><a-K>\S<ret>
+      execute-keys -draft h@
+    } catch %{
+      execute-keys -draft hd<c-n>
+    }
   }
 }
 
