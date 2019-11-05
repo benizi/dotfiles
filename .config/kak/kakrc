@@ -36,6 +36,8 @@ define-command vim-star -docstring %{
 }
 map global normal '*' ': vim-star<ret>'
 
+define-command vim -docstring 'open in vim' 'terminal vim %reg{%}'
+
 alias global h doc
 
 ## plug.kak plugins
