@@ -72,6 +72,10 @@ plug "benizi/toggle-highlighter.kak" config %{
 
 plug "Delapouite/kakoune-palette"
 
+plug "benizi/jellybeans.kak" branch "wip" theme %{
+  colorscheme jellybeans
+}
+
 map -docstring 'insert case-insensitive flag for searching by default' global normal / '/(?i)'
 
 hook global ModuleLoaded x11 %{
