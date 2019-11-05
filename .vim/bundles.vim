@@ -34,7 +34,7 @@ Plugin 'elixir-lang/vim-elixir'
 Plugin 'benizi/vim-txt-256color'
 Plugin 'rust-lang/rust.vim'
 Plugin 'keith/swift.vim'
-" PluginVimball 'http://www.drchip.org/astronaut/vim/vbafiles/hilinks.vba.gz'
+PluginVimball 'http://www.drchip.org/astronaut/vim/vbafiles/hilinks.vba.gz'
 Plugin 'scrooloose/syntastic'
 PluginLocalMaybe '~/git/lilypond', {'rtp': 'vim/'}
 Plugin 'mileszs/ack.vim'
