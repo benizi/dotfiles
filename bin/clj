@@ -1,4 +1,9 @@
 #!/bin/zsh
+clj=$HOME/.local/clojure-clj/bin/clj
+if test -x "$clj" && test -z "$clj_benizi"
+then path=( ${clj:h} ${path[@]} ) exec clj "$@"
+fi
+
 CLOJURE_DIR=~/git/clojure
 CLOJURE_JAR=$CLOJURE_DIR/clojure.jar
 completions_file=$CLOJURE_DIR/etc/clj_completions
