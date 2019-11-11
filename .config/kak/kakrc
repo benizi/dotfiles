@@ -188,6 +188,11 @@ hook -group filetype-buffer-opts global WinSetOption filetype=java %{
   set-option buffer indentwidth 4
 }
 
+hook -group filetype-buffer-opts global WinSetOption filetype=go %{
+  set-option buffer indentwidth 4
+  try %{ remove-highlighter buffer/list-chars }
+}
+
 hook -group filetype-buffer-opts global WinSetOption filetype=git-commit %{
   set-option buffer comment_line ';'
   set-option buffer autowrap_column 72
