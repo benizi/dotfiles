@@ -105,11 +105,58 @@ hook global ModuleLoaded x11 %{
 # No `--hidden` for `rg` for use with `:grep` by default
 set-option global grepcmd 'rg --column'
 
-hook global BufOpenFile .* 'git show-diff'
-hook global WinCreate .* 'git show-diff'
-hook global BufWritePost .* 'git update-diff'
-hook global BufReload .* 'git update-diff'
-hook global ModeChange insert:normal 'git update-diff'
+declare-option -docstring 'Whether git detection has been attempted' \
+  bool git_setup false
+declare-option -docstring 'Whether buffer is in a git repo' \
+  bool git_found false
+declare-option -docstring 'Root of git work tree' \
+  str git_worktree ''
+declare-option -docstring 'Git directory' \
+  str git_dir ''
+declare-option -docstring 'Git "common" directory' \
+  str git_common_dir ''
+
+define-command git-find-repo %{
+  try %{
+    evaluate-commands -no-hooks %sh{
+      if $kak_opt_git_setup
+      then echo fail already attempted git setup
+      fi
+    }
+    try %{
+      set-option buffer git_dir %sh{
+        cd "$(dirname "$kak_quoted_buffile")"
+        git rev-parse --absolute-git-dir
+      }
+      set-option buffer git_worktree %sh{
+        cd "$(dirname "$kak_quoted_buffile")"
+        git rev-parse --show-toplevel
+      }
+      set-option buffer git_common_dir %sh{
+        cd "$(dirname "$kak_quoted_buffile")"
+        git rev-parse --git-common-dir
+      }
+      set-option buffer git_found true
+    }
+    set-option buffer git_setup true
+  }
+}
+
+define-command git-setup-buffer %{
+  try %{
+    git-find-repo
+    evaluate-commands -no-hooks %sh{
+      $kak_opt_git_found || echo fail 'buffer not in a git directory?'
+    }
+    hook -group git-setup global BufOpenFile .* 'git show-diff'
+    hook -group git-setup global WinCreate .* 'git show-diff'
+    hook -group git-setup global BufWritePost .* 'git update-diff'
+    hook -group git-setup global BufReload .* 'git update-diff'
+    hook -group git-setup global ModeChange insert:normal 'git update-diff'
+  }
+}
+
+hook -group git-setup global BufOpenFile .* git-setup-buffer
 
 map global user 'd' ': git diff %reg{%}<ret>' -docstring 'git diff current file'
 map global user 'u' ': git update-diff<ret>' -docstring 'update git markers'
