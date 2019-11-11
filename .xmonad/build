@@ -1,4 +1,5 @@
 #!/bin/sh
 export STACK_ROOT=/opt/stack/root
+eval "$(VERMAN_EVAL=1 verman stack use v2.1.3)"
 stack build --copy-bins --local-bin-path .
 stack install xmonad
