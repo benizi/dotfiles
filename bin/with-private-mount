@@ -16,7 +16,7 @@ sudo() {
   "$@"
 }
 
-suvars='UID HOME MAIL LOGNAME USER USERNAME SHELL ROOTMNT SELFMNT'
+suvars='UID HOME MAIL LOGNAME USER USERNAME SHELL ROOTMNT'
 test -n "$USERNAME" || USERNAME=$USER
 test -n "$ROOTMNT" || ROOTMNT="$(sudo readlink /proc/1/ns/mnt)"
 test -n "$SELFMNT" || SELFMNT="$(readlink /proc/$$/ns/mnt)"
@@ -35,6 +35,17 @@ restore_env() {
 
 hexmd5() { printf '%s' "$*" | openssl dgst -binary -md5 | xxd -p ; }
 
+dbg() {
+  echo saved
+  env | awk -F= '/^WPM_/' | indent
+  echo now
+  env | awk "$(printf '/^(%s)=/' "$(env | awk -F'[_=]' '/^WPM_/{print$2}' | paste -sd'|')")" | indent
+  echo torestore
+  restore_env | indent
+  echo mount namespaces
+  sudo readlink /proc/{1,$$}/ns/mnt | indent
+}
+
 test $UID -eq 0 || exec sudo env $(save_env) "$0" "$@"
 
 alias=
@@ -46,13 +57,15 @@ nsroot=/root/ns
 bound=$nsroot/over
 over=$nsroot/overlays
 
-mntarg='--mount'
-nsfile=
-if test -n "$alias"
+if test -z "$alias"
 then
+  nsfile=
+  mntarg='--mount'
+  over="$over/$SELFMNT"
+else
   nsfile="$nsroot/$alias"
-  mntarg="$mntarg=$nsfile"
-  over="$over.$alias"
+  mntarg="--mount=$nsfile"
+  over="$over/$alias"
 fi
 
 if ! mountpoint -q "$nsroot"
@@ -101,7 +114,11 @@ do
   do $cmd --reference="$tgt" "$upperdir" "$workdir"
   done
   mount -t overlay overlay -o "$mntarg" "$tgt"
-  exec env "$var=$lowerdir" _over_mounts="$_over_mounts $hex" "$0" "$@"
+  exec env \
+    "$var=$tgt" \
+    "${var}_lower=$lowerdir" \
+    _over_mounts="$_over_mounts $var" \
+    "$0" "$@"
 done
 
 test -z "$args" || shift $args
