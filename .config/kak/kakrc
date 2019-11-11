@@ -252,3 +252,42 @@ define-command -docstring %{
     printf 'fail "selection was not of the form line.char,line.char"\n'
   }
 }
+
+define-command -params 2 -docstring %{
+  <name> <keys>
+  Create a jump command "jump-<name>" that, if only one character is selected:
+    Runs: <keys> and <;>
+    Otherwise: just <keys>
+} define-jump-command %§
+  define-command -override "jump-%arg{1}" "
+    try %%¶
+      assert-single-char-selection
+      execute-keys ""%arg{2};""
+    ¶ catch %%¶
+      execute-keys ""%arg{2}""
+    ¶
+  "
+§
+
+define-command -params 2 -docstring %{
+  <name> <text-object>
+  Create a pair of jump commands:
+    "jump-<name>": jumps/extends to end of <text-object>
+    "jump-<name>-backward": jumps/extends to beginning of <text-object>
+} define-paired-jump-command %§
+  define-jump-command %arg{1} "}%arg{2}"
+  define-jump-command "%arg{1}-backward" "{%arg{2}"
+§
+
+define-command -params 4 -docstring %{
+  <name> <text-object> <forward-key> <backward-key>
+  Create a paired jump command and map both the forward- and backward versions.
+  E.g.:
+    define-paired-jump-mapping par p \' "<a-'>"
+      creates: jump-par and jump-par-backward
+      maps: <'> to jump-par, <a-'> to jump-par-backward
+} define-paired-jump-mapping %§
+  define-paired-jump-command %arg{1} %arg{2}
+  map global normal %arg{3} ": jump-%arg{1}<ret>"
+  map global normal %arg{4} ": jump-%arg{1}-backward<ret>"
+§
