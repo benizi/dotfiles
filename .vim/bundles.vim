@@ -1,5 +1,7 @@
 Plugin 'Twinside/vim-haskellConceal'
 Plugin 'Lokaltog/vim-powerline'
+" ugh, dependencies...
+" Plugin 'powerline/powerline', {'rtp': 'powerline/bindings/vim/'}
 Plugin 'altercation/vim-colors-solarized'
 Plugin 'ervandew/supertab'
 Plugin 'benizi/nerdcommenter'
