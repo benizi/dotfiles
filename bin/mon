@@ -11,6 +11,7 @@ lid-open && defclam=0 || defclam=1
 orphan=1
 nwide=0
 selected=
+picker=0
 for arg ; do
   case "$arg" in
     (-n|--dry*) ((++dry)) ;;
@@ -33,6 +34,11 @@ for arg ; do
         (mid|middle|center) orphan=1 ;;
         (right) orphan=2 ;;
       esac
+      ;;
+    (--picker)
+      ((++debug))
+      ((++dry))
+      ((++picker))
       ;;
     (--no=*|--off=*|--skip=*) skip+=( ${arg#*=} ) ;;
     (*)
@@ -335,7 +341,8 @@ END {
     cmdarg("--mode", mode)
     cmdarg("--pos", pos)
     # TODO(bhaskell): why does explicit CRTC specification seem to be needed?
-    cmdarg("--crtc", ncrtc++)
+    crtc = (out == primaryout) ? 0 : ++ncrtc
+    cmdarg("--crtc", crtc)
   }
 }
 END {
@@ -359,4 +366,42 @@ END {
       print nulcmd | ("xargs -0 " interpreter)
     }
   }
-}'
+}' |
+if (( picker ))
+then
+  awk \
+    -v nwide=$nwide \
+    -v orphan=$orphan \
+    -v wid=16 \
+    -v selected=$pickerselect \
+  '
+  $1 == "--output" { m[++n] = $2 }
+  END {
+    if (!nwide) nwide=2
+    swid = wid - 4
+    if (!split(selected, is_sel, "")) for (i=1;i<=n;i++) is_sel[i] = 1
+    for (i=1;i<=16;i++) hdr = (hdr ? hdr : "") "-"
+    for (i=1;i<=n;i++) {
+      ihdr = hdr
+      mark = is_sel[i] ? "█" : "·"
+      gsub(/./, mark, ihdr)
+      s[i][++r[i]] = sprintf("%-" wid "s", ihdr)
+      s[i][++r[i]] = sprintf(mark " %-" swid "s " mark, "")
+      s[i][++r[i]] = sprintf(mark " %-" swid "." swid "s " mark, m[i] " = " i)
+      s[i][++r[i]] = s[i][2]
+      s[i][++r[i]] = s[i][1]
+    }
+    for (i=1;i<=r[1];i++) out[i] = ""
+    on = 0
+    for (i=1;i<=n;i++) {
+      is_end = ((!(i % nwide)) || (i == n))
+      end = is_end ? "" : " "
+      pre = ((i % nwide) && (i == n)) ? sprintf("%" (wid / 2) "s", "") : ""
+      for (si=1;si<=r[i];si++) out[on+si] = pre (out[on+si] ? out[on+si] : "") s[i][si] end
+      if (is_end) on += r[1]
+    }
+    for (i=1;i<=on;i++) print out[i]
+  }
+  '
+else cat
+fi
