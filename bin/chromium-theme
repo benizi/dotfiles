@@ -197,6 +197,16 @@ create_theme() {
   cat > Default/Preferences <<PREFSJSON
 {
   "browser": {
+    "app_window_placement": {
+      "DevToolsApp": {
+        "always_on_top": false,
+        "maximized": false,
+        "work_area_bottom": 1080,
+        "work_area_left": 0,
+        "work_area_right": 1920,
+        "work_area_top": 0
+      }
+    },
     "skip_first_run_ui": true,
     "show_welcome_page": false,
     "import_search_engine": false,
@@ -205,7 +215,19 @@ create_theme() {
     "create_all_shortcuts": false,
     "custom_chrome_frame": false,
     "check_default_browser": false,
-    "make_chrome_default": false
+    "make_chrome_default": false,
+    "default_browser_infobar_last_declined": "13215903267770899"
+  },
+  "devtools": {
+    "preferences": {
+      "Inspector.drawerSplitViewState": "{\"horizontal\":{\"size\":0,\"showMode\":\"OnlyMain\"}}",
+      "InspectorView.splitViewState": "{\"vertical\":{\"size\":0}}",
+      "console.sidebar.width": "{\"vertical\":{\"size\":0,\"showMode\":\"OnlyMain\"}}",
+      "console.sidebarSelectedFilter": "\"message\"",
+      "currentDockState": "\"undocked\"",
+      "lastDockState": "\"right\"",
+      "uiTheme": "\"dark\""
+    }
   },
   "extensions": {
     "settings": {

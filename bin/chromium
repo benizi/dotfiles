@@ -107,6 +107,7 @@ _pseudo_flags=(
   local-logging
 )
 labs=(
+  enable-devtools-experiments
   enable-native-notifications@2
   extension-apis
 )
