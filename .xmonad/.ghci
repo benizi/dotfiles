@@ -3,5 +3,15 @@ import qualified Control.Exception as E
 import qualified Control.Monad as CM
 import qualified Data.Typeable as Typ
 import qualified XMonad as XM
+import XMonad (catchX)
 import qualified XMonad.Main as XMM
 import qualified XMonad.StackSet as W
+
+import qualified Graphics.X11 as X11
+import qualified Graphics.X11.Xlib.Extras as Xtras
+import qualified Graphics.X11.Xlib.Atom as Atom
+
+setDefaultErrorHandler
+hPutStrLn stderr "(called `setDefaultErrorHandler`)"
+d <- X11.openDisplay ""
+r <- rootWindow d 0
