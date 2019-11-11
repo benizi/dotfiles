@@ -95,5 +95,9 @@ time-limit:	src/time-limit.c
 	$(CC) $(CFLAGS) -I../include -L../lib -o $@.tmp $< -lmyc
 	mv $@.tmp $@
 
+fakepty:	src/fakepty.c
+	$(CC) $(CFLAGS) -o $@.tmp $< -lutil
+	mv $@.tmp $@
+
 echo:
 	echo $(basename $(allsource))
