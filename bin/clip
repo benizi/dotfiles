@@ -2,12 +2,14 @@
 
 clip() { xclip -selection "$@" ; }
 clipboard() { clip clipboard "$@" ; }
-clipout() { clip clipboard -out ; }
+clipout() { clip clipboard -out "$@" ; }
 trim() { printf '%s' "$(clipout)" | clipboard ; }
 
 mode=input
 echo=true
-raw=true
+as_input=false
+as_copied=true
+skip_primary=false
 
 while test $# -gt 0
 do
@@ -15,7 +17,13 @@ do
   case "$arg" in
     (-i) mode=input ; echo=false ;;
     (-o|-out) mode=output ;;
-    (-O|-n) mode=output ; raw=false ;;
+    (-O) mode=output ; shift ; set -- '' -n "$@" ;;
+    (-e) echo=false ;;
+    (-E) echo=true ;;
+    (-n) as_copied=false ;;
+    (-r) as_input=true ;;
+    (-c) skip_primary=true ;;
+    (-p) skip_primary=false ;;
     (--) mode=cmdline ; shift ; break ;;
     (*) break ;;
   esac
@@ -25,8 +33,8 @@ done
 case "$mode" in
   (input)
     clipboard
-    trim
-    clipout | clip primary
+    $as_input || trim
+    $skip_primary || clipout | clip primary
     ;;
   (cmdline)
     printf '%s' "$*" | clipboard
@@ -35,4 +43,4 @@ esac
 
 $echo || exit
 clipout
-$raw || printf '\n'
+$as_copied || printf '\n'
