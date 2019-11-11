@@ -271,9 +271,6 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm, xF86XK_MonBrightnessUp), spawn "brightness max")
     , ((modm .|. shiftMask, xK_F6), spawn "brightness up")
 
-    ---- choose wifi
-    , ((mod4Mask, xK_w), spawn "wifi-chooser")
-
     ---- pickers
     -- `run` a command
     , ((mod4Mask, xK_r), spawn "pick run")
@@ -283,6 +280,10 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((mod4Mask, xK_z), spawn "pick zsh")
     -- `mpc` by song
     , ((mod4Mask, xK_m), spawn "pick mpc")
+    -- `window`
+    , ((mod4Mask, xK_w), spawn "pick window")
+    -- `wifi` ('shift+' because it's less common)
+    , ((mod4Mask .|. shiftMask, xK_w), spawn "wifi-chooser")
 
     -- launch gmrun
     , ((modm .|. shiftMask, xK_p), spawn "gmrun")
