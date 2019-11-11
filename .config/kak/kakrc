@@ -229,3 +229,26 @@ hook -group supertab global InsertCompletionHide .* %{
   unmap window insert <tab> <c-n>
   unmap window insert <s-tab> <c-p>
 }
+
+define-command -docstring %{
+  Assert selection spans multiple regions or characters.
+  Mostly useful for scripting.
+} assert-non-single-selection %{
+  try %{
+    execute-keys -draft '<a-space>'
+  } catch %{
+    execute-keys -draft '<a-k>..<ret>'
+  }
+}
+
+define-command -docstring %{
+  Assert only one character is selected.
+  Mostly useful for scripting.
+} assert-single-char-selection %{
+  evaluate-commands %sh{
+    case "$kak_selections_desc" in
+      ("${kak_selections_desc#*,}","${kak_selections_desc%,*}") exit ;;
+    esac
+    printf 'fail "selection was not of the form line.char,line.char"\n'
+  }
+}
