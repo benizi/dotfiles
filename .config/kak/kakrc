@@ -91,6 +91,13 @@ plug "benizi/jellybeans.kak" branch "wip" config %{
 
 map -docstring 'insert case-insensitive flag for searching by default' global normal / '/(?i)'
 
+define-command copycode %{
+  execute-keys -draft %sh{
+    printf '<a-|>sed -e "1i\\```%s" -e "$a\\```" | pbcopy<ret>' \
+      $kak_opt_filetype | tr '"' "'"
+  }
+}
+
 hook global ModuleLoaded x11 %{
   set-option global termcmd 'term -e sh -c'
 }
