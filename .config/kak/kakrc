@@ -190,6 +190,7 @@ hook -group filetype-buffer-opts global WinSetOption filetype=java %{
 
 hook -group filetype-buffer-opts global WinSetOption filetype=go %{
   set-option buffer indentwidth 4
+  set-option buffer formatrangecmd format-go
   try %{ remove-highlighter buffer/list-chars }
 }
 
@@ -302,3 +303,24 @@ define-command -params 4 -docstring %{
   map global normal %arg{3} ": jump-%arg{1}<ret>"
   map global normal %arg{4} ": jump-%arg{1}-backward<ret>"
 §
+
+define-command format-go %{
+  try %{
+    assert-non-single-selection
+    execute-keys '| gofmt<ret>'
+  } catch %{
+    execute-keys -draft '%| gofmt<ret>'
+  }
+}
+
+define-command -hidden format-range-unsupported %{
+  fail 'Range formatting not supported for this filetype'
+}
+
+declare-option -docstring 'Set command for range formatting' \
+  str formatrangecmd 'format-range-unsupported'
+
+define-command format-range %{ evaluate-commands %opt{formatrangecmd} }
+
+map -docstring 'Format selection(s) or file' \
+  global user 'f' ': format-range<ret>'
