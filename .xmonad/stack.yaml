@@ -7,3 +7,4 @@ extra-deps:
 - setlocale-1.0.0.4
 - X11-1.8
 - directory-1.2.7.1
+- process-1.6.5.1
