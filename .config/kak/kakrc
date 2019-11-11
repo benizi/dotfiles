@@ -45,6 +45,10 @@ define-command vim -docstring 'open in vim' 'terminal vim %reg{%}'
 
 define-command pwd %{ echo %sh{pwd} }
 
+define-command sh -docstring 'open a new terminal' %{
+  nop %sh{ setsid term < /dev/null > /dev/null 2> /dev/null & }
+}
+
 alias global h doc
 
 ## plug.kak plugins
