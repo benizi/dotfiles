@@ -58,7 +58,7 @@ Plugin 'google/vim-maktaba'
 Plugin 'google/vim-codefmt'
 Plugin 'google/vim-glaive'
 
-finish " God DAMMIT Tim Pope...
+"finish " God DAMMIT Tim Pope...
 " Clojure
 Plugin 'guns/vim-clojure-static'
 Plugin 'tpope/vim-leiningen'
