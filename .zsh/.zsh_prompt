@@ -192,7 +192,7 @@ __prompt_setup() {
   (( $+socks )) && $C top k:22 "socks:$socks"
   (( $+x11 )) && $C top k:27 "display $x11"
   $C top k:17 '%D{%Y-%m-%d %H:%M:%S}'
-  (( __prompt_once[term]++ )) || $C top k:68 $TERM
+  $C top k:68 $TERM
 
   if (( $__prompt_return )) && (( $+__last_command )) ; then
     # ellipsize multi-line commands
