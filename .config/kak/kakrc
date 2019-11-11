@@ -186,6 +186,7 @@ hook global ModuleLoaded elixir %{
 hook -group filetype-buffer-opts global WinSetOption filetype=java %{
   set-option buffer autowrap_column 120
   set-option buffer indentwidth 4
+  set-option buffer formatrangecmd format-java
 }
 
 hook -group filetype-buffer-opts global WinSetOption filetype=go %{
@@ -303,6 +304,39 @@ define-command -params 4 -docstring %{
   map global normal %arg{3} ": jump-%arg{1}<ret>"
   map global normal %arg{4} ": jump-%arg{1}-backward<ret>"
 §
+
+# java range formatting
+define-command -docstring %{
+  Use `google/google-java-format` to format:
+  - if the current selection only spans one character: the whole file
+  - otherwise: the selected lines
+} format-java %{
+  evaluate-commands -draft %sh{
+    set -- java -jar ~/.local/bin/google-java-format-all-deps.jar
+
+    ranges=false
+    case "$kak_selections_desc" in
+      (*,*,*) ranges=true ;;
+      ("${kak_selections_desc#*,},${kak_selections_desc%,*}") ranges=false ;;
+      (*) ranges=true ;;
+    esac
+
+    if $ranges
+    then
+      set -- "$@" --skip-sorting-imports --skip-removing-unused-imports $(
+        printf '%s\n' $kak_selections_desc |
+        awk -F'[^0-9]' '{ print $1 ; print $3 }' |
+        sort -n |
+        awk '{ printf("%s%s", $0, (NR % 2) ? ":" : "\n") }' |
+        sed 's/^/--lines /'
+      )
+    fi
+
+    set -- "$@" --aosp "--assume-filename='$kak_buffile'" -
+
+    printf 'execute-keys %%{%%|%s<ret>}\n' "$*"
+  }
+}
 
 define-command format-go %{
   try %{
