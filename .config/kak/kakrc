@@ -11,7 +11,7 @@ add-highlighter global/trailing-whitespace regex '(\h+)$' 1:whitespace_error
 set-face global whitespace_error Error
 
 # keep tabstop synced with indentwidth
-hook global WinSetOption indentwidth=.* \
+hook global BufSetOption indentwidth=.* \
   %{ set-option buffer tabstop %opt{indentwidth} }
 # default to 2-space indentation everywhere (override in individual filetypes)
 set-option global indentwidth 2
