@@ -7,6 +7,9 @@ add-highlighter global/list-chars show-whitespaces \
 add-highlighter global/overlong-line dynregex \
   '^[^\n]{%opt{autowrap_column}}([^\n]+)' 1:Error
 
+add-highlighter global/trailing-whitespace regex '(\h+)$' 1:whitespace_error
+set-face global whitespace_error Error
+
 # keep tabstop synced with indentwidth
 hook global WinSetOption indentwidth=.* \
   %{ set-option buffer tabstop %opt{indentwidth} }
