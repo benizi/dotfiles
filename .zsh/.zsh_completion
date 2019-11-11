@@ -90,3 +90,6 @@ compdef {_,}push-upstream
   autoload -Uz _docker
   compdef _docker docker
 }
+
+## TODO fix this POS:
+# . /opt/google/cloud-sdk/google-cloud-sdk/completion.zsh.inc 2>/dev/null
