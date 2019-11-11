@@ -43,7 +43,7 @@ google goog() {
 ack-like() {
   local cmd found=false
   local -a args
-  for cmd in ack ack-grep
+  for cmd in rg ack ack-grep
   do
     (( $+commands[$cmd] )) || continue
     found=true
