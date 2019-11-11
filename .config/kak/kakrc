@@ -1,14 +1,20 @@
 colorscheme desertex
 
-add-highlighter global/line-numbers number-lines -hlcursor
-add-highlighter global/list-chars show-whitespaces \
-  -tab '»' -tabpad '·' -nbsp '•' -spc ' ' -lf ' '
+define-command -docstring %{
+  Set up standard per-buffer highlighters
+} add-standard-highlighters %{ try %{
+  add-highlighter buffer/line-numbers number-lines -hlcursor
+  add-highlighter buffer/list-chars show-whitespaces \
+    -tab '»' -tabpad '·' -nbsp '•' -spc ' ' -lf ' '
 
-add-highlighter global/overlong-line dynregex \
-  '^[^\n]{%opt{autowrap_column}}([^\n]+)' 1:Error
+  add-highlighter buffer/overlong-line dynregex \
+    '^[^\n]{%opt{autowrap_column}}([^\n]+)' 1:Error
 
-add-highlighter global/trailing-whitespace regex '(\h+)$' 1:whitespace_error
-set-face global whitespace_error Error
+  add-highlighter buffer/trailing-whitespace regex '(\h+)$' 1:whitespace_error
+  set-face global whitespace_error Error
+} }
+
+hook -group add-highlighters global BufCreate .* add-standard-highlighters
 
 map global normal <c-w> ': db<ret>'
 
@@ -70,11 +76,11 @@ try %{ require-module fzf } catch %{ echo -markup '{Error}fzf not installed' }
 
 plug "benizi/toggle-highlighter.kak" config %{
   map -docstring 'toggle line numbers' global user N \
-    ': toggle-highlighter global/line-numbers number-lines -hlcursor<ret>'
+    ': toggle-highlighter buffer/line-numbers number-lines -hlcursor<ret>'
   map -docstring 'toggle line wrapping' global user w \
     ': toggle-highlighter buffer/wrap wrap<ret>'
   define-command toggle-overlong-lines %{
-    toggle-highlighter global/overlong-line dynregex \
+    toggle-highlighter buffer/overlong-line dynregex \
       '^[^\n]{%opt{autowrap_column}}([^\n]+)' 1:Error
   }
   map -docstring 'toggle overlong line Errors' global user E \
