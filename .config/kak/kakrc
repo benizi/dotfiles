@@ -43,6 +43,8 @@ map global normal '*' ': vim-star<ret>'
 
 define-command vim -docstring 'open in vim' 'terminal vim %reg{%}'
 
+define-command pwd %{ echo %sh{pwd} }
+
 alias global h doc
 
 ## plug.kak plugins
