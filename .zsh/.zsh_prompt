@@ -122,41 +122,58 @@ __prompt_setup() {
   fi
 
   local C=$0.colorize map_att=$0.map_att
+  local -A map_att
+  if __light_terminal
+  then map_att=( f k k f )
+  fi
 
   typeset -a top middle bottom
-  $map_att() {
-    local att=$1
-    local -A map
-    __light_terminal && map=( f k k f )
-    (( $+map[$att] )) && att=$map[$att]
-    printf %s $att
-  }
 
   $C() {
     local name=$1
     shift
-    local -a rest
+    # palletized colors don't work for TERM=xterm-direct, which assumes
+    # anything over 8 is a "direct" color (r << 16) + (g << 8) + b
+    local direct=false
+    case $TERM in (xterm-direct) direct=true ;; esac
+    local text
     local -A atts
     atts=( f 15 )
-    while (( $# )) ; do
-      local arg=$1
-      shift
+    for arg
+    do
       case $arg in
         (:norm) atts=() ;;
-        (f:*|k:*|?:) atts[${arg%%\:*}]=${arg#*:} ;;
-        (*) rest+=( $arg $@ ) ; break ;;
+        (f:*|k:*|?:) atts+=( "${(s.:.)arg}" ) ;;
+        (*) text=$arg ;;
       esac
     done
-    (( $#rest )) || return 0
-    local att= val= c_pre= c_post=
-    for att in ${(k)atts} ; do
-      local key="$($map_att $att)"
-      val=$atts[$att]
-      c_pre+=%${key:u}
-      (( $#val )) && c_pre+='{'$val'}'
-      c_post+=%$key
+    test -n "$text" || return 0
+
+    local att val c_pre= c_post= sgr
+    for att val in "${(kv)atts[@]}"
+    do
+      if (( $+map_att[$att] )) ; then att=${map_att[$att]} ; fi
+
+      if $direct
+      then
+        # need to construct SGR manually
+        unset sgr
+        case $att in
+          (f) sgr="38;5" ;;
+          (k) sgr="48;5" ;;
+          (b) sgr="1" ;;
+        esac
+        [[ -z "$val" ]] || sgr+=";$val"
+        c_pre+=$'%{\e['$sgr'm%}'
+        c_post=$'%{\e[0m%}'
+      else
+        c_pre+=%${att:u}
+        [[ -z "$val" ]] || c_pre+="{"$val"}"
+        c_post+=%${att}
+      fi
     done
-    eval "$name+=( $c_pre${(@q)^rest}$c_post )"
+
+    printf -v ${name}'[1+$#'$name']' %s%s%s "$c_pre" "$text" "$c_post"
   }
 
   $C top k:22 $current_dir
