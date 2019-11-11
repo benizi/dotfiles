@@ -1,2 +1,2 @@
 #!/bin/sh
-ruby -ryaml -rjson -e 'puts YAML::load(ARGF.read).to_json' "$@"
+ruby -ryaml -rjson -e 'puts YAML::load_stream(ARGF.read).map(&:to_json)' "$@"
