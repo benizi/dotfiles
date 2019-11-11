@@ -164,16 +164,16 @@ map global user 'u' ': git update-diff<ret>' -docstring 'update git markers'
 # eval %sh{kak-lsp --kakoune -s $kak_session}
 # lsp-enable # TODO: enable per-filetype?
 
-hook global WinSetOption filetype=elixir %{
+hook -group filetype-buffer-opts global WinSetOption filetype=elixir %{
   set-option buffer autowrap_column 98
 }
 
-hook global WinSetOption filetype=java %{
+hook -group filetype-buffer-opts global WinSetOption filetype=java %{
   set-option buffer autowrap_column 120
   set-option buffer indentwidth 4
 }
 
-hook global WinSetOption filetype=git-commit %{
+hook -group filetype-buffer-opts global WinSetOption filetype=git-commit %{
   set-option buffer comment_line ';'
   set-option buffer autowrap_column 72
   autowrap-enable
