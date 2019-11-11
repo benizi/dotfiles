@@ -369,6 +369,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
        | (workspace, key) <- zip workspaces keys
        , (mask, action) <- [ (0, warpView)
                            , (shiftMask, windows . W.shift)
+                           , (mod4Mask, windows . W.greedyView)
                            , (mod4Mask .|. shiftMask, shiftAll)
                            ]
        ]
