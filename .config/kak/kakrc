@@ -10,6 +10,8 @@ add-highlighter global/overlong-line dynregex \
 add-highlighter global/trailing-whitespace regex '(\h+)$' 1:whitespace_error
 set-face global whitespace_error Error
 
+map global normal <c-w> ': db<ret>'
+
 # keep tabstop synced with indentwidth
 hook global BufSetOption indentwidth=.* \
   %{ set-option buffer tabstop %opt{indentwidth} }
