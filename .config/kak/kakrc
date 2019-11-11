@@ -161,7 +161,7 @@ hook -group git-setup global BufOpenFile .* git-setup-buffer
 map global user 'd' ': git diff %reg{%}<ret>' -docstring 'git diff current file'
 map global user 'u' ': git update-diff<ret>' -docstring 'update git markers'
 
-eval %sh{kak-lsp --kakoune -s $kak_session}
+# eval %sh{kak-lsp --kakoune -s $kak_session}
 # lsp-enable # TODO: enable per-filetype?
 
 hook global WinSetOption filetype=elixir %{
