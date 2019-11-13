@@ -1,0 +1,44 @@
+#!/bin/sh
+
+set -e
+. rofi-util
+
+list_all_buffers() {
+  tmpfile="$(mktemp -t ${0##*/}.XXXXXXXX)"
+  test -n "$tmpfile"
+  for c in $(kak -l)
+  do
+    kak -c "$c" -ui dummy -e 'exec %sh{
+      eval "set -- $kak_quoted_buflist" ;
+      printf "gj\\\\o%s<esc>" \
+        "session=$kak_session" \
+        ${WINDOWID+"window=$WINDOWID"} \
+        "pwd=$(pwd)" \
+        "buffers=$#" \
+        "$@"
+      printf ": %s<ret>" w db q
+    }' "$tmpfile"
+  done
+  sed -e 1d "$tmpfile" |
+  awk -F'=' -v f=0 -v OFS=' - ' -v tmpfile="$tmpfile" '
+  $0 == tmpfile || /^[*]/ { next }
+  b >= NR {
+    if (!/^\//) $0 = s["pwd"] "/" $0
+    print $0, s["session"], s["window"]
+    next
+  }
+  !f { split("", s) ; f = 1 }
+  { s[$1] = $2 }
+  s["buffers"] { b = NR + s["buffers"] ; f = 0 }
+  '
+  rm "$tmpfile"
+}
+
+main() {
+  case "$*" in
+    ('') list_all_buffers ;;
+    (*) xdotool windowactivate "${*##* }" ;;
+  esac
+}
+
+main "$@"
