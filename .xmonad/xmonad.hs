@@ -275,7 +275,8 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- `run` a command
     , ((mod4Mask, xK_r), spawn "pick run")
     -- `vim` by file(s) being edited
-    , ((mod4Mask, xK_v), spawn "pick vim")
+    , ((mod4Mask, xK_v), spawn "pick kak")
+    , ((mod4Mask .|. shiftMask, xK_v), spawn "pick vim")
     -- `zsh` by command or working directory
     , ((mod4Mask, xK_z), spawn "pick zsh")
     -- `mpc` by song
