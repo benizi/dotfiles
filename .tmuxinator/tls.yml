@@ -1,0 +1,12 @@
+name: tls
+root: ~/git/www.benizi.com.support/letsencrypt/config/live/loo.pm
+windows:
+  - tls: >
+      sudo capsh
+      --caps='cap_net_bind_service+iep cap_setpcap,cap_setuid,cap_setgid+ep'
+      --keep=1
+      --user=$(id -un)
+      --addamb=cap_net_bind_service
+      --print
+      --
+      -c 'exec socat openssl-listen:443,cafile=fullchain.pem,certificate=cert.pem,key=privkey.pem,verify=0,reuseaddr,fork tcp:openhab.docker:8080'
