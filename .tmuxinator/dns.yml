@@ -2,11 +2,11 @@ name: dns
 root: ~/
 windows:
   - dns: >
-      PORT=53
-      CNAMES=forever.dev:nginx.nginx.dev.docker
-      SELF=self
-      LOOP=dev
-      SERVERS='docker/127.0.0.1:5553,home/10.30.30.7:9753'
-      RESOLV=/etc/resolv.conf.upstream
-      BOGUS='193.234.222.38,199.101.28.20,64.94.110.11,67.215.65.130,67.215.65.132,92.242.140.21'
-      ~/git/localdns/localdns
+      sudo capsh
+      --caps='cap_net_bind_service+iep cap_setpcap,cap_setuid,cap_setgid+ep'
+      --keep=1
+      --user=$(id -un)
+      --addamb=cap_net_bind_service
+      --print
+      --
+      -c 'exec env GOPATH=/opt/go/path/go1.9.5-nix PORT=53 CNAMES=forever.dev:nginx.nginx.dev.docker SELF=self LOOP=loop,vhost SERVERS=docker/127.0.0.1:5553,home/10.30.30.7:9753 RESOLV=/etc/resolv.conf.upstream BOGUS=193.234.222.38,199.101.28.20,64.94.110.11,67.215.65.130,67.215.65.132,92.242.140.21 DOCKER=docker DOCKERHTTP=localhost:9998 ~bhaskell/git/localdns/localdns'
