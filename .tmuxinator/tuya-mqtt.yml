@@ -1,0 +1,5 @@
+name: tuya-mqtt
+root: ~/git/tuya-mqtt
+windows:
+  - tuya-mqtt: >
+      () { DEBUG=${(j:,:)@} node tuya-mqtt.js } TuyAPI:mqtt{,:{device,error,pub}}
