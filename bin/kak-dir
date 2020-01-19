@@ -1,0 +1,44 @@
+#!/bin/sh
+
+set -e
+
+while test $# -gt 0
+do
+  case "$1" in
+    (kak=*) kak=${1#*=} ;;
+    (sess=*) sess=${1#*=} ;;
+    (*) break ;;
+  esac
+  shift
+done
+
+: ${kak="$(basename "$(pwd)")"}
+: ${sess="kak-$kak"}
+
+die() {
+  printf '%s\n' "$*" >&2
+  exit 1
+}
+
+if test -z "$TMUX"
+then
+  case $# in
+    (0) just_attach=true ;;
+    (*) just_attach=false ;;
+  esac
+
+  set -- "$0" "kak=$kak" "sess=$sess" "$@"
+  if tmux has-session -t "=$sess" 2> /dev/null
+  then
+    $just_attach || tmux new-window -t "=$sess" "$@"
+    exec tmux attach-session -t "=$sess"
+  else
+    exec tmux new-session -A -s "$sess" "$@"
+  fi
+
+  die "Failed to start or attach to tmux session \`$sess\`"
+fi
+
+kak -clear || :
+kak -l | grep -qFx "$kak" || kak -d -s "$kak"
+kak -c "$kak" "$@"
