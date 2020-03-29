@@ -55,7 +55,19 @@ $style
 HEAD
 }
 
-sub llength { local $_=@_?shift:$_; s{\e\[[\d;]+m}{}g; length }
+use Unicode::UCD qw(charprop);
+use List::Util qw(sum);
+sub neutwidth {
+  (charnames::viacode($_[0]) =~ /COMBINING/) ? 0 : 1;
+}
+sub charwidth {
+  my $n = ord;
+  my $eaw = charprop $n, 'East_Asian_Width';
+  return neutwidth $n if $eaw eq 'Neutral';
+  $eaw =~ /Wide|Fullwidth/ ? 2 : $eaw eq 'Ambiguous' ? 0 : 1;
+}
+sub dispwidth { sum map charwidth, split // }
+sub llength { local $_=@_?shift:$_; s{\e\[[\d;]+m}{}g; dispwidth }
 $sep =~ s/([\$\`])/\\$1/g if $texty;
 $sep = eval "qq\x00$sep\x00" if $sep =~ /[\\\$]/;
 if (!length $sep) {
