@@ -471,6 +471,7 @@ myManageHook = FS.fullscreenManageHook <+> composeAll
     , className =? "java-lang-Thread" --> doFloat
     , className =? "xfreerdp" --> unfloat
     , title =? "QEMU" --> doFloat
+    , title =? "Authy" --> doFloat
     ]
   where unfloat = ask >>= doF . W.sink
 
