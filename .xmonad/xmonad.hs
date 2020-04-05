@@ -1,9 +1,15 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 
 import CompatibilityShims
-import Superscripts
+import Superscripts (superScriptNum)
 
-import XMonad
+{-
+    - Sub all unqualified usages of xK_{...}:
+    :%s/\W\@<=\%(Key\.\)\@<!\%(xK\)\@=/Key./g
+-}
+
+import Numeric (showHex)
+import XMonad -- (ExtensionClass(..), xmonad)
 import XMonad.Actions.CycleWS
 import XMonad.Actions.DynamicWorkspaces
 import XMonad.Actions.GridSelect
