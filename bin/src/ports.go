@@ -74,9 +74,9 @@ func (fs files) sort() {
 	})
 }
 
-func lsof() (files, error) {
-	args := strings.Split("lsof -Pni -sTCP:LISTEN -F0", " ")
-	out, err := exec.Command("sudo", args...).Output()
+func lsof(args ...string) (files, error) {
+	cmd := append(strings.Split("lsof -sTCP:LISTEN -F0 -Pni", " "), args...)
+	out, err := exec.Command("sudo", cmd...).Output()
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ func main() {
 
 	flag.Parse()
 
-	files, err := lsof()
+	files, err := lsof(flag.Args()...)
 	if err != nil {
 		log.Fatal(err)
 	}
