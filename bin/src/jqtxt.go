@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"flag"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -11,9 +10,14 @@ import (
 )
 
 func pipe(data []byte) {
-	flag.Parse()
+	var args []string
+	if len(os.Args) > 1 {
+		args = os.Args[1:]
+	} else {
+		args = []string{"."}
+	}
 
-	cmd := exec.Command("jq", flag.Args()...)
+	cmd := exec.Command("jq", args...)
 	cmd.Stdin = bytes.NewReader(data)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
