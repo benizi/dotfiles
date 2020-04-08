@@ -187,7 +187,10 @@ add-bluetooth() {
 }
 
 add-soundcheck() {
-  reply=( '^ca(1,sound-check)^i('${(%):-%x}'.sound.xpm)^ca()' )
+  reply=(
+    '^ca(1,sound-check)^i('${(%):-%x}'.sound.xpm)^ca()'
+    '^ca(1,pavucontrol)^i('${(%):-%x}'.volume.xpm)^ca()'
+  )
 }
 
 funcs=( add-bluetooth add-soundcheck $funcs )
