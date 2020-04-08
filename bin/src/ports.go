@@ -74,8 +74,8 @@ func (fs files) sort() {
 	})
 }
 
-func lsof(args ...string) (files, error) {
-	cmd := append(strings.Split("lsof -sTCP:LISTEN -F0 -Pni", " "), args...)
+func lsof(ipv string, args ...string) (files, error) {
+	cmd := append(strings.Split("lsof -sTCP:LISTEN -F0 -Pni"+ipv, " "), args...)
 	out, err := exec.Command("sudo", cmd...).Output()
 	if err != nil {
 		return nil, err
@@ -141,12 +141,23 @@ func lsof(args ...string) (files, error) {
 
 func main() {
 	printJson := false
+	ipv := ""
+	var ipv4, ipv6 bool
 
 	flag.BoolVar(&printJson, "json", printJson, "Output JSON-encoded text")
+	flag.BoolVar(&ipv4, "4", ipv4, "Limit to IPv4")
+	flag.BoolVar(&ipv6, "6", ipv6, "Limit to IPv6")
 
 	flag.Parse()
 
-	files, err := lsof(flag.Args()...)
+	switch {
+	case ipv4 && !ipv6:
+		ipv = "4"
+	case ipv6 && !ipv4:
+		ipv = "6"
+	}
+
+	files, err := lsof(ipv, flag.Args()...)
 	if err != nil {
 		log.Fatal(err)
 	}
