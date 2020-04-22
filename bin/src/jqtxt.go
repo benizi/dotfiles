@@ -9,15 +9,15 @@ import (
 	"syscall"
 )
 
-func pipe(data []byte) {
-	var args []string
-	if len(os.Args) > 1 {
-		args = os.Args[1:]
-	} else {
+func pipejq(data []byte, args ...string) {
+	if len(args) == 0 {
 		args = []string{"."}
 	}
+	stdincmd(data, "jq", args...)
+}
 
-	cmd := exec.Command("jq", args...)
+func stdincmd(data []byte, arg0 string, args ...string) {
+	cmd := exec.Command(arg0, args...)
 	cmd.Stdin = bytes.NewReader(data)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -35,6 +35,21 @@ func pipe(data []byte) {
 }
 
 func main() {
+	jqargs := []string{}
+	txtargs := []string{}
+	doubledash := false
+
+	for _, arg := range os.Args[1:] {
+		switch {
+		case arg == "--" && !doubledash:
+			doubledash = true
+		case doubledash:
+			txtargs = append(txtargs, arg)
+		default:
+			jqargs = append(jqargs, arg)
+		}
+	}
+
 	data, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {
 		panic(err)
@@ -47,9 +62,14 @@ func main() {
 			goto dump
 		}
 	}
-	pipe(data)
+	pipejq(data, jqargs...)
 	return
 
 dump:
-	os.Stdout.Write(data)
+	switch {
+	case doubledash && len(txtargs) > 0:
+		stdincmd(data, txtargs[0], txtargs[1:]...)
+	default:
+		os.Stdout.Write(data)
+	}
 }
