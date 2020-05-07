@@ -1,0 +1,38 @@
+buildscript {
+  repositories {
+    google()
+    jcenter()
+  }
+  dependencies {
+    classpath "com.android.tools.build:gradle:3.6.0"
+  }
+}
+
+allprojects {
+  repositories {
+    google()
+    jcenter()
+  }
+}
+
+apply plugin: "com.android.application"
+
+android {
+  compileSdkVersion 17
+  defaultConfig {
+    applicationId "com.benizi.android.selfieshutter"
+    minSdkVersion 17
+    targetSdkVersion 17
+    versionCode 1
+    versionName "1.0"
+  }
+  sourceSets {
+    main {
+      res.srcDirs = ["res"]
+      manifest.srcFile "AndroidManifest.xml"
+    }
+  }
+  lintOptions {
+    disable "ExpiredTargetSdkVersion"
+  }
+}

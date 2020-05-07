@@ -1,0 +1,10 @@
+# type = FULL / OVERLAY
+type FULL
+
+# originally:
+# 66 ENTER = shutter button
+# 24 VOLUMEUP = (+)
+# 25 VOLUMEDOWN = (-)
+map key 66 CAMERA
+map key 24 ZOOMIN
+map key 25 ZOOMOUT

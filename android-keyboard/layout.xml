@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<keyboard-layouts xmlns:android="http://schemas.android.com/apk/res/android">
+  <keyboard-layout android:name="en_misc_shutter" android:label="Yunteng Selfie Shutter" android:keyboardLayout="@raw/yunteng"/>
+</keyboard-layouts>
