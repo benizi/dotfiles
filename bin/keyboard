@@ -15,17 +15,20 @@ sub version {
 }
 
 my $is_macbook = (version 'board') =~ /MacBook/;
-push @default_options, 'benizi:x240' if (version 'product') =~ /X240/;
 
 my $xkb_dir = "$Bin/../xkb";
+my ($dev, $device_name, $device_id);
+my ($device_match, $device_match_id);
+my $system_keyboard = 0;
+my $all_devices = 0;
 
-GetOptions(
+my @option_spec = (
 	(map {; "$_=s" => \$opt{$_} } @xkbopts),
 	'o|option=s@' => \my @options,
 	'dry' => \(my $dry_run = 0),
 	'winkey=s' => \(my $win = 'mod4'),
 	'modmap=s@' => \my @modmaps,
-	'M|justmod' => \(my $just_modmap = 0),
+	'M|justmod' => \(my $just_modmap),
 	'clear' => \(my $clear_mods),
 	'I=s@' => \my @includes,
 	'macbook' => \$is_macbook,
@@ -33,10 +36,109 @@ GetOptions(
 	'compile!' => \(my $run_xkbcomp = 1),
 	'setxkbmap|Wp=s@' => \($args{setxkbmap} = []),
 	'xkbcomp|Wc=s@' => \($args{xkbcomp} = []),
-) or die 'options';
+	'all' => \$all_devices,
+	'device=s' => \$device_match,
+	'sys' => sub { $dev = 'sys'; $system_keyboard = 1 },
+	'usb' => sub { $dev = 'usb' },
+	'pfu|hhkb' => sub { $dev = 'hhkb' },
+	'core' => sub { $dev = 'core' },
+	'id=i' => \$device_match_id,
+	'help' => \(my $usage = 0),
+);
+
+sub usage {
+  my @flags;
+  for my $i (grep !($_ % 2), 0..$#option_spec) {
+    my ($names, $type) = split /(?==)/, $option_spec[$i];
+    $type //= '';
+    $type =~ s/=/ = /;
+    my $no = ($names =~ s/!$//);
+    push @flags, map "  $_$type", join '/', map "--$_", split /\|/, $names;
+  }
+  @flags = map {
+    local $_ = $_;
+    s/(?:^|(?<=\|))/--/g;
+    s/=/ = /;
+    s!\|!/!g;
+    s/-(?=[a-z])(?![a-z]{2})//gi;
+    "  $_"
+  } @option_spec[grep !($_ % 2), 0..$#option_spec];
+  my $flags = join "\n", @flags;
+  my $err = @_ ? "ERROR: @_\n" : undef;
+  (my $cmd = $0) =~ s{^.*/}{};
+  my $usage = join "\n\n", grep defined, $err, <<USAGE, $err;
+Usage: $cmd [options]
+$flags
+USAGE
+  $usage =~ s/\n{2,}/\n\n/g;
+  $usage =~ s/\n*\Z/\n/;
+  $usage
+}
+
+GetOptions(@option_spec) or die usage;
+print usage and exit if $usage;
+
+$device_match = {
+  sys => qr/AT Translated/,
+  usb => qr/ThinkPad USB/,
+  hhkb => qr/PFU.*HHKB/,
+  core => qr/Virtual core/,
+}->{$dev} if $dev and not $device_match;
+
+unless ($all_devices or $device_match or $device_match_id) {
+  die usage <<DEVICE
+Need a device specification:
+  --device=NAME / --id=N           (specific device)
+  --sys / --usb / --core / --hhkb  (shortcuts)
+  --all                            (omit xkbcomp -i flag)
+DEVICE
+}
+
+{
+  my %kbds;
+
+  sub kbd_ids {
+    chomp(my @devs = readpipe "xinput list");
+    s/^\W+// for @devs;
+    @devs = grep /keyboard/, reverse @devs;
+    %kbds = map {
+      my ($name, $id) = /^(.+?)\s+id=(\d+)/;
+      $name ? ($name, 0 + $id) : ()
+    } @devs;
+  }
+
+  sub find_device {
+    kbd_ids unless %kbds;
+    while (my ($k, $v) = each %kbds) {
+      if ($device_match) {
+        next unless $k =~ $device_match;
+        next if $device_id and $device_id < $v;
+      }
+      if ($device_match_id) {
+        next unless $v == $device_match_id;
+      }
+      ($device_name, $device_id) = ($k, $v);
+      last if $device_match_id;
+    }
+  }
+}
+
+unless ($all_devices) {
+  find_device;
+  $dev //= $device_match_id ? 'id' : 'match';
+  my $matcher = $device_match // $device_match_id;
+  die "Couldn't find device ($dev = $matcher)\n" unless defined $device_id;
+}
+
+my $defaults = ($dev and $dev =~ 'hhkb') ? 'hhkb' : 'benizi';
+my $just_xkb = ($defaults ne 'benizi' and not defined $just_modmap) ? 1 : 0;
 
 @includes = grep -d, $xkb_dir unless @includes;
 @modmaps = grep -f, "$xkb_dir/.xmodmap" unless @modmaps;
+
+if ($system_keyboard and (version 'product') =~ /X240/) {
+  push @default_options, 'benizi:x240';
+}
 
 {
 	my $tty;
@@ -71,17 +173,31 @@ sub run_it {
 	&IPC::Run::run;
 }
 push @options, @default_options;
-my %defaults = (
+
+my %benizi_defaults = (
 	rules => 'benizi',
 	model => 'pc104',
 	layout => 'benizi',
 	variant => 'intl',
 	keycodes => 'evdev',
 );
+my %hhkb_defaults = (
+	rules => 'hhkb',
+	model => 'pc104',
+	layout => 'hhkb',
+	variant => 'sw14',
+	keycodes => 'hhkb',
+);
+my %defaults = (
+  sys => {%benizi_defaults},
+  usb => {%benizi_defaults},
+  hhkb => {%hhkb_defaults},
+);
+%defaults = %{($defaults{$dev // ""} || {})};
 
 for (qw/layout variant/) { $opt{$_} //= shift @ARGV if @ARGV; }
 push @{$args{setxkbmap}}, splice @ARGV;
-$opt{$_} //= $defaults{$_} for keys %defaults;
+$opt{$_} //= $defaults{$_} for @xkbopts;
 
 for (sort keys %args) {
 	my $val = $args{$_};
@@ -94,7 +210,8 @@ sub includes {
 }
 
 sub xkbcomp {
-	my @dest = $just_print ? qw/-xkb -o -/ : $ENV{DISPLAY};
+  my @dev = $device_id ? (-i => $device_id) : ();
+	my @dest = $just_print ? qw/-xkb -o -/ : (@dev, $ENV{DISPLAY});
 	my @pipe = grep !want_errors, '2>', sub {};
 	[qw/xkbcomp -w 3/, includes, @{$args{xkbcomp}}, '-', @dest], @pipe;
 }
@@ -157,7 +274,7 @@ sub clear_mods {
 
 sub main {
 	setxkbmap unless $just_modmap;
-	return if $just_print;
+	return if $just_print or $just_xkb;
 	xmodmap_files;
 	system_key;
 	alt_is_meta;
@@ -176,3 +293,31 @@ setxkbmap
 -option altwin:super_win
 -option ctrl:nocaps
 -option compose:menu
+
+setxkbmap
+  -I/home/bhaskell/dotfiles/bin/../xkb
+  -rules benizi
+  -model pc104
+  -layout us
+  -variant intl
+  -keycodes evdev
+  -option terminate:ctrl_alt_bksp
+  -option benizi:x240
+  -print |
+  xkbcomp -w 3
+  -I/home/bhaskell/dotfiles/bin/../xkb
+  - :0
+
+#!/bin/sh
+
+version() {
+  grep -q $2 /sys/devices/virtual/dmi/id/${1}_version
+}
+
+rules=benizi
+model=pc104
+layout=benizi
+variant=intl
+keycodes=evdev
+
+version product X240 && x240_option=benizi:x240 || x240_option=
