@@ -1,4 +1,4 @@
 #!/bin/sh
-keyboard
+keyboard "$@"
 pointer
 touchscreen
