@@ -1,0 +1,23 @@
+#!/bin/sh
+
+set -e
+
+base=/opt
+yarn=$base/yarn/versions/nightly/bin/yarn
+
+maybe_tput() {
+  tput "$@" 2>/dev/null || :
+}
+
+test -e "$yarn" || {
+  maybe_tput setaf 1
+  echo Need to install
+  maybe_tput sgr0
+  exit 1
+} >&2
+
+env \
+  XDG_CONFIG_HOME=$base/yarn/config \
+  XDG_DATA_HOME=$base \
+  "$yarn" \
+  "$@"
