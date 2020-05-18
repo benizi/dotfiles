@@ -83,6 +83,7 @@ for user in benhaskell bhaskell USC/bhaskell ; do
   pathtest+=( /home/$user/bin-shared /home/$user/bin )
 done
 pathtest+=( $HOME/python/bin ~/.local/bin $HOME/bin )
+pathtest+=( $dotfiles/bin.*(N) )
 (( $+INSOL )) && pathtest+=( /usr/xpg4/bin )
 pathtest+=( {/{usr,opt}{/local,},}/{s,}bin )
 pathtest+=( /usr/bin/vendor_perl /usr/bin/core_perl /usr/bin/site_perl )
@@ -108,13 +109,15 @@ pathtest=( /opt/yarn/versions/nightly/bin $pathtest )
 pathtest+=( /opt/android-sdk/build-tools/23.0.2 )
 
 # Order of directories should be:
-# 1. in home dir and contains the word 'local'
-# 2. in home dir
-# 3. anything else
-local -a loc home
+# 1. in home dir and matches `bin.*`
+# 2. in home dir and contains the word 'local'
+# 3. in home dir
+# 4. anything else
+local -a dotbins loc home
 home=( ${(M)pathtest:#$HOME/*} )
+dotbins=( ${(M)home:#*/bin.*} )
 loc=( ${(M)home:#*local*} )
-pathtest=( $loc $home $pathtest )
+pathtest=( $dotbins $loc $home $pathtest )
 
 path=( ${^pathtest}(N-/) )
 }
