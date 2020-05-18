@@ -1,0 +1,49 @@
+#!/bin/sh
+
+: ${dir="$(pwd)"}
+: ${filter_first=false}
+: ${subscription=watching-$(uuidgen)}
+
+while test $# -gt 0
+do
+  arg=$1
+  case "$arg" in
+    (--) shift ; break ;;
+    (--first) filter_first=false ;;
+    (--skip) filter_first=true ;;
+    (*) query=${query}${query+ }$arg ;;
+  esac
+  shift
+done
+
+if $filter_first
+then jq='select(.unilateral and (.is_fresh_instance|not))'
+else jq='select(.unilateral)'
+fi
+
+case "$query" in
+  ('['*) query="expression $query" ;;
+esac
+
+edn <<EDN |
+[ subscribe "$dir" "$subscription"
+  {
+    fields [name]
+    $query
+  }
+]
+EDN
+jqt |
+watchman -j --server-encoding=json -p |
+jq --unbuffered -c "$jq" |
+while read line
+do
+  echo "$line" | jq '
+  if (try (.files|length>10) catch false)
+  then (.files|=(.[0:10] + ["... \(length - 10) more"]))
+  else .
+  end
+  '
+
+  echo "$line" | "$@"
+done
