@@ -211,6 +211,16 @@ export PIP_DOWNLOAD_CACHE=/opt/pip-download-cache
 export BROWSER=sensible-browser
 export INPUTRC=$dotfiles/.inputrc
 
+export ELIXIR_EDITOR='echo v __FILE__ +__LINE__'
+
+# Enable Erlang/Elixir shell history
+eval "$(tied_export ERL_AFLAGS ' ')"
+erl_aflags+=( '-kernel shell_history enabled' )
+
+# Fix lack of UTF-8 locale detection for Erlang-nested Nix versions of Elixir
+eval "$(tied_export ERL_FLAGS ' ')"
+erl_flags+=( +fnu )
+
 # settings for ssh-proxy
 export PROXY_DNS=1
 export PROXY_LOCALNET=127.0.0.1:5984/255.0.0.0
