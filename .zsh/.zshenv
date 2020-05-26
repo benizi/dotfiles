@@ -86,6 +86,7 @@ pathtest=( ${^pathtest}/{bin-shared,bin} )
 for user in benhaskell bhaskell USC/bhaskell ; do
   pathtest+=( /home/$user/bin-shared /home/$user/bin )
 done
+pathtest+=( ~/.local/clj/bin )
 pathtest+=( $HOME/python/bin ~/.local/bin $HOME/bin )
 pathtest+=( $dotfiles/bin.*(N) )
 (( $+INSOL )) && pathtest+=( /usr/xpg4/bin )
