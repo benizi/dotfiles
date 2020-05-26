@@ -55,6 +55,9 @@ if [[ $ZDOTDIR != $zshenv(:h) ]] && [[ $ZDOTDIR = */dotfiles/* ]]
 then dotfiles=$ZDOTDIR:h
 fi
 
+# Disable `zsh-contrib` `cdr` function + `_cdr` completion
+fpath=( ${fpath:#*/Chpwd} )
+
 setup_autoloads() {
   local dir
   for dir
