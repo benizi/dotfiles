@@ -75,7 +75,7 @@ for dir in $zsh_dirs ; do
   setopt nonullglob
 done
 
-() {
+preso-mode || () {
   local -a files
   files=( ${(0)^:-"$(reminder-files)"}(N) )
   (( ! $#files )) || headline $files
