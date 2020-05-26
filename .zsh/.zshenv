@@ -49,7 +49,7 @@ typeset -a -U zsh_dirs
 is-at-least 4.3.9 && zshenv=${(%):-"%x"} || zshenv=${(%):-"%N"}
 zsh_dirs=( $zshenv(+A:h) ${zshenv:h}/.zsh )
 [[ $owner != $USER ]] && zsh_dirs+=( ~$owner/.zsh )
-zsh_dirs=( ${^zsh_dirs}{,.local}(N/) )
+zsh_dirs=( ${^zsh_dirs}{,.*}(N/) )
 ZDOTDIR=( $zshenv(+A:h) ) && ZDOTDIR=$ZDOTDIR[1]
 if [[ $ZDOTDIR != $zshenv(:h) ]] && [[ $ZDOTDIR = */dotfiles/* ]]
 then dotfiles=$ZDOTDIR:h
