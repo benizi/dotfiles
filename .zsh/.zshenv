@@ -112,6 +112,7 @@ pathtest=( /opt/djb/bin $^pathtest )
 pathtest=( /opt/google/cloud-sdk/google-cloud-sdk/bin $pathtest )
 pathtest=( /opt/yarn/versions/nightly/bin $pathtest )
 pathtest+=( /opt/android-sdk/build-tools/23.0.2 )
+pathtest+=( /var/lib/snapd/snap/bin )
 
 # Order of directories should be:
 # 1. in home dir and matches `bin.*`
