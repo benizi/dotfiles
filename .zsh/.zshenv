@@ -184,8 +184,8 @@ if_exists () {
   done
 }
 tied_export () {
-  local name=$1
-  print -r - typeset -T $name:u $name:l
+  local name=$1 sep=${2:-':'}
+  print -r - typeset -T $name:u $name:l ${(q)sep}
   print -r - typeset -x $name:u
   print -r - typeset -U $name:l
 }
