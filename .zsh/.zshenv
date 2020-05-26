@@ -254,7 +254,7 @@ if (( $+commands[verman] )) ; then
   fi
 
   _interactive_warn() {
-    if [[ -o interactive ]] && [[ -t 1 ]] ; then warn "$@" ; fi
+    if [[ -o interactive ]] && [[ -t 2 ]] ; then warn "$@" ; fi
   }
   _verman_use() {
     local lang=$1 version=$2
