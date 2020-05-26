@@ -265,13 +265,18 @@ if (( $+commands[verman] )) ; then
     if (( $+parameters[$var] )) && [[ $parameters[$var] = *-export ]]
     then return $(_interactive_warn "Not overriding exported $var")
     fi
-    verman_eval $lang use $version
+    if $multi
+    then args+=( + $lang use $version )
+    else verman_eval $lang use $version
+    fi
   }
   _version() {
     local lang=$1 version=$2
     local home=${lang}_home var=${lang}_version
     _verman_use $lang $version
     if [[ -e ${(P)home} ]] && [[ "$version" = ${(P)var} ]]
+    then return 0
+    elif $multi
     then return 0
     fi
     if (( $+parameters[$var] )) && [[ ${parameters[$var]} = (*export) ]]
@@ -303,13 +308,10 @@ if (( $+commands[verman] )) ; then
   local lang version
   local -a args
   for lang version in $_versions
-  do
-    if $multi
-    then args+=( + $lang use $version )
-    else _version $lang $version
-    fi
+  do _version $lang $version
   done
   ! $multi || verman_eval $args
+  multi=false
 fi
 
 leapd() {
