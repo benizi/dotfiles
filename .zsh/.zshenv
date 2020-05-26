@@ -56,14 +56,15 @@ then dotfiles=$ZDOTDIR:h
 fi
 
 setup_autoloads() {
-  local fn dir
-  for dir in ${^zsh_dirs}/{autoload,functions}{,/**/*}(N/) ; do
-    fpath+=( $dir )
+  local dir
+  for dir
+  do
+    fpath=( $dir $fpath )
     autoload -Uz $dir/***(N.:t) >/dev/null
   done
   autoload -Uz .env
 }
-setup_autoloads
+setup_autoloads ${^zsh_dirs}/{autoload,functions}{,/**/*}(N/)
 
 # run versions of the current file that aren't the file itself
 function run_local_versions () {
