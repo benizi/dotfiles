@@ -323,11 +323,12 @@ leapd() {
 }
 
 preso_file=~$owner/presentation
+preso-mode() { [[ -f $preso_file ]] }
 setup_preso() {
-  local size=0 force=${1:-false}
-  [[ $TERM = *rxvt* ]] || return
-  [[ -f $preso_file ]] && size=${preso_large:-40}
-  if (( size )) ; then printf '\e]777;font-switch;reset;size=%d\a' $size ; fi
+  local force=${1:-false} extra
+  $force || [[ $TERM = *rxvt* ]] || return
+  if preso-mode ; then extra=";size=${preso_large:-40}" ; fi
+  printf '\e]777;font-switch;reset%s\a' "$extra"
 }
 
 if (( ! $+MAKEFLAGS )) && (( $+commands[nproc] ))
