@@ -1,5 +1,10 @@
 colorscheme desertex
 
+map -docstring 'Ctrl+Tab = insert literal Tab' \
+  global insert <c-tab> '<a-;>\\i<tab><esc>'
+map -docstring 'Ctrl+t = insert literal Tab' \
+  global insert <c-t> '<a-;>\\i<tab><esc>'
+
 define-command -docstring %{
   Set up standard per-buffer highlighters
 } add-standard-highlighters %{ try %{
