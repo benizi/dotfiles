@@ -2,23 +2,32 @@
 
 set -e
 
+die() {
+  printf '%s\n' "$*" >&2
+  exit 1
+}
+
 while test $# -gt 0
 do
   case "$1" in
     (kak=*) kak=${1#*=} ;;
     (sess=*) sess=${1#*=} ;;
+    (--tabs) open_in_tabs=true ;;
     (*) break ;;
   esac
   shift
 done
 
-: ${kak="$(basename "$(pwd)")"}
+: ${kak="$(default_kak_session)"}
 : ${sess="kak-$kak"}
+: ${open_in_tabs=false}
 
-die() {
-  printf '%s\n' "$*" >&2
-  exit 1
-}
+if $open_in_tabs
+then
+  sed 's/^/tmux-terminal-window kak -c '${kak}' /' |
+  kak -p "$kak"
+  exit $?
+fi
 
 if test -z "$TMUX"
 then
