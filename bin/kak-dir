@@ -7,17 +7,49 @@ die() {
   exit 1
 }
 
+default_kak_session() {
+  basename "${dir:-$(pwd)}" |
+  tr . _
+}
+
 while test $# -gt 0
 do
   case "$1" in
     (kak=*) kak=${1#*=} ;;
     (sess=*) sess=${1#*=} ;;
+    (dir=*) dir=${1#*=} ;;
     (--tabs) open_in_tabs=true ;;
-    (*) break ;;
+    (*)
+      if test -d "$1"
+      then
+        test -z "$dir" || die "dir specified twice?: $dir (and $1)"
+        dir=$1
+      elif test -e "$1"
+      then
+        test -n "$dir" || case "$1" in
+          (*/./*) dir="${1%%/./*}" relfile=${1#*/./} ;;
+          (*/*) dir="$(dirname "$1")" relfile="$(basename "$1")" ;;
+        esac
+
+        if test -n "$relfile"
+        then
+          shift
+          set -- "$relfile" "$@"
+        fi
+
+        break
+      else
+        break
+      fi
+      ;;
   esac
   shift
 done
 
+test -z "$dir" || dir="$(realpath "$dir")"
+test -z "$dir" || cd "$dir"
+
+: ${dir="$(pwd)"}
 : ${kak="$(default_kak_session)"}
 : ${sess="kak-$kak"}
 : ${open_in_tabs=false}
@@ -36,7 +68,7 @@ then
     (*) just_attach=false ;;
   esac
 
-  set -- "$0" "kak=$kak" "sess=$sess" "$@"
+  set -- "$0" "kak=$kak" "sess=$sess" "dir=$dir" "$@"
   if tmux has-session -t "=$sess" 2> /dev/null
   then
     $just_attach || tmux new-window -t "=$sess" "$@"
@@ -45,7 +77,11 @@ then
     exec tmux new-session -A -s "$sess" "$@"
   fi
 
-  die "Failed to start or attach to tmux session \`$sess\`"
+  ret=$?
+  case "$ret" in
+    (0) exit ;;
+    (*) die "Failed to start or attach to tmux session \`$sess\`: rc=$ret" ;;
+  esac
 fi
 
 kak -clear || :
