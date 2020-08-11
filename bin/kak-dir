@@ -71,10 +71,10 @@ then
   set -- "$0" "kak=$kak" "sess=$sess" "dir=$dir" "$@"
   if tmux has-session -t "=$sess" 2> /dev/null
   then
-    $just_attach || tmux new-window -t "=$sess" "$@"
+    $just_attach || tmux new-window -c "$dir" -t "=$sess" "$@"
     exec tmux attach-session -t "=$sess"
   else
-    exec tmux new-session -A -s "$sess" "$@"
+    exec tmux new-session -A -c "$dir" -s "$sess" "$@"
   fi
 
   ret=$?
