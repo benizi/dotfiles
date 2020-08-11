@@ -19,6 +19,7 @@ do
     (sess=*) sess=${1#*=} ;;
     (dir=*) dir=${1#*=} ;;
     (--tabs) open_in_tabs=true ;;
+    (--detach*) detached=true ;;
     (*)
       if test -d "$1"
       then
@@ -53,9 +54,13 @@ test -z "$dir" || cd "$dir"
 : ${kak="$(default_kak_session)"}
 : ${sess="kak-$kak"}
 : ${open_in_tabs=false}
+: ${detached=false}
 
 if $open_in_tabs
 then
+  tmux has-session -t "=$sess" 2> /dev/null ||
+  "$0" "kak=$kak" "sess=$sess" "dir=$dir" --detached
+
   sed 's/^/tmux-terminal-window kak -c '${kak}' /' |
   kak -p "$kak"
   exit $?
@@ -72,9 +77,13 @@ then
   if tmux has-session -t "=$sess" 2> /dev/null
   then
     $just_attach || tmux new-window -c "$dir" -t "=$sess" "$@"
-    exec tmux attach-session -t "=$sess"
+    $detached || exec tmux attach-session -t "=$sess"
   else
-    exec tmux new-session -A -c "$dir" -s "$sess" "$@"
+    if $detached
+    then attach=-d
+    else attach=-A
+    fi
+    exec tmux new-session $attach -c "$dir" -s "$sess" "$@"
   fi
 
   ret=$?
@@ -86,4 +95,4 @@ fi
 
 kak -clear || :
 kak -l | grep -qFx "$kak" || kak -d -s "$kak"
-kak -c "$kak" "$@"
+$detached || kak -c "$kak" "$@"
