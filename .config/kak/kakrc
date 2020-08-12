@@ -355,6 +355,10 @@ define-command lsp-enable-toggle %{
 }
 map global lsp '!' '<esc>: lsp-enable-toggle<ret>'
 
+hook -group filetype-buffer-opts global WinSetOption filetype=kak %[
+  add-highlighter buffer/wrong-name regex '%(var)\{' 1:Error
+]
+
 hook -group filetype-buffer-opts global WinSetOption filetype=elixir %{
   set-option buffer autowrap_column 98
   set-option buffer formatcmd 'mix format -'
