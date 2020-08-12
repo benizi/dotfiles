@@ -413,6 +413,8 @@ define-command -params 4 -docstring %{
   map global normal %arg{4} ": jump-%arg{1}-backward<ret>"
 §
 
+define-paired-jump-mapping par p "'" "<a-'>"
+
 # java range formatting
 define-command -docstring %{
   Use `google/google-java-format` to format:
