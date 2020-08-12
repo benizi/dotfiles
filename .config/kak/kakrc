@@ -297,6 +297,7 @@ hook -group filetype-buffer-opts global WinSetOption filetype=java %{
 }
 
 hook -group filetype-buffer-opts global WinSetOption filetype=go %{
+  set-option buffer expandtab false
   set-option buffer indentwidth 4
   set-option buffer formatrangecmd format-go
   try %{ remove-highlighter buffer/list-chars }
