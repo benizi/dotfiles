@@ -343,6 +343,7 @@ define-command -params 0..1 -docstring %{
 
 hook -group filetype-buffer-opts global WinSetOption filetype=elixir %{
   set-option buffer autowrap_column 98
+  set-option buffer formatcmd 'mix format -'
 }
 
 hook global ModuleLoaded elixir %{
