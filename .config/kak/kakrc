@@ -383,6 +383,10 @@ hook -group filetype-buffer-opts global WinSetOption filetype=git-commit %{
     1:Error
 }
 
+hook -group filetype-buffer-opts global WinSetOption filetype=sql %{
+  set-option buffer comment_line '--'
+}
+
 declare-option -docstring 'Expand tabs into spaces' \
   bool expandtab true
 
