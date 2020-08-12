@@ -270,6 +270,10 @@ hook -group git-setup global BufOpenFile .* git-setup-buffer
 map global user 'd' ': git diff %reg{%}<ret>' -docstring 'git diff current file'
 map global user 'u' ': git update-diff<ret>' -docstring 'update git markers'
 
+declare-user-mode git
+map global user 'g' ': enter-user-mode git<ret>' -docstring 'git submenu'
+map global git 'b' ': git blame<ret>' -docstring 'git blame'
+map global git 'B' ': git hide-blame<ret>' -docstring 'git hide-blame'
 # lsp-enable # TODO: enable per-filetype?
 
 hook -group filetype-buffer-opts global WinSetOption filetype=elixir %{
