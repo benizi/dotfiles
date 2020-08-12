@@ -76,6 +76,7 @@ define-command -docstring %{
 }
 
 map global normal <a-w> ': delete-buffer-and-quit<ret>'
+map global normal <a-t> ': tmux-terminal-window kak -c %val{session}<ret>'
 
 declare-user-mode windowing
 map global normal <c-w> ': enter-user-mode windowing<ret>'
