@@ -126,6 +126,10 @@ plug "andreyorst/fzf.kak" defer 'fzf' %{
   map global user b ': fzf-buffer<ret>' -docstring 'fzf buffer selection'
   map global user F ': fzf-mode<ret>' -docstring 'FZF mode'
   set-option global fzf_file_command 'rg'
+
+  set-option global fzf_window_map 'ctrl-t'
+  set-option global fzf_horizontal_map 'ctrl-v'
+  set-option global fzf_vertical_map 'ctrl-w'
 }
 try %{ require-module fzf } catch %{ echo -markup '{Error}fzf not installed' }
 
