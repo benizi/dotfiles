@@ -1,5 +1,13 @@
 colorscheme desertex
 
+define-command debug-hooks %{
+  hook -group kak-debug global BufCreate .* %{echo -debug BufCreate[ %val{buffile} ]}
+  hook -group kak-debug global BufOpenFile .* %{echo -debug BufOpenFile[ %val{buffile} (lines: %val{buf_line_count}) ]}
+
+  hook -group kak-debug global BufSetOption filetype=(.*) %{echo -debug BufSetOption[ %val{buffile} %val{hook_param} %val{hook_param_capture_1} ]}
+  hook -group kak-debug global WinSetOption filetype=(.*) %{echo -debug WinSetOption[ %val{buffile} %val{hook_param} %val{hook_param_capture_1} ]}
+}
+
 map -docstring 'Ctrl+Tab = insert literal Tab' \
   global insert <c-tab> '<a-;>\\i<tab><esc>'
 map -docstring 'Ctrl+t = insert literal Tab' \
