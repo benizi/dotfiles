@@ -201,6 +201,8 @@ define-command copycode -params 0..1 %{
   }
 }
 
+define-command suggest %{ copycode suggestion }
+
 hook global ModuleLoaded x11 %{
   set-option global termcmd 'term -e sh -c'
 }
