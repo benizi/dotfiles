@@ -470,3 +470,31 @@ define-command format-range %{ evaluate-commands %opt{formatrangecmd} }
 
 map -docstring 'Format selection(s) or file' \
   global user 'f' ': format-range<ret>'
+
+define-command -override -docstring %{
+  Display a colorized hash of each line, for visual comparisons where `diff`
+  can't be done
+} highlight-line-hashes %{
+  try %{ declare-option line-specs line_hash_specs }
+  try %{ add-highlighter buffer/line_hash_specs flag-lines default line_hash_specs }
+  evaluate-commands -draft %{
+    execute-keys '%<a-s>)'
+    evaluate-commands %sh{
+      printf "set buffer line_hash_specs %s" $kak_timestamp
+      eval "set -- $kak_quoted_selections"
+      line_numbers=$kak_selections_desc
+      for selection
+      do
+        # block char: █
+        printf ' "%s|' ${line_numbers%%.*}
+        printf '%s' "$selection" |
+        openssl dgst -sha256 -binary |
+        hexdump -n 15 -e '"{rgb:" 3/1 "%02.2x" "}"' -e '2/1 "█"' |
+        sed 's@\(rgb:\)\(.\).\(.\).\(.\).@\1\2\2\3\3\4\4,\1\2\2\3\3\4\4@g'
+        printf '{default}│"'
+        line_numbers=${line_numbers#* }
+      done
+      echo
+    }
+  }
+}
