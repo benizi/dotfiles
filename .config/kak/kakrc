@@ -282,7 +282,7 @@ hook -group filetype-buffer-opts global WinSetOption filetype=elixir %{
 }
 
 hook global ModuleLoaded elixir %{
-  try %{ rmhl 'shared/elixir/code/regex_[A-Z][\w_]+\b_0:module' }
+  try %{ rmhl 'shared/elixir/code/regex_[A-Z][\w_]+\b_0:module' } \
   catch %{ echo -markup {error} unneeded workaround for elixir highlighting }
   try %{
     add-highlighter shared/elixir/code/better-module regex \
