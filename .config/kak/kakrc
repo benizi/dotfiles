@@ -175,6 +175,10 @@ plug "benizi/toggle-highlighter.kak" config %{
   }
   map -docstring 'toggle overlong line Errors' global user E \
     ': toggle-overlong-lines<ret>'
+  map -docstring 'toggle whitespace markers' global user W %{
+    : toggle-highlighter buffer/list-chars show-whitespaces \
+      -tab '»' -tabpad '·' -nbsp '•' -spc ' ' -lf ' '<ret>
+  }
 }
 
 plug "Delapouite/kakoune-palette"
