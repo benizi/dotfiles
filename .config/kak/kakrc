@@ -339,6 +339,11 @@ define-command -params 0..1 -docstring %{
   }
 }
 
+# NERDComments replacement:
+declare-user-mode comment
+map global user 'c' ': enter-user-mode comment<ret>' -docstring 'Comment mode'
+map global comment '<space>' ': comment-line<ret>' -docstring 'Comment line(s)'
+
 # lsp-enable # TODO: enable per-filetype?
 
 hook -group filetype-buffer-opts global WinSetOption filetype=elixir %{
