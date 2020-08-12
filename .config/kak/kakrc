@@ -189,7 +189,6 @@ plug "benizi/jellybeans.kak" branch "wip" config %{
   jellybeans-theme
 }
 
-map -docstring 'insert case-insensitive flag for searching by default' global normal / '/(?i)'
 
 define-command copycode %{
   execute-keys -draft %sh{
