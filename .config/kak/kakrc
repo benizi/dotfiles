@@ -146,8 +146,23 @@ plug "andreyorst/fzf.kak" defer 'fzf' %{
   set-option global fzf_window_map 'ctrl-t'
   set-option global fzf_horizontal_map 'ctrl-v'
   set-option global fzf_vertical_map 'ctrl-w'
+
+  define-command -override -docstring %{
+    Open a file with `fzf` starting from the current file's directory
+  } fzf-file-from -params 1 %{
+    set-option window fzf_file_command %sh{
+      echo "rg -L --files '$1'"
+    }
+    try %{ fzf-file }
+    try %{ unset-option window fzf_file_command }
+  }
+  map -docstring 'fzf find file starting from current' \
+    global user n ': fzf-file-from %sh{dirname "$kak_bufname"}<ret>'
 }
 try %{ require-module fzf } catch %{ echo -markup '{Error}fzf not installed' }
+
+map -docstring %{edit from current file's directory} \
+  global user e %sh{ printf ':e %s/' "$(dirname "$kak_bufname")" }
 
 plug "benizi/toggle-highlighter.kak" config %{
   map -docstring 'toggle line numbers' global user N \
