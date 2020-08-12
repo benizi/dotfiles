@@ -21,7 +21,53 @@ define-command -docstring %{
 
 hook -group add-highlighters global BufCreate .* add-standard-highlighters
 
-map global normal <c-w> ': db<ret>'
+define-command -docstring %{
+  Delete the current buffer if:
+  - This is the only client that has it open
+  Quit the current client unless, either:
+  - It's the only client
+  - The buffer (which may have just been deleted) had no filetype
+} delete-buffer-and-quit %{
+  declare-option str-list client_buffer_list
+  set-option global client_buffer_list
+
+  evaluate-commands %sh{
+    set -- 'evaluate-commands -client %s %%{'
+    set -- "$1 set-option -add global client_buffer_list %%val{bufname}"
+    set -- "$1 } ; "
+    eval "set -- \"\$@\" $kak_quoted_client_list"
+    printf "$@"
+  }
+
+  execute-keys %sh{
+    eval "this=$kak_quoted_bufname"
+    eval "set -- $kak_quoted_opt_client_buffer_list"
+
+    seen=
+    for buf
+    do
+      # printf '|| buf (%s) = this (%s) ' "$buf" "$this"
+      case "$buf" in
+        ("$this") seen=x$seen ;;
+      esac
+    done
+
+    case "$seen/$kak_client_list" in
+      (x/*' '*) set -- db ;;
+      (*' '*) set -- ;;
+      (*) set -- db ;;
+    esac
+
+    case "$kak_client/$kak_opt_filetype/$kak_client_list" in
+      (*//*|client0/*) : ;;
+      (*/*/*' '*) set -- "$@" quit ;;
+    esac
+
+    test $# -eq 0 || printf ': %s<ret>' "$@"
+  }
+}
+
+map global normal <a-w> ': delete-buffer-and-quit<ret>'
 
 # keep tabstop synced with indentwidth
 hook global BufSetOption indentwidth=.* \
