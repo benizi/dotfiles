@@ -69,6 +69,10 @@ define-command -docstring %{
 
 map global normal <a-w> ': delete-buffer-and-quit<ret>'
 
+declare-user-mode windowing
+map global normal <c-w> ': enter-user-mode windowing<ret>'
+map global windowing v ': new<ret>'
+
 # keep tabstop synced with indentwidth
 hook global BufSetOption indentwidth=.* \
   %{ set-option buffer tabstop %opt{indentwidth} }
