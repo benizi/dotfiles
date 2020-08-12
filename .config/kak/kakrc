@@ -456,7 +456,11 @@ define-command format-go %{
 }
 
 define-command -hidden format-range-unsupported %{
-  fail 'Range formatting not supported for this filetype'
+  try %{
+    format
+  } catch %{
+    fail 'Range formatting not supported for this filetype'
+  }
 }
 
 declare-option -docstring 'Set command for range formatting' \
