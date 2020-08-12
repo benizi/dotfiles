@@ -181,6 +181,7 @@ plug "benizi/toggle-highlighter.kak" config %{
   }
 }
 
+plug "w33tmaricich/clj-kakoune-joker"
 plug "Delapouite/kakoune-palette"
 
 plug "ul/kak-tree"
