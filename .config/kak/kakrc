@@ -274,6 +274,7 @@ declare-user-mode git
 map global user 'g' ': enter-user-mode git<ret>' -docstring 'git submenu'
 map global git 'b' ': git blame<ret>' -docstring 'git blame'
 map global git 'B' ': git hide-blame<ret>' -docstring 'git hide-blame'
+map global git 'm' '\\/^[<lt>=<gt>]{3,}<ret>' -docstring 'merge conflict search'
 # lsp-enable # TODO: enable per-filetype?
 
 hook -group filetype-buffer-opts global WinSetOption filetype=elixir %{
