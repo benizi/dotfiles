@@ -275,6 +275,70 @@ map global user 'g' ': enter-user-mode git<ret>' -docstring 'git submenu'
 map global git 'b' ': git blame<ret>' -docstring 'git blame'
 map global git 'B' ': git hide-blame<ret>' -docstring 'git hide-blame'
 map global git 'm' '\\/^[<lt>=<gt>]{3,}<ret>' -docstring 'merge conflict search'
+
+define-command -override -hidden new-scratch-setup -params 2 %{
+  edit -scratch
+  set-option buffer filetype %arg{1}
+  evaluate-commands -draft -save-regs '"' %{
+    set-register dquote %arg{2}
+    execute-keys 'R'
+  }
+}
+
+define-command -override -params 0..1 -docstring %{
+  new-scratch [-copy]: open a new window with a scratch buffer matching the
+  current filetype.
+  Switches:
+  -copy     Copy the contents of the current buffer into the scratch buffer
+} new-scratch %{
+  # nsb = new_scratch_buffer
+  declare-option str nsb_contents ''
+  declare-option str-list nsb_clients_a
+  declare-option str-list nsb_clients_b
+  set-option global nsb_clients_a %val{client_list}
+  evaluate-commands %sh{
+    case "$1" in
+      (-copy)
+        printf '%s\n' \
+          'execute-keys %{%}' \
+          'set-option global nsb_contents %reg{.}'
+        ;;
+    esac
+  }
+  new edit -scratch ';' setf %opt{filetype}
+  echo -debug %{ set-option global nsb_clients_b %val{client_list} }
+  evaluate-commands %{ set-option global nsb_clients_b %val{client_list} }
+  echo -debug %sh{
+    set -- $kak_opt_nsb_clients_a $kak_opt_nsb_clients_b
+    printf '%s\n' "$@" |
+    awk '{ s[$0]++ } END { for (c in s) if (s[c] != 2) print "new: " c }'
+  }
+  nop %§
+  evaluate-commands -draft -client %opt{new_scratch_buffer_client} %{
+    set buffer filetype %opt{filetype}
+    set-register dquote %opt{new_scratch_buffer_contents}
+    execute-keys 'R'
+  }
+  §
+}
+
+define-command -override -docstring %{
+  Open a new window with a scratch buffer matching the current filetype.
+} new-scratch %{
+  new edit -scratch ';' set buffer filetype %opt{filetype}
+}
+
+define-command -params 0..1 -docstring %{
+  Open a new window with a scratch buffer containing the contents of the current
+  file at the specified revision (HEAD if omitted).
+} git-scratch %{
+  new edit -scratch ';' set buffer filetype %opt{filetype} ';' exec %sh{
+    rev=$1
+    if test -z "$rev" ; then rev=HEAD ; fi
+    printf '%s§%s|git show %s:%s<ret>gg§' '%' '%' "$rev" "$kak_bufname"
+  }
+}
+
 # lsp-enable # TODO: enable per-filetype?
 
 hook -group filetype-buffer-opts global WinSetOption filetype=elixir %{
