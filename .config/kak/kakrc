@@ -183,6 +183,8 @@ plug "benizi/toggle-highlighter.kak" config %{
 
 plug "Delapouite/kakoune-palette"
 
+plug "ul/kak-tree"
+
 plug "benizi/jellybeans.kak" branch "wip" config %{
   require-module jellybeans
 } defer 'jellybeans' %{
