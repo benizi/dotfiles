@@ -255,7 +255,7 @@ define-command git-setup-buffer %{
   try %{
     git-find-repo
     evaluate-commands -no-hooks %sh{
-      $kak_opt_git_found || echo fail 'buffer not in a git directory?'
+      $kak_opt_git_found || echo "fail 'buffer not in a git directory?'"
     }
     hook -group git-setup global BufOpenFile .* 'git show-diff'
     hook -group git-setup global WinCreate .* 'git show-diff'
