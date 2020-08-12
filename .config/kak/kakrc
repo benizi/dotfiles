@@ -203,6 +203,10 @@ define-command copycode -params 0..1 %{
 
 define-command suggest %{ copycode suggestion }
 
+define-command -docstring 'Set buffer filetype' -params 1 setf %{
+  set buffer filetype %arg{1}
+}
+
 hook global ModuleLoaded x11 %{
   set-option global termcmd 'term -e sh -c'
 }
