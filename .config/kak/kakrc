@@ -190,10 +190,14 @@ plug "benizi/jellybeans.kak" branch "wip" config %{
 }
 
 
-define-command copycode %{
+define-command copycode -params 0..1 %{
   execute-keys -draft %sh{
+    if test $# -gt 0
+    then ft=$1
+    else ft=$kak_opt_filetype
+    fi
     printf '<a-|>sed -e "1i\\```%s" -e "$a\\```" | pbcopy<ret>' \
-      $kak_opt_filetype | tr '"' "'"
+      "$ft" | tr '"' "'"
   }
 }
 
