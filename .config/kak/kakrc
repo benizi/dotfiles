@@ -347,6 +347,14 @@ map global comment '<space>' ': comment-line<ret>' -docstring 'Comment line(s)'
 eval %sh{kak-lsp --kakoune -s $kak_session}
 # lsp-enable # TODO: enable per-filetype?
 
+map global user 'l' ': enter-user-mode lsp<ret>' -docstring 'LSP mode'
+
+define-command lsp-enable-toggle %{
+  lsp-enable
+  unmap global lsp '!'
+}
+map global lsp '!' '<esc>: lsp-enable-toggle<ret>'
+
 hook -group filetype-buffer-opts global WinSetOption filetype=elixir %{
   set-option buffer autowrap_column 98
   set-option buffer formatcmd 'mix format -'
