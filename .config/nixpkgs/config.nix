@@ -1,8 +1,7 @@
 {
-  allowUnfreePredicate = with builtins;
-  let
-    getName = pkg: (parseDrvName pkg.name).name;
-  in pkg: elem (getName pkg) [
+  allowUnfreePredicate =
+  let nixpkgs = import <nixpkgs> {};
+  in pkg: builtins.elem (nixpkgs.lib.getName pkg) [
     "slack"
     "spotify"
   ];
