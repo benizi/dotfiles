@@ -297,11 +297,34 @@ if (( $+commands[verman] )) ; then
     elixir v1.8.1-R21-nix
     node v10.5.0
     ruby 2.2.3-p0-nix
-    rust 1.26.0
     go go1.12.9-nix
     stack v2.1.3
     ocaml 4.02.0
   )
+
+  local rust=/opt/rust rust_default=1.26.0
+  if [[ -e $rust/bin ]]
+  then
+    local unrust="$(
+      verman_eval rust use $rust_default |
+      awk -F'[=: ]' '
+      $1 != "export" { print "unset", $1 ; next }
+      { var = $2 }
+      NF == 3 { print "unset", var ; next }
+      {
+        arr = tolower(var)
+        for (i=3; i<=NF; i++)
+          if ($i ~ /\/rust\/versions\//)
+            print arr "=( \"${(@)" arr ":#\"" $i "\"}\" )"
+      }'
+    )"
+    eval "$unrust"
+    rust_version=rustup
+    export RUSTUP_HOME=$rust
+    export CARGO_HOME=$rust
+    path+=( $rust/bin )
+  else _versions+=( rust $rust_default )
+  fi
 
   [[ ! -d /opt/racket ]] || _versions+=( racket git )
 
