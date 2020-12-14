@@ -4,6 +4,7 @@
   in pkg: builtins.elem (nixpkgs.lib.getName pkg) [
     "slack"
     "spotify"
+    "spotify-unwrapped"
   ];
   pulseaudio = true;
 }
