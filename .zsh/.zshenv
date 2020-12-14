@@ -297,7 +297,7 @@ if (( $+commands[verman] )) ; then
     elixir v1.8.1-R21-nix
     node v10.5.0
     ruby 2.2.3-p0-nix
-    go go1.12.9-nix
+    go go1.15.3
     stack v2.1.3
     ocaml 4.02.0
   )
