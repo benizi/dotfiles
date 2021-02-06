@@ -1,0 +1,9 @@
+default xkb_keycodes "hhkb" {
+  include "evdev"
+  include "aliases(qwerty)"
+
+  <MUP> = 218;
+  <MLFT> = 212;
+  <MRHT> = 214;
+  <MDWN> = 216;
+};

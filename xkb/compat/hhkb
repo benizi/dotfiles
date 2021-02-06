@@ -1,0 +1,7 @@
+default partial xkb_compatibility "hhkb" {
+  include "complete"
+
+  interpret Pointer_EnableKeys {
+    action = LockControls(controls=MouseKeys+Overlay1);
+  };
+};

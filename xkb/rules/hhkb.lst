@@ -1,0 +1,7 @@
+! model
+  hhkb PFU Happy Hacking Keyboard Pro JP
+
+! variant
+  sw4on hhkb: DIP switch SW4 ON
+  sw14 hhkb: DIP switch SW1 and SW4 ON
+  factory hhkb: main keys for JP layout

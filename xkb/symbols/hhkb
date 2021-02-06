@@ -1,0 +1,363 @@
+default partial alphanumeric_keys modifier_keys
+xkb_symbols "sw14" {
+  name[Group1] = "HHKB JP Pro";
+
+  include "hhkb(alphabet)"
+  include "hhkb(fnkeys)"
+  include "hhkb(outer-specials)"
+  include "hhkb(us-numeric)"
+  include "hhkb(us-right)"
+  include "hhkb(mac)"
+  include "hhkb(true-meta)"
+  include "hhkb(sw4on)"
+  include "hhkb(mousekeys)"
+};
+
+partial alphanumeric_keys modifier_keys
+xkb_symbols "factory" {
+// (esc)1234567890-^(yen)(BS)  !@#$%^&*()_+(split-pipe)
+    key <ESC>  { [ Escape                      ] }; // Esc
+    key <AE01> { [ 1            , exclam       ] }; // 1 , !
+    key <AE02> { [ 2            , quotedbl     ] }; // 2 , "
+    key <AE03> { [ 3            , numbersign   ] }; // 3 , #
+    key <AE04> { [ 4            , dollar       ] }; // 4 , $
+    key <AE05> { [ 5            , percent      ] }; // 5 , %
+    key <AE06> { [ 6            , ampersand    ] }; // 6 , &
+    key <AE07> { [ 7            , apostrophe   ] }; // 7 , '
+    key <AE08> { [ 8            , parenleft    ] }; // 8 , (
+    key <AE09> { [ 9            , parenright   ] }; // 9 , )
+    key <AE10> { [ 0                           ] }; // 0
+    key <AE11> { [ minus        , equal        ] }; // - , =
+    key <AE12> { [ asciicircum  , asciitilde   ] }; // ^ , ~
+    key <AE13> { [ yen          , bar          ] }; // yen , |
+    key <BKSP> { [ BackSpace                   ] }; // BS
+
+// (tab)qwertyuiop@[¬¬              QWERTYUIOP`{¬¬
+    key <TAB>  { [ Tab          , ISO_Left_Tab ] }; // Tab , (Backtab)
+    key <AD01> { [ q            , Q            ] }; // q , Q
+    key <AD02> { [ w            , W            ] }; // w , W
+    key <AD03> { [ e            , E            ] }; // e , E
+    key <AD04> { [ r            , R            ] }; // r , R
+    key <AD05> { [ t            , T            ] }; // t , T
+    key <AD06> { [ y            , Y            ] }; // y , Y
+    key <AD07> { [ u            , U            ] }; // u , U
+    key <AD08> { [ i            , I            ] }; // i , I
+    key <AD09> { [ o            , O            ] }; // o , O
+    key <AD10> { [ p            , P            ] }; // p , P
+    key <AD11> { [ at           , grave        ] }; // @ , `
+    key <AD12> { [ bracketleft  , braceleft    ] }; // [ , {
+
+// (control)asdfghjkl;:]¬               ASDFGHJKL+*}¬
+    key <LCTL> { [ Control_L                   ] }; // Control
+    key <AC01> { [ a            , A            ] }; // a , A
+    key <AC02> { [ s            , S            ] }; // s , S
+    key <AC03> { [ d            , D            ] }; // d , D
+    key <AC04> { [ f            , F            ] }; // f , F
+    key <AC05> { [ g            , G            ] }; // g , G
+    key <AC06> { [ h            , H            ] }; // h , H
+    key <AC07> { [ j            , J            ] }; // j , J
+    key <AC08> { [ k            , K            ] }; // k , K
+    key <AC09> { [ l            , L            ] }; // l , L
+    key <AC10> { [ semicolon    , plus         ] }; // ; , +
+    key <AC11> { [ colon        , asterisk     ] }; // : , *
+    key <BKSL> { [ bracketright , braceright   ] }; // ] , }
+    key <RTRN> { [ Return                      ] }; // Enter
+
+// (shift)zxcvbnm,./\(up)(shift)     ZXCVBNM<>?_
+    key <LFSH> { [ Shift_L                     ] }; // Shift
+    key <AB01> { [ z            , Z            ] }; // z , Z
+    key <AB02> { [ x            , X            ] }; // x , X
+    key <AB03> { [ c            , C            ] }; // c , C
+    key <AB04> { [ v            , V            ] }; // v , V
+    key <AB05> { [ b            , B            ] }; // b , B
+    key <AB06> { [ n            , N            ] }; // n , N
+    key <AB07> { [ m            , M            ] }; // m , M
+    key <AB08> { [ comma        , less         ] }; // , , <
+    key <AB09> { [ period       , greater      ] }; // . , >
+    key <AB10> { [ slash        , question     ] }; // / , ?
+    key <AB11> { [ backslash    , underscore   ] }; // \ , _
+    key <UP>   { [ Up                          ] }; // Up arrow
+    key <RTSH> { [ Shift_R                     ] }; // Shift
+
+// bottom row all non-alpha keys
+// <fn>(HHKB)(Diamond)(Alt/Opt)(Muhenkan)(space)(Henkan)(Kana)(Alt/Opt)<fn>
+
+    key <TLDE> { [ ISO_Level3_Shift            ] }; // HHKB logo
+    key <LALT> { [ Super_L                     ] }; // diamond (Windows / Command)
+    key <LWIN> { [ Alt_L                       ] }; // Alt (Opt)
+    key <MUHE> { [ Muhenkan                    ] }; // Muhenkan (seesaw) // FIXME
+    key <SPCE> { [ space                       ] }; // Spacebar
+    key <HKTG> { [ Henkan_Mode                 ] }; // Henkan Mode (circular arrows) // FIXME
+    key <HENK> { [ Hiragana_Katakana           ] }; // Kana
+    key <RALT> { [ Alt_R                       ] }; // Alt (Opt)
+    key <LEFT> { [ Left                        ] }; // Left arrow
+    key <DOWN> { [ Down                        ] }; // Down arrow
+    key <RGHT> { [ Right                       ] }; // Right arrow
+
+// fn keys
+
+    key <FK01> { [ F1                          ] }; // fn + 1 = F1
+    key <FK02> { [ F2                          ] }; // fn + 2 = F2
+    key <FK03> { [ F3                          ] }; // fn + 3 = F3
+    key <FK04> { [ F4                          ] }; // fn + 4 = F4
+    key <FK05> { [ F5                          ] }; // fn + 5 = F5
+    key <FK06> { [ F6                          ] }; // fn + 6 = F6
+    key <FK07> { [ F7                          ] }; // fn + 7 = F7
+    key <FK08> { [ F8                          ] }; // fn + 8 = F8
+    key <FK09> { [ F9                          ] }; // fn + 9 = F9
+    key <FK10> { [ F10                         ] }; // fn + 0 = F10
+    key <FK11> { [ F11                         ] }; // fn + - = F11
+    key <FK12> { [ F12                         ] }; // fn + ^ = F12
+    key <INS>  { [ Insert                      ] }; // fn + yen = Ins
+    key <DELE> { [ Delete                      ] }; // fn + BS = Del
+
+    key <CAPS> { [ Pointer_EnableKeys ] }; // fn + Tab = Caps
+
+    // fn + i = PSc/SRq (PrintScreen / SysReq)
+    key <PRSC> {
+      type = "PC_ALT_LEVEL2",
+      symbols[Group1] = [ Print, Sys_Req ]
+    };
+
+    key <SCLK> { [ Scroll_Lock                 ] }; // fn + o = ScrLk
+
+    // fn + p = Pus/Brk (Pause / Break)
+    key <PAUS> {
+      type = "PC_CONTROL_LEVEL2",
+      symbols[Group1] = [ Pause, Break ]
+    };
+
+    // key <UP> { [ Up                            ] }; // fn + @ = Up arrow
+
+    key <KPMU> { [ KP_Multiply                 ] }; // fn + h = (KP) *
+    key <KPDV> { [ KP_Divide                   ] }; // fn + j = (KP) /
+    key <HOME> { [ Home                        ] }; // fn + k = Home
+    key <PGUP> { [ Prior                       ] }; // fn + l = PgUp
+    // key <LEFT> { [ Left                        ] }; // fn + ; = Left arrow
+    // key <RGHT> { [ Right                       ] }; // fn + : = Right arrow
+
+    key <KPAD> { [ KP_Add                      ] }; // fn + n = (KP) +
+    key <KPSU> { [ KP_Subtract                 ] }; // fn + m = (KP) -
+    key <END>  { [ End                         ] }; // fn + , = End
+    key <PGDN> { [ Next                        ] }; // fn + . = PgDn
+    // key <DOWN> { [ Down                        ] }; // fn + / = Down arrow
+    // key <RTSH> { [ Shift_R                     ] }; // fn + Up arrow = Shift
+
+};
+
+partial alphanumeric_keys modifier_keys
+xkb_symbols "alphabet" {
+// (tab)qwertyuiop@[¬¬              QWERTYUIOP`{¬¬
+    key <AD01> { [ q            , Q            ] }; // q , Q
+    key <AD02> { [ w            , W            ] }; // w , W
+    key <AD03> { [ e            , E            ] }; // e , E
+    key <AD04> { [ r            , R            ] }; // r , R
+    key <AD05> { [ t            , T            ] }; // t , T
+    key <AD06> { [ y            , Y            ] }; // y , Y
+    key <AD07> { [ u            , U            ] }; // u , U
+    key <AD08> { [ i            , I            ] }; // i , I
+    key <AD09> { [ o            , O            ] }; // o , O
+    key <AD10> { [ p            , P            ] }; // p , P
+
+// (control)asdfghjkl;:]¬               ASDFGHJKL+*}¬
+    key <AC01> { [ a            , A            ] }; // a , A
+    key <AC02> { [ s            , S            ] }; // s , S
+    key <AC03> { [ d            , D            ] }; // d , D
+    key <AC04> { [ f            , F            ] }; // f , F
+    key <AC05> { [ g            , G            ] }; // g , G
+    key <AC06> { [ h            , H            ] }; // h , H
+    key <AC07> { [ j            , J            ] }; // j , J
+    key <AC08> { [ k            , K            ] }; // k , K
+    key <AC09> { [ l            , L            ] }; // l , L
+
+// (shift)zxcvbnm,./\(up)(shift)     ZXCVBNM<>?_
+    key <AB01> { [ z            , Z            ] }; // z , Z
+    key <AB02> { [ x            , X            ] }; // x , X
+    key <AB03> { [ c            , C            ] }; // c , C
+    key <AB04> { [ v            , V            ] }; // v , V
+    key <AB05> { [ b            , B            ] }; // b , B
+    key <AB06> { [ n            , N            ] }; // n , N
+    key <AB07> { [ m            , M            ] }; // m , M
+};
+
+partial alphanumeric_keys modifier_keys
+xkb_symbols "us-numeric" {
+    key <AE01> { [ 1            , exclam       ] }; // 1 , !
+    key <AE02> { [ 2            , at           ] }; // 2 , @
+    key <AE03> { [ 3            , numbersign   ] }; // 3 , #
+    key <AE04> { [ 4            , dollar       ] }; // 4 , $
+    key <AE05> { [ 5            , percent      ] }; // 5 , %
+    key <AE06> { [ 6            , asciicircum  ] }; // 6 , ^
+    key <AE07> { [ 7            , ampersand    ] }; // 7 , 7
+    key <AE08> { [ 8            , asterisk     ] }; // 8 , *
+    key <AE09> { [ 9            , parenleft    ] }; // 9 , (
+    key <AE10> { [ 0            , parenright   ] }; // 0 , )
+};
+
+partial alphanumeric_keys modifier_keys
+xkb_symbols "jp-numeric" {
+    key <AE01> { [ 1            , exclam       ] }; // 1 , !
+    key <AE02> { [ 2            , quotedbl     ] }; // 2 , "
+    key <AE03> { [ 3            , numbersign   ] }; // 3 , #
+    key <AE04> { [ 4            , dollar       ] }; // 4 , $
+    key <AE05> { [ 5            , percent      ] }; // 5 , %
+    key <AE06> { [ 6            , ampersand    ] }; // 6 , &
+    key <AE07> { [ 7            , apostrophe   ] }; // 7 , '
+    key <AE08> { [ 8            , parenleft    ] }; // 8 , (
+    key <AE09> { [ 9            , parenright   ] }; // 9 , )
+    key <AE10> { [ 0                           ] }; // 0
+};
+
+partial alphanumeric_keys modifier_keys
+xkb_symbols "outer-specials" {
+  // row esc
+    key <ESC>  { [ Escape                      ] }; // Esc
+    key <BKSP> { [ BackSpace                   ] }; // BS
+
+  // row tab
+    key <TAB>  { [ Tab          , ISO_Left_Tab ] }; // Tab , (Backtab)
+
+  // row caps
+    key <LCTL> { [ Control_L                   ] }; // Control
+    key <RTRN> { [ Return                      ] }; // Enter
+
+  // row shift
+    key <LFSH> { [ Shift_L                     ] }; // Shift
+    key <RTSH> { [ Shift_R                     ] }; // Shift
+
+  // row space
+};
+
+partial alphanumeric_keys modifier_keys
+xkb_symbols "us-right" {
+  // row esc
+    key <AE11> { [ minus        , underscore   ] }; // - , _
+    key <AE12> { [ equal        , plus         ] }; // = , +
+    key <AE13> { [ backslash    , bar          ] }; // \ , |
+  // row tab
+    key <AD11> { [ bracketleft  , braceleft    ] }; // [ , {
+    key <AD12> { [ bracketright , braceright   ] }; // ] , }
+  // row caps
+    key <AC10> { [ semicolon    , colon        ] }; // ; , :
+    key <AC11> { [ apostrophe   , quotedbl     ] }; // ' , "
+    key <BKSL> { [ Return                      ] }; // Enter
+  // row shift
+    key <AB08> { [ comma        , less         ] }; // , , <
+    key <AB09> { [ period       , greater      ] }; // . , >
+    key <AB10> { [ slash        , question     ] }; // / , ?
+    key <AB11> { [ backslash    , bar          ] }; // \ , _
+  // row space
+};
+
+partial alphanumeric_keys modifier_keys
+xkb_symbols "jp-right" {
+  // row esc
+    key <AE11> { [ minus        , equal        ] }; // - , =
+    key <AE12> { [ asciicircum  , asciitilde   ] }; // ^ , ~
+    key <AE13> { [ yen          , bar          ] }; // yen , |
+  // row tab
+    key <AD11> { [ at           , grave        ] }; // @ , `
+    key <AD12> { [ bracketleft  , braceleft    ] }; // [ , {
+  // row caps
+    key <AC10> { [ semicolon    , plus         ] }; // ; , +
+    key <AC11> { [ colon        , asterisk     ] }; // : , *
+    key <BKSL> { [ bracketright , braceright   ] }; // ] , }
+  // row shift
+    key <AB08> { [ comma        , less         ] }; // , , <
+    key <AB09> { [ period       , greater      ] }; // . , >
+    key <AB10> { [ slash        , question     ] }; // / , ?
+    key <AB11> { [ backslash    , underscore   ] }; // \ , _
+  // row space
+};
+
+partial alphanumeric_keys modifier_keys
+xkb_symbols "fnkeys" {
+    // fn keys
+    key <FK01> { [ F1                          ] }; // fn + 1 = F1
+    key <FK02> { [ F2                          ] }; // fn + 2 = F2
+    key <FK03> { [ F3                          ] }; // fn + 3 = F3
+    key <FK04> { [ F4                          ] }; // fn + 4 = F4
+    key <FK05> { [ F5                          ] }; // fn + 5 = F5
+    key <FK06> { [ F6                          ] }; // fn + 6 = F6
+    key <FK07> { [ F7                          ] }; // fn + 7 = F7
+    key <FK08> { [ F8                          ] }; // fn + 8 = F8
+    key <FK09> { [ F9                          ] }; // fn + 9 = F9
+    key <FK10> { [ F10                         ] }; // fn + 0 = F10
+    key <FK11> { [ F11                         ] }; // fn + - = F11
+    key <FK12> { [ F12                         ] }; // fn + ^ = F12
+};
+
+partial alphanumeric_keys modifier_keys
+xkb_symbols "win" {
+    // bottom row
+    key <TLDE> { [ ISO_Level3_Shift            ] }; // HHKB logo
+    key <LALT> { [ Super_L                     ] }; // diamond (Windows / Command)
+    key <LWIN> { [ Alt_L                       ] }; // Alt (Opt)
+    key <MUHE> { [ Muhenkan                    ] }; // Muhenkan (seesaw) // FIXME
+    key <SPCE> { [ space                       ] }; // Spacebar
+    key <HKTG> { [ Henkan_Mode                 ] }; // Henkan Mode (circular arrows) // FIXME
+    key <HENK> { [ Hiragana_Katakana           ] }; // Kana
+    key <RALT> { [ Alt_R                       ] }; // Alt (Opt)
+    key <LEFT> { [ Left                        ] }; // Left arrow
+    key <DOWN> { [ Down                        ] }; // Down arrow
+    key <RGHT> { [ Right                       ] }; // Right arrow
+};
+
+partial alphanumeric_keys modifier_keys
+xkb_symbols "mac" {
+    // fn keys unavailable in "Windows" mode
+    key <POWR> { [ XF86PowerOff                ] }; // fn + Esc = Power
+    key <VOL-> { [ XF86AudioLowerVolume        ] }; // fn + a = Vol Dn
+    key <VOL+> { [ XF86AudioRaiseVolume        ] }; // fn + s = Vol Up
+    key <MUTE> { [ XF86AudioMute               ] }; // fn + d = Mute
+    key <I169> { [ XF86Eject                   ] }; // fn + f = Eject
+
+    // bottom row changes // FIXME // any?
+    key <TLDE> { [ ISO_Level3_Shift            ] }; // HHKB logo
+    key <LALT> { [ Super_L                     ] }; // diamond (Windows / Command)
+    key <LWIN> { [ Alt_L                       ] }; // Alt (Opt)
+    key <MUHE> { [ Muhenkan                    ] }; // Muhenkan (seesaw) // FIXME
+    key <SPCE> { [ space                       ] }; // Spacebar
+    key <HKTG> { [ Henkan_Mode                 ] }; // Henkan Mode (circular arrows) // FIXME
+    key <HENK> { [ Hiragana_Katakana           ] }; // Kana
+    key <RALT> { [ Alt_R                       ] }; // Alt (Opt)
+};
+
+partial alphanumeric_keys modifier_keys
+xkb_symbols "true-meta" {
+    key <LWIN> { [ Meta_L                      ] }; // Alt (Opt)
+};
+
+partial alphanumeric_keys modifier_keys
+xkb_symbols "sw4on" {
+    // keys swapped with SW4 = ON
+    // key <RTSH> { [ Shift_R                     ] }; // Up arrow -> Shift
+    // key <DELE> { [ Delete                      ] }; // Left arrow -> Del
+    key <RWIN> { [ Super_R                     ] }; // Down arrow -> diamond
+    key <RCTL> { [ Control_R                   ] }; // Right arrow -> Ctrl
+};
+
+partial alphanumeric_keys modifier_keys
+xkb_symbols "sw4off" {
+    // arrow keys are normal with SW4 = OFF
+    key <UP>   { [ Up                          ] }; // Up arrow
+    key <LEFT> { [ Left                        ] }; // Left arrow
+    key <DOWN> { [ Down                        ] }; // Down arrow
+    key <RGHT> { [ Right                       ] }; // Right arrow
+};
+
+partial alphanumeric_keys modifier_keys
+xkb_symbols "mousekeys" {
+    // uio = AD07..AD09
+    // jkl = AC07..AC09
+    // m,. = AB07..AB09
+    key <AD08> { [ i , I ], overlay1 = <MUP> }; // i , I -> Up mouse
+    key <AC07> { [ j , J ], overlay1 = <MLFT> }; // j , J -> Left mouse
+    key <AC09> { [ l , L ], overlay1 = <MRHT> }; // l, L -> Right mouse
+    key <AB08> { [ comma , less ], overlay1 = <MUP> }; // , , < -> Down mouse
+
+    key <MUP> { [ Pointer_Up ] };
+    key <MLFT> { [ Pointer_Left ] };
+    key <MRHT> { [ Pointer_Right ] };
+    key <MDWN> { [ Pointer_Down ] };
+};
