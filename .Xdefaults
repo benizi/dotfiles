@@ -59,7 +59,7 @@ URxvt*cursorColor: gray70
 !*color0: #ddcc44
 ! Try a reddish color that works against either a dark or bright background.
 !*color0: #cc4455
-*color0: white
+!*color0: white
 
 !make yellow orange, for readability against white
 *color3: orange3
