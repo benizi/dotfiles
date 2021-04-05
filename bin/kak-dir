@@ -94,5 +94,9 @@ then
 fi
 
 kak -clear || :
-kak -l | grep -qFx "$kak" || kak -d -s "$kak"
+kak -l | grep -qFx "$kak" || {
+  setsid kak -d -s "$kak" &
+  # not sure if needed:
+  sleep 1
+}
 $detached || kak -c "$kak" "$@"
