@@ -91,6 +91,7 @@ type foundAddr struct {
   preferred bool
   rejected bool
   Loopback bool
+  Local bool
   isRfc1918 bool
   V6 bool
   original int
@@ -176,6 +177,9 @@ func (v ByAttributes) Less(i, j int) bool {
   }
   if a.Loopback != b.Loopback {
     return !a.Loopback
+  }
+  if a.Local != b.Local {
+    return !a.Local
   }
   if a.V6 != b.V6 {
     return !a.V6
@@ -266,6 +270,7 @@ func main() {
   skipDocker := false
   skipPrivate := false
   keepLoop := false
+  keepLocal := false
   keepRejected := false
   keepAll := false
   onlyIfs := ""
@@ -289,6 +294,8 @@ func main() {
   flag.BoolVar(&skipPrivate, "nopriv", skipPrivate, "Omit RFC1918 addresses")
   flag.BoolVar(&keepLoop, "l", keepLoop,
     "Print loopback addresses (don't omit, just penalize)")
+  flag.BoolVar(&keepLocal, "ll", keepLocal,
+    "Print link-local addresses (don't omit, just penalize)")
   flag.BoolVar(&keepRejected, "rejected", keepRejected,
     "Print rejected addresses (don't omit, just penalize)")
   flag.BoolVar(&keepAll, "d", keepAll,
@@ -385,6 +392,7 @@ func main() {
     isPrivate := rfc1918.contains(ip)
     isRejected := rejectNets.contains(ip)
     isLoop := ip.IsLoopback()
+    isLocal := ip.IsLinkLocalMulticast() || ip.IsLinkLocalUnicast()
 
     if xor(print4, print6) && xor(print6, v6) {
       continue
@@ -405,6 +413,9 @@ func main() {
       if isLoop && !keepLoop {
         continue
       }
+      if isLocal && !keepLocal {
+        continue
+      }
     }
     network := net.IPNet{IP: ip, Mask: addr.mask}
     found = append(found, foundAddr{
@@ -414,6 +425,7 @@ func main() {
       rejected: isRejected,
       isRfc1918: isPrivate,
       Loopback: isLoop,
+      Local: isLocal,
       V6: v6,
       original: len(found),
       Name: addr.name,
