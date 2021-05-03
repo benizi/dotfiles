@@ -10,6 +10,7 @@ import (
   "net"
   "net/http"
   "os"
+  "os/exec"
   "reflect"
   "regexp"
   "sort"
@@ -259,12 +260,30 @@ func expandCIDR(cidr string) string {
   return fmt.Sprintf("%s/%s", strings.Join(octets, "."), class)
 }
 
+func findDockerNets() ([]string, error) {
+  cmdNets := exec.Command("docker", "network", "ls", "-q", "--no-trunc")
+  out, err := cmdNets.Output()
+  if err != nil {
+    return nil, err
+  }
+  netIDs := strings.Fields(string(out))
+  args := []string{"network", "inspect"}
+  args = append(args, "--format", "{{range .IPAM.Config}}{{.Subnet}}{{end}}")
+  args = append(args, netIDs...)
+  cmdSubs := exec.Command("docker", args...)
+  subout, err := cmdSubs.Output()
+  if err != nil {
+    return nil, err
+  }
+  return strings.Fields(string(subout)), nil
+}
+
 func main() {
   print4 := false
   print6 := false
   external := false
   iface := false
-  docker := "172.16.0.0/12"
+  docker := ""
   findAll := false
   reallyAll := false
   printName := false
@@ -325,6 +344,10 @@ func main() {
     printName = true
   }
 
+  if docker != "" {
+    skipDocker = true
+  }
+
   if !external && !iface {
     iface = true
   }
@@ -348,7 +371,16 @@ func main() {
   }
 
   if skipDocker {
-    addNet(dockerNets, docker)
+    toSkip := strings.Fields(docker)
+    cidrs, err := findDockerNets()
+    if err == nil {
+      toSkip = append(toSkip, cidrs...)
+    } else {
+      parseErrors = append(parseErrors, err)
+    }
+    for _, cidr := range toSkip {
+      addNet(dockerNets, cidr)
+    }
   }
 
   filterInterfaceNames := false
