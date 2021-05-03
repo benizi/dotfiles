@@ -286,6 +286,7 @@ func main() {
   docker := ""
   findAll := false
   reallyAll := false
+  dockerAll := false
   printName := false
   printMask := false
   skipDocker := false
@@ -322,6 +323,7 @@ func main() {
   flag.BoolVar(&keepAll, "d", keepAll,
     "Print all addresses (overrides all but -4/-6; uses others to sort)")
   flag.BoolVar(&reallyAll, "A", reallyAll, "Alias for -a + -n")
+  flag.BoolVar(&dockerAll, "D", dockerAll, "Alias for -a + -n + -nodocker")
   flag.StringVar(&format, "fmt", format, "Output template")
   flag.BoolVar(&raw, "raw", raw, "Accept template string as-is (no newline)")
   flag.BoolVar(&asJson, "json", asJson,
@@ -333,18 +335,16 @@ func main() {
     "Only show IPs on these interface names (comma-separated)")
   flag.Parse()
 
-  switch {
-  case !reallyAll:
-  case skipDocker, onlyIfs != "":
-    log.Println("-A overrides -skip-docker + -ifs")
+  if (reallyAll || dockerAll) && onlyIfs != "" {
+    log.Println("-A overrides -ifs")
   }
 
-  if reallyAll {
+  if reallyAll || dockerAll {
     findAll = true
     printName = true
   }
 
-  if docker != "" {
+  if dockerAll || docker != "" {
     skipDocker = true
   }
 
