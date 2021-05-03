@@ -93,6 +93,7 @@ type foundAddr struct {
   Loopback bool
   Local bool
   isRfc1918 bool
+  Docker bool
   V6 bool
   original int
   Name string
@@ -436,6 +437,7 @@ func main() {
       Network: network.String(),
       preferred: isPreferred,
       rejected: isRejected,
+      Docker: isDocker,
       isRfc1918: isPrivate,
       Loopback: isLoop,
       Local: isLocal,
