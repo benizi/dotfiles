@@ -265,6 +265,7 @@ func main() {
   iface := false
   docker := "172.16.0.0/12"
   findAll := false
+  reallyAll := false
   printName := false
   printMask := false
   skipDocker := false
@@ -300,6 +301,7 @@ func main() {
     "Print rejected addresses (don't omit, just penalize)")
   flag.BoolVar(&keepAll, "d", keepAll,
     "Print all addresses (overrides all but -4/-6; uses others to sort)")
+  flag.BoolVar(&reallyAll, "A", reallyAll, "Alias for -a + -n")
   flag.StringVar(&format, "fmt", format, "Output template")
   flag.BoolVar(&raw, "raw", raw, "Accept template string as-is (no newline)")
   flag.BoolVar(&asJson, "json", asJson,
@@ -310,6 +312,17 @@ func main() {
   flag.StringVar(&onlyIfs, "ifs", onlyIfs,
     "Only show IPs on these interface names (comma-separated)")
   flag.Parse()
+
+  switch {
+  case !reallyAll:
+  case skipDocker, onlyIfs != "":
+    log.Println("-A overrides -skip-docker + -ifs")
+  }
+
+  if reallyAll {
+    findAll = true
+    printName = true
+  }
 
   if !external && !iface {
     iface = true
