@@ -4,8 +4,6 @@ require 'json'
 require 'open3'
 require 'set'
 
-$debug = false
-
 DC = %q(docker-compose.yml)
 DC_ENV = %q(.env)
 DC_OVER = %q(docker-compose.override.yml)
@@ -16,6 +14,20 @@ load LOCAL_CFG if File.exists?(LOCAL_CFG)
 DIR_BY_CMD ||= {}
 
 EXPORT_IP = %w(DOCKER_HOST_IP)
+
+@orig_env = ENV.to_h
+@env = {}
+
+def has_env?(key, env: nil)
+  env = env || @orig_env
+  env.has_key?(key) && env[key] != ""
+end
+
+@debug = has_env?("DC_DEBUG")
+
+def debug(txt)
+  $stderr.puts(txt) if @debug
+end
 
 def with_env(e, &func)
   orig = ENV.to_h
@@ -29,7 +41,7 @@ end
 def compose_file_from_command
   cmd = File.basename($0)
   if dir = DIR_BY_CMD[cmd]
-    puts "$0 «#{cmd}» -> expand(#{dir})" if $debug
+    debug "$0 «#{cmd}» -> expand(#{dir})"
     expand_compose_file(dir)
   end
 end
@@ -37,7 +49,7 @@ end
 def compose_file_from_args(args)
   return nil unless File.basename($0) == "dcf"
   expand_compose_file(args.first).tap do |ret|
-    puts "«dcf filename» -> #{ret||"(none)"}" if $debug
+    debug "«dcf filename» -> #{ret||"(none)"}"
   end
 end
 
@@ -49,7 +61,7 @@ def expand_compose_file(path)
     file = File.join(path, DC)
     [file] if File.file?(file)
   end.tap do |ret|
-    puts "expand(#{path}) -> #{ret||"(none)"}" if $debug
+    debug "expand(#{path}) -> #{ret||"(none)"}"
   end
 end
 
@@ -62,7 +74,7 @@ end
 
 def split_compose_file_args(args)
   files, modified =
-    if ENV.has_key?("COMPOSE_FILE")
+    if has_env?("COMPOSE_FILE")
       [[], args]
     elsif expanded = compose_file_from_command
       [expanded, args]
@@ -71,7 +83,7 @@ def split_compose_file_args(args)
     else
       [[], args]
     end.tap do |fs, mod|
-      puts "split(#{args.inspect}) -> #{fs.inspect} + #{mod.inspect}" if $debug
+      debug "split(#{args.inspect}) -> #{fs.inspect} + #{mod.inspect}"
     end
 
   [add_override(files), modified]
@@ -79,20 +91,25 @@ end
 
 def export_myip
   ip = %x(myip %docker0).chomp
-  EXPORT_IP.each { |name| ENV[name] = ip }
+  EXPORT_IP.each { |name| set_env_var(name, ip) }
 end
 
 def add_dotenv(files)
   return unless compose_file = files.first
   env = File.join(File.dirname(compose_file), DC_ENV)
+  add_dotenv_file(env)
+end
+
+def add_dotenv_file(env)
   return unless File.file?(env)
+  debug "Adding #{env}"
   File.open(env) do |fh|
     fh.each_line do |line|
       line.chomp!
       case line
       when /\A(\w+)=(.+)\Z/ then
         var, val = line.split(/=/, 2)
-        ENV[var] = val unless ENV.has_key?(var)
+        set_env_var(var, val)
       when /\A#/ then
         nil
       else
@@ -103,9 +120,21 @@ def add_dotenv(files)
   end
 end
 
+def set_env_var(var, val, force: false)
+  present = has_env?(var) || has_env?(var, env: @env)
+
+  if force || !present
+    debug "#{present ? "Forced" : "Exporting"} env #{{var => val}.inspect}"
+    @env[var] = val
+  else
+    debug "NOT Setting #{var} (already: [#{@env[var] || @orig_env[var]}])"
+  end
+end
+
 def export_compose_files(files)
+  debug "export_compose_files(#{files.inspect})"
   return unless files.first
-  ENV["COMPOSE_FILE"] = files.join(File::PATH_SEPARATOR)
+  set_env_var("COMPOSE_FILE", files.join(File::PATH_SEPARATOR), force: true)
 end
 
 def set_env(files)
@@ -166,11 +195,10 @@ end
 
 def main(args)
   orig = args.clone
-  orig_env = ENV.to_h
 
   files, args = split_compose_file_args(args)
 
-  if ENV.has_key?("DC_COMPLETION")
+  if has_env?("DC_COMPLETION")
     puts files.join(":")
     exit
   end
@@ -182,10 +210,10 @@ def main(args)
 
   case cmd
   when "info", "debug" then
-    $debug = cmd == "debug"
-    files, args = with_env(orig_env) { split_compose_file_args(orig) }
+    @debug = cmd == "debug"
+    files, args = with_env(@orig_env) { split_compose_file_args(orig) }
     files.each { |f| puts "Docker compose file: #{f}" }
-    (ENV.to_a - orig_env.to_a).each do |(k,v)|
+    (ENV.to_a - @orig_env.to_a).each do |(k,v)|
       puts "Added $#{k} = «#{v}»"
     end
   when "reup" then
