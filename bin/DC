@@ -202,10 +202,19 @@ end
 
 def compose_project_name
   return @project_name if defined?(@project_name)
+
+  name = @env["COMPOSE_PROJECT_NAME"] || @orig_env["COMPOSE_PROJECT_NAME"]
+  name ||= File.basename(@project_directory)
+  @project_name = name if name
+  return @project_name if defined?(@project_name)
+
   out, _, rc = run_dc(%w(ps -q))
   raise unless rc.success?
   id = out.strip.split.first
-  @project_name = docker_labels("com.docker.compose.project", id)
+  docker_labels("com.docker.compose.project", id).first.tap do |name|
+    debug "compose_project_name: #{name}"
+    @project_name = name
+  end
 rescue
   nil
 end
@@ -261,6 +270,7 @@ def main(args)
     (ENV.to_a - @orig_env.to_a).each do |(k,v)|
       puts "Added $#{k} = «#{v}»"
     end
+    puts "project_name = «#{compose_project_name}»"
   when "reup" then
     opts = []
     opts << rest.shift while rest.first && rest.first =~ /^-/
