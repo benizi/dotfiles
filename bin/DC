@@ -5,6 +5,7 @@ require 'open3'
 require 'set'
 
 DC = %q(docker-compose.yml)
+DC_BIN = %q(docker-compose)
 DC_ENV = %q(.env)
 DC_OVER = %q(docker-compose.override.yml)
 
@@ -16,7 +17,7 @@ DIR_BY_CMD ||= {}
 EXPORT_IP = %w(DOCKER_HOST_IP)
 
 @orig_env = ENV.to_h
-@env = {}
+@env = {"DC_WRAPPED_ALREADY" => "1"}
 
 def has_env?(key, env: nil)
   env = env || @orig_env
@@ -24,6 +25,7 @@ def has_env?(key, env: nil)
 end
 
 @debug = has_env?("DC_DEBUG")
+@wrapped = has_env?("DC_WRAPPED_ALREADY", env: @orig_env)
 
 def debug(txt)
   $stderr.puts(txt) if @debug
@@ -39,7 +41,7 @@ ensure
 end
 
 def compose_file_from_command
-  cmd = File.basename($0)
+  cmd = File.basename(ENV["ARGV0"] || ENV["DC_CMD"] || $0)
   if dir = DIR_BY_CMD[cmd]
     debug "$0 «#{cmd}» -> expand(#{dir})"
     expand_compose_file(dir)
@@ -165,12 +167,31 @@ def with_signal_trap(action=:IGNORE)
   end
 end
 
+def same_inode?(a, b)
+  File::Stat.new(a).ino == File::Stat.new(b).ino
+rescue
+  false
+end
+
+def docker_compose_bin
+  exts = ";#{ENV["PATHEXT"]}".split(";", -1).drop(1)
+  ENV['PATH'].split(File::PATH_SEPARATOR).each do |dir|
+    exts.each do |ext|
+      bin = File.join(dir, "#{DC_BIN}#{ext}")
+      next unless File.executable?(bin)
+      next if File.directory?(bin)
+      next if same_inode?(bin, __FILE__)
+      return [bin]
+    end
+  end
+end
+
 def directory_flag
   @project_directory ? ["--project-directory", @project_directory] : []
 end
 
 def run_dc(args, target: Open3, method: :capture3)
-  cmd = %w(docker-compose) + directory_flag + args
+  cmd = docker_compose_bin + directory_flag + args
   dbg_target = (target == self) ? "self" : target.inspect
   debug "Running: #{dbg_target}.#{method}(#{cmd.inspect[1..-2]})"
   @env.to_a.sort.each { |(k,v)| debug "  #{{k => v}.inspect}" }
@@ -239,6 +260,10 @@ rescue => x
   []
 end
 
+def already_wrapped?
+  !!@wrapped
+end
+
 def main(args)
   orig = args.clone
 
@@ -253,6 +278,8 @@ def main(args)
   abort "No command specified" unless cmd
 
   set_env(files)
+
+  return run_dc_tee(args, :spawn) if already_wrapped?
 
   @runner = [self, :system]
   case cmd
