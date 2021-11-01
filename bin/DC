@@ -143,9 +143,32 @@ def set_env(files)
   export_compose_files(files)
 end
 
-def run_dc(args)
+def spawn_pgroup(env, *cmd)
+  spawn(env, *cmd, pgroup: true)
+end
+
+def with_signal_trap(action=:IGNORE)
+  sigs = %i(INT TERM QUIT)
+  prev = sigs.map { |s| [s, Signal.trap(s, action)] }.to_h
+  begin
+    yield
+  ensure
+    prev.to_a.each { |s,t| Signal.trap(s, t) }
+  end
+end
+
+def run_dc(args, target: Open3, method: :capture3)
   cmd = %w(docker-compose) + args
-  system(*cmd)
+  dbg_target = (target == self) ? "self" : target.inspect
+  debug "Running: #{dbg_target}.#{method}(#{cmd.inspect[1..-2]})"
+  @env.to_a.sort.each { |(k,v)| debug "  #{{k => v}.inspect}" }
+  target.send(method, @env, *cmd)
+end
+
+def run_dc_tee(args, method=:spawn_pgroup)
+  pid = run_dc(args, target: self, method: method)
+  handler = proc { |sig| Process.kill(sig, pid) }
+  with_signal_trap(handler) { Process.wait pid }
 end
 
 def docker_labels(name, *images)
@@ -167,7 +190,7 @@ end
 
 def compose_project_name
   return @project_name if defined?(@project_name)
-  out, _, rc = Open3.capture3(*%w(docker-compose ps -q))
+  out, _, rc = run_dc(%w(ps -q))
   raise unless rc.success?
   id = out.strip.split.first
   @project_name = docker_labels("com.docker.compose.project", id)
@@ -186,7 +209,7 @@ rescue
 end
 
 def compose_services
-  out, _, rc = Open3.capture3(*%w(docker-compose config --services))
+  out, _, rc = run_dc(%w(config --services))
   raise unless rc.success?
   out.lines.map(&:chomp!)
 rescue
@@ -208,6 +231,7 @@ def main(args)
 
   set_env(files)
 
+  @runner = [self, :system]
   case cmd
   when "info", "debug" then
     @debug = cmd == "debug"
@@ -220,11 +244,11 @@ def main(args)
     opts = []
     opts << rest.shift while rest.first && rest.first =~ /^-/
     abort "No service(s) specified" if rest.empty?
-    run_dc(%w(rm -s -f) + rest)
-    run_dc(%w(up) + opts + rest)
+    run_dc_tee(%w(rm -s -f) + rest)
+    run_dc_tee(%w(up) + opts + rest)
   when "restart" then
-    run_dc(%w(down --remove-orphans))
-    run_dc(%w(up) + rest)
+    run_dc_tee(%w(down --remove-orphans))
+    run_dc_tee(%w(up) + rest)
   when "status" then
     running = Set[*running_services]
     all = Set[*compose_services]
@@ -232,7 +256,7 @@ def main(args)
       puts [running.include?(svc), svc].join("\t")
     end
   else
-    run_dc(args)
+    run_dc_tee(args, :spawn)
   end
 end
 
