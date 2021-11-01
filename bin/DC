@@ -107,10 +107,10 @@ def add_dotenv_file(env)
     fh.each_line do |line|
       line.chomp!
       case line
-      when /\A(\w+)=(.+)\Z/ then
+      when /\A(\w+)=(.*)\Z/ then
         var, val = line.split(/=/, 2)
         set_env_var(var, val)
-      when /\A#/ then
+      when /\A#/, /\A\s*\Z/ then
         nil
       else
         $stderr.puts("Wrong format for line in #{env}:")
