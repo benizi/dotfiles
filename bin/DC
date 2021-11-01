@@ -11,12 +11,9 @@ DC_ENV = %q(.env)
 DC_OVER = %q(docker-compose.override.yml)
 
 LOCAL_CFG = File.expand_path("~/.config/DC")
+load LOCAL_CFG if File.exists?(LOCAL_CFG)
 
-if File.exists?(LOCAL_CFG)
-  load LOCAL_CFG
-else
-  DIR_BY_CMD = {}
-end
+DIR_BY_CMD ||= {}
 
 EXPORT_IP = %w(DOCKER_HOST_IP)
 
