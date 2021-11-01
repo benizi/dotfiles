@@ -139,10 +139,16 @@ def export_compose_files(files)
   set_env_var("COMPOSE_FILE", files.join(File::PATH_SEPARATOR), force: true)
 end
 
+def set_project_directory(files)
+  return unless files.first
+  @project_directory = File.dirname(files.first)
+end
+
 def set_env(files)
   export_myip
   add_dotenv(files)
   export_compose_files(files)
+  set_project_directory(files)
 end
 
 def spawn_pgroup(env, *cmd)
@@ -159,8 +165,12 @@ def with_signal_trap(action=:IGNORE)
   end
 end
 
+def directory_flag
+  @project_directory ? ["--project-directory", @project_directory] : []
+end
+
 def run_dc(args, target: Open3, method: :capture3)
-  cmd = %w(docker-compose) + args
+  cmd = %w(docker-compose) + directory_flag + args
   dbg_target = (target == self) ? "self" : target.inspect
   debug "Running: #{dbg_target}.#{method}(#{cmd.inspect[1..-2]})"
   @env.to_a.sort.each { |(k,v)| debug "  #{{k => v}.inspect}" }
