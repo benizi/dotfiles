@@ -318,12 +318,39 @@ rescue => x
   []
 end
 
+def color_number(color)
+  offset = %i(red green yellow blue).find_index(color)
+  offset ? (1 + offset) : nil
+end
+
+def color_fg(n)
+  n ? "\e[#{30 + n}m" : ""
+end
+
+def color_reset
+  "\e[0m"
+end
+
+def color?(opts)
+  opts.color == :always or (opts.color == :auto and $stdout.tty?)
+end
+
+def print_color(opts, color, line)
+  if color?(opts) and n = color_number(color)
+    fg = color_fg(n)
+    reset = color_reset
+    line = fg + line + reset
+  end
+
+  $stdout.puts line
+end
+
 def fix_image_name(img)
   img.sub(/:latest$/, "")
 end
 
 def dc_status(args)
-  opts = OpenStruct.new(verbose: false, all: false, tab: false)
+  opts = OpenStruct.new(verbose: false, all: false, tab: false, color: :auto)
 
   parsed = true
   begin
@@ -331,6 +358,7 @@ def dc_status(args)
       p.on("-a", "--all", "--per-instance", "Print all containers (implies -v)")
       p.on("-v", "--verbose", "Print extra info")
       p.on("-t", "-r", "--tab", "--raw", "Don't format the output")
+      p.on("--color WHEN", %i(auto always never), "When to use colors")
     end.parse(args, into: opts)
   rescue => x
     debug "Error parsing 'status' options: #{x}"
@@ -424,6 +452,8 @@ def dc_status(args)
   end
 
   lines = []
+  colors = []
+
   service_info.sort.each do |(svc, info)|
     image = info[:image]
     instances = info[:instances] + info[:one_offs]
@@ -436,8 +466,20 @@ def dc_status(args)
     instances = [{ok: false, err: nil}] unless instances.any?
 
     instances.each do |instance|
+      color =
+        if instance[:one_off]
+          :normal
+        elsif instance[:ok]
+          :blue
+        elsif instance[:rc] == 0
+          :green
+        else
+          :red
+        end
+
       img_stat =
         if instance[:image] and instance[:image] != image
+          color = :yellow
           "#{instance[:image]} (cfg: #{image})"
         else
           image
@@ -453,6 +495,7 @@ def dc_status(args)
 
       n = opts.all ? [instance[:n] || 0] : []
       lines << [instance[:ok], svc] + n + [img_stat]
+      colors << color
     end
   end
 
@@ -476,7 +519,7 @@ def dc_status(args)
   end
 
   sep = opts.tab ? "\t" : "  "
-  lines.each { |line| puts line.join(sep) }
+  colors.zip(lines) { |color, line| print_color(opts, color, line.join(sep)) }
 end
 
 def already_wrapped?
