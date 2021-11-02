@@ -75,7 +75,7 @@ def add_override(files)
   files.flat_map do |file|
     over = File.join(File.dirname(file), DC_OVER)
     [file, over].select { |f| File.file?(f) }
-  end
+  end.tap { |fs| debug "add_override(#{files.inspect}) -> #{fs.inspect}" }
 end
 
 def split_compose_file_args(args)
