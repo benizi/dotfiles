@@ -146,6 +146,9 @@ def export_compose_files(files)
 
   version = (@env["DC_VERSION"] || ENV["DC_VERSION"])
 
+  addr = (@env["DC_BIND"] || ENV["DC_BIND"])
+  del = %w(-1 false no none).include?((addr || "").downcase)
+
   files.map do |f|
     t = Tempfile.new("DC")
 
@@ -157,6 +160,24 @@ def export_compose_files(files)
 
     y = YAML.load_file(f)
     y["version"] = version if version
+
+    if addr and Hash === y and y["services"]
+      y["services"].each do |k, svc|
+        (Hash === svc && svc["ports"] || []).each_with_index do |p,i|
+          if Hash === p
+            debug "Can't remap .service.#{k}.ports[#{i}]: #{p.inspect}"
+          elsif m = p.match(/^(?:(?:(?<addr>\d+(?:\.\d+){3}):)?(?<src>\d+):)?(?<dst>\d+)(?:\/(?:tcp|udp))?$/)
+            if m[:addr]
+              next if m[:addr] != "127.0.0.1"
+              debug "Ignoring explicit 127.0.0.1 bind"
+            end
+            repl = del ? m[:dst] : [addr, m[:src], m[:dst]].join(":")
+            y["services"][k]["ports"][i] = repl
+            debug "Remapped #{p} => #{repl}"
+          end
+        end
+      end
+    end
 
     t.write(y.to_yaml)
     t.close
