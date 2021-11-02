@@ -204,7 +204,8 @@ def running_services
   out, _, rc = Open3.capture3(*["docker", "ps", "-q", filter])
   raise unless rc.success?
   docker_labels("com.docker.compose.service", *out.split)
-rescue
+rescue => x
+  debug "running_services failed: #{x}"
   []
 end
 
@@ -212,7 +213,8 @@ def compose_services
   out, _, rc = run_dc(%w(config --services))
   raise unless rc.success?
   out.lines.map(&:chomp!)
-rescue
+rescue => x
+  debug "compose_services failed: #{x}"
   []
 end
 
