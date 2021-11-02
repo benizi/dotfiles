@@ -573,6 +573,13 @@ def main(args)
       puts "Added $#{k} = «#{v}»"
     end
     puts "project_name = «#{compose_project_name}»"
+  when "logup" then
+    run_dc_tee(%w(up -d) + rest)
+    run_dc_tee(%w(logs --follow) + rest)
+  when "relog" then
+    run_dc_tee(%w(rm -s -f) + rest)
+    run_dc_tee(%w(up -d) + rest)
+    run_dc_tee(%w(logs --follow) + rest, :spawn)
   when "reup" then
     opts = []
     opts << rest.shift while rest.first && rest.first =~ /^-/
