@@ -255,6 +255,20 @@ def main(args)
     all.to_a.sort.each do |svc|
       puts [running.include?(svc), svc].join("\t")
     end
+  when "scale" then
+    scales = []
+    svcs = []
+    rest.each do |s|
+      if m = s.match(/^(?<svc>[\w\-]+)=(?<n>\d+)$/)
+        scales += ["--scale", s]
+        svcs << m[:svc]
+      elsif s =~ /^[\w\-]+$/
+        svcs << s
+      else
+        abort "Args to 'scale' should be of the form 'service'/'service=N' (#{s})"
+      end
+    end
+    run_dc_tee(%w(up -d) + scales + svcs)
   else
     run_dc_tee(args, :spawn)
   end
