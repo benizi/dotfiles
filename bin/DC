@@ -323,13 +323,14 @@ def fix_image_name(img)
 end
 
 def dc_status(args)
-  opts = OpenStruct.new(verbose: false, all: false)
+  opts = OpenStruct.new(verbose: false, all: false, tab: false)
 
   parsed = true
   begin
     OptionParser.new do |p|
       p.on("-a", "--all", "--per-instance", "Print all containers (implies -v)")
       p.on("-v", "--verbose", "Print extra info")
+      p.on("-t", "-r", "--tab", "--raw", "Don't format the output")
     end.parse(args, into: opts)
   rescue => x
     debug "Error parsing 'status' options: #{x}"
@@ -455,24 +456,27 @@ def dc_status(args)
     end
   end
 
-  lines.map! { |l| l.map!(&:to_s) }
+  unless opts.tab
+    lines.map! { |l| l.map!(&:to_s) }
 
-  max_col = 0
-  widths = Hash.new(0)
-  lines.each do |line|
-    line.each_with_index do |col, i|
-      widths[i] = [widths[i], col.size].max
-      max_col = i if i > max_col
+    max_col = 0
+    widths = Hash.new(0)
+    lines.each do |line|
+      line.each_with_index do |col, i|
+        widths[i] = [widths[i], col.size].max
+        max_col = i if i > max_col
+      end
+    end
+
+    lines.map! do |line|
+      line.each_with_index.map do |val, i|
+        (i < max_col and i + 1 < line.size) ? val.ljust(widths[i]) : val
+      end
     end
   end
 
-  lines.map! do |line|
-    line.each_with_index.map do |val, i|
-      (i < max_col and i + 1 < line.size) ? val.ljust(widths[i]) : val
-    end
-  end
-
-  lines.each { |line| puts line.join(" ") }
+  sep = opts.tab ? "\t" : "  "
+  lines.each { |line| puts line.join(sep) }
 end
 
 def already_wrapped?
