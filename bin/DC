@@ -574,7 +574,7 @@ def main(args)
   when "restart" then
     run_dc_tee(%w(down --remove-orphans))
     run_dc_tee(%w(up) + rest)
-  when "status" then
+  when "status", "ps" then
     dc_status(rest)
   when "scale" then
     scales = []
