@@ -148,7 +148,12 @@ def export_compose_files(files)
 
   files.map do |f|
     t = Tempfile.new("DC")
-    at_exit { t.unlink }
+
+    if has_env?("DC_KEEP")
+      ObjectSpace.undefine_finalizer(t)
+    else
+      at_exit { t.unlink }
+    end
 
     y = YAML.load_file(f)
     y["version"] = version if version
