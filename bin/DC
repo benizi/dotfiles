@@ -2,6 +2,8 @@
 
 require 'json'
 require 'open3'
+require 'optparse'
+require 'ostruct'
 require 'set'
 require 'tempfile'
 require 'yaml'
@@ -316,6 +318,163 @@ rescue => x
   []
 end
 
+def fix_image_name(img)
+  img.sub(/:latest$/, "")
+end
+
+def dc_status(args)
+  opts = OpenStruct.new(verbose: false, all: false)
+
+  parsed = true
+  begin
+    OptionParser.new do |p|
+      p.on("-a", "--all", "--per-instance", "Print all containers (implies -v)")
+      p.on("-v", "--verbose", "Print extra info")
+    end.parse(args, into: opts)
+  rescue => x
+    debug "Error parsing 'status' options: #{x}"
+    parsed = false
+  end
+  opts.verbose = true if opts.all
+  return run_dc_tee(%w(ps) + args, :spawn) unless parsed
+  debug "Options: #{({opts: opts, args: args, parsed: parsed}.inspect)}"
+
+  out, err, rc = run_dc(%w(ps -q -a) + opts.services)
+  unless rc.success?
+    abort "Failed to find current container IDs: #{err}"
+  end
+  cids = out.split
+
+  containers =
+    if cids.any?
+      inspect_cmd = ["docker", "inspect", "--format={{json .}}", *cids]
+
+      json, err, rc = Open3.capture3(*inspect_cmd)
+      unless rc.success?
+        abort "Failed to inspect current containers: #{err}"
+      end
+
+      JSON.parse(%Q{[#{json.strip.lines.join(",")}]})
+    else
+      []
+    end
+
+  yaml, err, rc = run_dc(%w(config))
+  unless rc.success?
+    abort "Failed to get docker-compose config: #{err}"
+  end
+
+  # run YAML back through JSON to resolve any anchors
+  services = JSON.parse(YAML.load(yaml).to_json)["services"] || {}
+  service_info = Hash.new do |h, k|
+    h[k] = {running: false, instances: [], one_offs: []}
+  end
+
+  services.each do |(name, svc)|
+    img = svc["image"] || [compose_project_name, name].join("_")
+    service_info[name][:image] = fix_image_name(img)
+  end
+
+  containers.each do |c|
+    dc_labels = c["Config"]["Labels"].map do |(k, v)|
+      outk = k.sub(/^com\.docker\.compose\./, "")
+      outk != k ? [outk, v] : nil
+    end.reject(&:nil?).to_h
+
+    next unless svc = dc_labels["service"]
+    n = dc_labels["container-number"].to_i
+    one_off = dc_labels["oneoff"] == "True"
+    state = c["State"]
+    ok = state["Running"] and not %w(Paused Restarting OOMKilled Dead).any? { |bad| state[bad] }
+    status = state["Status"]
+    rc = state["ExitCode"]
+
+    err =
+      if ok
+        ""
+      elsif status != "exited"
+        status
+      else
+        pre = rc == 0 ? "" : "err: "
+        "#{pre}#{status} #{rc}"
+      end
+
+    info = {
+      name: c["Name"].sub(/^\//, ""),
+      image: fix_image_name(c["Config"]["Image"]),
+      id: c["Image"],
+      n: n,
+      dc: dc_labels,
+      c: c,
+      one_off: one_off,
+      expected: [dc_labels["project"], dc_labels["service"], n].join('_'),
+      state: state,
+      ok: ok,
+      err: err,
+      rc: rc
+    }
+
+    if one_off
+      service_info[svc][:one_offs] << info
+    else
+      service_info[svc][:running] = true
+      service_info[svc][:instances][n-1] = info
+    end
+  end
+
+  lines = []
+  service_info.sort.each do |(svc, info)|
+    image = info[:image]
+    instances = info[:instances] + info[:one_offs]
+
+    unless opts.all
+      info = instances.find { |i| i[:ok] } || instances[0]
+      instances = info ? [info] : []
+    end
+
+    instances = [{ok: false, err: nil}] unless instances.any?
+
+    instances.each do |instance|
+      img_stat =
+        if instance[:image] and instance[:image] != image
+          "#{instance[:image]} (cfg: #{image})"
+        else
+          image
+        end
+
+      if instance[:name] != instance[:expected]
+        img_stat << " (name: #{instance[:name]})"
+      end
+
+      if not instance[:ok] and instance[:err]
+        img_stat << " (#{instance[:err]})"
+      end
+
+      n = opts.all ? [instance[:n] || 0] : []
+      lines << [instance[:ok], svc] + n + [img_stat]
+    end
+  end
+
+  lines.map! { |l| l.map!(&:to_s) }
+
+  max_col = 0
+  widths = Hash.new(0)
+  lines.each do |line|
+    line.each_with_index do |col, i|
+      widths[i] = [widths[i], col.size].max
+      max_col = i if i > max_col
+    end
+  end
+
+  lines.map! do |line|
+    line.each_with_index.map do |val, i|
+      (i < max_col and i + 1 < line.size) ? val.ljust(widths[i]) : val
+    end
+  end
+
+  lines.each { |line| puts line.join(" ") }
+end
+
 def already_wrapped?
   !!@wrapped
 end
@@ -364,11 +523,7 @@ def main(args)
     run_dc_tee(%w(down --remove-orphans))
     run_dc_tee(%w(up) + rest)
   when "status" then
-    running = Set[*running_services]
-    all = Set[*compose_services]
-    all.to_a.sort.each do |svc|
-      puts [running.include?(svc), svc].join("\t")
-    end
+    dc_status(rest)
   when "scale" then
     scales = []
     svcs = []
