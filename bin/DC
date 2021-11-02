@@ -140,6 +140,14 @@ def set_env_var(var, val, force: false)
   end
 end
 
+def skip_port_remapping(*parts)
+  var = "DC_BIND_#{parts.join("_")}"
+  val = @env[var] || ENV[var] || ""
+  (val == "skip").tap do |skip|
+    debug "Not remapping #{parts.join(", port ")} due to $#{var}=#{val}" if skip
+  end
+end
+
 def export_compose_files(files)
   debug "export_compose_files(#{files.inspect})"
   return unless files.first
@@ -163,10 +171,12 @@ def export_compose_files(files)
 
     if addr and Hash === y and y["services"]
       y["services"].each do |k, svc|
+        next if skip_port_remapping(k)
         (Hash === svc && svc["ports"] || []).each_with_index do |p,i|
           if Hash === p
             debug "Can't remap .service.#{k}.ports[#{i}]: #{p.inspect}"
           elsif m = p.match(/^(?:(?:(?<addr>\d+(?:\.\d+){3}):)?(?<src>\d+):)?(?<dst>\d+)(?:\/(?:tcp|udp))?$/)
+            next if skip_port_remapping(k, m[:dst])
             if m[:addr]
               next if m[:addr] != "127.0.0.1"
               debug "Ignoring explicit 127.0.0.1 bind"
