@@ -550,6 +550,14 @@ def main(args)
 
   @runner = [self, :system]
   case cmd
+  when "real" then
+    type =
+      case rest.first
+      when /^(?:--|:)?spawn$/ then rest.shift ; :spawn
+      when /^(?:--|:)?spawn_pgroup$/ then rest.shift ; :spawn_pgroup
+      else :spawn
+      end
+    run_dc_tee(rest, type)
   when "inspect" then
     out, _, rc = run_dc(%w(ps -q) + rest)
     raise unless rc.success?
