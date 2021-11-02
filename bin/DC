@@ -237,6 +237,13 @@ def main(args)
 
   @runner = [self, :system]
   case cmd
+  when "inspect" then
+    out, _, rc = run_dc(%w(ps -q) + rest)
+    raise unless rc.success?
+    ids = out.strip.split
+    out, _, rc = Open3.capture3(*["docker", "inspect", *ids])
+    raise unless rc.success?
+    puts out
   when "info", "debug" then
     @debug = cmd == "debug"
     files, args = with_env(@orig_env) { split_compose_file_args(orig) }
