@@ -3,6 +3,8 @@
 require 'json'
 require 'open3'
 require 'set'
+require 'tempfile'
+require 'yaml'
 
 DC = %q(docker-compose.yml)
 DC_BIN = %q(docker-compose)
@@ -141,7 +143,22 @@ end
 def export_compose_files(files)
   debug "export_compose_files(#{files.inspect})"
   return unless files.first
-  set_env_var("COMPOSE_FILE", files.join(File::PATH_SEPARATOR), force: true)
+
+  version = (@env["DC_VERSION"] || ENV["DC_VERSION"])
+
+  files.map do |f|
+    t = Tempfile.new("DC")
+    at_exit { t.unlink }
+
+    y = YAML.load_file(f)
+    y["version"] = version if version
+
+    t.write(y.to_yaml)
+    t.close
+    t.path
+  end.join(File::PATH_SEPARATOR).tap do |e|
+    set_env_var("COMPOSE_FILE", e, force: true)
+  end
 end
 
 def set_project_directory(files)
