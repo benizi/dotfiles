@@ -351,6 +351,7 @@ end
 
 def dc_status(args)
   opts = OpenStruct.new(verbose: false, all: false, tab: false, color: :auto)
+  opts.services = []
 
   parsed = true
   begin
@@ -359,6 +360,9 @@ def dc_status(args)
       p.on("-v", "--verbose", "Print extra info")
       p.on("-t", "-r", "--tab", "--raw", "Don't format the output")
       p.on("--color WHEN", %i(auto always never), "When to use colors")
+      p.on("-s", "--service SERVICE", "Specify service(s) to show") do
+        |svc| opts.services << svc
+      end
     end.parse(args, into: opts)
   rescue => x
     debug "Error parsing 'status' options: #{x}"
@@ -400,6 +404,7 @@ def dc_status(args)
   end
 
   services.each do |(name, svc)|
+    next if opts.services.any? and not opts.services.include?(name)
     img = svc["image"] || [compose_project_name, name].join("_")
     service_info[name][:image] = fix_image_name(img)
   end
