@@ -100,8 +100,11 @@ end
 
 def add_dotenv(files)
   return unless compose_file = files.first
-  env = File.join(File.dirname(compose_file), DC_ENV)
-  add_dotenv_file(env)
+  (ENV["DC_ENV"] || DC_ENV).split(/[,\s]/).each do |env_file|
+    relative = File.join(File.dirname(compose_file), env_file)
+    env = File.exists?(relative) ? relative : env_file
+    add_dotenv_file(env)
+  end
 end
 
 def add_dotenv_file(env)
