@@ -80,6 +80,8 @@ def split_compose_file_args(args)
       [expanded, args]
     elsif specified = compose_file_from_args(args)
       [specified, args.clone.drop(1)]
+    elsif File.exists?(DC)
+      [[DC], args.clone]
     else
       [[], args]
     end.tap do |fs, mod|
