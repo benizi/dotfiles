@@ -1,0 +1,65 @@
+#compdef aws
+
+setopt local_options magic_equal_subst extended_glob csh_junkie_history
+command -v aws >/dev/null || return 0
+
+local kind val desc arr
+local -a _awscmds _awsargs _cmdargs _subcmds _subargs _reqargs
+local -a _options
+local -A cur
+
+aws-completer "${(@)words[1,CURRENT]}" |
+while read kind val desc
+do
+  case "$kind" in
+    (cur) cur+=( "$val" "$desc" ) ; continue ;;
+  esac
+
+  arr="_${kind}s"
+  [[ "${parameters[$arr]}" = array-local ]] || continue
+  val="${val}${desc:+:$desc}"
+  eval "$arr"+='("$val")'
+done
+
+local -a _list_descs
+
+local txt_cmd_flags txt_cmd_subs txt_subcmd_flags
+
+if (( $+cur[cmd] ))
+then
+  txt_cmd_flags="${cur[cmd]} command flags"
+  txt_cmd_subs="${cur[cmd]} subcommands"
+else
+  txt_cmd_flags=Commands
+  txt_cmd_subs=Subcommands
+fi
+
+if (( $+cur[subcmd] ))
+then txt_subcmd_flags="${cur[cmd]} ${cur[subcmd]} flags"
+else txt_subcmd_flags='Subcommand flags'
+fi
+
+if (( ${#_options} ))
+then
+  _list_descs=(
+    _options "Choices for ${cur[flag]}"
+  )
+else
+  _list_descs=(
+    _reqargs 'Required flags'
+    _subargs "${txt_subcmd_flags}"
+    _cmdargs "${txt_cmd_flags}"
+    _awsargs 'AWS global flags'
+  )
+
+  if (( ${#_subcmds} ))
+  then _list_descs+=( _subcmds "${txt_cmd_subs}" )
+  else _list_descs+=( _awscmds 'AWS commands' )
+  fi
+fi
+
+for arr desc in "${(@)_list_descs}"
+do
+  (( ${(P)#arr} )) || continue
+  _describe -t ${${arr#_}%s} "$desc" $arr
+done

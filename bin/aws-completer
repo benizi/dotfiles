@@ -1,0 +1,95 @@
+#!/opt/virtenv/awscli/bin/python
+
+import awscli.completer
+import re
+import sys
+import os
+
+def first_sentence(doc):
+  doc = doc.replace("\n", " ")
+  m = re.search(r'<p>(?P<fs>.*?)(?:(?=\. )|(?=\.</p>))', doc)
+  return m['fs'] if m else doc
+
+
+def printc(cat, txt, desc=None):
+  desc = desc or ""
+  desc = desc.removeprefix("AWS ").removeprefix("Returns a ").replace(':', '\\:')
+  desc = desc.removeprefix("Describes ")
+  print(f"{cat}\t{txt}\t{desc}")
+
+
+def final_flag(args):
+  n = len(args)
+  flag = None
+  prefix = ''
+  if args:
+    if n > 1 and args[-2].startswith("--") and "=" not in args[-2]:
+      flag = args[-2]
+    if args[-1].startswith("--") and "=" in args[-1]:
+      flag = args[-1].split("=")[0]
+      prefix = flag + "="
+  if flag:
+    return [(flag, prefix)]
+  return []
+
+
+def main(args):
+  c = awscli.completer.Completer()
+  (cn, cc) = c._get_command(c.main_help, args)
+  (sn, sc) = c._get_command(cc, args)
+  flag_map = {}
+
+  for (what, val) in [('cmd',cn),('subcmd',sn)]:
+    if val:
+      printc('cur', what, val)
+
+  for (level, table) in [('subarg',sc),('cmdarg',cc),('awsarg',c.main_help)]:
+    if not table:
+      continue
+
+    for arg, info in table.arg_table.items():
+      cat = 'reqarg' if info.required else level
+      txt = f"--{arg}"
+      doc = first_sentence(info.documentation)
+      flag_map[txt] = info
+
+      printc(cat, txt, doc)
+
+  if sn:
+    level, table = None, None
+  elif cn:
+    level, table = 'subcmd', cc
+  else:
+    level, table = 'awscmd', c.main_help
+
+  if table:
+    for cmd, subcmd in table.command_table.items():
+      svc = None
+      if hasattr(subcmd, 'service_model'):
+        svc = subcmd.service_model
+      elif hasattr(subcmd, 'create_help_command'):
+        svc = subcmd.create_help_command().obj
+
+      doc = ""
+      if svc and hasattr(svc, 'documentation'):
+        doc = first_sentence(svc.documentation or f"({cmd}: empty docs)")
+
+      printc(level, cmd, doc)
+
+  for (flag, prefix) in final_flag(args):
+    choices = []
+
+    if flag == "--profile":
+      choices += list(c.driver.session.available_profiles)
+    elif flag in flag_map:
+      info = flag_map[flag]
+      if info.choices:
+        choices = list(info.choices)
+
+    if choices:
+      printc('cur', 'flag', flag)
+      for choice in choices:
+        printc('option', prefix + choice)
+
+if __name__ == '__main__':
+  main(sys.argv[1:])
