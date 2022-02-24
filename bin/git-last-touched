@@ -1,0 +1,108 @@
+#!/bin/sh
+
+any_changes() {
+  if line_diff "$@" | grep -q '^@@'
+  then return 0
+  fi
+
+  if line_diff "$@" | grep -q .
+  then printf 'Only binary/empty file differences in %s\n' "$*" >&2
+  fi
+
+  false
+}
+
+line_diff() {
+  git diff --no-prefix -U0 "$@"
+}
+
+find_diffs() {
+  local default found
+
+  if test $# -eq 0
+  then
+    for default in --cached HEAD
+    do
+      set -- "$default"
+      ! any_changes "$@" || break
+      set --
+    done
+
+    if test $# -eq 0
+    then
+      printf 'No changes in --cached or HEAD\n' >&2
+      exit 1
+    fi
+  fi
+
+  line_diff "$@"
+}
+
+create_blame_script() {
+  awk -v base=${GIT_LAST_TOUCHED_BASE:-HEAD} '
+  BEGIN { print "\x7b" }
+  END { print "\x7d" }
+  /^--- / { f = "\"" substr($0, 5) "\"" }
+  /^@@ / { print "git blame --line-porcelain", base, f, "-L " (0-$2) ",+1" }
+  '
+}
+
+run_blame_script() {
+  create_blame_script |
+  sh -s
+}
+
+extract_blame_commits() {
+  awk 'NR==1 { c=1 } 0<c-- { if (!s[$1]++) print $1 } /^[[:space:]]/ { c=1 }'
+}
+
+annotate_blame_contents() {
+  awk -v header=1 '
+  NR == 1 || 0<commit_next-- { c = $1 ; line = $2 }
+  $1 == "filename" { f = $2 }
+  /^[[:space:]]/ {
+    if (last_c != c) {
+      system("git log --oneline --no-walk " c)
+      last_c = c
+    }
+    if (last_f != f) {
+      print " =", f
+      last_f = f
+    }
+    print "  >", substr($0, 2)
+    commit_next = 1
+  }'
+}
+
+while test $# -gt 0
+do
+  arg=$1
+  shift
+
+  case "$arg" in
+    (--debug) only_debug=true ; break ;;
+    (--commits) only_commits=true ;;
+    (*) break ;;
+  esac
+done
+
+: ${only_debug=false}
+: ${only_commits=false}
+
+main() {
+  find_diffs "$@" |
+  grep -q . ||
+  exit 1
+
+  find_diffs "$@" |
+  run_blame_script |
+  if $only_commits
+  then extract_blame_commits
+  else annotate_blame_contents
+  fi
+}
+
+if $only_debug
+then eval "$*"
+else main "$@"
+fi

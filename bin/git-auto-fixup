@@ -1,0 +1,37 @@
+#!/bin/sh
+
+n=
+
+pick_commit() {
+  {
+    git last-touched --commits |
+    xargs git log --no-walk --format='%H %s'
+    echo '~ Up one commit'
+  } |
+  fzf --height=5 |
+  xargs -r -n 1 |
+  sed '1!d'
+}
+
+while :
+do
+  export GIT_LAST_TOUCHED_BASE='HEAD~'${#n}
+
+  git last-touched || exit 1
+
+  sha="$(pick_commit)"
+
+  case "$sha" in
+    (?) n=x$n ; continue ;;
+    ('') break ;;
+  esac
+
+  if git diff --cached | grep -q .
+  then set --
+  else set -- -a
+  fi
+
+  git commit "$@" --fixup=$sha
+
+  break
+done

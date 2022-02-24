@@ -191,5 +191,6 @@
 	wl = worktree list
 	wh = "! : add HOME-relative worktree ; wh() { set -e ; local b=$1 ; test -n \"$b\" ; shift ; case $b in ($HOME/*) b=${b#\"$HOME/\"} ;; esac ; if git rev-parse --verify --quiet $b >/dev/null ; then echo 'branch already exists' ; return 1 ; fi ; git worktree add -b $b ~/$b \"$@\" ; } ; wh"
 	kc = "! : gitk --all with focus ; kc() { gitk --all --select-commit=$1 ; } ; kc"
+	af = auto-fixup
 [tag]
 	sort = version:refname
