@@ -1,6 +1,7 @@
 #!/opt/virtenv/awscli/bin/python
 
 import awscli.completer
+import html
 import re
 import sys
 import os
@@ -18,18 +19,31 @@ def printc(cat, txt, desc=None):
   print(f"{cat}\t{txt}\t{desc}")
 
 
+def name_arg(arg):
+  return arg.startswith("Name=") or "Name=".startswith(arg)
+
+
 def final_flag(args):
   n = len(args)
-  flag = None
-  prefix = ''
-  if args:
-    if n > 1 and args[-2].startswith("--") and "=" not in args[-2]:
-      flag = args[-2]
-    if args[-1].startswith("--") and "=" in args[-1]:
-      flag = args[-1].split("=")[0]
-      prefix = flag + "="
-  if flag:
-    return [(flag, prefix)]
+  flag_i = next(filter(lambda i: args[i].startswith("--"), reversed(range(n))), None)
+
+  if not flag_i:
+    return []
+
+  flag, *rest = args[flag_i:]
+  has_param = "=" in flag
+
+  if has_param and rest:
+    return []
+
+  if has_param:
+    prefix = flag[:1+flag.index("=")]
+    return [(prefix[:-1], prefix)]
+
+  all_filters = all(map(name_arg, rest))
+  if (flag.startswith("--filter") and all_filters) or len(rest) <= 1:
+    return [(flag, '')]
+
   return []
 
 
@@ -81,6 +95,11 @@ def main(args):
 
     if flag == "--profile":
       choices += list(c.driver.session.available_profiles)
+    elif flag in ["--filter", "--filters"] and flag in flag_map:
+      info = flag_map[flag]
+      names = re.findall(r'<li>\s*<p>\s*<code>([^<]+)', info.documentation)
+      names = [html.unescape(x).replace(':', '\\\\:') for x in names]
+      choices = sorted([f'Name={x}' for x in names])
     elif flag in flag_map:
       info = flag_map[flag]
       if info.choices:

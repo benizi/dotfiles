@@ -5,7 +5,7 @@ command -v aws >/dev/null || return 0
 
 local kind val desc arr
 local -a _awscmds _awsargs _cmdargs _subcmds _subargs _reqargs
-local -a _options
+local -a _options _extra
 local -A cur
 
 aws-completer "${(@)words[1,CURRENT]}" |
@@ -61,5 +61,12 @@ fi
 for arr desc in "${(@)_list_descs}"
 do
   (( ${(P)#arr} )) || continue
-  _describe -t ${${arr#_}%s} "$desc" $arr
+  _extra=()
+  case "$arr/${${(P)arr}[1]}" in
+    (_options/Name=*)
+      eval "${arr}=( \${(@)${arr}#Name=} )"
+      _extra=( -q -p 'Name=' -S ',Values=' )
+      ;;
+  esac
+  _describe -t ${${arr#_}%s} "$desc" $arr "${(@)_extra}"
 done
