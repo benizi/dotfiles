@@ -101,16 +101,18 @@ command_not_found_handler () {
 }
 
 all_git_aliases () {
-  git config -l | awk -F'[.=]' '/^alias\./ { print $2 }'
+  git config -l 2>/dev/null |
+  awk -F= '/^alias\./ { sub(/^alias\./, "", $1) ; print $1 }'
 }
 
 valid_git_alias () {
-  git config -l | grep -qF "alias.$1="
+  git config alias.$1 2>/dev/null |
+  grep -q .
 }
 
 all_git_commands () {
-  git help --all \
-    | awk '/---|available git commands/ {ok=1; OFS="\n"; ORS=""} /^ / {NF=NF+1; if (ok) print $0}'
+  git help --all 2>/dev/null |
+  awk '/^ / { print $1 }'
   print -l ${${(k)commands[(I)git-*]}#git-}
 }
 
