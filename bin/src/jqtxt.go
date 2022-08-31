@@ -41,11 +41,16 @@ func main() {
 	cmdargval := cmdarg + "="
 	jq := "jq"
 	setjq := false
+	objectarg := "--object"
+	onlyobject := false
 
 	args := os.Args[1:]
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
 		switch {
+		// Accept --object before any `--`
+		case arg == objectarg && txtargs == nil:
+			onlyobject = true
 		// Accept --cmd=cmd
 		case !setjq && strings.HasPrefix(arg, cmdargval):
 			jq = strings.TrimPrefix(arg, cmdargval)
@@ -72,12 +77,21 @@ func main() {
 		panic(err)
 	}
 	decoder := json.NewDecoder(bytes.NewReader(data))
+	var any bool
 	for decoder.More() {
 		var obj interface{}
 		err := decoder.Decode(&obj)
 		if err != nil {
 			goto dump
 		}
+		_, object := obj.(map[string]interface{})
+		switch {
+		case !onlyobject || (object && !any):
+			// ok
+		default:
+			goto dump
+		}
+		any = true
 	}
 	pipejq(data, jq, setjq, jqargs...)
 	return
