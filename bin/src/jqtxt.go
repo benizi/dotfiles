@@ -35,18 +35,19 @@ func stdincmd(data []byte, arg0 string, args ...string) {
 }
 
 func main() {
-	jqargs := []string{}
-	txtargs := []string{}
-	doubledash := false
+	var jqargs, txtargs []string
 
 	for _, arg := range os.Args[1:] {
 		switch {
-		case arg == "--" && !doubledash:
-			doubledash = true
-		case doubledash:
-			txtargs = append(txtargs, arg)
-		default:
+		// `--` indicates the end of JQ args
+		case arg == "--" && txtargs == nil:
+			txtargs = []string{}
+		// If no `--` yet, add to JQ args
+		case txtargs == nil:
 			jqargs = append(jqargs, arg)
+		// Otherwise, add to text args
+		default:
+			txtargs = append(txtargs, arg)
 		}
 	}
 
@@ -67,7 +68,7 @@ func main() {
 
 dump:
 	switch {
-	case doubledash && len(txtargs) > 0:
+	case len(txtargs) > 0:
 		stdincmd(data, txtargs[0], txtargs[1:]...)
 	default:
 		os.Stdout.Write(data)
