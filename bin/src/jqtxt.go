@@ -6,14 +6,15 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"strings"
 	"syscall"
 )
 
-func pipejq(data []byte, args ...string) {
-	if len(args) == 0 {
+func pipejq(data []byte, cmd string, custom bool, args ...string) {
+	if len(args) == 0 && !custom {
 		args = []string{"."}
 	}
-	stdincmd(data, "jq", args...)
+	stdincmd(data, cmd, args...)
 }
 
 func stdincmd(data []byte, arg0 string, args ...string) {
@@ -36,9 +37,24 @@ func stdincmd(data []byte, arg0 string, args ...string) {
 
 func main() {
 	var jqargs, txtargs []string
+	cmdarg := "--cmd"
+	cmdargval := cmdarg + "="
+	jq := "jq"
+	setjq := false
 
-	for _, arg := range os.Args[1:] {
+	args := os.Args[1:]
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
 		switch {
+		// Accept --cmd=cmd
+		case !setjq && strings.HasPrefix(arg, cmdargval):
+			jq = strings.TrimPrefix(arg, cmdargval)
+			setjq = true
+		// Accept --cmd cmd if an arg is available
+		case !setjq && arg == cmdarg && i < len(args)-1:
+			jq = args[i+1]
+			setjq = true
+			i++
 		// `--` indicates the end of JQ args
 		case arg == "--" && txtargs == nil:
 			txtargs = []string{}
@@ -63,7 +79,7 @@ func main() {
 			goto dump
 		}
 	}
-	pipejq(data, jqargs...)
+	pipejq(data, jq, setjq, jqargs...)
 	return
 
 dump:
