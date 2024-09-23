@@ -31,6 +31,9 @@ place-holder:	src/place-holder.c
 		| xargs -r go get -v $(GO_BUILD_FLAGS)
 	go build $(GO_BUILD_FLAGS) -o $@ $<
 
+-i:	src/dash-i.go
+	go build $(GO_BUILD_FLAGS) -o $@ $<
+
 %$(GO_STATIC_EXT)$(GO_EXT):
 	@test x = x$(GO_EXT)
 	$(MAKE) GO_EXT=$(GO_STATIC_EXT) $@
